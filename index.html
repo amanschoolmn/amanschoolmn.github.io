@@ -3064,57 +3064,56 @@ section{position:relative;z-index:1}
 
 <!-- SHARED FOOTER (shows on all tabs except enroll) -->
 
-<footer id="siteFooter" style="background:linear-gradient(180deg,#071810 0%,#050e0a 100%);border-top:1px solid rgba(184,135,42,0.18);padding:3.5rem 2rem 2rem">
-  <div style="max-width:1080px;margin:0 auto">
+<footer id="siteFooter" style="background:linear-gradient(180deg,#071810 0%,#050e0a 100%);border-top:1px solid rgba(184,135,42,0.18);padding:3rem 2rem 2rem">
+  <div style="max-width:960px;margin:0 auto">
 
-    <!-- Top row: logo + columns -->
-    <div style="display:grid;grid-template-columns:1.4fr 1.8fr 1fr;gap:2.5rem;margin-bottom:3rem;align-items:start">
+    <div style="display:grid;grid-template-columns:1.4fr 1.2fr 1.4fr;gap:2.5rem;margin-bottom:2.5rem;align-items:start">
 
-      <!-- Brand -->
+      <!-- Column 1: Brand -->
       <div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--gold-bright);margin-bottom:0.3rem">Al-Madrasatu An-Nuriyyah</div>
-        <div style="font-family:'Crimson Pro',serif;font-size:0.72rem;letter-spacing:0.16em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:1rem">(AMAN) · Weekend Islamic School</div>
-        <p style="font-size:0.92rem;color:rgba(255,255,255,0.5);line-height:1.75;font-style:italic;font-weight:300">"Youth Educated… Family Cultivated… World Illuminated."</p>
-        <div style="margin-top:1.2rem;display:flex;align-items:center;gap:0.5rem">
-          <div style="width:18px;height:1px;background:var(--gold);opacity:0.5"></div>
-          <span style="font-size:0.68rem;letter-spacing:0.15em;color:rgba(255,255,255,0.3);text-transform:uppercase">Est. 2020</span>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold-bright);margin-bottom:0.25rem">Al-Madrasatu An-Nuriyyah</div>
+        <div style="font-size:0.7rem;letter-spacing:0.14em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:0.9rem">(AMAN) · Weekend Islamic School</div>
+        <p style="font-size:0.88rem;color:rgba(255,255,255,0.45);line-height:1.75;font-style:italic;font-weight:300">"Youth Educated… Family Cultivated… World Illuminated."</p>
+        <div style="margin-top:1rem;display:flex;align-items:center;gap:0.5rem">
+          <div style="width:16px;height:1px;background:var(--gold);opacity:0.5"></div>
+          <span style="font-size:0.65rem;letter-spacing:0.15em;color:rgba(255,255,255,0.25);text-transform:uppercase">Est. 2020</span>
         </div>
       </div>
 
-      <!-- Navigate + Programs side by side -->
+      <!-- Column 2: Navigate in 2 sub-columns -->
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.9rem">Navigate</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 0.8rem">
+          <a onclick="showTab('home')"       style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Home</a>
+          <a onclick="showTab('programs')"   style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Programs</a>
+          <a onclick="showTab('about')"      style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">About</a>
+          <a onclick="showTab('admissions')" style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Admissions</a>
+          <a onclick="showTab('curriculum')" style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Curriculum</a>
+          <a onclick="showTab('contact')"    style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Our Team</a>
+        </div>
+      </div>
+
+      <!-- Column 3: Programs | Contact in 2 sub-columns -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
         <div>
-          <div style="font-family:'Playfair Display',serif;font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem">Navigate</div>
-          <div style="display:flex;flex-direction:column;gap:0.55rem">
-            <a onclick="showTab('home')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Home</a>
-            <a onclick="showTab('about')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">About</a>
-            <a onclick="showTab('curriculum')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Curriculum</a>
-            <a onclick="showTab('programs')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Programs</a>
-            <a onclick="showTab('admissions')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Admissions</a>
-            <a onclick="showTab('contact')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">Our Team</a>
+          <div style="font-family:'Playfair Display',serif;font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.9rem">Programs</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <a onclick="showTab('programs')" style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">🛡️ Brothers</a>
+            <a onclick="showTab('programs')" style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">🌸 Sisters</a>
+            <a onclick="showTab('enroll')"   style="cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);text-decoration:none;transition:color 0.2s;font-family:'Crimson Pro',serif" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">📋 Enroll</a>
           </div>
         </div>
         <div>
-          <div style="font-family:'Playfair Display',serif;font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem">Programs</div>
-          <div style="display:flex;flex-direction:column;gap:0.55rem">
-            <a onclick="showTab('programs')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;font-family:'Crimson Pro',serif;transition:color 0.2s" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">🛡️ Brothers Amaanah</a>
-            <a onclick="showTab('programs')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;font-family:'Crimson Pro',serif;transition:color 0.2s" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">🌸 Sisters Amaanah</a>
-            <a onclick="showTab('enroll')" style="cursor:pointer;font-size:0.9rem;color:rgba(255,255,255,0.6);text-decoration:none;font-family:'Crimson Pro',serif;transition:color 0.2s" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">📋 Enroll Now</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contact -->
-      <div>
-        <div style="font-family:'Playfair Display',serif;font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem">Contact</div>
-        <div style="display:flex;flex-direction:column;gap:0.7rem">
-          <div style="display:flex;align-items:flex-start;gap:0.6rem">
-            <span style="color:var(--gold);font-size:0.85rem;margin-top:0.1rem;flex-shrink:0">📍</span>
-            <span style="font-size:0.88rem;color:rgba(255,255,255,0.55);line-height:1.55;font-family:'Crimson Pro',serif">2619 Coon Rapids Blvd #203<br>Coon Rapids, MN 55433</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.6rem">
-            <span style="color:var(--gold);font-size:0.85rem;flex-shrink:0">✉️</span>
-            <a href="mailto:amanschool.mn@gmail.com" style="font-size:0.88rem;color:rgba(255,255,255,0.55);text-decoration:none;font-family:'Crimson Pro',serif;transition:color 0.2s" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">amanschool.mn@gmail.com</a>
+          <div style="font-family:'Playfair Display',serif;font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.9rem">Contact</div>
+          <div style="display:flex;flex-direction:column;gap:0.65rem">
+            <div style="display:flex;align-items:flex-start;gap:0.5rem">
+              <span style="color:var(--gold);font-size:0.82rem;margin-top:0.1rem;flex-shrink:0">📍</span>
+              <span style="font-size:0.82rem;color:rgba(255,255,255,0.5);line-height:1.55;font-family:'Crimson Pro',serif">2619 Coon Rapids Blvd #203<br>Coon Rapids, MN 55433</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.5rem">
+              <span style="color:var(--gold);font-size:0.82rem;flex-shrink:0;margin-top:0.1rem">✉️</span>
+              <a href="mailto:amanschool.mn@gmail.com" style="font-size:0.75rem;color:rgba(255,255,255,0.5);text-decoration:none;font-family:'Crimson Pro',serif;transition:color 0.2s;white-space:nowrap" onmouseover="this.style.color='var(--gold-bright)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">amanschool.mn@gmail.com</a>
+            </div>
           </div>
         </div>
       </div>
@@ -3122,13 +3121,14 @@ section{position:relative;z-index:1}
     </div>
 
     <!-- Divider -->
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(184,135,42,0.25),transparent);margin-bottom:1.5rem"></div>
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(184,135,42,0.22),transparent);margin-bottom:1.3rem"></div>
 
     <!-- Bottom row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-      <p style="font-size:0.72rem;color:rgba(255,255,255,0.25);letter-spacing:0.08em;font-family:'Crimson Pro',serif">© <span id="copy-year"></span> Al-Madrasatu An-Nuriyyah (AMAN). All rights reserved.</p>
-      <p style="font-size:0.72rem;color:rgba(255,255,255,0.2);letter-spacing:0.06em;font-family:'Crimson Pro',serif;font-style:italic">Coon Rapids, Minnesota</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem">
+      <p style="font-size:0.7rem;color:rgba(255,255,255,0.22);letter-spacing:0.08em;font-family:'Crimson Pro',serif">© <span id="copy-year"></span> Al-Madrasatu An-Nuriyyah (AMAN). All rights reserved.</p>
+      <p style="font-size:0.7rem;color:rgba(255,255,255,0.18);letter-spacing:0.06em;font-family:'Crimson Pro',serif;font-style:italic">Coon Rapids, Minnesota</p>
     </div>
+
   </div>
 </footer>
 
