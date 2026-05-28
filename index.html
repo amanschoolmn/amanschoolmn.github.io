@@ -807,6 +807,7 @@ section{position:relative;z-index:1}
 .ap-cta-title { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem,3.5vw,2.6rem); color: #f0e4c8; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1; }
 .ap-cta-body { max-width: 550px; margin: 0 auto 1.2rem; font-size: 1.04rem; color: rgba(255,255,255,0.72); font-style: italic; line-height: 1.9; position: relative; z-index: 1; }
 .ap-cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: nowrap; position: relative; z-index: 1; margin-bottom: 1rem; }
+.ap-cta-btns .btn { white-space: nowrap; flex: 0 1 auto; justify-content: center; padding: 0.9rem 1.6rem; }
 .ap-ftags { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; position: relative; z-index: 1; }
 .ap-ftag { padding: 0.42rem 1rem; border: 1px solid rgba(184,135,42,0.24); font-style: italic; font-size: 0.9rem; color: var(--gold-bright); transition: all 0.2s; }
 .ap-ftag:hover { background: rgba(184,135,42,0.08); border-color: rgba(184,135,42,0.48); }
@@ -1797,8 +1798,6 @@ section{position:relative;z-index:1}
 <!-- ══════════════════════════════════
      BROTHERS PROGRAM CONTENT
 ══════════════════════════════════ -->
-<div id="prog-brothers">
-
 <!-- ▸ MEANING ─────────────────────────────────────── -->
 
 
@@ -2017,14 +2016,9 @@ section{position:relative;z-index:1}
   </div>
 </section>
 
+
+
 </div><!-- /prog-brothers -->
-
-
-
-</div>
-
-
-</div>
 
 <!-- SISTERS PROGRAM CONTENT -->
 <div id="prog-sisters" style="display:none">
@@ -2095,44 +2089,7 @@ section{position:relative;z-index:1}
 </section>
 
 
-<!-- ▸ WHAT AMAANAH MEANS FOR HER ─────────────────── -->
-<section class="ap-s-sis-light">
-  <div class="si">
-    <div class="lbl rv" style="color:var(--sis-purple)">The Name</div>
-    <h2 class="st rv" style="color:#2e1835">Her Trust Is <em style="color:var(--sis-purple)">Different</em></h2>
-    <div class="ap-sis-rule rv"></div>
 
-    <div class="ap-meaning-banner ap-sis-banner rv" style="border-top-color:var(--sis-mauve)">
-      <div class="ap-mb-left ap-sis-mb-left">
-        <div class="ap-mb-arabic ap-sis-mb-arabic">أمانة</div>
-        <div class="ap-mb-transliteration" style="color:rgba(245,230,240,0.4)">Amaanah</div>
-      </div>
-      <div class="ap-mb-right" style="background:#f0e4ee">
-        <div class="ap-mb-word" style="color:var(--sis-purple)">Trust. Responsibility. Something sacred placed in your care.</div>
-        <div class="ap-mb-defs">
-          <div class="ap-mb-def ap-sis-mb-def" style="color:#4a2d50">The body she was given — and the dignity it deserves</div>
-          <div class="ap-mb-def ap-sis-mb-def" style="color:#4a2d50">The heart she carries — and what she chooses to fill it with</div>
-          <div class="ap-mb-def ap-sis-mb-def" style="color:#4a2d50">The generation she will one day raise — and who she is becoming now</div>
-        </div>
-      </div>
-    </div>
-
-    <p class="about-sub rv" style="color:#4a2d50">The Amaanah is not just a word on a logo. For a Muslim sister, it is the weight of being trusted by Allah ﷻ with something no one else can carry for her — her own soul, her own choices, her own story.</p>
-
-    <div style="margin-top:2.5rem" class="rv">
-      <div class="lbl" style="color:var(--sis-purple);margin-bottom:1.1rem">Every Sister Is Entrusted With:</div>
-      <div class="ap-trust-grid">
-        <div class="ap-sis-chip">🕌 Her Faith</div>
-        <div class="ap-sis-chip">💎 Her Dignity</div>
-        <div class="ap-sis-chip">⏳ Her Time</div>
-        <div class="ap-sis-chip">🌟 Her Future</div>
-        <div class="ap-sis-chip">❤️ Her Heart</div>
-        <div class="ap-sis-chip">👨‍👩‍👦 Her Family</div>
-        <div class="ap-sis-chip">🧭 Her Purpose</div>
-      </div>
-    </div>
-  </div>
-</section>
 
 
 <!-- ▸ FOUR PILLARS ───────────────────────────────── -->
@@ -2316,32 +2273,13 @@ section{position:relative;z-index:1}
 </section>
 
 
-<!-- ▸ CLOSING CTA ─────────────────────────────────── -->
-<div class="ap-sis-cta">
-  <div style="position:relative;z-index:1;text-align:center">
-    <div style="font-family:'Amiri',serif;font-size:clamp(1.5rem,3.5vw,2.5rem);color:var(--sis-rose);margin-bottom:0.4rem" class="rv">أمانة</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3.5vw,2.6rem);color:#f5e6f0;font-weight:700;margin-bottom:0.9rem" class="rv">Join The Amaanah Sisters</h2>
-    <p style="max-width:550px;margin:0 auto 2.5rem;font-size:1.04rem;color:rgba(245,230,240,0.72);font-style:italic;line-height:1.9" class="rv">A sisterhood is waiting. Mentors are ready. A space where you do not have to perform, explain yourself, or shrink. Come as you are — and grow into who Allah created you to be, insha'Allah.</p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem" class="rv">
-      <a class="btn btn-gold" onclick="showTab('enroll')" style="cursor:pointer">📋 Apply Now</a>
-      <a class="btn" style="background:transparent;color:var(--sis-rose);border:1px solid rgba(193,125,184,0.45);cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;padding:0.8rem 1.9rem;font-family:'Crimson Pro',serif;font-size:0.9rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600" onclick="showTab('contact')">Contact Our Team</a>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:0.6rem;justify-content:center" class="rv">
-      <span style="padding:0.42rem 1rem;border:1px solid rgba(193,125,184,0.24);font-style:italic;font-size:0.9rem;color:var(--sis-rose)">Sisterhood</span>
-      <span style="padding:0.42rem 1rem;border:1px solid rgba(193,125,184,0.24);font-style:italic;font-size:0.9rem;color:var(--sis-rose)">Islamic Identity</span>
-      <span style="padding:0.42rem 1rem;border:1px solid rgba(193,125,184,0.24);font-style:italic;font-size:0.9rem;color:var(--sis-rose)">Mentorship</span>
-      <span style="padding:0.42rem 1rem;border:1px solid rgba(193,125,184,0.24);font-style:italic;font-size:0.9rem;color:var(--sis-rose)">Confidence</span>
-      <span style="padding:0.42rem 1rem;border:1px solid rgba(193,125,184,0.24);font-style:italic;font-size:0.9rem;color:var(--sis-rose)">Purpose</span>
-      <span style="padding:0.42rem 1rem;border:1px solid rgba(193,125,184,0.24);font-style:italic;font-size:0.9rem;color:var(--sis-rose)">Summer Program</span>
-    </div>
-  </div>
-</div>
+
+
+
 
 </div><!-- /prog-sisters -->
 
-
-
-<!-- ▸ CLOSING CTA — shown for both programs ──────── -->
+<!-- ▸ CLOSING CTA — main programs page -->
 <div class="ap-cta" id="prog-cta">
   <div class="ap-cta-arabic rv">أمانة</div>
   <h2 class="ap-cta-title rv">Join The Amaanah</h2>
@@ -2360,17 +2298,8 @@ section{position:relative;z-index:1}
     <span class="ap-ftag">Summer Program</span>
   </div>
 </div>
-
 </div>
-<!-- ══ END PROGRAMS TAB ══ -->
-
-
-
-
-
-</div>
-
-</div><div class="tab-page" id="tab-admissions">
+<!-- ══ END PROGRAMS TAB ══ --><div class="tab-page" id="tab-admissions">
 <!-- ADMISSIONS -->
 <section class="s-admissions" id="admissions">
   <div class="si">
