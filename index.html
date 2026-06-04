@@ -963,10 +963,16 @@ section{position:relative;z-index:1}
   .sched-row{display:grid;grid-template-columns:130px 1fr 140px 1fr;gap:0;border-bottom:1px solid rgba(184,135,42,0.12)}
   .sched-row:last-child{border-bottom:none}
   @media(max-width:700px){
+    .sched-table{font-size:0.9rem}
     .sched-row{grid-template-columns:1fr 1fr}
-    .sched-notes{grid-column:1/-1;border-top:1px solid rgba(184,135,42,0.08)}
+    .sched-header{grid-template-columns:1fr 1fr}
+    .sched-header > div{font-size:0.7rem;padding:0.55rem 0.7rem}
+    .sched-row > div{padding:0.6rem 0.7rem}
+    .sched-time{font-weight:700;color:var(--forest)!important}
+    .sched-notes{grid-column:1/-1;border-top:1px solid rgba(184,135,42,0.08);font-style:italic;font-size:0.85rem;color:var(--warm-gray)!important;background:rgba(184,135,42,0.04)}
   }
   .sched-header{background:var(--forest);font-family:'Playfair Display',serif;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-bright)}
+.sched-header > div{color:var(--gold-bright)!important;font-weight:700}
   .sched-header > div{padding:0.7rem 0.9rem}
   .sched-row > div{padding:0.65rem 0.9rem;border-right:1px solid rgba(184,135,42,0.1);color:var(--ink-soft);display:flex;align-items:center}
   .sched-row > div:last-child{border-right:none}
@@ -1442,7 +1448,7 @@ section{position:relative;z-index:1}
 
 
 /* ── OUR STORY SECTION ── */
-.s-story{background:linear-gradient(170deg,#0d2418 0%,#102e1d 55%,#0d2418 100%);position:relative;overflow:hidden}
+.s-story{background:linear-gradient(170deg,#1a4a35 0%,#236648 55%,#1a4a35 100%);position:relative;overflow:hidden}
 .s-story .si{position:relative;z-index:1}
 .story-geo{position:absolute;inset:0;opacity:0.06;pointer-events:none}
 .story-lbl{font-size:0.63rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:0.9rem;display:flex;align-items:center;gap:0.7rem;justify-content:center}
@@ -1451,9 +1457,9 @@ section{position:relative;z-index:1}
 .story-title em{color:var(--gold-bright);font-style:italic}
 .story-arabic{font-family:'Amiri',serif;font-size:1.6rem;color:rgba(184,135,42,0.7);text-align:center;margin-bottom:2.5rem}
 .story-lead{font-size:1.15rem;line-height:1.9;color:rgba(255,255,255,0.82);text-align:center;max-width:740px;margin:0 auto 3rem;font-weight:300}
-.story-names{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:3rem}
-@media(max-width:880px){.story-names{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.story-names{grid-template-columns:1fr}}
+.story-names{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:3rem}
+.story-name:nth-child(3),.story-name:nth-child(4){grid-column:1 / -1}
+@media(max-width:480px){.story-names{gap:0.7rem}.story-name{padding:1.4rem 1rem}.story-name-ar{font-size:1.6rem}.story-name-rom{font-size:0.62rem}.story-name-mean{font-size:0.95rem}.story-name-desc{font-size:0.8rem}}
 .story-name{background:rgba(184,135,42,0.07);border:1px solid rgba(184,135,42,0.2);border-top:3px solid var(--gold);padding:1.8rem 1.4rem;text-align:center}
 .story-name-ar{font-family:'Amiri',serif;font-size:2rem;color:var(--gold-bright);margin-bottom:0.4rem;line-height:1}
 .story-name-rom{font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:0.8rem}
@@ -1464,6 +1470,26 @@ section{position:relative;z-index:1}
 .story-body strong{color:var(--gold-bright);font-weight:600}
 .story-motto{text-align:center;margin-top:3rem;padding-top:2.5rem;border-top:1px solid rgba(184,135,42,0.25)}
 .story-motto-text{font-family:'Playfair Display',serif;font-size:clamp(1.1rem,2.6vw,1.5rem);color:var(--gold-bright);font-style:italic;line-height:1.5}
+
+
+/* ── GAME ROOM FEATURE ── */
+.s-gameroom{background:linear-gradient(165deg,#faf4e8 0%,#f4ead6 100%);position:relative;overflow:hidden}
+.gameroom-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:1080px;margin:0 auto;align-items:stretch}
+@media(max-width:840px){.gameroom-wrap{grid-template-columns:1fr}}
+.gameroom-text{padding:1rem 3rem 1rem 0}
+@media(max-width:840px){.gameroom-text{padding:0 0 2rem}}
+.gameroom-text .lbl{justify-content:flex-start}
+.gameroom-title{font-family:'Playfair Display',serif;font-size:clamp(1.65rem,3.5vw,2.5rem);font-weight:600;color:var(--ink);line-height:1.18;margin-bottom:1.2rem}
+.gameroom-title em{color:var(--gold-dark);font-style:italic}
+.gameroom-desc{font-size:1.08rem;line-height:1.85;color:var(--ink-soft);font-weight:300;margin-bottom:1.6rem}
+.gameroom-activities{display:flex;flex-wrap:wrap;gap:0.7rem}
+.gameroom-chip{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(26,74,53,0.06);border:1px solid rgba(184,135,42,0.25);padding:0.55rem 1.1rem;font-size:0.95rem;color:var(--forest);font-weight:600}
+/* Photo placeholder — drop a real photo in later */
+.gameroom-photo{position:relative;min-height:340px;background:linear-gradient(160deg,var(--forest) 0%,var(--deep) 100%);border:1px solid rgba(184,135,42,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;overflow:hidden}
+.gameroom-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gameroom-photo-placeholder{position:relative;z-index:1;color:rgba(232,192,104,0.7)}
+.gameroom-photo-icon{font-size:3rem;margin-bottom:0.8rem;opacity:0.6}
+.gameroom-photo-txt{font-family:'Crimson Pro',serif;font-style:italic;font-size:0.92rem;color:rgba(244,234,214,0.55);line-height:1.5;max-width:240px}
 
 </style>
 </head>
@@ -1696,6 +1722,123 @@ section{position:relative;z-index:1}
 </section>
 
 <!-- CLASSROOM -->
+
+<!-- ══ GAME ROOM ══ -->
+<section class="s-gameroom">
+  <div class="si">
+    <div class="gameroom-wrap">
+      <div class="gameroom-text">
+        <div class="lbl">Learning &amp; Fun</div>
+        <h2 class="gameroom-title rv">More Than a Classroom — <em>A Place Kids Love</em></h2>
+        <p class="gameroom-desc rv">We believe a child who enjoys coming to school learns better and stays connected to their deen. That's why AMAN has a dedicated <strong>game room</strong> where students unwind during breaks — building friendships, burning energy, and making the weekend something they look forward to.</p>
+        <div class="gameroom-activities rv">
+          <span class="gameroom-chip">🏒 Air Hockey</span>
+          <span class="gameroom-chip">⚽ Foosball</span>
+          <span class="gameroom-chip">🏓 Table Tennis</span>
+        </div>
+      </div>
+      <div class="gameroom-photo rv">
+        <!-- To add your photo: replace this placeholder with <img src="data:image/jpeg;base64,..."/> -->
+        <div class="gameroom-photo-placeholder">
+          <div class="gameroom-photo-icon">📸</div>
+          <div class="gameroom-photo-txt">Photo of our game room coming soon, in shā Allah.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- EXPECTATIONS -->
+<section class="s-exp" id="expectations">
+  <div class="si">
+    <div class="lbl">Standards &amp; Expectations</div>
+    <h2 class="st rv">What We Ask of <em>Students &amp; Families</em></h2>
+    <div class="exp-grid">
+      <div class="exp-card rv">
+        <div class="exp-title">🧒 Student Expectations</div>
+        <ul class="exp-list">
+          <li>Arrive on time — 15+ min late = sent home, no exceptions</li>
+          <li>Maximum 3 unexcused absences — beyond 3 leads to dismissal</li>
+          <li>Respect teachers, classmates, and the AMAN environment always</li>
+          <li>Complete and submit all homework assignments on time</li>
+          <li>Bring required materials every week: Qur'an, notebook, pencil</li>
+          <li>Islamic dress code is mandatory every session</li>
+          <li>Disruptive behavior and disrespect will not be tolerated</li>
+        </ul>
+      </div>
+      <div class="exp-card rv">
+        <div class="exp-title">👪 Parent Expectations</div>
+        <ul class="exp-list">
+          <li>Review lessons and homework with your child at home weekly</li>
+          <li>Reinforce Islamic manners, discipline, and behavior</li>
+          <li>Practice Qur'an with your child daily</li>
+          <li>Communicate openly with staff — notify absences by Friday</li>
+          <li>Prioritize attendance and class participation</li>
+          <li>Ensure on-time pickup at end of each session</li>
+          <li>Registration fee is $50 per student, due upon enrollment — no exceptions</li>
+        </ul>
+      </div>
+    </div>
+    <div class="qblock rv">"Together, we are planting seeds of īmān, adab, and knowledge that will benefit generations to come, insha'Allah." — Administration of AMAN</div>
+  </div>
+</section>
+
+
+<!-- CONDUCT -->
+<section class="s-conduct">
+  <div class="si">
+    <div class="lbl">Conduct &amp; Dress Code</div>
+    <h2 class="st rv" style="color:white">Maintaining an <em style="color:var(--gold-bright)">Islamic Environment</em></h2>
+    <div class="cond-grid">
+      <div class="cond-card rv"><div class="cond-icon">🧕</div><div class="cond-title">Dress Code</div><div class="cond-txt">Proper hijab for sisters and thobe / appropriate Islamic dress for brothers is mandatory every session.</div></div>
+      <div class="cond-card rv"><div class="cond-icon">🚻</div><div class="cond-title">Gender Separation</div><div class="cond-txt">Boys and girls remain in separate areas at all times per Islamic guidelines.</div></div>
+      <div class="cond-card rv"><div class="cond-icon">🤫</div><div class="cond-title">Classroom Conduct</div><div class="cond-txt">No running, yelling, or disruptive behavior. Disrespect and misuse of the school environment will not be tolerated.</div></div>
+      <div class="cond-card rv"><div class="cond-icon">🍎</div><div class="cond-title">Food &amp; Drinks</div><div class="cond-txt">No food or drinks outside of designated break time.</div></div>
+      <div class="cond-card rv"><div class="cond-icon">⏰</div><div class="cond-title">Attendance Policy</div><div class="cond-txt">15+ min late = sent home. Max 3 unexcused absences. Beyond 3 leads to dismissal. Notify staff by Friday.</div></div>
+      <div class="cond-card rv"><div class="cond-icon">📚</div><div class="cond-title">Homework</div><div class="cond-txt">Must be submitted on time. Parents are expected to support students in completing it at home.</div></div>
+    </div>
+  </div>
+</section>
+
+
+<div class="page-closing-cta">
+  <div style="position:relative;z-index:1">
+    <h3>Have Questions?</h3>
+    <p>We'd love to hear from you — reach out anytime.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a class="btn btn-gold" onclick="showTab('contact')" style="cursor:pointer">Contact Us</a>
+      <a class="btn btn-outline" onclick="showTab('enroll')" style="cursor:pointer">Apply Now</a>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     TAB: CURRICULUM
+════════════════════════════════════════ -->
+<div class="tab-page" id="tab-curriculum">
+<!-- CURRICULUM -->
+<section class="s-curr" id="curriculum">
+  <div class="si">
+    <div class="lbl">What We Teach</div>
+    <h2 class="st rv" style="color:white">A Balanced <em style="color:var(--gold-bright)">Islamic Curriculum</em></h2>
+    <p class="curr-intro rv">Every subject is taught to build not just knowledge, but conviction, character, and an unbreakable connection to Allah — rooted in the Qur'an and Sunnah.</p>
+    <div class="curr-grid">
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠١</div><div class="curr-arabic">حِفْظُ الْقُرْآن</div><div class="curr-icon">📿</div><div class="curr-title">Ḥifẓ — Qur'an Memorization</div></div><div class="curr-back"><div class="curr-arabic-sm">حِفْظُ الْقُرْآن</div><div class="curr-back-title">Ḥifẓ</div><div class="curr-back-desc">Systematic memorization using proven methods of repetition, revision, and accountability — building a lifelong bond with the Book of Allah.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٢</div><div class="curr-arabic">تَجْوِيدُ الْقُرْآن</div><div class="curr-icon">🔤</div><div class="curr-title">Tajwīd &amp; Qur'an Reading</div></div><div class="curr-back"><div class="curr-arabic-sm">تَجْوِيدُ الْقُرْآن</div><div class="curr-back-title">Tajwīd</div><div class="curr-back-desc">Mastering the rules of Qur'anic recitation so every letter, vowel, and pause is given its proper right — reciting as the Prophet ﷺ recited.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٣</div><div class="curr-arabic">اللُّغَةُ الْعَرَبِيَّة</div><div class="curr-icon">ا</div><div class="curr-title">Arabic Language &amp; Reading</div></div><div class="curr-back"><div class="curr-arabic-sm">اللُّغَةُ الْعَرَبِيَّة</div><div class="curr-back-title">Arabic</div><div class="curr-back-desc">Building the foundation of Arabic letters, reading, writing, and vocabulary — the key that unlocks the Qur'an and Islamic scholarship.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٤</div><div class="curr-arabic">التَّوْحِيدُ وَالْعَقِيدَة</div><div class="curr-icon">☝️</div><div class="curr-title">Tawḥīd &amp; Aqeedah</div></div><div class="curr-back"><div class="curr-arabic-sm">التَّوْحِيدُ وَالْعَقِيدَة</div><div class="curr-back-title">Tawḥīd</div><div class="curr-back-desc">The Names and Attributes of Allah, core Islamic beliefs, and the creed that every Muslim must know — establishing firm faith from an early age.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٥</div><div class="curr-arabic">الْحَدِيثُ وَالْفِقْه</div><div class="curr-icon">📜</div><div class="curr-title">Hadith &amp; Fiqh</div></div><div class="curr-back"><div class="curr-arabic-sm">الْحَدِيثُ وَالْفِقْه</div><div class="curr-back-title">Hadith &amp; Fiqh</div><div class="curr-back-desc">Selected Prophetic traditions and the practical rulings of Islam — prayer, purity, fasting, and daily life as the Prophet ﷺ demonstrated.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٦</div><div class="curr-arabic">السِّيرَةُ وَالصَّحَابَة</div><div class="curr-icon">🕌</div><div class="curr-title">Seerah &amp; Companions</div></div><div class="curr-back"><div class="curr-arabic-sm">السِّيرَةُ وَالصَّحَابَة</div><div class="curr-back-title">Seerah</div><div class="curr-back-desc">The life of the Prophet Muhammad ﷺ and the inspiring stories of his noble Companions — role models for every generation of Muslims.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٧</div><div class="curr-arabic">الأَذْكَارُ وَالأَدْعِيَة</div><div class="curr-icon">🌙</div><div class="curr-title">Adhkār &amp; Daily Du'ās</div></div><div class="curr-back"><div class="curr-arabic-sm">الأَذْكَارُ وَالأَدْعِيَة</div><div class="curr-back-title">Adhkār</div><div class="curr-back-desc">Morning and evening remembrances, essential daily supplications, and the du'ās of every occasion — filling the heart and day with the remembrance of Allah.</div><div class="curr-back-line"></div></div></div></div>
+      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٨</div><div class="curr-arabic">الأَخْلَاقُ وَالآدَاب</div><div class="curr-icon">🏅</div><div class="curr-title">Akhlāq &amp; Islamic Manners</div></div><div class="curr-back"><div class="curr-arabic-sm">الأَخْلَاقُ وَالآدَاب</div><div class="curr-back-title">Akhlāq</div><div class="curr-back-desc">Islamic character, respect, identity, and confidence — living Islam not just in knowledge but in conduct, so every student becomes a walking example.</div><div class="curr-back-line"></div></div></div></div>
+    </div>
+  </div>
+</section>
+
+
 <section class="s-class">
   <div class="si">
     <div class="lbl">How We Teach</div>
@@ -1823,94 +1966,6 @@ section{position:relative;z-index:1}
       * Schedule structure may vary between summer and winter sessions.
     </p>
 
-  </div>
-</section>
-
-<!-- EXPECTATIONS -->
-<section class="s-exp" id="expectations">
-  <div class="si">
-    <div class="lbl">Standards &amp; Expectations</div>
-    <h2 class="st rv">What We Ask of <em>Students &amp; Families</em></h2>
-    <div class="exp-grid">
-      <div class="exp-card rv">
-        <div class="exp-title">🧒 Student Expectations</div>
-        <ul class="exp-list">
-          <li>Arrive on time — 15+ min late = sent home, no exceptions</li>
-          <li>Maximum 3 unexcused absences — beyond 3 leads to dismissal</li>
-          <li>Respect teachers, classmates, and the AMAN environment always</li>
-          <li>Complete and submit all homework assignments on time</li>
-          <li>Bring required materials every week: Qur'an, notebook, pencil</li>
-          <li>Islamic dress code is mandatory every session</li>
-          <li>Disruptive behavior and disrespect will not be tolerated</li>
-        </ul>
-      </div>
-      <div class="exp-card rv">
-        <div class="exp-title">👪 Parent Expectations</div>
-        <ul class="exp-list">
-          <li>Review lessons and homework with your child at home weekly</li>
-          <li>Reinforce Islamic manners, discipline, and behavior</li>
-          <li>Practice Qur'an with your child daily</li>
-          <li>Communicate openly with staff — notify absences by Friday</li>
-          <li>Prioritize attendance and class participation</li>
-          <li>Ensure on-time pickup at end of each session</li>
-          <li>Registration fee is $50 per student, due upon enrollment — no exceptions</li>
-        </ul>
-      </div>
-    </div>
-    <div class="qblock rv">"Together, we are planting seeds of īmān, adab, and knowledge that will benefit generations to come, insha'Allah." — Administration of AMAN</div>
-  </div>
-</section>
-
-
-<!-- CONDUCT -->
-<section class="s-conduct">
-  <div class="si">
-    <div class="lbl">Conduct &amp; Dress Code</div>
-    <h2 class="st rv" style="color:white">Maintaining an <em style="color:var(--gold-bright)">Islamic Environment</em></h2>
-    <div class="cond-grid">
-      <div class="cond-card rv"><div class="cond-icon">🧕</div><div class="cond-title">Dress Code</div><div class="cond-txt">Proper hijab for sisters and thobe / appropriate Islamic dress for brothers is mandatory every session.</div></div>
-      <div class="cond-card rv"><div class="cond-icon">🚻</div><div class="cond-title">Gender Separation</div><div class="cond-txt">Boys and girls remain in separate areas at all times per Islamic guidelines.</div></div>
-      <div class="cond-card rv"><div class="cond-icon">🤫</div><div class="cond-title">Classroom Conduct</div><div class="cond-txt">No running, yelling, or disruptive behavior. Disrespect and misuse of the school environment will not be tolerated.</div></div>
-      <div class="cond-card rv"><div class="cond-icon">🍎</div><div class="cond-title">Food &amp; Drinks</div><div class="cond-txt">No food or drinks outside of designated break time.</div></div>
-      <div class="cond-card rv"><div class="cond-icon">⏰</div><div class="cond-title">Attendance Policy</div><div class="cond-txt">15+ min late = sent home. Max 3 unexcused absences. Beyond 3 leads to dismissal. Notify staff by Friday.</div></div>
-      <div class="cond-card rv"><div class="cond-icon">📚</div><div class="cond-title">Homework</div><div class="cond-txt">Must be submitted on time. Parents are expected to support students in completing it at home.</div></div>
-    </div>
-  </div>
-</section>
-
-
-<div class="page-closing-cta">
-  <div style="position:relative;z-index:1">
-    <h3>Have Questions?</h3>
-    <p>We'd love to hear from you — reach out anytime.</p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-      <a class="btn btn-gold" onclick="showTab('contact')" style="cursor:pointer">Contact Us</a>
-      <a class="btn btn-outline" onclick="showTab('enroll')" style="cursor:pointer">Apply Now</a>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ════════════════════════════════════════
-     TAB: CURRICULUM
-════════════════════════════════════════ -->
-<div class="tab-page" id="tab-curriculum">
-<!-- CURRICULUM -->
-<section class="s-curr" id="curriculum">
-  <div class="si">
-    <div class="lbl">What We Teach</div>
-    <h2 class="st rv" style="color:white">A Balanced <em style="color:var(--gold-bright)">Islamic Curriculum</em></h2>
-    <p class="curr-intro rv">Every subject is taught to build not just knowledge, but conviction, character, and an unbreakable connection to Allah — rooted in the Qur'an and Sunnah.</p>
-    <div class="curr-grid">
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠١</div><div class="curr-arabic">حِفْظُ الْقُرْآن</div><div class="curr-icon">📿</div><div class="curr-title">Ḥifẓ — Qur'an Memorization</div></div><div class="curr-back"><div class="curr-arabic-sm">حِفْظُ الْقُرْآن</div><div class="curr-back-title">Ḥifẓ</div><div class="curr-back-desc">Systematic memorization using proven methods of repetition, revision, and accountability — building a lifelong bond with the Book of Allah.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٢</div><div class="curr-arabic">تَجْوِيدُ الْقُرْآن</div><div class="curr-icon">🔤</div><div class="curr-title">Tajwīd &amp; Qur'an Reading</div></div><div class="curr-back"><div class="curr-arabic-sm">تَجْوِيدُ الْقُرْآن</div><div class="curr-back-title">Tajwīd</div><div class="curr-back-desc">Mastering the rules of Qur'anic recitation so every letter, vowel, and pause is given its proper right — reciting as the Prophet ﷺ recited.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٣</div><div class="curr-arabic">اللُّغَةُ الْعَرَبِيَّة</div><div class="curr-icon">ا</div><div class="curr-title">Arabic Language &amp; Reading</div></div><div class="curr-back"><div class="curr-arabic-sm">اللُّغَةُ الْعَرَبِيَّة</div><div class="curr-back-title">Arabic</div><div class="curr-back-desc">Building the foundation of Arabic letters, reading, writing, and vocabulary — the key that unlocks the Qur'an and Islamic scholarship.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٤</div><div class="curr-arabic">التَّوْحِيدُ وَالْعَقِيدَة</div><div class="curr-icon">☝️</div><div class="curr-title">Tawḥīd &amp; Aqeedah</div></div><div class="curr-back"><div class="curr-arabic-sm">التَّوْحِيدُ وَالْعَقِيدَة</div><div class="curr-back-title">Tawḥīd</div><div class="curr-back-desc">The Names and Attributes of Allah, core Islamic beliefs, and the creed that every Muslim must know — establishing firm faith from an early age.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٥</div><div class="curr-arabic">الْحَدِيثُ وَالْفِقْه</div><div class="curr-icon">📜</div><div class="curr-title">Hadith &amp; Fiqh</div></div><div class="curr-back"><div class="curr-arabic-sm">الْحَدِيثُ وَالْفِقْه</div><div class="curr-back-title">Hadith &amp; Fiqh</div><div class="curr-back-desc">Selected Prophetic traditions and the practical rulings of Islam — prayer, purity, fasting, and daily life as the Prophet ﷺ demonstrated.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٦</div><div class="curr-arabic">السِّيرَةُ وَالصَّحَابَة</div><div class="curr-icon">🕌</div><div class="curr-title">Seerah &amp; Companions</div></div><div class="curr-back"><div class="curr-arabic-sm">السِّيرَةُ وَالصَّحَابَة</div><div class="curr-back-title">Seerah</div><div class="curr-back-desc">The life of the Prophet Muhammad ﷺ and the inspiring stories of his noble Companions — role models for every generation of Muslims.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٧</div><div class="curr-arabic">الأَذْكَارُ وَالأَدْعِيَة</div><div class="curr-icon">🌙</div><div class="curr-title">Adhkār &amp; Daily Du'ās</div></div><div class="curr-back"><div class="curr-arabic-sm">الأَذْكَارُ وَالأَدْعِيَة</div><div class="curr-back-title">Adhkār</div><div class="curr-back-desc">Morning and evening remembrances, essential daily supplications, and the du'ās of every occasion — filling the heart and day with the remembrance of Allah.</div><div class="curr-back-line"></div></div></div></div>
-      <div class="curr-card rv"><div class="curr-card-inner"><div class="curr-front"><div class="curr-number">٠٨</div><div class="curr-arabic">الأَخْلَاقُ وَالآدَاب</div><div class="curr-icon">🏅</div><div class="curr-title">Akhlāq &amp; Islamic Manners</div></div><div class="curr-back"><div class="curr-arabic-sm">الأَخْلَاقُ وَالآدَاب</div><div class="curr-back-title">Akhlāq</div><div class="curr-back-desc">Islamic character, respect, identity, and confidence — living Islam not just in knowledge but in conduct, so every student becomes a walking example.</div><div class="curr-back-line"></div></div></div></div>
-    </div>
   </div>
 </section>
 
