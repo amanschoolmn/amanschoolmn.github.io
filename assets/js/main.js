@@ -207,7 +207,7 @@ function calcAge(dobId, ageId, ageErrId, dobErrId) {
 // (Deploy → New deployment → Web app). Until this is set, the site still works
 // exactly as before — applications keep going to Formspree only, and this
 // second submission is silently skipped.
-const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec';
 
 // ── DYNAMIC UNLIMITED STUDENTS ───────────
 let numStudents = 0;
