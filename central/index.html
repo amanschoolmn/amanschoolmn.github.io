@@ -1457,7 +1457,7 @@ const DB = {
       ],
       meetings:[], activity:[],
       finance:{plans:{}, payments:[]}, families:{},
-      settings:{ theme:'light', widgets:null, tuitionNote:'', admissionsCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=418310527&single=true&output=csv', admissionsLastSync:'', amaanahCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=777952316&single=true&output=csv', amaanahLastSync:'' }
+      settings:{ theme:'light', widgets:null, tuitionNote:'', admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'' }
     };
   },
   load(){
@@ -1493,16 +1493,24 @@ const DB = {
     // nested settings keys added after schema 2 won't be picked up by the
     // top-level merge above (the 'settings' key itself already exists)
     if(d.settings){
-      const admCorrectUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=418310527&single=true&output=csv';
-      const admKnownWrongUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=0&single=true&output=csv';
-      // The very first AMAN CSV link we had pointed at gid=0, which turned out to
-      // be the Sheet's original blank default tab, not "Applications" (that tab's
-      // real gid only exists once the Apps Script creates it on first submission).
-      // Anyone who saved that first link is silently synced against the wrong tab
-      // forever — self-heal it here rather than leave it broken for every future load.
-      if(!d.settings.admissionsCsvUrl || d.settings.admissionsCsvUrl===admKnownWrongUrl) d.settings.admissionsCsvUrl=admCorrectUrl;
+      const admNewUrl = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman';
+      const amaNewUrl = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah';
+      // Every AMAN CSV link we've ever shipped as a default was a Google "Publish
+      // to web" link (docs.google.com/.../pub?...&output=csv) — several different
+      // gids across a few rounds of fixes, but all the same underlying approach.
+      // That approach turns out to be unreliable for a script on another site to
+      // fetch: Google's publish-to-web export isn't built for cross-origin
+      // JavaScript access and doesn't consistently send the headers a browser
+      // needs to allow it. The reliable replacement reads through the Apps
+      // Script itself (same one that already receives form submissions), which
+      // doesn't have that limitation. Move anyone still on any old publish-link
+      // variant onto the new endpoint automatically; leave a genuinely different
+      // URL the user configured themselves untouched.
+      const isOldAmanPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.admissionsCsvUrl||'');
+      if(!d.settings.admissionsCsvUrl || isOldAmanPublishLink) d.settings.admissionsCsvUrl=admNewUrl;
       if(d.settings.admissionsLastSync===undefined) d.settings.admissionsLastSync='';
-      if(!d.settings.amaanahCsvUrl) d.settings.amaanahCsvUrl='https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=777952316&single=true&output=csv';
+      const isOldAmaanahPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.amaanahCsvUrl||'');
+      if(!d.settings.amaanahCsvUrl || isOldAmaanahPublishLink) d.settings.amaanahCsvUrl=amaNewUrl;
       if(d.settings.amaanahLastSync===undefined) d.settings.amaanahLastSync='';
     }
     return d;
@@ -3678,8 +3686,8 @@ const Admissions = {
   settingsForm(){
     const cur = DB.data.settings.admissionsCsvUrl||'';
     const o = overlay(`<div class="modal" style="max-width:520px"><h3>Admissions Sync Settings</h3>
-      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Paste the published CSV link for the "Applications" Google Sheet (File → Share → Publish to web → CSV, published from the Applications sheet). AMAN Central reads this link every time you tap "Sync New Applications" — nothing runs automatically in the background, and nothing is ever duplicated on repeat syncs.</p>
-      <div class="field"><label>Published CSV URL</label><input id="adm-url" value="${esc(cur)}" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv"></div>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Paste your Apps Script Web App URL (the same one used in main.js) with <code>?sheet=aman</code> added to the end. AMAN Central reads this every time you tap "Sync New Applications" — nothing runs automatically in the background, and nothing is ever duplicated on repeat syncs.</p>
+      <div class="field"><label>Apps Script export URL</label><input id="adm-url" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/…/exec?sheet=aman"></div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
     $('[data-x=s]',o).onclick=()=>{ DB.data.settings.admissionsCsvUrl=$('#adm-url',o).value.trim(); DB.save(); o.remove(); toast('Saved'); };
@@ -3932,8 +3940,8 @@ const Amaanah = {
   settingsForm(){
     const cur = DB.data.settings.amaanahCsvUrl||'';
     const o = overlay(`<div class="modal" style="max-width:520px"><h3>Amaanah Sync Settings</h3>
-      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Paste the published CSV link for the "Amaanah Applications" tab of the same Google Sheet used for AMAN admissions (File → Share → Publish to web → publish the "Amaanah Applications" sheet → CSV). Uses the same Apps Script deployment — nothing extra to set up there.</p>
-      <div class="field"><label>Published CSV URL</label><input id="ama-url" value="${esc(cur)}" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv"></div>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Paste the same Apps Script Web App URL used for AMAN admissions, with <code>?sheet=amaanah</code> added to the end instead. Same deployment, same script — just a different query so it reads the "Amaanah Applications" tab.</p>
+      <div class="field"><label>Apps Script export URL</label><input id="ama-url" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/…/exec?sheet=amaanah"></div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
     $('[data-x=s]',o).onclick=()=>{ DB.data.settings.amaanahCsvUrl=$('#ama-url',o).value.trim(); DB.save(); o.remove(); toast('Saved'); };
