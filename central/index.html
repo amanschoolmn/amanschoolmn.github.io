@@ -201,6 +201,9 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .adm-avatar[data-phase="decision"]{background:linear-gradient(155deg,var(--stage-decision),color-mix(in srgb,var(--stage-decision) 70%,#000))}
 .adm-avatar[data-phase="accepted"]{background:linear-gradient(155deg,var(--stage-accepted),color-mix(in srgb,var(--stage-accepted) 70%,#000))}
 .adm-avatar[data-phase="notfit"]{background:linear-gradient(155deg,var(--stage-notfit),color-mix(in srgb,var(--stage-notfit) 70%,#000))}
+.adm-healthflag{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;
+  background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);font-size:12px;font-weight:700;
+  cursor:help;flex-shrink:0}
 .page-wm{position:relative}
 .page-wm::before{content:'\0646\0648\0631';position:absolute;top:-10px;right:-4%;font-family:var(--f-ar);
   font-size:min(30vw,320px);color:color-mix(in srgb,var(--gold) 5%,transparent);line-height:1;
@@ -3405,11 +3408,15 @@ function admCard(a){
   const phase = admPhaseKey(a);
   const initial = (a.studentName||'?').trim().charAt(0).toUpperCase() || '?';
   const meta = [a.studentAge?a.studentAge+' yrs':'', a.studentGender||'', a.parentName?'Parent: '+a.parentName:''].filter(Boolean).join(' · ');
+  const healthNote = (a.health && !/^(n\/a|none)$/i.test(a.health.trim())) ? 'Health: '+a.health : '';
+  const allergyNote = (a.allergy && !/^(n\/a|none|no)$/i.test(a.allergy.trim())) ? 'Allergies: '+a.allergy+(a.allergyDetail?' ('+a.allergyDetail+')':'') : '';
+  const healthFlagText = [healthNote, allergyNote].filter(Boolean).join(' · ');
   return `<div class="card${justMoved?' just-moved':''}" data-phase="${phase}" style="display:flex;flex-direction:column;gap:8px">
     <div style="cursor:pointer;display:flex;gap:10px;align-items:flex-start" data-go="#/admissions/${a.id}">
       <div class="adm-avatar" data-phase="${phase}">${esc(initial)}</div>
       <div style="min-width:0;flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.studentName)||'(unnamed)'}</b>${stageTag}</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.studentName)||'(unnamed)'}</b>
+          <span style="display:flex;align-items:center;gap:5px;flex-shrink:0">${healthFlagText?`<span class="adm-healthflag" title="${esc(healthFlagText)}" aria-label="Health or allergy note on file: ${esc(healthFlagText)}">⚕</span>`:''}${stageTag}</span></div>
         <div style="font-size:12px;color:var(--ink2);margin-top:2px">${esc(meta)}${a.parentPhone?' · '+esc(a.parentPhone):''}</div>
         ${siblings.length?`<div style="font-size:11.5px;color:var(--ink3);margin-top:2px">+ ${siblings.length} sibling${siblings.length===1?'':'s'} applying</div>`:''}
         ${lastLog?`<div style="font-size:11px;color:var(--ink3);margin-top:4px">${esc(lastLog.text)} · ${rel(lastLog.date)}</div>`:''}
