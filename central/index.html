@@ -1457,7 +1457,7 @@ const DB = {
       ],
       meetings:[], activity:[],
       finance:{plans:{}, payments:[]}, families:{},
-      settings:{ theme:'light', widgets:null, tuitionNote:'', admissionsCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=0&single=true&output=csv', admissionsLastSync:'', amaanahCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=777952316&single=true&output=csv', amaanahLastSync:'' }
+      settings:{ theme:'light', widgets:null, tuitionNote:'', admissionsCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=418310527&single=true&output=csv', admissionsLastSync:'', amaanahCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=777952316&single=true&output=csv', amaanahLastSync:'' }
     };
   },
   load(){
@@ -1493,7 +1493,14 @@ const DB = {
     // nested settings keys added after schema 2 won't be picked up by the
     // top-level merge above (the 'settings' key itself already exists)
     if(d.settings){
-      if(!d.settings.admissionsCsvUrl) d.settings.admissionsCsvUrl='https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=0&single=true&output=csv';
+      const admCorrectUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=418310527&single=true&output=csv';
+      const admKnownWrongUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=0&single=true&output=csv';
+      // The very first AMAN CSV link we had pointed at gid=0, which turned out to
+      // be the Sheet's original blank default tab, not "Applications" (that tab's
+      // real gid only exists once the Apps Script creates it on first submission).
+      // Anyone who saved that first link is silently synced against the wrong tab
+      // forever — self-heal it here rather than leave it broken for every future load.
+      if(!d.settings.admissionsCsvUrl || d.settings.admissionsCsvUrl===admKnownWrongUrl) d.settings.admissionsCsvUrl=admCorrectUrl;
       if(d.settings.admissionsLastSync===undefined) d.settings.admissionsLastSync='';
       if(!d.settings.amaanahCsvUrl) d.settings.amaanahCsvUrl='https://docs.google.com/spreadsheets/d/e/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO/pub?gid=777952316&single=true&output=csv';
       if(d.settings.amaanahLastSync===undefined) d.settings.amaanahLastSync='';
