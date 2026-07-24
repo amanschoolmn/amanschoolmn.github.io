@@ -23,7 +23,7 @@
   --line:#e2d7bd; --line2:#d3c6a6;
   --accent:var(--green); --accent-ink:#fff;
   --glow:rgba(184,135,42,.22);
-  --ok:#297147; --warn:#865b16; --bad:#a13a2e; --info:#33607e;
+  --ok:#276b43; --warn:#835916; --bad:#a13a2e; --info:#33607e;
   --shadow:0 1px 2px rgba(32,38,31,.05),0 8px 28px rgba(32,38,31,.08);
   --shadow-lg:0 4px 12px rgba(18,54,38,.12),0 24px 60px rgba(18,54,38,.18);
   --r:14px; --r-sm:9px;
@@ -763,6 +763,53 @@ function admFromRow(row){
   };
 }
 function threeWeeksFrom(iso){ const d = iso? new Date(iso) : new Date(); d.setDate(d.getDate()+21); return d.toISOString().slice(0,10); }
+// Name -> hosted photo URL, from the student roster export. Only backfills
+// students whose real name matches exactly and who don't already have a
+// photoUrl set (never overwrites a photo staff already assigned themselves).
+const SOTM_PHOTO_MAP = {
+  'معاذ بن جمال': 'https://amanschoolmn.org/central/files/students/student_01.jpg',
+  'مصعب بن جمال': 'https://amanschoolmn.org/central/files/students/student_02.jpg',
+  'آدم بن عبدالرحمن': 'https://amanschoolmn.org/central/files/students/student_03.jpg',
+  'عمران بن أيدروس': 'https://amanschoolmn.org/central/files/students/student_04.jpg',
+  'مسعود بن جمال': 'https://amanschoolmn.org/central/files/students/student_05.jpg',
+  'عميرة بنت مصطفى': 'https://amanschoolmn.org/central/files/students/student_06.jpg',
+  'يوسف بن عبدالرحمن': 'https://amanschoolmn.org/central/files/students/student_07.jpg',
+  'سمران بنت أيدروس': 'https://amanschoolmn.org/central/files/students/student_08.jpg',
+  'محي الدين بن جمال': 'https://amanschoolmn.org/central/files/students/student_09.jpg',
+  'أصلي بنت أمان': 'https://amanschoolmn.org/central/files/students/student_10.jpg',
+  'سعد بن كمال': 'https://amanschoolmn.org/central/files/students/student_11.jpg',
+  'سمية بنت برو': 'https://amanschoolmn.org/central/files/students/student_12.jpg',
+  'سمية بنت إبراهيم': 'https://amanschoolmn.org/central/files/students/student_13.jpg',
+  'حساء بنت كمال': 'https://amanschoolmn.org/central/files/students/student_14.jpg',
+  'هوي بنت فيسو': 'https://amanschoolmn.org/central/files/students/student_15.jpg',
+  'ياسر بن عبدالرحمن': 'https://amanschoolmn.org/central/files/students/student_16.jpg',
+  'معاذ بن محمدنور': 'https://amanschoolmn.org/central/files/students/student_17.jpg',
+  'مفتوحة بنت إبراهيم': 'https://amanschoolmn.org/central/files/students/student_18.jpg',
+  'سلمان بن برو': 'https://amanschoolmn.org/central/files/students/student_19.jpg',
+  'شهاد بنت كمال': 'https://amanschoolmn.org/central/files/students/student_20.jpg',
+  'حفصة بنت أحمد': 'https://amanschoolmn.org/central/files/students/student_21.jpg',
+  'أمران بنت أيدروس': 'https://amanschoolmn.org/central/files/students/student_22.jpg',
+  'أيبسا بن أمان': 'https://amanschoolmn.org/central/files/students/student_23.jpg',
+  'حسنات بنت محمدنور': 'https://amanschoolmn.org/central/files/students/student_24.jpg',
+  'مروا بنت مصطفى': 'https://amanschoolmn.org/central/files/students/student_25.jpg',
+  'أبستو بنت لتاى': 'https://amanschoolmn.org/central/files/students/student_26.jpg',
+  'ميكائيل': 'https://amanschoolmn.org/central/files/students/student_27.jpg',
+  'سبرينة بنت برو': 'https://amanschoolmn.org/central/files/students/student_28.jpg',
+  'معوذ بن جمال': 'https://amanschoolmn.org/central/files/students/student_29.jpg',
+  'فرانبون بن أمان': 'https://amanschoolmn.org/central/files/students/student_30.jpg',
+  'صفاء بنت إبراهيم': 'https://amanschoolmn.org/central/files/students/student_31.jpg',
+  'فلني بنت لتاى': 'https://amanschoolmn.org/central/files/students/student_32.jpg',
+  'أتحام': 'https://amanschoolmn.org/central/files/students/student_33.jpg',
+  'محسن بن نصرالدين': 'https://amanschoolmn.org/central/files/students/student_34.jpg',
+  'أوبسا بن برو': 'https://amanschoolmn.org/central/files/students/student_35.jpg',
+  'عمران بن محي الدين': 'https://amanschoolmn.org/central/files/students/student_36.jpg',
+};
+function sotmLinkPhotos(d){
+  (d.students||[]).forEach(s=>{
+    const hosted = SOTM_PHOTO_MAP[s.name];
+    if(hosted && (!s.photo || s.photo.startsWith('data:'))) s.photo = hosted;
+  });
+}
 
 // ---------- Letter generation (Conditional Acceptance) ----------
 // Ported from the standalone "Acceptance Letter + Welcome Packet" tool so
@@ -1278,6 +1325,642 @@ function buildOfficialMailto(parentEmail, parentFirst, students, isPlural, start
   ];
   return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
+
+// ---------- Student of the Month certificate ----------
+const SOTM_CSS = `
+
+/* ── RESET & BASE ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  background:#2a2a2a;
+  display:flex;flex-direction:column;align-items:center;
+  padding-top:72px;padding-bottom:48px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+
+/* ════════════════════════════════════════
+   TOOLBAR
+════════════════════════════════════════ */
+.toolbar{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:#0d2418;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  padding:9px 16px;
+  box-shadow:0 3px 16px rgba(0,0,0,.6);
+  border-bottom:1px solid rgba(184,135,42,.3);
+}
+.tl{font-size:11px;color:#c9a227;font-weight:700;
+  font-family:"Cinzel",serif;letter-spacing:.08em;white-space:nowrap;}
+.sep{color:rgba(184,135,42,.35);font-size:16px;padding:0 1px;}
+.tb-name{
+  font-size:16px;padding:5px 10px;
+  border:1px solid #c9a227;border-radius:6px;
+  background:#0a1c10;color:#f4ead6;
+  font-family:"Amiri",serif;
+  direction:rtl;width:210px;
+}
+.tb-name::placeholder{color:rgba(244,234,214,.3);direction:rtl;}
+.month-pill{
+  font-size:11px;padding:4px 9px;
+  border:1.5px solid #333;border-radius:12px;
+  background:transparent;color:#777;
+  cursor:pointer;font-family:"Cinzel",serif;
+  transition:.14s;white-space:nowrap;
+}
+.month-pill:hover{border-color:#c9a227;color:#c9a227;}
+.month-pill.on{background:#c9a227;border-color:#c9a227;color:#0d2418;font-weight:700;}
+.yr-sel{
+  font-size:12px;padding:5px 7px;
+  border:1px solid #c9a227;border-radius:6px;
+  background:#0a1c10;color:#f4ead6;
+  cursor:pointer;font-family:"Cinzel",serif;width:68px;
+}
+.btn-sm{
+  font-size:11px;padding:4px 9px;
+  border:1px solid #333;border-radius:12px;
+  background:transparent;color:#666;cursor:pointer;
+  font-family:"Cinzel",serif;white-space:nowrap;
+}
+.btn-sm:hover{color:#c9a227;border-color:#c9a227;}
+.btn-main{
+  font-size:12px;padding:7px 15px;border:none;border-radius:6px;
+  background:#c9a227;color:#0d2418;font-weight:700;
+  cursor:pointer;font-family:"Cinzel",serif;white-space:nowrap;
+}
+.btn-main:hover{background:#e8c040;}
+.btn-share{
+  font-size:12px;padding:7px 15px;border:1.5px solid #c9a227;border-radius:6px;
+  background:transparent;color:#c9a227;font-weight:700;
+  cursor:pointer;font-family:"Cinzel",serif;white-space:nowrap;
+}
+.btn-share:hover{background:rgba(201,162,39,.12);}
+
+/* ════════════════════════════════════════
+   CERTIFICATE
+════════════════════════════════════════ */
+.cert{
+  width:816px;min-height:1056px;
+  position:relative;
+  background:radial-gradient(ellipse at 50% 0%,#1f5c3a 0%,#0d2418 50%,#060f0a 100%);
+  box-shadow:0 24px 72px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;align-items:center;
+  padding:52px 64px 48px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.cert::before{
+  content:"";position:absolute;inset:14px;
+  border:1.5px solid rgba(184,135,42,.35);pointer-events:none;z-index:0;
+}
+.cert::after{
+  content:"";position:absolute;inset:20px;
+  border:0.5px solid rgba(184,135,42,.15);pointer-events:none;z-index:0;
+}
+.corner{position:absolute;width:52px;height:52px;z-index:1;pointer-events:none;}
+.c-tl{top:10px;left:10px;}
+.c-tr{top:10px;right:10px;transform:scaleX(-1);}
+.c-bl{bottom:10px;left:10px;transform:scaleY(-1);}
+.c-br{bottom:10px;right:10px;transform:scale(-1);}
+.wm{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:480px;height:480px;opacity:.04;
+  pointer-events:none;z-index:0;object-fit:contain;
+}
+.cert-inner{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;width:100%;flex:1;
+}
+
+.seal-wrap{position:relative;margin-bottom:22px;}
+.seal-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(184,135,42,.22) 0%,transparent 70%);
+  pointer-events:none;
+}
+.seal-ring{
+  width:166px;height:166px;border-radius:50%;padding:4px;
+  background:conic-gradient(#c9a227 0deg,#e8c068 90deg,#b8872a 180deg,#e8c068 270deg,#c9a227 360deg);
+  box-shadow:0 0 0 2px rgba(184,135,42,.2),0 8px 32px rgba(0,0,0,.5);
+}
+.seal-disc{
+  width:100%;height:100%;border-radius:50%;
+  background:#0d2418;display:flex;align-items:center;justify-content:center;padding:10px;
+}
+.seal-disc img{width:130px;height:130px;object-fit:contain;}
+.gold-rule{
+  width:100%;max-width:540px;height:1px;
+  background:linear-gradient(90deg,transparent,#c9a227 30%,#e8c068 50%,#c9a227 70%,transparent);
+  margin:18px 0;opacity:.6;
+}
+.cert-label{
+  font-family:"Cinzel",serif;font-size:11px;
+  color:rgba(244,234,214,.5);letter-spacing:.25em;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.cert-title{
+  font-family:"Cinzel",serif;font-size:44px;font-weight:900;
+  color:#f4ead6;letter-spacing:.02em;text-align:center;line-height:1.05;
+  text-shadow:0 2px 18px rgba(0,0,0,.5);margin-bottom:4px;
+}
+.presented{
+  font-family:"Crimson Pro",serif;font-size:14px;
+  color:rgba(244,234,214,.5);letter-spacing:.18em;
+  text-transform:uppercase;margin-top:24px;margin-bottom:10px;
+}
+.ribbon-wrap{
+  position:relative;width:100%;max-width:580px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:6px;
+}
+.ribbon-body{
+  width:100%;padding:14px 80px;
+  background:linear-gradient(180deg,#c9a227 0%,#b8872a 60%,#9a6e1a 100%);
+  text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15);
+  clip-path:polygon(18px 0%,calc(100% - 18px) 0%,100% 50%,calc(100% - 18px) 100%,18px 100%,0% 50%);
+}
+.ribbon-name{
+  font-family:"Amiri",serif;font-size:34px;font-weight:700;
+  color:#0d2418;direction:rtl;display:block;line-height:1.2;
+}
+.month-display{
+  font-family:"Cinzel",serif;font-size:20px;font-weight:700;
+  color:rgba(184,135,42,.35);letter-spacing:.08em;
+  text-align:center;margin-top:8px;margin-bottom:4px;
+  text-shadow:0 2px 14px rgba(184,135,42,.3);
+  transition:color .2s;
+}
+.month-display.set{
+  color:#e8c068;
+  text-shadow:0 2px 14px rgba(184,135,42,.5);
+}
+
+.ornament{color:rgba(184,135,42,.6);font-size:16px;letter-spacing:.5em;margin:14px 0;}
+.cert-body{
+  font-family:"Crimson Pro",serif;font-size:15.5px;
+  color:rgba(244,234,214,.75);text-align:center;
+  line-height:1.75;max-width:520px;margin-bottom:10px;
+}
+.dua-wrap{
+  text-align:center;margin:10px 0 4px;padding:14px 32px;
+  border-top:1px solid rgba(184,135,42,.15);
+  border-bottom:1px solid rgba(184,135,42,.15);
+  max-width:520px;width:100%;
+}
+.dua-arabic{
+  font-family:"Amiri",serif;font-size:18px;
+  color:rgba(244,234,214,.85);direction:rtl;line-height:1.9;margin-bottom:6px;
+}
+.dua-trans{
+  font-family:"Crimson Pro",serif;font-size:12px;
+  color:rgba(244,234,214,.45);font-style:italic;line-height:1.6;
+}
+.flex-spacer{flex:1;min-height:20px;}
+.sig-area{
+  width:100%;display:flex;justify-content:space-between;
+  align-items:flex-end;margin-bottom:20px;padding:0 20px;
+}
+.sig-block{display:flex;flex-direction:column;align-items:center;gap:4px;}
+
+.sig-space{height:52px;}
+.sig-line{width:180px;height:1px;background:rgba(184,135,42,.5);}
+.sig-name{
+  font-family:"Cinzel",serif;font-size:11px;
+  color:#c9a227;letter-spacing:.1em;margin-top:4px;
+}
+.sig-role{
+  font-family:"Crimson Pro",serif;font-size:11px;
+  color:rgba(244,234,214,.45);text-align:center;line-height:1.5;
+}
+.sig-date{
+  font-family:"Cinzel",serif;font-size:10px;
+  color:rgba(184,135,42,.6);letter-spacing:.1em;text-align:right;
+}
+.cert-footer{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid rgba(184,135,42,.2);padding-top:14px;
+}
+.footer-logo img{width:52px;height:52px;object-fit:contain;opacity:.7;}
+.footer-center{text-align:center;font-family:"Cinzel",serif;}
+.footer-school{font-size:10px;color:#c9a227;letter-spacing:.12em;opacity:.8;margin-bottom:3px;}
+.footer-tagline{font-size:9px;color:rgba(244,234,214,.35);letter-spacing:.08em;}
+
+/* ════════════════════════════════════════
+   SHARE PANEL
+════════════════════════════════════════ */
+#shareOverlay{
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:rgba(0,0,0,.8);
+  align-items:center;justify-content:center;
+}
+#shareOverlay.open{display:flex;}
+#sharePanel{
+  background:#0d2418;border:1px solid rgba(184,135,42,.5);border-radius:12px;
+  width:min(680px,96vw);max-height:90vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 64px rgba(0,0,0,.8);
+}
+.sp-head{
+  background:#060f0a;padding:14px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(184,135,42,.3);flex-shrink:0;border-radius:12px 12px 0 0;
+}
+.sp-head h2{
+  font-family:"Cinzel",serif;color:#c9a227;font-size:13px;letter-spacing:.12em;margin:0;
+}
+.sp-close{
+  background:none;border:none;color:#c9a227;font-size:22px;cursor:pointer;line-height:1;
+}
+.sp-body{overflow-y:auto;padding:16px 18px;flex:1;}
+.sp-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.sp-label{font-size:11px;color:#c9a227;font-weight:700;font-family:"Cinzel",serif;white-space:nowrap;letter-spacing:.06em;}
+.sp-sel{
+  font-size:12px;padding:5px 8px;border:1px solid rgba(184,135,42,.5);border-radius:6px;
+  background:#0a1c10;color:#f4ead6;cursor:pointer;font-family:"Cinzel",serif;
+}
+.sp-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:4px;
+}
+.sp-student{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:#060f0a;border:2px solid #1a3a28;border-radius:8px;
+  padding:8px 4px;cursor:pointer;transition:.14s;
+}
+.sp-student:hover{border-color:rgba(184,135,42,.5);}
+.sp-student.picked{border-color:#c9a227;background:#0f2a1a;box-shadow:0 0 0 1px #c9a227;}
+.sp-student img{
+  width:64px;height:64px;object-fit:cover;border-radius:50%;
+  border:2px solid #1a3a28;transition:.14s;
+}
+.sp-student.picked img{border-color:#c9a227;}
+.sp-sname{
+  font-size:10px;color:rgba(244,234,214,.8);text-align:center;
+  line-height:1.3;font-family:"Amiri",serif;direction:rtl;
+}
+.sp-slevel{font-size:9px;color:#c9a227;text-align:center;font-family:"Cinzel",serif;}
+.sp-foot{
+  padding:12px 18px;border-top:1px solid rgba(184,135,42,.2);flex-shrink:0;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-radius:0 0 12px 12px;
+}
+.sp-count{font-size:12px;color:rgba(184,135,42,.6);font-family:"Cinzel",serif;}
+.sp-gen{
+  font-size:12px;padding:8px 18px;border:none;border-radius:6px;
+  background:#c9a227;color:#0d2418;font-weight:700;cursor:pointer;
+  font-family:"Cinzel",serif;margin-left:auto;
+}
+.sp-gen:hover{background:#e8c040;}
+.sp-gen:disabled{background:#1a3a28;color:#3a5a3a;cursor:not-allowed;}
+
+/* ════════════════════════════════════════
+   SHARE PRINT PAGE
+════════════════════════════════════════ */
+#sharePrintOverlay{
+  display:none;position:fixed;inset:0;z-index:100000;
+  background:radial-gradient(ellipse at 50% 0%,#1f5c3a 0%,#0d2418 55%,#060f0a 100%)!important;
+  overflow-y:auto;
+  -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+}
+#sharePrintOverlay.open{display:block;}
+#sharePrintPage{
+  min-height:100%;background:transparent;
+  font-family:"Crimson Pro","EB Garamond",serif;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  position:relative;
+}
+.spp-inner{max-width:720px;margin:0 auto;padding:36px 32px;}
+.spp-close-bar{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;
+}
+.spp-close-bar button{
+  font-size:12px;padding:7px 16px;border:none;border-radius:6px;
+  cursor:pointer;font-weight:700;font-family:"Cinzel",serif;
+}
+.spp-back{background:rgba(255,255,255,.07);color:#aaa;border:1px solid #333!important;}
+.spp-print{background:#c9a227;color:#0d2418;}
+.spp-header{
+  text-align:center;padding-bottom:22px;margin-bottom:10px;position:relative;
+}
+.spp-header::after{
+  content:"";display:block;width:260px;height:1px;
+  background:linear-gradient(90deg,transparent,#c9a227,transparent);
+  margin:16px auto 0;
+}
+.spp-logo{width:90px;height:90px;object-fit:contain;margin-bottom:10px;
+  filter:drop-shadow(0 4px 16px rgba(200,162,39,.35));}
+.spp-school{
+  font-family:"Cinzel",serif;font-size:10px;color:#c9a227;
+  letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px;
+}
+.spp-title{
+  font-family:"Cinzel",serif;font-size:24px;font-weight:700;
+  color:#f4ead6;letter-spacing:.04em;margin-bottom:5px;
+  text-shadow:0 2px 12px rgba(0,0,0,.5);
+}
+.spp-month{
+  font-family:"Cinzel",serif;font-size:26px;font-weight:700;
+  color:#e8c068;letter-spacing:.08em;
+  text-shadow:0 2px 16px rgba(184,135,42,.55);
+  margin-top:4px;
+}
+.spp-ornament{
+  text-align:center;color:rgba(184,135,42,.65);
+  font-size:16px;letter-spacing:.4em;margin:20px 0;
+}
+.spp-students{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:28px;margin-bottom:28px;
+}
+.spp-student{display:flex;flex-direction:column;align-items:center;gap:10px;width:150px;}
+.spp-photo-ring{position:relative;width:134px;height:134px;flex-shrink:0;}
+.spp-photo-ring::before{
+  content:"";position:absolute;inset:-5px;border-radius:50%;
+  background:conic-gradient(#c9a227 0deg,#e8c068 90deg,#b8872a 180deg,#e8c068 270deg,#c9a227 360deg);
+  z-index:0;
+}
+.spp-photo-ring::after{
+  content:"";position:absolute;inset:-1px;border-radius:50%;
+  background:#0d2418;z-index:1;
+}
+.spp-photo-ring img{
+  position:relative;z-index:2;
+  width:124px;height:124px;object-fit:cover;border-radius:50%;
+  margin:5px;box-shadow:0 6px 24px rgba(0,0,0,.5);
+}
+.spp-sname{
+  font-family:"Amiri",serif;font-size:16px;font-weight:700;
+  color:#f4ead6;text-align:center;direction:rtl;line-height:1.4;
+}
+.spp-slevel{
+  font-size:10px;color:#c9a227;text-align:center;
+  letter-spacing:.06em;font-family:"Cinzel",serif;
+}
+.spp-message{
+  text-align:center;padding:20px 28px;margin-bottom:20px;
+  background:rgba(0,0,0,.2);border-radius:8px;
+  border-top:1px solid rgba(184,135,42,.18);
+  border-bottom:1px solid rgba(184,135,42,.18);
+}
+.spp-congrats{
+  font-size:13.5px;color:rgba(244,234,214,.8);
+  line-height:1.75;margin-bottom:18px;font-style:italic;
+}
+.spp-dua-label{
+  font-family:"Cinzel",serif;font-size:9px;color:#c9a227;
+  letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;opacity:.7;
+}
+.spp-dua-arabic{
+  font-family:"Amiri",serif;font-size:19px;color:#f4ead6;
+  direction:rtl;line-height:1.9;margin-bottom:8px;
+}
+.spp-dua-trans{
+  font-size:11px;color:rgba(244,234,214,.55);font-style:italic;line-height:1.6;
+}
+.spp-footer{
+  text-align:center;border-top:1px solid rgba(184,135,42,.2);
+  padding-top:14px;font-size:10px;
+  color:rgba(244,234,214,.4);letter-spacing:.04em;line-height:1.9;
+}
+
+/* ════════════════════════════════════════
+   PRINT
+════════════════════════════════════════ */
+@media print{
+  @page{size:Letter portrait;margin:0;}
+  html,body{background:#060f0a!important;padding:0!important;margin:0!important;display:block!important;}
+  .toolbar{display:none!important;}
+  .cert{
+    margin:0!important;box-shadow:none!important;
+    width:100vw!important;height:100vh!important;
+    overflow:hidden!important;
+    page-break-after:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #shareOverlay{display:none!important;}
+  #sharePrintOverlay{display:none!important;}
+  #_imgStore{display:none!important;}
+}
+/* When printing the announcement card */
+body.print-announcement .cert{display:none!important;}
+@media print{
+  body.print-announcement #sharePrintOverlay{
+    display:block!important;position:static!important;
+  }
+  body.print-announcement .spp-close-bar{display:none!important;}
+}
+`;
+const SOTM_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function sotmIsArabic(s){ return /[\u0600-\u06FF]/.test(s||''); }
+function sotmFormatMonths(monIdx, endIdx, year){
+  const startName = SOTM_MONTHS[monIdx];
+  if(endIdx!=='' && endIdx!=null && +endIdx!==+monIdx){
+    return startName+' - '+SOTM_MONTHS[endIdx]+' '+year;
+  }
+  return startName+' '+year;
+}
+function renderSOTMShareCard(students, monthDisplay){
+  const crestImg = document.querySelector('.brand .crest img');
+  const crestSrc = crestImg ? crestImg.src : '';
+  const studentsHtml = students.map(s=>{
+    const initial = (s.name||'?').trim().charAt(0).toUpperCase() || '?';
+    const photoHtml = s.photo
+      ? `<img src="${s.photo}">`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a3a28;color:#c9a227;font-family:'Cinzel',serif;font-weight:700;font-size:22px">${esc(initial)}</div>`;
+    return `<div class="spp-student">
+      <div class="spp-photo-ring">${photoHtml}</div>
+      <div class="spp-sname">${esc(s.name)}</div>
+      <div class="spp-slevel">${esc(s.level)} \u2014 ${esc(LEVEL_SUB[s.level]||'')}</div>
+    </div>`;
+  }).join('');
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Student of the Month \u2014 ${esc(monthDisplay)}</title>
+<style>${SOTM_CSS}
+.toolbar-actions{position:sticky;top:0;background:#0d2418;padding:10px 16px;display:flex;gap:10px;justify-content:center;z-index:100100;border-bottom:1px solid rgba(184,135,42,.3)}
+.toolbar-actions button{padding:9px 18px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:13.5px;font-family:Cinzel,serif;background:#c9a227;color:#0d2418}
+@media print{.toolbar-actions{display:none}}
+</style></head>
+<body>
+<div class="toolbar-actions"><button onclick="window.print()">\uD83D\uDDA8\uFE0F Print / Save as PDF</button></div>
+<div id="sharePrintOverlay" class="open">
+  <div id="sharePrintPage">
+    <div class="spp-inner">
+      <div class="spp-header">
+        <img class="spp-logo" id="sppLogo" src="${crestSrc}" alt="AMAN">
+        <div class="spp-school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+        <div class="spp-title">Student of the Month</div>
+        <div class="spp-month" id="sppMonth">${esc(monthDisplay)}</div>
+      </div>
+      <div class="spp-ornament">\u2726 &nbsp; \u2726 &nbsp; \u2726</div>
+      <div class="spp-students" id="sppStudents">${studentsHtml}</div>
+      <div class="spp-message">
+        <div class="spp-congrats">Congratulations to our outstanding student(s) for their dedication,
+          consistency, and excellence in Islamic learning. May All\u0101h bless your efforts and make
+          this a stepping stone to even greater heights. You make AMAN proud! \uD83C\uDF1F</div>
+        <div class="spp-dua-label">\u062F\u064F\u0639\u064E\u0627\u0621</div>
+        <div class="spp-dua-arabic">\u0627\u0644\u0644\u0651\u0647\u0645\u0651 \u0627\u0646\u0652\u0641\u064E\u0639\u0652\u0646\u064E\u0627 \u0628\u0650\u0645\u064E\u0627 \u0639\u064E\u0644\u0651\u064E\u0645\u0652\u062A\u064E\u0646\u064E\u0627\u060C \u0648\u064E\u0639\u064E\u0644\u0651\u0650\u0645\u0652\u0646\u064E\u0627 \u0645\u064E\u0627 \u064A\u064E\u0646\u0652\u0641\u064E\u0639\u064F\u0646\u064E\u0627\u060C \u0648\u064E\u0632\u0650\u062F\u0652\u0646\u064E\u0627 \u0639\u0650\u0644\u0652\u0645\u064B\u0627</div>
+        <div class="spp-dua-trans">"O All\u0101h, benefit us with what You have taught us, teach us what
+          benefits us, and increase us in knowledge." \u2014 Ibn M\u0101jah</div>
+      </div>
+      <div class="spp-footer">
+        Al-Madrasatu An-Nuriyyah (AMAN) &nbsp;\u00B7&nbsp;
+        Youth Educated &nbsp;\u00B7&nbsp; Family Cultivated &nbsp;\u00B7&nbsp; World Illuminated<br>
+        amanschool.mn@gmail.com &nbsp;\u00B7&nbsp; amanschoolmn.org
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+function renderSOTMCertificate(d){
+  const crestImg = document.querySelector('.brand .crest img');
+  const crestSrc = crestImg ? crestImg.src : '';
+  const isRange = d.isRange;
+  const certBody = isRange
+    ? 'In recognition of outstanding dedication, exemplary conduct, and consistent excellence sustained across consecutive months. Earning this honor repeatedly is a remarkable achievement and a source of immense pride for AMAN.'
+    : (d.customBody || 'In recognition of outstanding dedication, exemplary conduct, and consistent excellence in the pursuit of Qur\'an and Islamic knowledge. Your commitment to learning is a source of pride for AMAN and an inspiration to your fellow students.');
+  const nameIsArabic = sotmIsArabic(d.name);
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Student of the Month \u2014 ${esc(d.name)}</title>
+<style>${SOTM_CSS}
+.toolbar-actions{position:sticky;top:0;background:#0d2418;padding:10px 16px;display:flex;gap:10px;justify-content:center;z-index:100;border-bottom:1px solid rgba(184,135,42,.3)}
+.toolbar-actions button{padding:9px 18px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:13.5px;font-family:Cinzel,serif;background:#c9a227;color:#0d2418}
+@media print{.toolbar-actions{display:none}}
+.ribbon-name{${nameIsArabic?'':'font-family:\'Cinzel\',serif;direction:ltr;letter-spacing:.03em;'}}
+</style></head>
+<body>
+<div class="toolbar-actions"><button onclick="window.print()">\uD83D\uDDA8\uFE0F Print / Save as PDF</button></div>
+<div class="cert" id="cert">
+  <img class="wm" id="wmLogo" src="${crestSrc}" alt="">
+  <div class="corner c-tl"><svg viewBox="0 0 52 52" fill="none">
+    <path d="M2 2L2 28M2 2L28 2" stroke="#c9a227" stroke-width="1.5" opacity=".55"/>
+    <path d="M8 8L8 20M8 8L20 8" stroke="#c9a227" stroke-width=".6" opacity=".3"/>
+    <circle cx="2" cy="2" r="2" fill="#c9a227" opacity=".5"/>
+    <circle cx="8" cy="8" r="1.2" fill="#c9a227" opacity=".25"/>
+  </svg></div>
+  <div class="corner c-tr"><svg viewBox="0 0 52 52" fill="none">
+    <path d="M2 2L2 28M2 2L28 2" stroke="#c9a227" stroke-width="1.5" opacity=".55"/>
+    <path d="M8 8L8 20M8 8L20 8" stroke="#c9a227" stroke-width=".6" opacity=".3"/>
+    <circle cx="2" cy="2" r="2" fill="#c9a227" opacity=".5"/>
+    <circle cx="8" cy="8" r="1.2" fill="#c9a227" opacity=".25"/>
+  </svg></div>
+  <div class="corner c-bl"><svg viewBox="0 0 52 52" fill="none">
+    <path d="M2 2L2 28M2 2L28 2" stroke="#c9a227" stroke-width="1.5" opacity=".55"/>
+    <path d="M8 8L8 20M8 8L20 8" stroke="#c9a227" stroke-width=".6" opacity=".3"/>
+    <circle cx="2" cy="2" r="2" fill="#c9a227" opacity=".5"/>
+    <circle cx="8" cy="8" r="1.2" fill="#c9a227" opacity=".25"/>
+  </svg></div>
+  <div class="corner c-br"><svg viewBox="0 0 52 52" fill="none">
+    <path d="M2 2L2 28M2 2L28 2" stroke="#c9a227" stroke-width="1.5" opacity=".55"/>
+    <path d="M8 8L8 20M8 8L20 8" stroke="#c9a227" stroke-width=".6" opacity=".3"/>
+    <circle cx="2" cy="2" r="2" fill="#c9a227" opacity=".5"/>
+    <circle cx="8" cy="8" r="1.2" fill="#c9a227" opacity=".25"/>
+  </svg></div>
+  <div class="cert-inner">
+    <div class="seal-wrap">
+      <div class="seal-glow"></div>
+      <div class="seal-ring">
+        <div class="seal-disc"><img id="sealLogo" src="${crestSrc}" alt="AMAN"></div>
+      </div>
+    </div>
+    <div class="cert-label">Certificate of Achievement</div>
+    <div class="cert-title">Student of<br>the Month</div>
+    <div class="gold-rule"></div>
+    <div class="presented">Proudly Presented To</div>
+    <div class="ribbon-wrap">
+      <div class="ribbon-body">
+        <span class="ribbon-name" id="certName">${esc(d.name)}</span>
+      </div>
+    </div>
+    <div class="month-display set" id="monthDisplay">${esc(d.monthDisplay)}</div>
+    <div class="ornament">\u2726 &nbsp; \u2726 &nbsp; \u2726</div>
+    <div class="cert-body" id="certBody">${esc(certBody)}</div>
+    <div class="dua-wrap">
+      <div class="dua-arabic">\u0627\u0644\u0644\u0651\u0647\u0645\u0651 \u0627\u0646\u0652\u0641\u064E\u0639\u0652\u0646\u064E\u0627 \u0628\u0650\u0645\u064E\u0627 \u0639\u064E\u0644\u0651\u064E\u0645\u0652\u062A\u064E\u0646\u064E\u0627\u060C \u0648\u064E\u0639\u064E\u0644\u0651\u0650\u0645\u0652\u0646\u064E\u0627 \u0645\u064E\u0627 \u064A\u064E\u0646\u0652\u0641\u064E\u0639\u064F\u0646\u064E\u0627\u060C \u0648\u064E\u0632\u0650\u062F\u0652\u0646\u064E\u0627 \u0639\u0650\u0644\u0652\u0645\u064B\u0627</div>
+      <div class="dua-trans">"O All\u0101h, benefit us with what You have taught us, teach us what benefits us, and increase us in knowledge." \u2014 Ibn M\u0101jah</div>
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="sig-area">
+      <div class="sig-block">
+        <div class="sig-space"></div>
+        <div class="sig-line"></div>
+        <div class="sig-name">UST. NURADIN ALIY</div>
+        <div class="sig-role">Founder &amp; Teacher<br>Al-Madrasatu An-Nuriyyah (AMAN)</div>
+      </div>
+      <div class="sig-date" id="sigDate">${esc(String(d.year))}</div>
+    </div>
+    <div class="cert-footer">
+      <div class="footer-logo"><img id="footLogo" src="${crestSrc}" alt="AMAN"></div>
+      <div class="footer-center">
+        <div class="footer-school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+        <div class="footer-tagline">Youth Educated &nbsp;\u00B7&nbsp; Family Cultivated &nbsp;\u00B7&nbsp; World Illuminated</div>
+      </div>
+      <div class="footer-logo"><img id="footLogo2" src="${crestSrc}" alt="AMAN"></div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+function buildWaitlistOfferMailto(parentEmail, parentFirst, students){
+  const subject = 'A Place Has Opened at AMAN for '+students;
+  const lines = [
+    'Assal\u0101mu \u02BFalaykum '+parentFirst+',',
+    '',
+    'Good news \u2014 a place has opened at Al-Madrasatu An-Nuriyyah, and '+students+' is next on our waiting list. We\u2019d be glad to offer '+students+' a spot.',
+    '',
+    'If you\u2019d like to accept, please reply to this email or text (612) 444-2609 and we\u2019ll send the acceptance details and next steps right away. As others are also waiting, we kindly ask that you let us know within a couple of days.',
+    '',
+    'Barakall\u0101hu feekum,',
+    'Br. Abdallah bin Abdirahman',
+    'Enrollment Advisor & Accounting Manager',
+    'Al-Madrasatu An-Nuriyyah (AMAN)',
+    'https://amanschoolmn.org'
+  ];
+  return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+}
+function buildWaitlistReleaseMailto(parentEmail, parentFirst, students, isPlural){
+  const subject = 'Regarding '+students+'\u2019s Place at AMAN';
+  const lines = [
+    'Assal\u0101mu \u02BFalaykum '+parentFirst+',',
+    '',
+    'We reached out a few times about '+students+'\u2019s '+(isPlural?'places':'place')+' at Al-Madrasatu An-Nuriyyah but didn\u2019t hear back, so we\u2019ve released '+(isPlural?'them':'it')+' to the next family on our waiting list.',
+    '',
+    'If your situation has changed and you\u2019d still like '+students+' to join, please reply or text (612) 444-2609 \u2014 we\u2019d be happy to add them back to the list and let you know as soon as a place opens again.',
+    '',
+    'We wish them all the best either way.',
+    '',
+    'Barakall\u0101hu feekum,',
+    'Br. Abdallah bin Abdirahman',
+    'Enrollment Advisor & Accounting Manager',
+    'Al-Madrasatu An-Nuriyyah (AMAN)',
+    'https://amanschoolmn.org'
+  ];
+  return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+}
+function buildPaymentReceivedMailto(parentEmail, parentFirst, students, isPlural, amount, paidOnFmt, firstDayFmt){
+  const subject = 'Payment Received \u2014 Welcome to AMAN, '+students+'!';
+  let receipt = 'Your payment has been received';
+  if(amount) receipt += ' \u2014 '+amount;
+  if(paidOnFmt) receipt += ' on '+paidOnFmt;
+  receipt += ', covering the registration fee and first month\u2019s tuition. '+(isPlural?'Their places are':'This place is')+' now fully secured.';
+  const nextLine = firstDayFmt
+    ? 'The first day of class is '+firstDayFmt+', 9:00 AM \u2013 2:00 PM, at '+AMAN_ADDRESS+'. Please bring the items on the supplies checklist and arrive a few minutes early.'
+    : 'We\u2019ll confirm the first day of class with you shortly. Please have the items from the supplies checklist ready, and plan to arrive a few minutes early.';
+  const lines = [
+    'Assal\u0101mu \u02BFalaykum wa ra\u1E25matull\u0101hi wa barak\u0101tuh, '+parentFirst+',',
+    '',
+    receipt,
+    '',
+    'On behalf of everyone at AMAN, welcome to Al-Madrasatu An-Nuriyyah \u2014 The School of Light.',
+    '',
+    nextLine,
+    '',
+    'We are so glad your family is here, and we make du\u02BF\u0101\u02BE that Allah blesses '+(isPlural?'their':'your child\u2019s')+' journey of learning, draws them ever closer to the Qur\u2019an and the Sunnah, and makes them a source of light for their family and community. \u0100m\u012Bn.',
+    '',
+    'Barakall\u0101hu feekum,',
+    'Br. Abdallah bin Abdirahman',
+    'Enrollment Advisor & Accounting Manager',
+    'Al-Madrasatu An-Nuriyyah (AMAN)',
+    'https://amanschoolmn.org'
+  ];
+  return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+}
 function renderLetterDocument(type, d){
   const body = type==='conditional' ? renderConditionalLetterBody(d) : type==='official' ? renderOfficialLetterBody(d) : '';
   const title = type==='conditional' ? 'Conditional Acceptance Letter' : type==='official' ? 'Official Acceptance Letter' : '';
@@ -1463,11 +2146,11 @@ const DB = {
   load(){
     try{
       const raw = localStorage.getItem(this.KEY);
-      if(!raw){ this.data = this.defaults(); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
+      if(!raw){ this.data = this.defaults(); sotmLinkPhotos(this.data); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
       const d = JSON.parse(raw);
       if(!d || typeof d!=='object' || !Array.isArray(d.resources)) throw 0;
       this.data = this.migrate(d);
-    }catch(e){ this.data = this.defaults(); toast('Stored data unreadable — started fresh'); }
+    }catch(e){ this.data = this.defaults(); sotmLinkPhotos(this.data); toast('Stored data unreadable — started fresh'); }
   },
   migrate(d){
     // future schema bumps slot in here; never destructive
@@ -1513,6 +2196,7 @@ const DB = {
       if(!d.settings.amaanahCsvUrl || isOldAmaanahPublishLink) d.settings.amaanahCsvUrl=amaNewUrl;
       if(d.settings.amaanahLastSync===undefined) d.settings.amaanahLastSync='';
     }
+    if(Array.isArray(d.students)) sotmLinkPhotos(d);
     return d;
   },
   save(){ clearTimeout(this._t); this._t = setTimeout(()=>this.saveNow(), 350); },
@@ -2709,6 +3393,7 @@ const Students = {
        <button class="btn btn-p btn-sm" id="stAdd">＋ Add student</button>
        <button class="btn btn-o btn-sm" id="stImport">⇪ Import roster (CSV)</button>
        <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Take attendance</button>
+       <button class="btn btn-o btn-sm" id="stShare">🌟 Create Share Card</button>
        ${d.students.length?`<input type="search" id="stFind" placeholder="Find student…" value="${esc(Students._find||'')}" style="max-width:200px">`:''}
      </div>
      ${d.students.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
@@ -2727,7 +3412,65 @@ const Students = {
     const add=()=>this.form(); const imp=()=>this.importCSV();
     $('#stAdd',v)&&($('#stAdd',v).onclick=add); $('#stAdd2',v)&&($('#stAdd2',v).onclick=add);
     $('#stImport',v)&&($('#stImport',v).onclick=imp); $('#stImport2',v)&&($('#stImport2',v).onclick=imp);
+    $('#stShare',v)&&($('#stShare',v).onclick=()=>Students.sharePanel());
     const f=$('#stFind',v); if(f){ f.oninput=()=>{ Students._find=f.value; clearTimeout(Students._ft); Students._ft=setTimeout(()=>{Router.render(); const nf=$('#stFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
+  },
+  sharePanel(){
+    const stu = DB.data.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));
+    const picks = new Set();
+    const yrNow = new Date().getFullYear();
+    const yrOpts = []; for(let y=yrNow-1; y<=yrNow+2; y++) yrOpts.push(y);
+    const o = overlay(`<div class="modal" style="max-width:640px">
+      <h3>🌟 Create Student of the Month Share Card</h3>
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+        <div class="field"><label>Month</label><select id="sp-mon">${SOTM_MONTHS.map((m,i)=>`<option value="${i}" ${i===new Date().getMonth()?'selected':''}>${m}</option>`).join('')}</select></div>
+        <div class="field"><label>Through (optional)</label><select id="sp-monend"><option value="">(single)</option>${SOTM_MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select></div>
+        <div class="field"><label>Year</label><select id="sp-yr">${yrOpts.map(y=>`<option ${y===yrNow?'selected':''}>${y}</option>`).join('')}</select></div>
+        <div class="field"><label>Filter by level</label><select id="sp-lvl"><option value="">All levels</option>${LEVELS.map(L=>`<option>${L}</option>`).join('')}</select></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px">
+        <span id="sp-count" style="font-size:12.5px;color:var(--ink2)">0 selected</span>
+        <button class="btn btn-ghost btn-sm" id="sp-clear">Clear all</button>
+      </div>
+      <div id="sp-grid" tabindex="0" role="group" aria-label="Student picker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;max-height:340px;overflow-y:auto;padding:8px;border:1px solid var(--line);border-radius:10px"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="sp-go" disabled>Generate Share Card</button></div>
+    </div>`, true);
+    const renderGrid = () => {
+      const lvl = $('#sp-lvl',o).value;
+      const list = stu.filter(s=>!lvl || s.level===lvl);
+      $('#sp-grid',o).innerHTML = list.length ? list.map(s=>`
+        <div class="sp-pick" data-sid="${s.id}" style="cursor:pointer;text-align:center;padding:8px 4px;border-radius:10px;border:2px solid ${picks.has(s.id)?'var(--gold)':'transparent'};background:${picks.has(s.id)?'color-mix(in srgb,var(--gold) 10%,transparent)':'transparent'}">
+          ${avatarHTML(s, 'width:52px;height:52px;font-size:15px;margin:0 auto 6px;border-radius:50%')}
+          <div style="font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</div>
+          <div style="font-size:10px;color:var(--ink3)">${esc(s.level)}</div>
+        </div>`).join('') : '<p style="grid-column:1/-1;text-align:center;color:var(--ink2);font-size:13px;padding:12px">No students at this level.</p>';
+      $$('.sp-pick',o).forEach(el=>el.onclick=()=>{
+        const sid=el.dataset.sid;
+        if(picks.has(sid)) picks.delete(sid); else picks.add(sid);
+        renderGrid();
+      });
+      $('#sp-count',o).textContent = picks.size+' selected';
+      $('#sp-go',o).disabled = picks.size===0;
+    };
+    $('#sp-lvl',o).onchange = renderGrid;
+    $('#sp-clear',o).onclick = ()=>{ picks.clear(); renderGrid(); };
+    $('[data-x=c]',o).onclick = ()=>o.remove();
+    renderGrid();
+    $('#sp-go',o).onclick = ()=>{
+      const monIdx = +$('#sp-mon',o).value;
+      const monEndVal = $('#sp-monend',o).value;
+      const year = +$('#sp-yr',o).value;
+      const monthDisplay = sotmFormatMonths(monIdx, monEndVal===''?null:+monEndVal, year);
+      const selected = stu.filter(s=>picks.has(s.id));
+      const html = renderSOTMShareCard(selected, monthDisplay);
+      selected.forEach(s=>{ DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'}); });
+      DB.log('Student of the Month share card generated for '+selected.length+' student(s) — '+monthDisplay);
+      DB.save();
+      o.remove();
+      toast('Share card ready — added to history for '+selected.length+' student'+(selected.length===1?'':'s'));
+      Router.render();
+      openLetterPreview(html);
+    };
   },
   /* ---------- FORM (adds emergency contact) ---------- */
   form(s){
@@ -2770,6 +3513,7 @@ const Students = {
     const qlog=d.quran.filter(q=>q.sid===id).sort((a,b)=>b.date.localeCompare(a.date));
     const beh=d.behavior.filter(q=>q.sid===id).sort((a,b)=>b.date.localeCompare(a.date));
     const ach=d.achievements.filter(q=>q.sid===id).sort((a,b)=>b.date.localeCompare(a.date));
+    const sotmHist=d.achievements.filter(q=>q.sid===id && q.type==='sotm').sort((a,b)=>b.date.localeCompare(a.date));
     const L1=s.level==='Level 1', L2=s.level==='Level 2', L3=s.level==='Level 3';
     // AI context string for chips
     const aiCtx = ()=>{
@@ -2795,6 +3539,7 @@ const Students = {
        ${L3||L2?`<button class="chip" id="qAdd">📖 ${L3?'Record memorization':'Record recitation'}</button>`:''}
        <button class="chip" id="bAdd">📝 Note</button>
        <button class="chip" id="aAdd">🏅 Achievement</button>
+       <button class="chip" id="sotmAdd">🌟 Student of the Month</button>
        <button class="chip" id="pcAdd">📞 Parent contact</button>
        <button class="chip" data-ai="Give me a progress summary and 3 concrete recommendations for this student: ${esc(aiCtx())}">✨ AI summary</button>
        <button class="chip" data-ai="Draft a warm, brief parent progress update (WhatsApp style) for: ${esc(aiCtx())}">✨ Parent update</button></div>
@@ -2815,6 +3560,8 @@ const Students = {
      ${beh.length?`<div class="wlist">${beh.slice(0,6).map(b=>`<div class="card" style="margin-bottom:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${b.date} · <span class="tag ${b.kind==='Positive'?'tag-green':'tag-red'}">${b.kind}</span></span><p style="font-family:var(--f-body);margin-top:4px">${esc(b.text)}</p></div>`).join('')}</div>`:'<p style="color:var(--ink2);font-size:13.5px">Clean slate.</p>'}
      <div class="sect">Parent communication<span class="rule"></span></div>
      ${(s.parentLog||[]).length?`<div class="wlist">${s.parentLog.slice(0,5).map(p=>`<div class="card" style="margin-bottom:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${p.date}</span><p style="font-family:var(--f-body);margin-top:4px">${esc(p.text)}</p></div>`).join('')}</div>`:'<p style="color:var(--ink2);font-size:13.5px">No contacts logged yet.</p>'}
+     ${sotmHist.length?`<div class="sect">🌟 Student of the Month<span class="rule"></span></div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap">${sotmHist.map(a=>`<span class="tag tag-gold" style="padding:7px 13px;font-size:12px">🌟 ${esc(a.text.replace('🌟 Student of the Month — ',''))} · ${a.date}</span>`).join('')}</div>`:''}
      <div class="sect">Achievements<span class="rule"></span></div>
      ${ach.length?`<div style="display:flex;gap:8px;flex-wrap:wrap">${ach.map(a=>`<span class="tag tag-gold" style="padding:7px 13px;font-size:12px">🏅 ${esc(a.text)} · ${a.date}</span>`).join('')}</div>`:'<p style="color:var(--ink2);font-size:13.5px">First one coming, in shā’ Allāh.</p>'}`;
     Students.lvlCard($('#lvlCard',v), s, qlog);
@@ -2856,11 +3603,44 @@ const Students = {
       o=>{ const t=$('#a-t',o).value.trim(); if(!t){toast('Name the achievement');return;}
        d.achievements.push({sid:id, text:t, date:today()});
        DB.log('Achievement — '+s.name+': '+t); DB.save(); o.remove(); Router.render(); });
+    $('#sotmAdd',v).onclick=()=>Students.sotmForm(s);
     $('#pcAdd',v).onclick=()=>quick('Log parent contact', `
       <div class="field"><label>What was communicated</label><textarea id="pc-t" placeholder="Call / WhatsApp / in person — summary…"></textarea></div>`,
       o=>{ const t=$('#pc-t',o).value.trim(); if(!t){toast('Write the summary');return;}
        s.parentLog=s.parentLog||[]; s.parentLog.unshift({date:today(), text:t});
        DB.save(); o.remove(); Router.render(); });
+  },
+  sotmForm(s){
+    const yrNow = new Date().getFullYear();
+    const yrOpts = []; for(let y=yrNow-1; y<=yrNow+2; y++) yrOpts.push(y);
+    const o = overlay(`<div class="modal" style="max-width:460px"><h3>🌟 Student of the Month</h3>
+      <div class="field"><label>Name on certificate</label><input id="sotm-name" value="${esc(s.name)}"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="field"><label>Month</label><select id="sotm-mon">${SOTM_MONTHS.map((m,i)=>`<option value="${i}" ${i===new Date().getMonth()?'selected':''}>${m}</option>`).join('')}</select></div>
+        <div class="field"><label>Through (optional)</label><select id="sotm-monend"><option value="">(single month)</option>${SOTM_MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select></div>
+        <div class="field"><label>Year</label><select id="sotm-yr">${yrOpts.map(y=>`<option ${y===yrNow?'selected':''}>${y}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>Achievement text (optional override)</label><textarea id="sotm-body" placeholder="Leave blank to use the standard recognition wording"></textarea></div>
+      <p style="font-size:12.5px;color:var(--ink3);margin-top:-4px">Confirming this generates the certificate — ready to print/save as PDF — and adds it to this student's Student of the Month history.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Generate Certificate</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
+      const name = $('#sotm-name',o).value.trim() || s.name;
+      const monIdx = +$('#sotm-mon',o).value;
+      const monEndVal = $('#sotm-monend',o).value;
+      const year = +$('#sotm-yr',o).value;
+      const customBody = $('#sotm-body',o).value.trim();
+      const isRange = monEndVal!=='' && +monEndVal!==monIdx;
+      const monthDisplay = sotmFormatMonths(monIdx, monEndVal===''?null:+monEndVal, year);
+      const html = renderSOTMCertificate({ name, monthDisplay, year, isRange, customBody: customBody||null });
+      DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'});
+      DB.log('Student of the Month — '+s.name+': '+monthDisplay);
+      DB.save();
+      o.remove();
+      toast('Added to Student of the Month history — opening the certificate');
+      Router.render();
+      openLetterPreview(html);
+    };
   },
   /* ---------- LEVEL CARDS: the curriculum-specific engines ---------- */
   lvlCard(el, s, qlog){
@@ -3404,7 +4184,7 @@ function admProfileActions(a){
   if(a.stage==='interview')  return admBtnRow(a,[['✓ Interview Done → Agreement','adv'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
   if(a.stage==='agreement')  return admBtnRow(a,[['✓ Agreement Signed → Decision','adv'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
   if(a.stage==='decision')   return admBtnRow(a,[['✓ Accept','accept'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
-  if(a.stage==='enrollment') return admBtnRow(a,[['🎓 Enroll Student','enroll']]);
+  if(a.stage==='enrollment') return admBtnRow(a,[['🎓 Enroll Student','enroll'],['💳 Payment Received','paid']]);
   if(a.stage==='waitlist')   return admBtnRow(a,[['↩ Resume → Interview','resume'],['✕ Not a Fit','nf']]);
   if(a.stage==='notfit')     return admBtnRow(a,[['↺ Reopen (Reapply)','reopen']]);
   if(a.stage==='enrolled')   return `<button class="btn btn-o btn-sm" data-go="#/students/${esc(a.enrolledStudentId)}">View in Roster →</button>`;
@@ -3529,15 +4309,17 @@ const Admissions = {
     } else if(act==='wl'){
       admSetStage(a, 'waitlist', 'Placed on the Waiting List'); toast('Moved to Waiting List'); Router.render();
     } else if(act==='nf'){
-      confirmBox('Mark '+a.studentName+' as Not a Fit Right Now? The family is welcome to reapply.', ()=>{
+      if(a.stage==='waitlist'){ Admissions.waitlistReleaseForm(a); }
+      else confirmBox('Mark '+a.studentName+' as Not a Fit Right Now? The family is welcome to reapply.', ()=>{
         admSetStage(a, 'notfit', 'Marked Not a Fit Right Now'); toast('Marked Not a Fit Right Now'); Router.render(); });
     } else if(act==='accept'){
       Admissions.acceptLetterForm(a);
     } else if(act==='resume'){
-      admSetStage(a, 'interview', 'Spot opened — resumed at Parent Interview'); toast('Resumed pipeline'); Router.render();
+      Admissions.waitlistOfferForm(a);
     } else if(act==='reopen'){
       admSetStage(a, 'review', 'Reopened for reconsideration'); toast('Reopened'); Router.render();
     } else if(act==='enroll'){ Admissions.enrollForm(a); }
+    else if(act==='paid'){ Admissions.paymentReceivedForm(a); }
     else if(act==='note'){ Admissions.noteForm(a); }
   },
   interviewLetterForm(a){
@@ -3632,6 +4414,88 @@ const Admissions = {
       toast('Accepted — opening the letter');
       Router.render();
       openLetterPreview(html);
+    };
+  },
+  waitlistOfferForm(a){
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Resume — Offer the Spot</h3>
+      <div id="wo-step1">
+      <p style="font-size:13.5px;color:var(--ink2)">This moves ${esc(a.studentName)} off the waiting list into Parent Interview, and prepares an email letting the family know a spot has opened.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="wo-go">Confirm</button></div>
+      </div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#wo-go',o).onclick=()=>{
+      admSetStage(a, 'interview', 'Spot opened — resumed at Parent Interview');
+      const mailto = buildWaitlistOfferMailto(a.parentEmail, admFirstName(a.parentName), a.studentName);
+      Router.render();
+      toast('Resumed pipeline');
+      $('#wo-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
+        <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
+      wireFieldLabels(o);
+      $('[data-x=c2]',o).onclick=()=>o.remove();
+    };
+  },
+  waitlistReleaseForm(a){
+    const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && x.stage==='waitlist');
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Release Waitlist Spot</h3>
+      <div id="wr-step1">
+      ${siblings.length?`<div class="field"><label>Include siblings also on the waiting list?</label>
+        ${siblings.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:4px;font-weight:400"><input type="checkbox" class="sib-cb" data-sid="${s.id}" checked style="width:auto"> ${esc(s.studentName)}</label>`).join('')}
+        </div>`:''}
+      <p style="font-size:13.5px;color:var(--ink2)">This marks the selected applicant(s) as Not a Fit Right Now and prepares a courtesy email letting the family know their spot was released — they're welcome to rejoin the list.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="wr-go">Confirm</button></div>
+      </div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#wr-go',o).onclick=()=>{
+      const selectedSibs = siblings.filter(s => { const cb = o.querySelector(`[data-sid="${s.id}"]`); return cb && cb.checked; });
+      const group = [a, ...selectedSibs];
+      group.forEach(x=> admSetStage(x, 'notfit', 'Waitlist spot released — no response'));
+      const studentsJoined = admJoinNames(group.map(x=>x.studentName));
+      const mailto = buildWaitlistReleaseMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1);
+      Router.render();
+      toast('Marked Not a Fit Right Now');
+      $('#wr-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
+        <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
+      wireFieldLabels(o);
+      $('[data-x=c2]',o).onclick=()=>o.remove();
+    };
+  },
+  paymentReceivedForm(a){
+    const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && x.stage==='enrollment');
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Payment Received</h3>
+      <div id="pd-step1">
+      ${siblings.length?`<div class="field"><label>Include siblings also accepted?</label>
+        ${siblings.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:4px;font-weight:400"><input type="checkbox" class="sib-cb" data-sid="${s.id}" checked style="width:auto"> ${esc(s.studentName)}</label>`).join('')}
+        </div>`:''}
+      <div class="field"><label>Amount received</label><input id="pd-amt" placeholder="e.g., $140"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Date received (optional)</label><input id="pd-date" type="date"></div>
+        <div class="field"><label>First day of class (optional)</label><input id="pd-first" type="date"></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--ink3);margin-top:-4px">Confirming this logs the payment on the timeline and prepares a welcome email for you to review and send.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="pd-go">Confirm</button></div>
+      </div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#pd-go',o).onclick=()=>{
+      const amount = $('#pd-amt',o).value.trim();
+      const dateVal = $('#pd-date',o).value, firstVal = $('#pd-first',o).value;
+      const paidOnFmt = dateVal? fmtDate(dateVal) : '';
+      const firstDayFmt = firstVal? fmtDate(firstVal) : '';
+      const selectedSibs = siblings.filter(s => { const cb = o.querySelector(`[data-sid="${s.id}"]`); return cb && cb.checked; });
+      const group = [a, ...selectedSibs];
+      const note = 'Payment received'+(amount?' — '+amount:'')+(paidOnFmt?' on '+paidOnFmt:'');
+      group.forEach(x=> admLog(x, note));
+      DB.save();
+      const studentsJoined = admJoinNames(group.map(x=>x.studentName));
+      const mailto = buildPaymentReceivedMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, amount, paidOnFmt, firstDayFmt);
+      Router.render();
+      toast('Payment logged to the timeline');
+      $('#pd-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
+        <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
+      wireFieldLabels(o);
+      $('[data-x=c2]',o).onclick=()=>o.remove();
     };
   },
   stageTransitionForm(a, next){
