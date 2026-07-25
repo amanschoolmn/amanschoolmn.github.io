@@ -463,6 +463,10 @@ const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = ()=> 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const fmtDate = iso => { if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const ageFromDob = iso => { if(!iso) return null; const b=new Date(iso), n=new Date(); let a=n.getFullYear()-b.getFullYear(); const m=n.getMonth()-b.getMonth(); if(m<0||(m===0&&n.getDate()<b.getDate())) a--; return a; };
+const daysToBirthday = iso => { if(!iso) return null; const [,m,dd]=iso.split('-'); const now=new Date(); const tdyMid=new Date(); tdyMid.setHours(0,0,0,0);
+  let next=new Date(now.getFullYear(), +m-1, +dd); if(next<tdyMid) next.setFullYear(next.getFullYear()+1);
+  return Math.round((next-tdyMid)/864e5); };
 const today = ()=> new Date().toISOString().slice(0,10);
 const rel = iso => { if(!iso) return ''; const s=(Date.now()-new Date(iso))/1e3; if(s<3600) return Math.max(1,Math.round(s/60))+'m ago'; if(s<86400) return Math.round(s/3600)+'h ago'; if(s<86400*30) return Math.round(s/86400)+'d ago'; return fmtDate(iso); };
 const TYPE_ICON = {html:'🗂️', app:'⚙️', pdf:'📕', doc:'📄', slides:'📽️', sheet:'📊', image:'🖼️', video:'🎬', audio:'🎧', prompt:'🤖', book:'📖', web:'🌐', md:'📝'};
@@ -808,6 +812,34 @@ function sotmLinkPhotos(d){
   (d.students||[]).forEach(s=>{
     const hosted = SOTM_PHOTO_MAP[s.name];
     if(hosted && (!s.photo || s.photo.startsWith('data:'))) s.photo = hosted;
+  });
+}
+// Converts each student's old flat guardian/phone/emergency strings into
+// structured, multi-entry contact lists (a family can have more than one
+// guardian, more than one emergency contact) and assigns a stable student
+// number that, once set, never changes again. Safe to call on every load —
+// only touches students that haven't already been migrated.
+function migrateStudentContacts(d){
+  const used = new Set((d.students||[]).map(s=>s.studentNo).filter(Boolean));
+  let next = 1;
+  (d.students||[]).forEach(s=>{
+    if(!Array.isArray(s.guardians)){
+      s.guardians = [];
+      if(s.guardian || s.phone) s.guardians.push({id:uid(), name:s.guardian||'', relation:'Guardian', phone:s.phone||'', email:''});
+      delete s.guardian; delete s.phone;
+    }
+    if(!Array.isArray(s.emergencyContacts)){
+      s.emergencyContacts = [];
+      if(s.emergency) s.emergencyContacts.push({id:uid(), name:s.emergency, relation:'', phone:''});
+      delete s.emergency;
+    }
+    if(s.favorite===undefined) s.favorite = false;
+    if(s.medical===undefined) s.medical = '';
+    if(s.preferredName===undefined) s.preferredName = '';
+    if(!s.studentNo){
+      while(used.has(next)) next++;
+      s.studentNo = next; used.add(next);
+    }
   });
 }
 
@@ -2475,17 +2507,17 @@ const DB = {
       ],
       meetings:[], activity:[],
       finance:{plans:{}, payments:[]}, families:{},
-      settings:{ theme:'light', widgets:null, tuitionNote:'', admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'' }
+      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'' }
     };
   },
   load(){
     try{
       const raw = localStorage.getItem(this.KEY);
-      if(!raw){ this.data = this.defaults(); sotmLinkPhotos(this.data); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
+      if(!raw){ this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
       const d = JSON.parse(raw);
       if(!d || typeof d!=='object' || !Array.isArray(d.resources)) throw 0;
       this.data = this.migrate(d);
-    }catch(e){ this.data = this.defaults(); sotmLinkPhotos(this.data); toast('Stored data unreadable — started fresh'); }
+    }catch(e){ this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); toast('Stored data unreadable — started fresh'); }
   },
   migrate(d){
     // future schema bumps slot in here; never destructive
@@ -2527,11 +2559,12 @@ const DB = {
       const isOldAmanPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.admissionsCsvUrl||'');
       if(!d.settings.admissionsCsvUrl || isOldAmanPublishLink) d.settings.admissionsCsvUrl=admNewUrl;
       if(d.settings.admissionsLastSync===undefined) d.settings.admissionsLastSync='';
+      if(d.settings.defaultTuitionRate===undefined) d.settings.defaultTuitionRate=90;
       const isOldAmaanahPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.amaanahCsvUrl||'');
       if(!d.settings.amaanahCsvUrl || isOldAmaanahPublishLink) d.settings.amaanahCsvUrl=amaNewUrl;
       if(d.settings.amaanahLastSync===undefined) d.settings.amaanahLastSync='';
     }
-    if(Array.isArray(d.students)) sotmLinkPhotos(d);
+    if(Array.isArray(d.students)){ sotmLinkPhotos(d); migrateStudentContacts(d); }
     return d;
   },
   save(){ clearTimeout(this._t); this._t = setTimeout(()=>this.saveNow(), 350); },
@@ -2830,9 +2863,7 @@ render(v){
   const last4 = sessDates.slice(-4);
   const concerns = stu.filter(s=> last4.filter(day=>d.attendance[day][s.id]==='A').length>=2 );
   // birthdays within 14 days (only if DOBs exist)
-  const bdays = stu.filter(s=>s.dob).map(s=>{ const [,m,dd]=s.dob.split('-'); const now=new Date();
-    let next=new Date(now.getFullYear(), +m-1, +dd); if(next<now.setHours(0,0,0,0)) next.setFullYear(next.getFullYear()+1);
-    return {s, in:Math.round((next-new Date(tdy))/864e5)}; }).filter(x=>x.in>=0&&x.in<=14).sort((a,b)=>a.in-b.in);
+  const bdays = stu.filter(s=>s.dob).map(s=>({s, in:daysToBirthday(s.dob)})).filter(x=>x.in>=0&&x.in<=14).sort((a,b)=>a.in-b.in);
 
   // ---- hero: compact command strip ----
   const hijri = (()=>{ try{ return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date()); }catch(e){ return ''; } })();
@@ -3686,6 +3717,8 @@ const GB_TOTAL = 160, MUSHAF_TOTAL = 604;
 /* Madani muṣḥaf: sūrah start pages (standard 604-page layout) */
 const QMAP = 'Al-Fātiḥah:1,Al-Baqarah:2,Āli ʿImrān:50,An-Nisāʾ:77,Al-Māʾidah:106,Al-Anʿām:128,Al-Aʿrāf:151,Al-Anfāl:177,At-Tawbah:187,Yūnus:208,Hūd:221,Yūsuf:235,Ar-Raʿd:249,Ibrāhīm:255,Al-Ḥijr:262,An-Naḥl:267,Al-Isrāʾ:282,Al-Kahf:293,Maryam:305,Ṭā Hā:312,Al-Anbiyāʾ:322,Al-Ḥajj:332,Al-Muʾminūn:342,An-Nūr:350,Al-Furqān:359,Ash-Shuʿarāʾ:367,An-Naml:377,Al-Qaṣaṣ:385,Al-ʿAnkabūt:396,Ar-Rūm:404,Luqmān:411,As-Sajdah:415,Al-Aḥzāb:418,Sabaʾ:428,Fāṭir:434,Yā Sīn:440,Aṣ-Ṣāffāt:446,Ṣād:453,Az-Zumar:458,Ghāfir:467,Fuṣṣilat:477,Ash-Shūrā:483,Az-Zukhruf:489,Ad-Dukhān:496,Al-Jāthiyah:499,Al-Aḥqāf:502,Muḥammad:507,Al-Fatḥ:511,Al-Ḥujurāt:515,Qāf:518,Adh-Dhāriyāt:520,Aṭ-Ṭūr:523,An-Najm:526,Al-Qamar:528,Ar-Raḥmān:531,Al-Wāqiʿah:534,Al-Ḥadīd:537,Al-Mujādilah:542,Al-Ḥashr:545,Al-Mumtaḥanah:549,Aṣ-Ṣaff:551,Al-Jumuʿah:553,Al-Munāfiqūn:554,At-Taghābun:556,Aṭ-Ṭalāq:558,At-Taḥrīm:560,Al-Mulk:562,Al-Qalam:564,Al-Ḥāqqah:566,Al-Maʿārij:568,Nūḥ:570,Al-Jinn:572,Al-Muzzammil:574,Al-Muddaththir:575,Al-Qiyāmah:577,Al-Insān:578,Al-Mursalāt:580,An-Nabaʾ:582,An-Nāziʿāt:583,ʿAbasa:585,At-Takwīr:586,Al-Infiṭār:587,Al-Muṭaffifīn:587,Al-Inshiqāq:589,Al-Burūj:590,Aṭ-Ṭāriq:591,Al-Aʿlā:591,Al-Ghāshiyah:592,Al-Fajr:593,Al-Balad:594,Ash-Shams:595,Al-Layl:595,Aḍ-Ḍuḥā:596,Ash-Sharḥ:596,At-Tīn:597,Al-ʿAlaq:597,Al-Qadr:598,Al-Bayyinah:598,Az-Zalzalah:599,Al-ʿĀdiyāt:599,Al-Qāriʿah:600,At-Takāthur:600,Al-ʿAṣr:601,Al-Humazah:601,Al-Fīl:601,Quraysh:602,Al-Māʿūn:602,Al-Kawthar:602,Al-Kāfirūn:603,An-Naṣr:603,Al-Masad:603,Al-Ikhlāṣ:604,Al-Falaq:604,An-Nās:604';
 const QS = [null, ...QMAP.split(',').map((x,i)=>{ const [name,p]=x.split(':'); return {n:i+1, name, p:+p}; })];
+// Ayah count per sūrah (1-indexed, standard Kufic/Hafs count — sums to 6,236).
+const SURAH_AYAHS = [null,7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
 (function(){ /* fractional starts: distribute pages shared by multiple surahs; spans sum to exactly 604 */
   let i=1; while(i<=114){ let j=i; while(j<114 && QS[j+1].p===QS[i].p) j++;
     const nextP = j<114? QS[j+1].p : 605; const k=j-i+1, gap=(nextP-QS[i].p)/k;
@@ -3702,19 +3735,56 @@ function hifzStats(s){
   const cur=order.includes(h.cur)?h.cur:order[0];
   const idx=order.indexOf(cur);
   let pages=0; for(let i=0;i<idx;i++) pages+=surahSpan(order[i]);
-  if(h.curPage){ const within=Math.max(0, Math.min(h.curPage - QS[cur].p, surahSpan(cur))); pages+=within; }
+  const curSpan=surahSpan(cur);
+  let within=0;
+  if(h.curPage){ within=Math.max(0, Math.min(h.curPage - QS[cur].p, curSpan)); pages+=within; }
   const total=order.reduce((a,n)=>a+surahSpan(n),0); /* per-path total (603 for both current paths; Fātiḥah outside path) */
   const pct=Math.min(100, pages/total*100);
-  return {pid, order, cur, idx, pages, total, pct, next:order.slice(idx+1, idx+4)};
+  return {pid, order, cur, idx, pages, total, pct, next:order.slice(idx+1, idx+4), curSpan, within};
+}
+function ayahStats(st){
+  // Full ayah count for every sūrah already finished, plus a proportional
+  // estimate of how far into the current (in-progress) sūrah's ayahs the
+  // student has reached, based on page position within it.
+  let ayahs=0;
+  for(let i=0;i<st.idx;i++) ayahs+=SURAH_AYAHS[st.order[i]];
+  if(st.curSpan>0) ayahs += Math.round(st.within/st.curSpan * SURAH_AYAHS[st.cur]);
+  const total=st.order.reduce((a,n)=>a+SURAH_AYAHS[n],0);
+  return {ayahs, total, remaining:total-ayahs, pct:Math.min(100, ayahs/total*100)};
 }
 function paceETA(log, curVal, total, field){ // generic pace from dated logs
   if(!log||log.length<2) return null;
   const srt=[...log].sort((a,b)=>a.date.localeCompare(b.date));
-  const a=srt[0], b=srt[srt.length-1];
+  // Prefer a recent window (~8 weeks) so pace reflects current trajectory
+  // rather than a stale average since day one; falls back to full history
+  // if there isn't enough recent data yet.
+  const cutoff = new Date(Date.now()-56*864e5).toISOString().slice(0,10);
+  let win = srt.filter(x=>x.date>=cutoff);
+  if(win.length<2) win = srt;
+  const a=win[0], b=win[win.length-1];
   const weeks=Math.max(1,(new Date(b.date)-new Date(a.date))/6048e5);
   const pace=(b[field]-a[field])/weeks;
   if(pace<=0) return null;
-  return {pace:Math.round(pace*10)/10, weeks:Math.ceil((total-curVal)/pace)};
+  const weeksToGo=Math.ceil((total-curVal)/pace);
+  const date=new Date(Date.now()+weeksToGo*6048e5);
+  const shortWeeks=Math.min(4,weeksToGo);
+  const shortTarget=Math.round(Math.min(total, curVal+pace*shortWeeks));
+  return {pace:Math.round(pace*10)/10, weeks:weeksToGo, date, shortWeeks, shortTarget};
+}
+function renderGoalCard(eta, unitLabel, shortLabelFn, longLabelFn){
+  if(!eta) return '<p style="font-size:12.5px;color:var(--ink3);margin-bottom:10px">Record two or more dated updates and short- and long-term goals with projected dates appear here automatically — nothing to set up.</p>';
+  return `<div class="grid g2" style="margin-bottom:12px;gap:10px">
+    <div class="card" style="background:color-mix(in srgb,var(--gold) 6%,var(--surface))">
+      <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px">Short-term goal</div>
+      <div style="font-size:14px;font-weight:600">${shortLabelFn(eta)}</div>
+      <div style="font-size:12px;color:var(--ink2);margin-top:2px">~${eta.shortWeeks} week${eta.shortWeeks===1?'':'s'} at current pace</div>
+    </div>
+    <div class="card" style="background:color-mix(in srgb,var(--ok) 6%,var(--surface))">
+      <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px">Long-term goal</div>
+      <div style="font-size:14px;font-weight:600">${longLabelFn(eta)}</div>
+      <div style="font-size:12px;color:var(--ink2);margin-top:2px">Projected ${fmtDate(eta.date.toISOString())} · ${eta.pace} ${unitLabel}/week</div>
+    </div>
+  </div>`;
 }
 Registry.register({ id:'students', name:'Students', icon:'cap', group:'Workspaces',
 render(v,param){
@@ -3726,40 +3796,107 @@ const Students = {
   /* ---------- LIST: progress at a glance ---------- */
   list(v){
     const d=DB.data; const find=(Students._find||'').toLowerCase();
-    const match=d.students.filter(s=>!find||s.name.toLowerCase().includes(find));
-    const stu=match.filter(s=>s.active!==false);
-    const inact=match.filter(s=>s.active===false);
+    const levelFilter = Students._levelFilter||'';
+    const statusFilter = Students._statusFilter||'active';
+    const sortBy = Students._sort||'level';
+    const favOnly = !!Students._favOnly;
+    const selectMode = !!Students._selectMode;
+    if(!Students._selected) Students._selected = new Set();
+    const selected = Students._selected;
+
+    let match = d.students.filter(s=>!find||s.name.toLowerCase().includes(find));
+    if(levelFilter) match = match.filter(s=>s.level===levelFilter);
+    if(favOnly) match = match.filter(s=>s.favorite);
+    const stu = statusFilter==='inactive'? match.filter(s=>s.active===false) : statusFilter==='all'? match : match.filter(s=>s.active!==false);
+    const inact = statusFilter==='all'? match.filter(s=>s.active===false) : [];
+    const activeShown = statusFilter==='all'? stu.filter(s=>s.active!==false) : stu;
+
     const prog = s=>{
       if(s.level==='Level 1'){ const p=(s.gb&&s.gb.page)||0; return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>GB p.${p}</span><span>${Math.round(p/GB_TOTAL*100)}%</span></div><div class="bar"><i style="width:${p/GB_TOTAL*100}%"></i></div></div>`; }
       if(s.level==='Level 2'){ const p=(s.mus&&s.mus.page)||0; return `<span class="tag tag-blue">Muṣḥaf p.${p||'—'}</span>`; }
       const st=hifzStats(s); return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>${esc(QS[st.cur].name)}</span><span>${st.pct.toFixed(0)}%</span></div><div class="bar"><i style="width:${st.pct}%"></i></div></div>`;
     };
-    v.innerHTML = `<div class="eyebrow">Student Information & Progress System</div><h2 class="page-title">Students</h2>
+    const card = s => { const age=ageFromDob(s.dob); const bIn=daysToBirthday(s.dob);
+      return `<div class="card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="cursor:pointer;display:flex;gap:12px;align-items:center">
+        ${selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none">`:''}
+        ${avatarHTML(s)}
+        <div style="min-width:0;flex:1"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
+        <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:3px">AMAN-${String(s.studentNo||0).padStart(3,'0')}${age!=null?' · '+age+'y':''}${s.gender?' · '+esc(s.gender):''}</div>
+        ${s.active===false?'<span class="tag tag-dim">left AMAN</span>':s.startDate&&s.startDate>today()?`<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`:prog(s)}
+        ${s.trialEnds&&s.trialEnds>=today()?`<span class="tag tag-gold" style="margin-top:3px">trial until ${fmtDate(s.trialEnds)}</span>`:''}
+        ${bIn!=null&&bIn>=0&&bIn<=14?`<span class="tag tag-gold" style="margin-top:3px">${bIn===0?'Birthday today':'Birthday in '+bIn+'d'}</span>`:''}</div></div>`; };
+
+    const sortFns = { level:(a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level)||a.name.localeCompare(b.name),
+      name:(a,b)=>a.name.localeCompare(b.name), recent:(a,b)=>(b.studentNo||0)-(a.studentNo||0) };
+    const useSections = !levelFilter && sortBy==='level';
+
+    let bodyHTML;
+    if(!activeShown.length && !inact.length){
+      bodyHTML = d.students.length? '<div class="empty"><p>No students match.</p></div>' :
+        `<div class="empty"><div class="big">🎓</div><h3>Bring in the 36</h3>
+         <p>Import as CSV (<code style="font-family:var(--f-mono);font-size:12px">name, level, gender, dob</code>) or add students one by one.</p>
+         <div style="display:flex;gap:9px;justify-content:center"><button class="btn btn-p" id="stAdd2">Add first student</button><button class="btn btn-o" id="stImport2">Import CSV</button></div></div>`;
+    } else if(useSections){
+      bodyHTML = LEVELS.map(L=>{ const g=activeShown.filter(s=>s.level===L); if(!g.length) return '';
+        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
+         <div class="grid g3">${g.sort(sortFns.name).map(card).join('')}</div>`; }).join('');
+    } else {
+      bodyHTML = `<div class="grid g3">${activeShown.slice().sort(sortFns[sortBy]).map(card).join('')}</div>`;
+    }
+
+    v.innerHTML = `<div class="eyebrow">Student Information System</div><h2 class="page-title">Students</h2>
      <p class="page-sub">${d.students.length? d.students.filter(s=>s.active!==false).length+' active students'+(d.students.some(s=>s.active===false)?' · '+d.students.filter(s=>s.active===false).length+' inactive (records kept)':'')+' — level-aware progress, promotion signals, complete records.' : 'No students yet.'}</p>
      <div class="filters no-print">
        <button class="btn btn-p btn-sm" id="stAdd">＋ Add student</button>
-       <button class="btn btn-o btn-sm" id="stImport">⇪ Import roster (CSV)</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Take attendance</button>
+       <button class="btn btn-o btn-sm" id="stImport">⇪ Import</button>
+       <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
+       <button class="btn btn-o btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
+       <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
+       <button class="btn btn-o btn-sm" data-go="#/admissions">📥 Admissions</button>
        <button class="btn btn-o btn-sm" id="stShare">🌟 Create Share Card</button>
-       ${d.students.length?`<input type="search" id="stFind" placeholder="Find student…" value="${esc(Students._find||'')}" style="max-width:200px">`:''}
      </div>
-     ${d.students.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
-       return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
-        <div class="grid g3">${g.sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`<div class="card" data-go="#/students/${s.id}" style="cursor:pointer;display:flex;gap:12px;align-items:center">
-          ${avatarHTML(s)}
-          <div style="min-width:0;flex:1"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</b>
-          ${s.startDate&&s.startDate>today()?`<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`:prog(s)}
-          ${s.trialEnds&&s.trialEnds>=today()?`<span class="tag tag-gold" style="margin-top:3px">trial until ${fmtDate(s.trialEnds)}</span>`:''}</div></div>`).join('')}</div>`; }).join('')||'<div class="empty"><p>No students match.</p></div>'
-     : `<div class="empty"><div class="big">🎓</div><h3>Bring in the 36</h3>
-        <p>Import as CSV (<code style="font-family:var(--f-mono);font-size:12px">name, level, gender, dob</code>) or add students one by one.</p>
-        <div style="display:flex;gap:9px;justify-content:center"><button class="btn btn-p" id="stAdd2">Add first student</button><button class="btn btn-o" id="stImport2">Import CSV</button></div></div>`}
-     ${inact.length?`<div class="sect">Inactive — no longer enrolled<span class="rule"></span></div>
-      <div class="grid g3">${inact.map(s=>`<div class="card" data-go="#/students/${s.id}" style="cursor:pointer;display:flex;gap:12px;align-items:center">${avatarHTML(s)}<div style="min-width:0;flex:1"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</b><span class="tag tag-dim">${esc(s.level)} · left AMAN</span></div></div>`).join('')}</div>`:''}`;
+     <div class="filters no-print" style="margin-top:-6px">
+       <button class="btn btn-ghost btn-sm" id="stExport">⬇ CSV</button>
+       <button class="btn btn-ghost btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select'}</button>
+       ${d.students.length?`<input type="search" id="stFind" placeholder="Find student…" value="${esc(Students._find||'')}" style="max-width:190px">`:''}
+       <select id="stLvl" aria-label="Filter by level" style="max-width:150px"><option value="">All levels</option>${LEVELS.map(L=>`<option value="${L}" ${L===levelFilter?'selected':''}>${L} ${LEVEL_SUB[L]}</option>`).join('')}</select>
+       <select id="stStatus" aria-label="Filter by status" style="max-width:120px"><option value="active" ${statusFilter==='active'?'selected':''}>Active</option><option value="inactive" ${statusFilter==='inactive'?'selected':''}>Inactive</option><option value="all" ${statusFilter==='all'?'selected':''}>All</option></select>
+       <select id="stSort" aria-label="Sort students by" style="max-width:140px"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
+       <button class="btn btn-ghost btn-sm" id="stFav" style="${favOnly?'color:var(--gold);font-weight:700':''}">★ Favorites</button>
+     </div>
+     ${selectMode?`<div class="notice info no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <span>${selected.size} selected</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm" id="bulkFav">★ Favorite</button>
+          <button class="btn btn-o btn-sm" id="bulkDeact">Deactivate</button>
+          <button class="btn btn-o btn-sm" id="bulkAct">Reactivate</button>
+          <button class="btn btn-o btn-sm" id="bulkExport">⬇ Export selected</button>
+        </div></div>`:''}
+     ${bodyHTML}
+     ${statusFilter==='all'&&inact.length?`<div class="sect">Inactive — no longer enrolled<span class="rule"></span></div>
+      <div class="grid g3">${inact.map(card).join('')}</div>`:''}`;
     wireCommon(v);
     const add=()=>this.form(); const imp=()=>this.importCSV();
     $('#stAdd',v)&&($('#stAdd',v).onclick=add); $('#stAdd2',v)&&($('#stAdd2',v).onclick=add);
     $('#stImport',v)&&($('#stImport',v).onclick=imp); $('#stImport2',v)&&($('#stImport2',v).onclick=imp);
     $('#stShare',v)&&($('#stShare',v).onclick=()=>Students.sharePanel());
+    $('#stExport',v).onclick=()=>Students.exportCSV();
+    $('#stFav',v).onclick=()=>{ Students._favOnly=!favOnly; Router.render(); };
+    $('#stLvl',v).onchange=e=>{ Students._levelFilter=e.target.value; Router.render(); };
+    $('#stStatus',v).onchange=e=>{ Students._statusFilter=e.target.value; Router.render(); };
+    $('#stSort',v).onchange=e=>{ Students._sort=e.target.value; Router.render(); };
+    $('#stSelect',v).onclick=()=>{ Students._selectMode=!selectMode; if(!Students._selectMode) selected.clear(); Router.render(); };
+    $$('[data-selcard]',v).forEach(el=>el.onclick=()=>{
+      const sid=el.dataset.selcard; if(selected.has(sid)) selected.delete(sid); else selected.add(sid); Router.render();
+    });
+    const bulkConfirm = (msg, fn) => confirmBox(msg, ()=>{ fn(); DB.save(); Router.render(); });
+    $('#bulkFav',v)&&($('#bulkFav',v).onclick=()=>bulkConfirm('Add '+selected.size+' student(s) to favorites?', ()=>{
+      d.students.forEach(s=>{ if(selected.has(s.id)) s.favorite=true; }); DB.log('Bulk favorited '+selected.size+' students'); }));
+    $('#bulkDeact',v)&&($('#bulkDeact',v).onclick=()=>bulkConfirm('Deactivate '+selected.size+' student(s)?', ()=>{
+      d.students.forEach(s=>{ if(selected.has(s.id)) s.active=false; }); DB.log('Bulk deactivated '+selected.size+' students'); }));
+    $('#bulkAct',v)&&($('#bulkAct',v).onclick=()=>bulkConfirm('Reactivate '+selected.size+' student(s)?', ()=>{
+      d.students.forEach(s=>{ if(selected.has(s.id)) s.active=true; }); DB.log('Bulk reactivated '+selected.size+' students'); }));
+    $('#bulkExport',v)&&($('#bulkExport',v).onclick=()=>Students.exportCSV([...selected]));
     const f=$('#stFind',v); if(f){ f.oninput=()=>{ Students._find=f.value; clearTimeout(Students._ft); Students._ft=setTimeout(()=>{Router.render(); const nf=$('#stFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
   },
   sharePanel(){
@@ -3821,21 +3958,22 @@ const Students = {
   },
   /* ---------- FORM (adds emergency contact) ---------- */
   form(s){
-    const isNew=!s; const d = s||{id:uid(), name:'', level:'Level 1', gender:'', dob:'', guardian:'', phone:'', emergency:'', notes:'', photo:''};
+    const isNew=!s; const d = s||{id:uid(), name:'', preferredName:'', level:'Level 1', gender:'', dob:'', notes:'', photo:'', medical:'', favorite:false, guardians:[], emergencyContacts:[]};
     const o=overlay(`<div class="modal" style="max-width:470px"><h3>${isNew?'Add student':'Edit student'}</h3>
       <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:4px">
         <div id="S-photo-preview" style="flex-shrink:0">${avatarHTML(d, 'width:56px;height:56px;font-size:18px')}</div>
         <div class="field" style="flex:1;margin-bottom:0"><label>Photo URL (optional)</label><input id="S-photo" value="${esc(d.photo||'')}" placeholder="https://amanschoolmn.org/central/files/students/student_37.jpg"></div>
       </div>
-      <div class="field"><label>Full name</label><input id="S-n" value="${esc(d.name)}"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Full name</label><input id="S-n" value="${esc(d.name)}"></div>
+       <div class="field"><label>Preferred name (optional)</label><input id="S-pn" value="${esc(d.preferredName||'')}"></div></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
        <div class="field"><label>Level</label><select id="S-l">${LEVELS.map(L=>`<option ${L===d.level?'selected':''}>${L}</option>`).join('')}</select></div>
        <div class="field"><label>Enrollment</label><select id="S-a"><option value="1" ${d.active!==false?'selected':''}>Active</option><option value="0" ${d.active===false?'selected':''}>Inactive — left AMAN</option></select></div>
        <div class="field"><label>Gender</label><select id="S-g">${['','Brother','Sister'].map(g=>`<option ${g===d.gender?'selected':''}>${g||'—'}</option>`).join('')}</select></div>
-       <div class="field"><label>Date of birth</label><input id="S-d" type="date" value="${esc(d.dob)}"></div>
-       <div class="field"><label>Guardian phone</label><input id="S-p" value="${esc(d.phone)}"></div></div>
-      <div class="field"><label>Guardian name</label><input id="S-gu" value="${esc(d.guardian)}"></div>
-      <div class="field"><label>Emergency contact (name · relation · phone)</label><input id="S-e" value="${esc(d.emergency||'')}"></div>
+       <div class="field"><label>Date of birth</label><input id="S-d" type="date" value="${esc(d.dob)}"></div></div>
+      <p style="font-size:12px;color:var(--ink3);margin-top:-6px">Parents/guardians and emergency contacts are managed from the student's profile page, not here.</p>
+      <div class="field"><label>Medical (allergies, conditions, notes)</label><input id="S-med" value="${esc(d.medical||'')}"></div>
       <div class="field"><label>Trial period ends (leave blank once past trial)</label><input id="S-tr" type="date" value="${esc(d.trialEnds||'')}"></div>
       <div class="field"><label>Notes</label><textarea id="S-no">${esc(d.notes)}</textarea></div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Add student':'Save'}</button></div></div>`, true);
@@ -3844,9 +3982,33 @@ const Students = {
     $('[data-x=s]',o).onclick=()=>{
       const n=$('#S-n',o).value.trim(); if(!n){toast('Name required');return;}
       if(isNew && DB.data.students.some(x=>x.name.toLowerCase()===n.toLowerCase())){toast('A student with this name already exists');return;}
-      Object.assign(d,{name:n, level:$('#S-l',o).value, active:$('#S-a',o).value==='1', gender:$('#S-g',o).value, dob:$('#S-d',o).value, phone:$('#S-p',o).value.trim(), guardian:$('#S-gu',o).value.trim(), emergency:$('#S-e',o).value.trim(), trialEnds:$('#S-tr',o).value, notes:$('#S-no',o).value.trim(), photo:$('#S-photo',o).value.trim()});
-      if(isNew){ DB.data.students.push(d); DB.log('Enrolled student: '+n); }
+      Object.assign(d,{name:n, preferredName:$('#S-pn',o).value.trim(), level:$('#S-l',o).value, active:$('#S-a',o).value==='1', gender:$('#S-g',o).value, dob:$('#S-d',o).value, medical:$('#S-med',o).value.trim(), trialEnds:$('#S-tr',o).value, notes:$('#S-no',o).value.trim(), photo:$('#S-photo',o).value.trim()});
+      if(isNew){
+        const used=new Set(DB.data.students.map(x=>x.studentNo).filter(Boolean)); let next=1; while(used.has(next)) next++;
+        d.studentNo=next;
+        DB.data.students.push(d); DB.log('Enrolled student: '+n);
+      }
       DB.save(); o.remove(); toast(isNew?'Student added':'Saved'); Router.render();
+    };
+  },
+  contactForm(s, listKey, existing, hasEmail){
+    const isNew = !existing;
+    const g = existing || {id:uid(), name:'', relation:'', phone:'', email:''};
+    const relations = listKey==='guardians' ? ['Mother','Father','Guardian','Grandparent','Other'] : ['Parent','Relative','Neighbor','Family friend','Other'];
+    const label = listKey==='guardians' ? 'guardian' : 'emergency contact';
+    const o = overlay(`<div class="modal" style="max-width:420px"><h3>${isNew?'Add':'Edit'} ${label}</h3>
+      <div class="field"><label>Name</label><input id="cf-n" value="${esc(g.name)}"></div>
+      <div class="field"><label>Relation</label><select id="cf-r"><option value="">—</option>${relations.map(r=>`<option ${r===g.relation?'selected':''}>${r}</option>`).join('')}</select></div>
+      <div class="field"><label>Phone</label><input id="cf-p" value="${esc(g.phone)}"></div>
+      ${hasEmail?`<div class="field"><label>Email</label><input id="cf-e" value="${esc(g.email||'')}"></div>`:''}
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Add':'Save'}</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
+      const n=$('#cf-n',o).value.trim(); if(!n){toast('Name required');return;}
+      g.name=n; g.relation=$('#cf-r',o).value; g.phone=$('#cf-p',o).value.trim(); if(hasEmail) g.email=$('#cf-e',o).value.trim();
+      if(!s[listKey]) s[listKey]=[];
+      if(isNew) s[listKey].push(g);
+      DB.save(); o.remove(); toast(isNew?'Added':'Saved'); Router.render();
     };
   },
   promote(s){
@@ -3875,31 +4037,55 @@ const Students = {
       if(L3){ const st=hifzStats(s); c+='Hifz path '+HIFZ_PATHS[st.pid].name+', current surah '+QS[st.cur].name+', '+st.pct.toFixed(1)+'% of path memorized ('+st.pages.toFixed(0)+' of '+st.total.toFixed(0)+' pages). Recent: '+qlog.slice(0,4).map(q=>q.kind+' '+q.what+' ('+(q.grade||'')+')').join('; ')+'. '; }
       return c;
     };
+    const sidFmt = 'AMAN-'+String(s.studentNo||0).padStart(3,'0');
+    const age = ageFromDob(s.dob);
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div class="detail-head" style="margin-top:12px">
       ${avatarHTML(s, "width:56px;height:56px;font-size:19px;border-radius:14px")}
-      <div style="flex:1;min-width:220px"><div class="eyebrow">${esc(s.level)} — ${LEVEL_SUB[s.level]}</div>
-       <h2 class="page-title" style="margin-bottom:2px">${esc(s.name)}</h2>
-       <span style="font-size:13px;color:var(--ink2)">${esc(s.gender||'')}${s.dob?' · b. '+s.dob:''}${s.guardian?' · Guardian: '+esc(s.guardian):''}${s.phone?' · '+esc(s.phone):''}</span>
-       ${s.emergency?`<br><span style="font-size:12px;color:var(--bad)">🚨 Emergency: ${esc(s.emergency)}</span>`:''}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap" class="no-print">
+      <div style="flex:1;min-width:220px"><div class="eyebrow">${esc(s.level)} — ${LEVEL_SUB[s.level]} · ${sidFmt}</div>
+       <h2 class="page-title" style="margin-bottom:2px">${esc(s.preferredName||s.name)}</h2>
+       <span style="font-size:13px;color:var(--ink2)">${esc(s.gender||'')}${age!=null?' · '+age+'y (b. '+s.dob+')':''}${s.startDate?' · enrolled '+fmtDate(s.startDate):''}</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" class="no-print">
+       <button class="btn btn-ghost btn-sm" id="sFav" title="${s.favorite?'Remove from favorites':'Add to favorites'}" style="font-size:17px;line-height:1;padding:9px 12px;color:var(--gold)">${s.favorite?'★':'☆'}</button>
        <button class="btn btn-o" id="sEdit">Edit</button>
-       <button class="btn btn-o" id="sReport">Print report</button>
-       <button class="btn btn-danger btn-sm" id="sDel">Remove</button></div></div>
-     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px" class="no-print">
+       <button class="btn btn-o" id="sAI">✨ AI insight</button>
+       <button class="btn btn-o" id="sReport">Print report</button></div></div>
+     <div style="display:flex;gap:16px;margin:0 0 16px" class="no-print">
+       <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
+       <button id="sDel" style="background:none;border:none;color:var(--bad);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">Delete</button></div>
+     <details class="no-print" open style="margin-bottom:16px">
+       <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px">Personal information</summary>
+       <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+         ${admField('Full name', s.name)}${admField('Preferred', s.preferredName)}
+         ${admField('Student ID', sidFmt)}${admField('Level', s.level+' — '+LEVEL_SUB[s.level])}
+         ${admField('Gender', s.gender)}${admField('Date of birth', s.dob?s.dob+(age!=null?' · '+age+'y':''):'')}
+         ${admField('Enrolled', s.startDate?fmtDate(s.startDate):'')}${admField('Status', s.active!==false?'Active':'Inactive')}
+         <div style="grid-column:1/-1">${admField('Medical', s.medical)}</div>
+       </div>
+     </details>
+     <div class="sect no-print" style="margin-bottom:8px;display:flex;align-items:center">Parents &amp; guardians<span class="rule"></span><button class="btn btn-ghost btn-sm" id="gAdd" style="padding:5px 11px">+</button></div>
+     ${s.guardians&&s.guardians.length? s.guardians.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
+        <div><b>${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${[g.phone,g.email].filter(Boolean).map(esc).join(' · ')||'—'}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-gedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-gdel="${g.id}" style="color:var(--bad)">Remove</button></div>
+       </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px;margin-bottom:16px" class="no-print">No contacts yet — add the primary guardian.</p>'}
+     <div class="sect no-print" style="margin:18px 0 8px;display:flex;align-items:center">Emergency contacts<span class="rule"></span><button class="btn btn-ghost btn-sm" id="ecAdd" style="padding:5px 11px">+</button></div>
+     ${s.emergencyContacts&&s.emergencyContacts.length? s.emergencyContacts.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
+        <div><b>🚨 ${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(g.phone)||'—'}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-ecedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-ecdel="${g.id}" style="color:var(--bad)">Remove</button></div>
+       </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px;margin-bottom:8px" class="no-print">None on file.</p>'}
+     <div style="display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 16px" class="no-print">
        <button class="chip" data-go="#/students/attendance">✅ Attendance</button>
        ${L3||L2?`<button class="chip" id="qAdd">📖 ${L3?'Record memorization':'Record recitation'}</button>`:''}
        <button class="chip" id="bAdd">📝 Note</button>
        <button class="chip" id="aAdd">🏅 Achievement</button>
        <button class="chip" id="sotmAdd">🌟 Student of the Month</button>
        <button class="chip" id="pcAdd">📞 Parent contact</button>
-       <button class="chip" data-ai="Give me a progress summary and 3 concrete recommendations for this student: ${esc(aiCtx())}">✨ AI summary</button>
        <button class="chip" data-ai="Draft a warm, brief parent progress update (WhatsApp style) for: ${esc(aiCtx())}">✨ Parent update</button></div>
      <div class="grid g3" style="margin-bottom:18px">
       <div class="widget"><div class="whead"><h3>Attendance</h3></div><div class="kpi">${tot?Math.round(P/tot*100)+'%':'—'}<small>${tot} session${tot===1?'':'s'}</small></div></div>
       <div class="widget"><div class="whead"><h3>${L1?'Green Book':'Qur’an entries'}</h3></div><div class="kpi">${L1?((s.gb&&s.gb.page)||0)+'<small>of 160 pages</small>':qlog.length+'<small>log entries</small>'}</div></div>
       <div class="widget"><div class="whead"><h3>Achievements</h3></div><div class="kpi">${ach.length}<small>recorded</small></div></div></div>
-     ${s.active===false?`<div class="notice warn" style="margin-bottom:16px">🚪 <div><b>Inactive</b> — no longer enrolled at AMAN. All records preserved. Re-activate via Edit → Enrollment.</div></div>`:''}
+     ${s.active===false?`<div class="notice warn" style="margin-bottom:16px">🚪 <div><b>Inactive</b> — no longer enrolled at AMAN. All records preserved. Use "Reactivate" above to bring them back.</div></div>`:''}
      ${s.notes?`<div class="notice info" style="margin-bottom:16px">📝 <div>${esc(s.notes)}</div></div>`:''}
      <div id="lvlCard"></div>
      <div class="sect">Class subjects<span class="rule"></span></div>
@@ -3920,12 +4106,26 @@ const Students = {
     wireCommon(v);
     $$('button[data-ai]',v).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $('#sEdit',v).onclick=()=>this.form(s);
-    $('#sDel',v).onclick=()=>confirmBox('Remove '+s.name+' and their records from Central?',()=>{
+    $('#sDel',v).onclick=()=>confirmBox('Delete '+s.name+' and their records from Central? This cannot be undone.',()=>{
       DB.data.students=DB.data.students.filter(x=>x.id!==id);
       DB.data.quran=DB.data.quran.filter(x=>x.sid!==id); DB.data.behavior=DB.data.behavior.filter(x=>x.sid!==id); DB.data.achievements=DB.data.achievements.filter(x=>x.sid!==id);
       for(const day in DB.data.attendance) delete DB.data.attendance[day][id];
       DB.log('Removed student: '+s.name); DB.save(); Router.go('#/students'); });
     $('#sReport',v).onclick=()=>window.print();
+    $('#sFav',v).onclick=()=>{ s.favorite=!s.favorite; DB.save(); Router.render(); };
+    $('#sAI',v).onclick=()=>{ sessionStorage.setItem('ai_q', 'Give me a progress summary and 3 concrete recommendations for this student: '+aiCtx()); Router.go('#/ai'); };
+    $('#sToggleActive',v).onclick=()=>{
+      const willBeActive = s.active===false;
+      confirmBox((willBeActive?'Reactivate ':'Deactivate ')+s.name+'?', ()=>{
+        s.active = willBeActive; DB.log((willBeActive?'Reactivated ':'Deactivated ')+s.name);
+        DB.save(); toast(willBeActive?'Reactivated':'Deactivated'); Router.render(); });
+    };
+    $('#gAdd',v)&&($('#gAdd',v).onclick=()=>Students.contactForm(s,'guardians',null,true));
+    $$('[data-gedit]',v).forEach(b=>b.onclick=()=>Students.contactForm(s,'guardians', s.guardians.find(g=>g.id===b.dataset.gedit), true));
+    $$('[data-gdel]',v).forEach(b=>b.onclick=()=>confirmBox('Remove this guardian contact?', ()=>{ s.guardians=s.guardians.filter(g=>g.id!==b.dataset.gdel); DB.save(); toast('Removed'); Router.render(); }));
+    $('#ecAdd',v)&&($('#ecAdd',v).onclick=()=>Students.contactForm(s,'emergencyContacts',null,false));
+    $$('[data-ecedit]',v).forEach(b=>b.onclick=()=>Students.contactForm(s,'emergencyContacts', s.emergencyContacts.find(g=>g.id===b.dataset.ecedit), false));
+    $$('[data-ecdel]',v).forEach(b=>b.onclick=()=>confirmBox('Remove this emergency contact?', ()=>{ s.emergencyContacts=s.emergencyContacts.filter(g=>g.id!==b.dataset.ecdel); DB.save(); toast('Removed'); Router.render(); }));
     const auto=(el,fn)=>{ if(el) el.onchange=()=>{ fn(el.value); DB.save(); }; };
     auto($('#subjA',v), val=>{ s.subj=s.subj||{}; s.subj.arabic=val.trim(); });
     auto($('#subjI',v), val=>{ s.subj=s.subj||{}; s.subj.islamic=val.trim(); });
@@ -4006,7 +4206,7 @@ const Students = {
        <div class="card" style="margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:4px"><span>Page ${g.page} of ${GB_TOTAL}</span><span style="font-family:var(--f-mono)">${pct.toFixed(0)}%${g.fluency?' · '+esc(g.fluency):''}</span></div>
         <div class="bar" style="height:10px;margin-bottom:12px"><i style="width:${pct}%"></i></div>
-        ${eta?`<p style="font-size:12.5px;color:var(--ink2);margin-bottom:10px">Pace ≈ ${eta.pace} pages/week → finishes in ~${eta.weeks} week${eta.weeks===1?'':'s'} (${fmtDate(new Date(Date.now()+eta.weeks*6048e5).toISOString())}), in shā’ Allāh.</p>`:'<p style="font-size:12.5px;color:var(--ink3);margin-bottom:10px">Record two or more updates and the pace & completion estimate appear here.</p>'}
+        ${renderGoalCard(eta, 'pages', e=>'Reach page '+e.shortTarget, e=>'Finish Green Book (p.'+GB_TOTAL+')')}
         <div class="grid" style="grid-template-columns:90px 1fr 1fr;gap:10px" class="no-print">
           <div class="field"><label>Page</label><input id="gb-page" type="number" min="0" max="${GB_TOTAL}" value="${g.page}"></div>
           <div class="field"><label>Fluency</label><select id="gb-flu">${['','Developing','Good','Strong'].map(x=>`<option ${x===g.fluency?'selected':''}>${x||'—'}</option>`).join('')}</select></div>
@@ -4025,8 +4225,10 @@ const Students = {
       const m=s.mus=s.mus||{page:0, fluency:'', acc:''}; const log=s.musLog=s.musLog||[];
       const strong=[...log].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
       const ready=strong.length>=3 && strong.every(x=>x.fluency==='Strong');
+      const eta2=paceETA(log, m.page||0, 604, 'page');
       el.innerHTML = `<div class="sect">Muṣḥaf Reading — fluency before Ḥifẓ<span class="rule"></span></div>
        ${ready?`<div class="notice info" style="margin-bottom:12px">🌙 <div><b>Ready for Ḥifẓ.</b> Three consecutive Strong readings — ${esc(s.name)} shows the consistency for Level 3. <button class="btn btn-p btn-sm" id="promoteBtn">Promote to Level 3</button></div></div>`:''}
+       ${renderGoalCard(eta2, 'pages', e=>'Reach page '+e.shortTarget, e=>'Finish full Muṣḥaf (604 p.)')}
        <div class="card" style="margin-bottom:14px">
         <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-bottom:12px">
           <span class="tag tag-blue" style="padding:6px 12px">Current page: <b>${m.page||'—'}</b> / 604</span>
@@ -4050,30 +4252,53 @@ const Students = {
     }
     // Level 3 — Ḥifẓ
     const h=s.hifz=s.hifz||{path:'standard', cur:114, curPage:null, goalWeekly:0, strengths:'', improve:''};
+    s.hifzLog = s.hifzLog||[];
     const st=hifzStats(s);
+    const ays=ayahStats(st);
     const newest30=qlog.filter(q=>q.kind==='New'&&q.date>=new Date(Date.now()-30*864e5).toISOString().slice(0,10)).length;
     const rev30=qlog.filter(q=>q.kind==='Review'&&q.date>=new Date(Date.now()-30*864e5).toISOString().slice(0,10)).length;
     const remaining=st.total-st.pages;
     const etaW = h.goalWeekly>0? Math.ceil(remaining/h.goalWeekly) : null;
+    const eta3 = paceETA(s.hifzLog, st.pages, st.total, 'pages');
+    const nextName = st.next.length? QS[st.next[0]].name : null;
+    const ayahDensity = st.total>0 ? ays.total/st.total : 0; // average āyāt per path-page, for deriving an āyah-equivalent pace
     el.innerHTML = `<div class="sect">Ḥifẓ — Madinah Muṣḥaf<span class="rule"></span></div>
+     ${renderGoalCard(eta3, 'pages', e=>nextName?'Finish '+esc(QS[st.cur].name)+', begin '+esc(nextName):'Reach '+e.shortTarget+' pages', e=>'Complete '+esc(HIFZ_PATHS[st.pid].name)+' ('+st.total.toFixed(0)+' p.)')}
+     <details style="margin-bottom:14px">
+       <summary style="cursor:pointer;font-family:var(--f-display);font-size:15px;font-weight:600;padding:2px 0 8px">📊 Memorization Goal &amp; Tracker</summary>
+       <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin-bottom:10px">
+         ${admField('Current sūrah', QS[st.cur].name)}
+         ${admField('Progress % (pages)', st.pct.toFixed(1)+'%')}
+         ${admField('Pages completed', st.pages.toFixed(0))}
+         ${admField('Pages remaining', remaining.toFixed(0))}
+         ${admField('Progress % (āyāt, est.)', ays.pct.toFixed(1)+'%')}
+         ${admField('Āyāt completed (est.)', ays.ayahs)}
+         ${admField('Āyāt remaining (est.)', ays.remaining)}
+         ${admField('Daily goal (pages)', eta3?(eta3.pace/7).toFixed(2)+' p/day':'—')}
+         ${admField('Daily goal (āyāt, est.)', eta3?Math.round(eta3.pace*ayahDensity/7)+' āyāt/day':'—')}
+         <div style="grid-column:1/-1">${admField('Estimated finish date', eta3?fmtDate(eta3.date.toISOString())+' — based on '+eta3.pace+' pages/week':'Record 2+ dated updates and this fills in automatically')}</div>
+       </div>
+       <div class="bar" style="height:10px;margin-bottom:6px"><i style="width:${st.pct}%"></i></div>
+       <p style="font-size:11px;color:var(--ink3)">Āyah figures are estimated from page position within the current sūrah, since page breaks don't align exactly with āyah breaks. Pages are the more precise measure and drive the finish-date projection above.</p>
+     </details>
      <div class="card" style="margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:5px">
-        <b style="font-family:var(--f-display);font-size:17px">${esc(QS[st.cur].name)} <span style="font-size:12px;color:var(--ink3);font-family:var(--f-ui)">(sūrah ${st.cur} · starts p.${QS[st.cur].p})</span></b>
-        <span style="font-family:var(--f-mono);font-size:13px">${st.pages.toFixed(0)} / ${st.total.toFixed(0)} path pages · ${st.pct.toFixed(1)}%</span></div>
+        <b style="font-family:var(--f-display);font-size:17px">${esc(QS[st.cur].name)} <span style="font-size:12px;color:var(--ink3);font-family:var(--f-ui)">(sūrah ${st.cur} · starts p.${QS[st.cur].p})</span></b></div>
       <div class="bar" style="height:10px;margin-bottom:10px"><i style="width:${st.pct}%"></i></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:12px">
         <span class="tag tag-green">${newest30} new · 30d</span><span class="tag tag-gold">${rev30} review · 30d</span>
         ${st.next.length?`<span class="tag tag-dim">next: ${st.next.map(n=>QS[n].name).join(' → ')}</span>`:'<span class="tag tag-green">final sūrah of the path!</span>'}
-        ${etaW?`<span class="tag tag-blue">~${etaW} wk to khatm at goal pace</span>`:''}</div>
+        ${etaW?`<span class="tag tag-blue">~${etaW} wk to khatm at your set goal pace</span>`:''}</div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
         <div class="field"><label>Memorization path (per student)</label><select id="hz-path">${Object.entries(HIFZ_PATHS).map(([k,p])=>`<option value="${k}" ${k===st.pid?'selected':''}>${p.name}</option>`).join('')}</select></div>
         <div class="field"><label>Current sūrah</label><select id="hz-sur">${st.order.map(n=>`<option value="${n}" ${n===st.cur?'selected':''}>${QS[n].name}</option>`).join('')}</select></div>
         <div class="field"><label>Current page (within sūrah)</label><input id="hz-page" type="number" min="1" max="604" value="${h.curPage||''}" placeholder="${QS[st.cur].p}"></div>
-        <div class="field"><label>Weekly goal (pages)</label><input id="hz-goal" type="number" min="0" max="30" step="0.5" value="${h.goalWeekly||''}" placeholder="e.g., 2"></div>
+        <div class="field"><label>Optional: target weekly pace, for comparison</label><input id="hz-goal" type="number" min="0" max="30" step="0.5" value="${h.goalWeekly||''}" placeholder="e.g., 2"></div>
         <div class="field"><label>Strengths</label><input id="hz-str" value="${esc(h.strengths||'')}" placeholder="strong retention, beautiful tone…"></div>
         <div class="field"><label>Needs improvement</label><input id="hz-imp" value="${esc(h.improve||'')}" placeholder="revision consistency, similar āyāt…"></div></div>
-      <p style="font-size:11.5px;color:var(--ink3)">Changing the path or sūrah recalculates progress, next sūrahs, and the khatm estimate instantly. Daily entries stay in the memorization log below.</p></div>`;
-    const saveH=()=>{ DB.save(); Router.render(); };
+      <p style="font-size:11.5px;color:var(--ink3)">Changing the path or sūrah recalculates progress, next sūrahs, and the goals above instantly — the weekly pace field is optional, only for comparing against a specific target. Daily entries stay in the memorization log below.</p></div>`;
+    const snapshotHifz=()=>{ const pages=hifzStats(s).pages; const t=s.hifzLog.find(x=>x.date===today()); if(t) t.pages=pages; else s.hifzLog.push({date:today(), pages}); };
+    const saveH=()=>{ snapshotHifz(); DB.save(); Router.render(); };
     $('#hz-path',el).onchange=e=>{ h.path=e.target.value; const ord=HIFZ_PATHS[h.path].order(); if(!ord.includes(h.cur)) h.cur=ord[0]; h.curPage=null; DB.log(s.name+' → '+HIFZ_PATHS[h.path].name); saveH(); };
     $('#hz-sur',el).onchange=e=>{ h.cur=+e.target.value; h.curPage=null; saveH(); };
     $('#hz-page',el).onchange=e=>{ const p=+e.target.value||null; h.curPage=p?Math.max(QS[h.cur].p,Math.min(604,p)):null; saveH(); };
@@ -4090,17 +4315,38 @@ const Students = {
     $('[data-x=s]',o).onclick=()=>{
       const lines=$('#csv',o).value.split('\n').map(l=>l.trim()).filter(Boolean);
       let n=0, skipped=0;
+      const usedNos=new Set(DB.data.students.map(x=>x.studentNo).filter(Boolean)); let nextNo=1;
       for(const line of lines){
         const [name, lvl, gender, dob] = line.split(',').map(x=>(x||'').trim());
         if(!name || /^name$/i.test(name)) continue;
         if(DB.data.students.some(x=>x.name.toLowerCase()===name.toLowerCase())){skipped++; continue;}
         const L = /2/.test(lvl)?'Level 2':/3/.test(lvl)?'Level 3':'Level 1';
-        DB.data.students.push({id:uid(), name, level:L, gender:/sis|f/i.test(gender||'')?'Sister':(gender?'Brother':''), dob:dob||'', guardian:'', phone:'', notes:''});
+        while(usedNos.has(nextNo)) nextNo++;
+        DB.data.students.push({id:uid(), name, preferredName:'', level:L, gender:/sis|f/i.test(gender||'')?'Sister':(gender?'Brother':''), dob:dob||'',
+          guardians:[], emergencyContacts:[], medical:'', favorite:false, studentNo:nextNo, active:true, photo:'', notes:''});
+        usedNos.add(nextNo); nextNo++;
         n++;
       }
       DB.log('Imported '+n+' students'); DB.save(); o.remove();
       toast(n+' imported'+(skipped?', '+skipped+' duplicates skipped':'')); Router.render();
     };
+  },
+  exportCSV(ids){
+    const rows = (ids? DB.data.students.filter(s=>ids.includes(s.id)) : DB.data.students).slice().sort((a,b)=>a.name.localeCompare(b.name));
+    const esc2 = v=>{ v=String(v==null?'':v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+    const header = ['Student ID','Name','Preferred name','Level','Gender','DOB','Status','Guardian name','Guardian phone','Guardian email','Emergency contact','Emergency phone','Medical'];
+    const lines = [header.join(',')];
+    rows.forEach(s=>{
+      const g = (s.guardians&&s.guardians[0])||{};
+      const ec = (s.emergencyContacts&&s.emergencyContacts[0])||{};
+      lines.push([ 'AMAN-'+String(s.studentNo||0).padStart(3,'0'), s.name, s.preferredName||'', s.level, s.gender||'', s.dob||'',
+        s.active!==false?'Active':'Inactive', g.name||'', g.phone||'', g.email||'', ec.name||'', ec.phone||'', s.medical||'' ].map(esc2).join(','));
+    });
+    const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'aman-students-'+today()+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
   },
   attendance(v){
     const d=DB.data;
@@ -4143,33 +4389,71 @@ function famList(){ // auto-derived families from patronymics + overrides
   return Object.values(map).sort((a,b)=>b.members.length-a.members.length);
 }
 function famRec(key){ return DB.data.families[key]=DB.data.families[key]||{phone:'', note:'', log:[]}; }
-function famPlan(key){ return DB.data.finance.plans[key]=DB.data.finance.plans[key]||{monthly:0, regFee:0, regPaid:false, start:'', note:''}; }
+function famPlan(key){ return DB.data.finance.plans[key]=DB.data.finance.plans[key]||{monthly:0, rateMode:'auto', perStudentRate:null, regFee:0, regPaid:false, start:'', note:''}; }
+function famActiveCount(key){ return DB.data.students.filter(s=>s.active!==false && famKey(s)===key).length; }
+function famEffectiveMonthly(key, activeCount){
+  const p=famPlan(key);
+  if(p.rateMode==='manual') return p.monthly||0;
+  const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
+  return rate*(activeCount==null?famActiveCount(key):activeCount);
+}
 function monthsBetween(a, b){ // 'YYYY-MM' inclusive count
   const [ay,am]=a.split('-').map(Number), [by,bm]=b.split('-').map(Number);
   return Math.max(0,(by-ay)*12+(bm-am)+1);
 }
 function famFinance(key){
   const p=famPlan(key); const pays=DB.data.finance.payments.filter(x=>x.fam===key);
-  const paid=pays.reduce((a,x)=>a+(+x.amount||0),0);
+  const activeCount=famActiveCount(key);
+  const monthly=famEffectiveMonthly(key, activeCount);
+  const paid=pays.filter(x=>x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
   const nowM=today().slice(0,7);
+  const excusedMonths=new Set(pays.filter(x=>x.kind==='excused').map(x=>x.date.slice(0,7)));
   let expected=0;
-  if(p.monthly>0 && p.start) expected += monthsBetween(p.start, nowM)*p.monthly;
+  if(monthly>0 && p.start){
+    const totalMonths=monthsBetween(p.start, nowM);
+    expected += Math.max(0, totalMonths-excusedMonths.size)*monthly;
+  }
   if(p.regFee>0 && !p.regPaid) expected += p.regFee;
-  const paidThisMonth=pays.filter(x=>x.date.slice(0,7)===nowM && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0);
+  const paidThisMonth=pays.filter(x=>x.date.slice(0,7)===nowM && x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
+  const excusedThisMonth=excusedMonths.has(nowM);
+  const monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
   return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance:Math.max(0,expected-paid),
-    monthStatus: p.monthly>0? (paidThisMonth>=p.monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—', paidThisMonth};
+    monthStatus, paidThisMonth, monthly, activeCount, excusedMonths};
+}
+const TUITION_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function famMonthMatrix(key, year){
+  const p=famPlan(key); const pays=DB.data.finance.payments.filter(x=>x.fam===key);
+  const monthly=famEffectiveMonthly(key);
+  const nowM=today().slice(0,7);
+  const months=[];
+  for(let m=1;m<=12;m++){
+    const ym=year+'-'+String(m).padStart(2,'0');
+    let status;
+    if(p.start && ym<p.start) status='before';
+    else if(ym>nowM) status='future';
+    else {
+      const monthPays=pays.filter(x=>x.date.slice(0,7)===ym);
+      if(monthPays.some(x=>x.kind==='excused')) status='excused';
+      else {
+        const sum=monthPays.filter(x=>x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0);
+        status = monthly>0 && sum>=monthly ? 'paid' : sum>0 ? 'partial' : 'unpaid';
+      }
+    }
+    months.push({m, label:TUITION_MONTHS[m-1], ym, status});
+  }
+  return months;
 }
 function regComplete(s){ // registration completeness per student
   const missing=[];
-  if(!s.dob) missing.push('DOB'); if(!s.guardian) missing.push('guardian');
-  if(!s.phone) missing.push('phone'); if(!s.emergency) missing.push('emergency contact');
+  if(!s.dob) missing.push('DOB'); if(!s.guardians||!s.guardians.length) missing.push('guardian');
+  if(!s.guardians||!s.guardians.some(g=>g.phone)) missing.push('phone'); if(!s.emergencyContacts||!s.emergencyContacts.length) missing.push('emergency contact');
   if(!s.photo) missing.push('photo');
   return missing;
 }
 Registry.register({ id:'admin', name:'Administration', icon:'bank', group:'Workspaces',
 render(v,param){
   const tab=param||'overview';
-  const T={overview:'🎛 Overview', families:'Families & Tuition', enroll:'Enrollment', calendar:'Events & Trips', tasks:'Tasks', meetings:'Meetings', staff:'Staff', policies:'Documents'};
+  const T={overview:'🎛 Overview', enroll:'Enrollment', calendar:'Events & Trips', tasks:'Tasks', meetings:'Meetings', staff:'Staff', policies:'Documents'};
   v.innerHTML = `<div class="eyebrow">Operational Control Center</div><h2 class="page-title">Administration</h2>
    <p class="page-sub">The business side of AMAN — families, tuition, enrollment, events, and paper.</p>
    <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-tab="${k}">${n}</button>`).join('')}</div><div id="at"></div>`;
@@ -4197,16 +4481,16 @@ const Admin = {
     // needs-attention (admin automation)
     const items=[];
     overT.forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue'}));
-    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/admin/families', tag:'tuition'}));
-    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/admin/families', tag:'reg fee'}));
+    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition'}));
+    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/tuition/families', tag:'reg fee'}));
     incompl.slice(0,4).forEach(s=>items.push({i:'📋',t:s.name+' — missing '+regComplete(s).join(', '), go:'#/students/'+s.id, tag:'registration'}));
     incoming.forEach(s=>items.push({i:'🌱',t:s.name+' starts '+fmtDate(s.startDate), go:'#/students/'+s.id, tag:'incoming'}));
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">
        ${[['🎓',act.length,'Active students','#/students'],
-          ['👪',fams.filter(f=>!f.solo).length+(fams.some(f=>f.solo)?'+':''),'Families','#/admin/families'],
-          ['💵',(collected?'$'+collected:'—'),'Collected · '+nowM,'#/admin/families'],
-          ['🧾',(outstanding?'$'+outstanding:'$0'),'Outstanding','#/admin/families'],
+          ['👪',fams.filter(f=>!f.solo).length+(fams.some(f=>f.solo)?'+':''),'Families','#/tuition/families'],
+          ['💵',(collected?'$'+collected:'—'),'Collected · '+nowM,'#/tuition/overview'],
+          ['🧾',(outstanding?'$'+outstanding:'$0'),'Outstanding','#/tuition/overview'],
           ['☑️',openT.length,'Open tasks','#/admin/tasks'],
           ['🗓️',nextEv.length? fmtDate(nextEv[0].date):'—','Next event','#/admin/calendar']]
          .map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:17px">${val}</b><span>${lab}</span></button>`).join('')}</div>
@@ -4232,100 +4516,6 @@ const Admin = {
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
   },
   /* ---------- FAMILIES & TUITION ---------- */
-  families(el){
-    const d=DB.data;
-    const fams=famList();
-    const real=fams.filter(f=>!f.solo), solo=fams.filter(f=>f.solo);
-    const nowM=today().slice(0,7);
-    const openKey=Admin._openFam;
-    const famCard=f=>{
-      const fin=famFinance(f.key); const rec=famRec(f.key);
-      const activeM=f.members.filter(s=>s.active!==false);
-      const open=openKey===f.key;
-      const stTag = fin.plan.monthly>0? `<span class="tag ${fin.monthStatus==='Paid'?'tag-green':fin.monthStatus==='Partial'?'tag-gold':'tag-red'}">${fin.monthStatus} · ${nowM}</span>` : '<span class="tag tag-dim">no plan set</span>';
-      return `<div class="card" style="margin-bottom:10px">
-       <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;cursor:pointer" data-fam="${esc(f.key)}">
-        <b style="font-family:var(--f-display);font-size:16.5px">👪 ${esc(f.key)}</b>
-        <span style="font-size:12px;color:var(--ink2)">${activeM.length} student${activeM.length===1?'':'s'}${f.members.length>activeM.length?' (+'+(f.members.length-activeM.length)+' inactive)':''}</span>
-        ${stTag}
-        ${fin.balance?`<span class="tag tag-red">$${fin.balance} balance</span>`:''}
-        <span style="margin-left:auto;color:var(--ink3)">${open?'▾':'▸'}</span></div>
-       ${open?`
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:11px 0">${f.members.map(s=>`<button class="chip ${s.active===false?'':'on'}" data-go="#/students/${s.id}" style="${s.active===false?'opacity:.5':''}">${esc(s.name)}</button>`).join('')}</div>
-        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px">
-          <div class="field"><label>Monthly tuition ($)</label><input data-pf="monthly" type="number" min="0" value="${fin.plan.monthly||''}"></div>
-          <div class="field"><label>Tracking since (YYYY-MM)</label><input data-pf="start" placeholder="2026-07" value="${esc(fin.plan.start)}"></div>
-          <div class="field"><label>Registration fee ($)</label><input data-pf="regFee" type="number" min="0" value="${fin.plan.regFee||''}"></div>
-          <div class="field"><label>Reg. fee paid?</label><select data-pf="regPaid"><option value="0" ${!fin.plan.regPaid?'selected':''}>Not yet</option><option value="1" ${fin.plan.regPaid?'selected':''}>Paid ✓</option></select></div>
-          <div class="field"><label>Family phone</label><input data-ff="phone" value="${esc(rec.phone)}"></div>
-        </div>
-        <div class="field"><label>Financial / family note</label><input data-ff="note" value="${esc(rec.note)}" placeholder="arrangements, discounts, reminders…"></div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px" class="no-print">
-          <button class="btn btn-p btn-sm" data-pay="${esc(f.key)}">＋ Record payment</button>
-          <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.plan.monthly||'?'}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">✨ Reminder draft</button>
-          <button class="chip" data-log="${esc(f.key)}">📞 Log contact</button></div>
-        ${fin.pays.length?`<div class="scrollx"><table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Type</th><th>Note</th><th></th></tr></thead><tbody>${fin.pays.slice(0,8).map(p=>`<tr><td style="font-family:var(--f-mono);font-size:12px">${p.date}</td><td><b>$${p.amount}</b></td><td><span class="tag ${p.kind==='registration'?'tag-blue':'tag-green'}">${p.kind}</span></td><td style="font-size:12.5px">${esc(p.note||'')}</td><td><button class="btn btn-ghost btn-sm" data-pdel="${p.id}">✕</button></td></tr>`).join('')}</tbody></table></div>`:'<p style="font-size:12.5px;color:var(--ink3)">No payments recorded yet.</p>'}
-        ${(rec.log||[]).length?`<div style="margin-top:8px"><b style="font-size:11px;letter-spacing:.07em;color:var(--ink3)">CONTACT LOG</b>${rec.log.slice(0,3).map(x=>`<p style="font-size:12.5px;font-family:var(--f-body);margin-top:3px"><span style="font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${x.date}</span> ${esc(x.text)}</p>`).join('')}</div>`:''}`:''}
-      </div>`; };
-    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px">👪 <div>Families are grouped automatically from patronymics (بن / بنت). Set each family’s monthly amount once — status, balances, and reminders compute themselves. Tuition amounts come from you (see Missing Information Report); the ledger supports future online payments as-is.</div></div>
-     <div style="display:flex;gap:8px;margin-bottom:12px" class="no-print"><button class="btn btn-o btn-sm" id="tuReport">🖨 Tuition report</button></div>
-     ${real.map(famCard).join('')}
-     ${solo.length?`<div class="sect">Individual students — assign a family<span class="rule"></span></div>
-      <div style="display:flex;gap:7px;flex-wrap:wrap">${solo.map(f=>{ const s=f.members[0];
-        return `<button class="chip" data-assign="${s.id}">${esc(s.name)} → set family</button>`; }).join('')}</div>
-      <p style="font-size:12px;color:var(--ink3);margin-top:8px">These names carry no بن/بنت patronymic. Tap to assign them to a family for tuition grouping.</p>`:''}`;
-    wireCommon(el);
-    $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
-    $$('[data-fam]',el).forEach(h=>h.addEventListener('click', e=>{ if(e.target.closest('input,select,button')) return;
-      Admin._openFam = Admin._openFam===h.dataset.fam? null : h.dataset.fam; Router.render(); }));
-    $$('[data-pf]',el).forEach(inp=>inp.onchange=()=>{ const p=famPlan(openKey);
-      const k=inp.dataset.pf; p[k]= k==='regPaid'? inp.value==='1' : k==='start'? inp.value.trim() : +inp.value||0;
-      DB.log('Tuition plan updated — family '+openKey); DB.save(); Router.render(); });
-    $$('[data-ff]',el).forEach(inp=>inp.onchange=()=>{ famRec(openKey)[inp.dataset.ff]=inp.value.trim(); DB.save(); });
-    $$('[data-pay]',el).forEach(b=>b.onclick=()=>Admin.payForm(b.dataset.pay));
-    $$('[data-pdel]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this payment record?',()=>{
-      DB.data.finance.payments=DB.data.finance.payments.filter(x=>x.id!==b.dataset.pdel); DB.save(); Router.render(); }));
-    $$('[data-log]',el).forEach(b=>b.onclick=()=>{
-      const o=overlay(`<div class="modal" style="max-width:420px"><h3>Log family contact</h3><div class="field"><textarea id="fl-t" placeholder="Call / WhatsApp — summary…"></textarea></div>
-       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
-      $('[data-x=c]',o).onclick=()=>o.remove();
-      $('[data-x=s]',o).onclick=()=>{ const t=$('#fl-t',o).value.trim(); if(!t)return;
-        famRec(b.dataset.log).log.unshift({date:today(), text:t}); DB.save(); o.remove(); Router.render(); }; });
-    $$('[data-assign]',el).forEach(b=>b.onclick=()=>{
-      const s=DB.data.students.find(x=>x.id===b.dataset.assign);
-      const o=overlay(`<div class="modal" style="max-width:400px"><h3>Assign family — ${esc(s.name)}</h3>
-        <div class="field"><label>Family name (father’s name)</label><input id="fa-n" list="famnames"><datalist id="famnames">${famList().filter(f=>!f.solo).map(f=>`<option value="${esc(f.key)}">`).join('')}</datalist></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Assign</button></div></div>`,true);
-      $('[data-x=c]',o).onclick=()=>o.remove();
-      $('[data-x=s]',o).onclick=()=>{ const n=$('#fa-n',o).value.trim(); if(!n){toast('Enter the family name');return;}
-        s.family=n; DB.log(s.name+' assigned to family '+n); DB.save(); o.remove(); toast('Assigned'); Router.render(); }; });
-    $('#tuReport',el).onclick=()=>{
-      const rows=real.map(f=>{ const fin=famFinance(f.key);
-        return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.plan.monthly?'$'+fin.plan.monthly:'—'}</td><td>${fin.monthStatus}</td><td>${fin.balance?'$'+fin.balance:'—'}</td><td>$${fin.paid}</td></tr>`; }).join('');
-      const w=window.open('','_blank');
-      w.document.write(`<html><head><title>AMAN Tuition Report</title><style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #ccc}th{font-size:11px;text-transform:uppercase;color:#1a4a35}</style></head><body>
-       <h1>Tuition Report — ${today().slice(0,7)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared for Br. Abdallah bin Abdirahman · ${new Date().toLocaleDateString()}</div>
-       <table><thead><tr><th>Family</th><th>Students</th><th>Monthly</th><th>This month</th><th>Balance</th><th>Total paid</th></tr></thead><tbody>${rows}</tbody></table>
-       <script>window.print()<\/script></body></html>`);
-      w.document.close(); };
-  },
-  payForm(fam){
-    const o=overlay(`<div class="modal" style="max-width:420px"><h3>Record payment — family ${esc(fam)}</h3>
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-       <div class="field"><label>Amount ($)</label><input id="py-a" type="number" min="0" step="1"></div>
-       <div class="field"><label>Date</label><input id="py-d" type="date" value="${today()}"></div></div>
-      <div class="field"><label>Type</label><select id="py-k"><option value="tuition">Tuition</option><option value="registration">Registration fee</option><option value="other">Other</option></select></div>
-      <div class="field"><label>Note (method, month covered…)</label><input id="py-n" placeholder="cash · Zelle · covers August"></div>
-      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Record</button></div></div>`,true);
-    $('[data-x=c]',o).onclick=()=>o.remove();
-    $('[data-x=s]',o).onclick=()=>{
-      const a=+$('#py-a',o).value; if(!a){toast('Enter the amount');return;}
-      const kind=$('#py-k',o).value;
-      DB.data.finance.payments.push({id:uid(), fam, amount:a, date:$('#py-d',o).value, kind, note:$('#py-n',o).value.trim(), method:''});
-      if(kind==='registration') famPlan(fam).regPaid=true;
-      DB.log('Payment recorded — $'+a+' from family '+fam);
-      DB.save(); o.remove(); toast('$'+a+' recorded'); Router.render(); };
-  },
   /* ---------- ENROLLMENT ---------- */
   enroll(el){
     const d=DB.data, tdy=today();
@@ -4472,6 +4662,262 @@ const Admin = {
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
   }
 };
+Registry.register({ id:'tuition', name:'Tuition', icon:'coins', group:'Workspaces',
+render(v,param){
+  const tab=param||'overview';
+  const T={overview:'🎛 Overview', matrix:'📅 Matrix', families:'👪 Families', owe:'📞 Who Owes Now'};
+  v.innerHTML = `<div class="eyebrow">Family Accounts</div><h2 class="page-title">Tuition</h2>
+   <p class="page-sub">Every family's plan, payments, and balance — computed automatically from what you log.</p>
+   <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-tab="${k}">${n}</button>`).join('')}</div><div id="tt"></div>`;
+  $$('[data-tab]',v).forEach(b=>b.onclick=()=>Router.go('#/tuition/'+b.dataset.tab));
+  (Tuition[tab]||Tuition.overview)($('#tt',v));
+}});
+const Tuition = {
+  /* ---------- OVERVIEW ---------- */
+  overview(el){
+    const d=DB.data;
+    const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
+    const fins=fams.map(f=>({f, fin:famFinance(f.key)}));
+    const expected=fins.reduce((a,x)=>a+x.fin.expected,0);
+    const collected=fins.reduce((a,x)=>a+x.fin.paid,0);
+    const outstanding=fins.reduce((a,x)=>a+x.fin.balance,0);
+    const rate=expected>0? Math.round(collected/expected*100) : 0;
+    const dueNow=fins.filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused');
+    const nowM=today().slice(0,7);
+    const expectedThisMonth=fins.reduce((a,x)=>a+(x.fin.monthly>0?x.fin.monthly:0),0);
+    const collectedThisMonth=fins.reduce((a,x)=>a+x.fin.paidThisMonth,0);
+    const thisMonthPct=expectedThisMonth>0? Math.min(100,Math.round(collectedThisMonth/expectedThisMonth*100)) : 0;
+    const statusVar={Paid:'--ok', Partial:'--warn', Due:'--bad', Excused:'--info'};
+    const noPlan=fams.filter(f=>{ const p=DB.data.finance.plans[f.key]; return !p || !p.start; })
+      .map(f=>({f, maxNo:Math.max(0,...f.members.map(s=>s.studentNo||0))})).sort((a,b)=>b.maxNo-a.maxNo).slice(0,2).map(x=>x.f);
+    el.innerHTML = `
+     <div class="grid g3" style="margin-bottom:8px">
+       <div class="widget"><div class="whead"><h3>Collected to date</h3></div><div class="kpi">$${collected}<small>of $${expected} expected</small></div></div>
+       <div class="widget"><div class="whead"><h3>Collected this month</h3></div><div class="kpi">$${collectedThisMonth}<small>of $${expectedThisMonth} due · ${nowM}</small></div></div>
+       <div class="widget"><div class="whead"><h3>Outstanding</h3></div><div class="kpi" style="${outstanding?'color:var(--bad)':''}">$${outstanding}<small>${dueNow.length} famil${dueNow.length===1?'y':'ies'} behind</small></div></div>
+       <div class="widget"><div class="whead"><h3>Collection rate</h3></div><div class="kpi">${rate}%<small>${fams.length} active famil${fams.length===1?'y':'ies'}</small></div></div>
+     </div>
+     ${expectedThisMonth>0?`<div class="card" style="margin-bottom:18px">
+       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-bottom:6px"><span>This month's collection progress</span><span>${thisMonthPct}%</span></div>
+       <div class="bar" style="height:10px"><i style="width:${thisMonthPct}%"></i></div></div>`:''}
+     ${noPlan.length?`<div class="notice info no-print" style="margin-bottom:16px">⚡ <div>${noPlan.map(f=>esc(f.key)).join(' and ')} — recently added, no tuition plan yet. <button class="btn btn-p btn-sm" id="quickSetup2" style="margin-left:6px">Set $100/student, start this month</button></div></div>`:''}
+     ${dueNow.length?`<div class="sect">Behind this month (${nowM})<span class="rule"></span><button class="btn btn-ghost btn-sm" data-go="#/tuition/owe" style="margin-left:auto">See all →</button></div>
+      <div class="grid g3">${dueNow.slice(0,6).map(({f,fin})=>{ const cv=statusVar[fin.monthStatus];
+        return `<div class="card" style="cursor:pointer;background:color-mix(in srgb,var(${cv}) 8%,var(--surface));border-left:3px solid var(${cv})" data-go="#/tuition/owe"><b>👪 ${esc(f.key)}</b><div style="margin-top:4px"><b style="font-size:12.5px">${fin.monthStatus}</b> ${fin.balance?`<span style="font-size:12.5px;color:var(--ink2)">$${fin.balance} balance</span>`:''}</div></div>`; }).join('')}</div>`
+      :'<div class="empty"><div class="big">✅</div><h3>Everyone\u2019s current</h3><p>No family owes anything for this month, al-\u1e25amdulill\u0101h.</p></div>'}
+    `;
+    wireCommon(el);
+    $('#quickSetup2',el)&&($('#quickSetup2',el).onclick=()=>{
+      const names=noPlan.map(f=>f.key).join(' and ');
+      confirmBox('Set $100/student, tracking from '+nowM+', for: '+names+'?', ()=>{
+        noPlan.forEach(f=>{ const p=famPlan(f.key); p.rateMode='auto'; p.perStudentRate=100; if(!p.start) p.start=nowM; });
+        DB.log('Quick setup — $100/student applied to '+names);
+        DB.save(); toast('Applied to '+noPlan.length+' famil'+(noPlan.length===1?'y':'ies')); Router.render();
+      });
+    });
+  },
+  /* ---------- MATRIX: month-by-month, year at a glance ---------- */
+  matrix(el){
+    const year=Tuition._year||new Date().getFullYear();
+    const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
+    const statusColor={paid:'var(--ok)', partial:'var(--warn)', unpaid:'var(--bad)', excused:'var(--info)', future:'var(--ink3)', before:'var(--ink3)'};
+    const statusSym={paid:'\u2713', partial:'~', unpaid:'\u2715', excused:'E', future:'', before:''};
+    el.innerHTML = `
+     <div class="filters no-print" style="margin-bottom:14px">
+       <select id="mtxYear" aria-label="Select year" style="max-width:110px">${[year-1,year,year+1].map(y=>`<option ${y===year?'selected':''}>${y}</option>`).join('')}</select>
+       <span style="font-size:12px;color:var(--ink3)">\u2713 paid \u00b7 ~ partial \u00b7 \u2715 unpaid \u00b7 E excused \u00b7 blank = not yet due or before enrollment \u00b7 tap a month to act on it</span>
+     </div>
+     <div class="scrollx"><table class="tbl" style="min-width:820px">
+      <thead><tr><th style="text-align:left">Family</th>${TUITION_MONTHS.map(m=>`<th style="text-align:center">${m}</th>`).join('')}<th style="text-align:right">Paid YTD</th><th style="text-align:right">Balance</th></tr></thead>
+      <tbody>${fams.map(f=>{
+        const months=famMonthMatrix(f.key, year);
+        const fin=famFinance(f.key);
+        return `<tr>
+          <td style="cursor:pointer" data-openfam="${esc(f.key)}"><b>\ud83d\udc6a ${esc(f.key)}</b></td>
+          ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'18%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>
+          </td>`).join('')}
+          <td style="text-align:right;font-family:var(--f-mono)">$${fin.paid}</td>
+          <td style="text-align:right;font-family:var(--f-mono);${fin.balance?'color:var(--bad)':''}">$${fin.balance}</td>
+        </tr>`;
+      }).join('')}</tbody>
+     </table></div>
+     ${!fams.length?'<p style="color:var(--ink2);font-size:13.5px;margin-top:12px">No families yet \u2014 students group automatically once named with \u0628\u0646 / \u0628\u0646\u062a.</p>':''}
+    `;
+    wireCommon(el);
+    $('#mtxYear',el).onchange=e=>{ Tuition._year=+e.target.value; Router.render(); };
+    $$('[data-openfam]',el).forEach(td=>td.onclick=()=>{ Tuition._openFam=td.dataset.openfam; Router.go('#/tuition/families'); });
+    $$('[data-mtxcell]',el).forEach(td=>td.onclick=()=>{ Tuition.payForm(td.dataset.mtxcell, td.dataset.mtxym); });
+  },
+  /* ---------- FAMILIES: per-family plan, payments, contact ---------- */
+  families(el){
+    const d=DB.data;
+    const fams=famList();
+    const notSolo=fams.filter(f=>!f.solo);
+    const real=notSolo.filter(f=>f.members.some(s=>s.active!==false));
+    const inactive=notSolo.filter(f=>!f.members.some(s=>s.active!==false));
+    const solo=fams.filter(f=>f.solo);
+    const nowM=today().slice(0,7);
+    const openKey=Tuition._openFam;
+    const statusVar = {Paid:'--ok', Partial:'--warn', Due:'--bad', Excused:'--info'};
+    const famCard=f=>{
+      const fin=famFinance(f.key); const rec=famRec(f.key);
+      const activeM=f.members.filter(s=>s.active!==false);
+      const open=openKey===f.key;
+      const cv = fin.monthly>0 ? statusVar[fin.monthStatus] : null;
+      const stTag = fin.monthly>0? `<b style="font-size:12.5px">${fin.monthStatus} \u00b7 ${nowM}</b>` : '<span class="tag tag-dim">no plan set</span>';
+      return `<div class="card" style="margin-bottom:10px${cv?`;background:color-mix(in srgb,var(${cv}) 8%,var(--surface));border-left:3px solid var(${cv})`:''}">
+       <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;cursor:pointer" data-fam="${esc(f.key)}">
+        <b style="font-family:var(--f-display);font-size:16.5px">\ud83d\udc6a ${esc(f.key)}</b>
+        <span style="font-size:12px;color:var(--ink2)">${activeM.length} student${activeM.length===1?'':'s'}${f.members.length>activeM.length?' (+'+(f.members.length-activeM.length)+' inactive)':''}</span>
+        ${stTag}
+        ${fin.balance?`<b style="font-size:12.5px">$${fin.balance} balance</b>`:''}
+        <span style="margin-left:auto;color:var(--ink3)">${open?'\u25be':'\u25b8'}</span></div>
+       ${open?`
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:11px 0">${f.members.map(s=>`<button class="chip ${s.active===false?'':'on'}" data-go="#/students/${s.id}" style="${s.active===false?'opacity:.5':''}">${esc(s.name)}</button>`).join('')}</div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+          <div class="field"><label>Rate mode</label><select data-pf="rateMode"><option value="auto" ${fin.plan.rateMode!=='manual'?'selected':''}>Auto \u2014 $/student \u00d7 active students</option><option value="manual" ${fin.plan.rateMode==='manual'?'selected':''}>Manual \u2014 fixed monthly total</option></select></div>
+          ${fin.plan.rateMode==='manual'
+            ? `<div class="field"><label>Monthly tuition ($)</label><input data-pf="monthly" type="number" min="0" value="${fin.plan.monthly||''}"></div>`
+            : `<div class="field"><label>Rate per student ($/mo, blank = default $${d.settings.defaultTuitionRate})</label><input data-pf="perStudentRate" type="number" min="0" value="${fin.plan.perStudentRate||''}"></div>`}
+        </div>
+        ${fin.plan.rateMode!=='manual'?`<p style="font-size:12px;color:var(--ink3);margin:-2px 0 10px">Effective monthly: <b>$${fin.monthly}</b> (${activeM.length} \u00d7 $${fin.plan.perStudentRate||d.settings.defaultTuitionRate})</p>`:''}
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px">
+          <div class="field"><label>Tracking since (YYYY-MM)</label><input data-pf="start" placeholder="2026-07" value="${esc(fin.plan.start)}"></div>
+          <div class="field"><label>Registration fee ($)</label><input data-pf="regFee" type="number" min="0" value="${fin.plan.regFee||''}"></div>
+          <div class="field"><label>Reg. fee paid?</label><select data-pf="regPaid"><option value="0" ${!fin.plan.regPaid?'selected':''}>Not yet</option><option value="1" ${fin.plan.regPaid?'selected':''}>Paid \u2713</option></select></div>
+          <div class="field"><label>Family phone</label><input data-ff="phone" value="${esc(rec.phone)}"></div>
+        </div>
+        <div class="field"><label>Financial / family note</label><input data-ff="note" value="${esc(rec.note)}" placeholder="arrangements, discounts, reminders\u2026"></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px" class="no-print">
+          <button class="btn btn-p btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
+          <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.monthly||'?'}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">\u2728 Reminder draft</button>
+          <button class="chip" data-log="${esc(f.key)}">\ud83d\udcde Log contact</button></div>
+        ${fin.pays.length?`<div class="scrollx"><table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Type</th><th>Method</th><th>Note</th><th></th></tr></thead><tbody>${fin.pays.slice(0,8).map(p=>`<tr><td style="font-family:var(--f-mono);font-size:12px">${p.date}</td><td><b>$${p.amount}</b></td><td><span class="tag ${p.kind==='registration'?'tag-blue':p.kind==='excused'?'tag-dim':'tag-green'}">${p.kind}</span></td><td style="font-size:12px">${esc(p.method||'\u2014')}</td><td style="font-size:12.5px">${esc(p.note||'')}</td><td><button class="btn btn-ghost btn-sm" data-pdel="${p.id}">\u2715</button></td></tr>`).join('')}</tbody></table></div>`:'<p style="font-size:12.5px;color:var(--ink3)">No payments recorded yet.</p>'}
+        ${(rec.log||[]).length?`<div style="margin-top:8px"><b style="font-size:11px;letter-spacing:.07em;color:var(--ink3)">CONTACT LOG</b>${rec.log.slice(0,3).map(x=>`<p style="font-size:12.5px;font-family:var(--f-body);margin-top:3px"><span style="font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${x.date}</span> ${esc(x.text)}</p>`).join('')}</div>`:''}`:''}
+      </div>`; };
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px">\ud83d\udc6a <div>Families are grouped automatically from patronymics (\u0628\u0646 / \u0628\u0646\u062a). Auto mode computes monthly tuition from active student count \u00d7 rate \u2014 set a per-family rate only for exceptions like scholarships.</div></div>
+     <div style="display:flex;gap:8px;margin-bottom:12px" class="no-print"><button class="btn btn-o btn-sm" id="tuReport">\ud83d\udda8 Tuition report</button><button class="btn btn-ghost btn-sm" id="tuExport">\u2b07 Export ledger (CSV)</button></div>
+     ${real.map(famCard).join('')}
+     ${inactive.length?`<details style="margin:6px 0 16px" class="no-print">
+       <summary style="cursor:pointer;font-size:13px;color:var(--ink2);padding:4px 0">${inactive.length} inactive famil${inactive.length===1?'y':'ies'} \u2014 no students currently enrolled (records kept)</summary>
+       <div style="margin-top:8px">${inactive.map(famCard).join('')}</div>
+     </details>`:''}
+     ${solo.length?`<div class="sect">Individual students \u2014 assign a family<span class="rule"></span></div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">${solo.map(f=>{ const s=f.members[0];
+        return `<button class="chip" data-assign="${s.id}">${esc(s.name)} \u2192 set family</button>`; }).join('')}</div>
+      <p style="font-size:12px;color:var(--ink3);margin-top:8px">These names carry no \u0628\u0646/\u0628\u0646\u062a patronymic. Tap to assign them to a family for tuition grouping.</p>`:''}`;
+    wireCommon(el);
+    $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
+    $$('[data-fam]',el).forEach(h=>h.addEventListener('click', e=>{ if(e.target.closest('input,select,button')) return;
+      Tuition._openFam = Tuition._openFam===h.dataset.fam? null : h.dataset.fam; Router.render(); }));
+    $$('[data-pf]',el).forEach(inp=>inp.onchange=()=>{ const p=famPlan(openKey);
+      const k=inp.dataset.pf;
+      if(k==='regPaid') p[k]=inp.value==='1';
+      else if(k==='start'||k==='rateMode') p[k]=inp.value.trim();
+      else p[k]= inp.value===''? (k==='perStudentRate'?null:0) : +inp.value;
+      DB.log('Tuition plan updated \u2014 family '+openKey); DB.save(); Router.render(); });
+    $$('[data-ff]',el).forEach(inp=>inp.onchange=()=>{ famRec(openKey)[inp.dataset.ff]=inp.value.trim(); DB.save(); });
+    $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
+    $$('[data-pdel]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this payment record?',()=>{
+      DB.data.finance.payments=DB.data.finance.payments.filter(x=>x.id!==b.dataset.pdel); DB.save(); Router.render(); }));
+    $$('[data-log]',el).forEach(b=>b.onclick=()=>{
+      const o=overlay(`<div class="modal" style="max-width:420px"><h3>Log family contact</h3><div class="field"><textarea id="fl-t" placeholder="Call / WhatsApp \u2014 summary\u2026"></textarea></div>
+       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+      $('[data-x=c]',o).onclick=()=>o.remove();
+      $('[data-x=s]',o).onclick=()=>{ const t=$('#fl-t',o).value.trim(); if(!t)return;
+        famRec(b.dataset.log).log.unshift({date:today(), text:t}); DB.save(); o.remove(); Router.render(); }; });
+    $$('[data-assign]',el).forEach(b=>b.onclick=()=>{
+      const s=DB.data.students.find(x=>x.id===b.dataset.assign);
+      const o=overlay(`<div class="modal" style="max-width:400px"><h3>Assign family \u2014 ${esc(s.name)}</h3>
+        <div class="field"><label>Family name (father\u2019s name)</label><input id="fa-n" list="famnames"><datalist id="famnames">${famList().filter(f=>!f.solo).map(f=>`<option value="${esc(f.key)}">`).join('')}</datalist></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Assign</button></div></div>`,true);
+      $('[data-x=c]',o).onclick=()=>o.remove();
+      $('[data-x=s]',o).onclick=()=>{ const n=$('#fa-n',o).value.trim(); if(!n){toast('Enter the family name');return;}
+        s.family=n; DB.log(s.name+' assigned to family '+n); DB.save(); o.remove(); toast('Assigned'); Router.render(); }; });
+    $('#tuReport',el).onclick=()=>{
+      const rows=real.map(f=>{ const fin=famFinance(f.key);
+        return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.monthly?'$'+fin.monthly:'\u2014'}</td><td>${fin.monthStatus}</td><td>${fin.balance?'$'+fin.balance:'\u2014'}</td><td>$${fin.paid}</td></tr>`; }).join('');
+      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>AMAN Tuition Report</title>
+<style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #ccc}th{font-size:11px;text-transform:uppercase;color:#1a4a35}
+.toolbar{max-width:740px;margin:0 auto 10px;text-align:center}.toolbar button{background:#1a4a35;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-weight:600;cursor:pointer}
+@media print{.toolbar{display:none}}</style></head><body>
+<div class="toolbar"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
+<h1>Tuition Report \u2014 ${today().slice(0,7)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah \u00b7 prepared for Br. Abdallah bin Abdirahman \u00b7 ${new Date().toLocaleDateString()}</div>
+<table><thead><tr><th>Family</th><th>Students</th><th>Monthly</th><th>This month</th><th>Balance</th><th>Total paid</th></tr></thead><tbody>${rows}</tbody></table>
+</body></html>`;
+      openLetterPreview(html); };
+    $('#tuExport',el).onclick=()=>{
+      const esc2=v=>{ v=String(v==null?'':v); return /[",\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; };
+      const header=['Date','Family','Amount','Type','Method','Note'];
+      const lines=[header.join(',')];
+      DB.data.finance.payments.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(p=>{
+        lines.push([p.date, p.fam, p.amount, p.kind, p.method||'', p.note||''].map(esc2).join(','));
+      });
+      const blob=new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob); a.download='aman-tuition-ledger-'+today()+'.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+  },
+  /* ---------- WHO OWES NOW: focused, actionable follow-up list ---------- */
+  owe(el){
+    const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
+    const nowM=today().slice(0,7);
+    const owing=fams.map(f=>({f, fin:famFinance(f.key), rec:famRec(f.key)}))
+      .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
+      .sort((a,b)=>b.fin.balance-a.fin.balance);
+    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">Families not yet paid for ${nowM} \u2014 sorted by balance owed.</p>
+     ${owing.length? owing.map(({f,fin,rec})=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
+        <div><b style="font-family:var(--f-display);font-size:15.5px">\ud83d\udc6a ${esc(f.key)}</b>
+          <span class="tag ${fin.monthStatus==='Partial'?'tag-gold':'tag-red'}" style="margin-left:6px">${fin.monthStatus}</span>
+          <div style="font-size:12.5px;color:var(--ink2);margin-top:3px">Owes $${Math.max(0,fin.monthly-fin.paidThisMonth)} this month \u00b7 $${fin.balance} total balance${rec.phone?' \u00b7 '+esc(rec.phone):''}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" class="no-print">
+          ${rec.phone?`<a class="btn btn-ghost btn-sm" href="tel:${esc(rec.phone.replace(/[^0-9+]/g,''))}">\ud83d\udcde Call</a><a class="btn btn-ghost btn-sm" href="sms:${esc(rec.phone.replace(/[^0-9+]/g,''))}">\ud83d\udcac Text</a>`:''}
+          <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.monthly}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">\u2728 Reminder draft</button>
+          <button class="btn btn-o btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
+        </div></div>`).join('') : '<div class="empty"><div class="big">\u2705</div><h3>Everyone\u2019s current</h3><p>No outstanding balances this month, al-\u1e25amdulill\u0101h.</p></div>'}`;
+    wireCommon(el);
+    $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
+    $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
+  },
+  /* ---------- shared payment / excuse form ---------- */
+  payForm(fam, prefillYM){
+    const o=overlay(`<div class="modal" style="max-width:420px"><h3>Record payment \u2014 family ${esc(fam)}</h3>
+      <div class="field"><label>Type</label><select id="py-k">
+        <option value="tuition">Tuition</option>
+        <option value="registration">Registration fee</option>
+        <option value="other">Other</option>
+        <option value="excused">Excused (no charge this month)</option>
+      </select></div>
+      <div id="py-amt-wrap" class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Amount ($)</label><input id="py-a" type="number" min="0" step="1"></div>
+       <div class="field"><label>Date</label><input id="py-d" type="date" value="${prefillYM?prefillYM+'-01':today()}"></div></div>
+      <div id="py-method-wrap" class="field"><label>Method</label><select id="py-m"><option value="">\u2014</option><option>Zelle</option><option>CashApp</option><option>Cash</option><option>Check</option><option>Other</option></select></div>
+      <div class="field"><label>Note (optional)</label><input id="py-n" placeholder="covers August \u00b7 reason if excused"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Record</button></div></div>`,true);
+    const kindSel=$('#py-k',o);
+    const syncMode=()=>{ const ex=kindSel.value==='excused';
+      $('#py-amt-wrap',o).style.display=ex?'none':'grid'; $('#py-method-wrap',o).style.display=ex?'none':'block'; };
+    kindSel.onchange=syncMode; syncMode();
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
+      const kind=kindSel.value;
+      const payDate=$('#py-d',o).value;
+      if(kind==='excused'){
+        const note=$('#py-n',o).value.trim(); if(!note){toast('Add a brief reason');return;}
+        DB.data.finance.payments.push({id:uid(), fam, amount:0, date:payDate, kind:'excused', note, method:''});
+        DB.log('Excused \u2014 family '+fam+': '+note);
+        DB.save(); o.remove(); toast('Marked excused'); Router.render(); return;
+      }
+      const a=+$('#py-a',o).value; if(!a){toast('Enter the amount');return;}
+      DB.data.finance.payments.push({id:uid(), fam, amount:a, date:payDate, kind, note:$('#py-n',o).value.trim(), method:$('#py-m',o).value});
+      if(kind==='registration') famPlan(fam).regPaid=true;
+      DB.log('Payment recorded \u2014 $'+a+' from family '+fam);
+      DB.save(); o.remove(); toast('$'+a+' recorded'); Router.render(); };
+  },
+};
+
 
 /* ================= MODULE: ADMISSIONS — APPLICATION PIPELINE ================= */
 // 7-step AMAN admissions process:
@@ -4838,11 +5284,34 @@ const Admissions = {
       const group = [a, ...selectedSibs];
       const note = 'Payment received'+(amount?' — '+amount:'')+(paidOnFmt?' on '+paidOnFmt:'');
       group.forEach(x=> admLog(x, note));
+      // Also record this in the real tuition ledger — previously this only
+      // wrote a free-text timeline note, invisible to the family's actual
+      // balance until someone re-entered it later in Administration. Split
+      // sensibly: cover any outstanding registration fee first (if the
+      // family already has a plan with one set), remainder as tuition. One
+      // ledger entry per family, not per sibling, since this is one payment
+      // covering however many of them were selected.
+      const numAmount = parseFloat((amount||'').replace(/[^0-9.]/g,''));
+      if(numAmount>0){
+        const payDate = dateVal||today();
+        const famsHit = new Set();
+        group.forEach(x=>{
+          const key = famKey({name:x.studentName});
+          if(!key || famsHit.has(key)) return;
+          famsHit.add(key);
+          const plan = famPlan(key);
+          const regPortion = (plan.regFee>0 && !plan.regPaid) ? Math.min(numAmount, plan.regFee) : 0;
+          const tuitionPortion = numAmount-regPortion;
+          if(regPortion>0){ DB.data.finance.payments.push({id:uid(), fam:key, amount:regPortion, date:payDate, kind:'registration', note:'Recorded via Admissions enrollment payment', method:''}); plan.regPaid=true; }
+          if(tuitionPortion>0){ DB.data.finance.payments.push({id:uid(), fam:key, amount:tuitionPortion, date:payDate, kind:'tuition', note:'Recorded via Admissions enrollment payment', method:''}); }
+          DB.log('Payment recorded — $'+numAmount+' from family '+key+' (via Admissions)');
+        });
+      }
       DB.save();
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const mailto = buildPaymentReceivedMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, amount, paidOnFmt, firstDayFmt);
       Router.render();
-      toast('Payment logged to the timeline');
+      toast('Payment logged to the timeline and family ledger');
       $('#pd-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
         <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
         <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
@@ -4954,15 +5423,20 @@ const Admissions = {
        <div class="field"><label>Trial period ends</label><input id="en-tr" type="date" value="${threeWeeksFrom(today())}"></div>
        <div class="field"><label>Term (for Welcome Packet)</label><input id="en-term" value="${esc(suggestTerm)}"></div>
       </div>
-      <div class="field"><label>Notes</label><textarea id="en-no">${esc([healthNote,allergyNote].filter(Boolean).join(' · '))}</textarea></div>
+      <div class="field"><label>Medical (allergies, conditions, notes)</label><input id="en-med" value="${esc([healthNote,allergyNote].filter(Boolean).join(' · '))}"></div>
+      <div class="field"><label>Notes</label><textarea id="en-no"></textarea></div>
       <p style="font-size:12.5px;color:var(--ink3);margin-top:-4px">Confirming this adds ${esc(a.studentName)} to the roster and opens the Welcome Packet for you to review and send.</p>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Enroll student</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
     $('[data-x=s]',o).onclick=()=>{
       const n=$('#en-n',o).value.trim(); if(!n){toast('Name required');return;}
       const sid=uid(), trialEnds=$('#en-tr',o).value, term=$('#en-term',o).value.trim()||suggestTerm;
-      const student = {id:sid, name:n, level:$('#en-l',o).value, gender:$('#en-g',o).value, dob:$('#en-d',o).value,
-        guardian:$('#en-gu',o).value.trim(), phone:$('#en-p',o).value.trim(), emergency:$('#en-e',o).value.trim(),
+      const guName=$('#en-gu',o).value.trim(), guPhone=$('#en-p',o).value.trim(), ecName=$('#en-e',o).value.trim();
+      const usedNos=new Set(DB.data.students.map(x=>x.studentNo).filter(Boolean)); let nextNo=1; while(usedNos.has(nextNo)) nextNo++;
+      const student = {id:sid, name:n, preferredName:'', level:$('#en-l',o).value, gender:$('#en-g',o).value, dob:$('#en-d',o).value,
+        guardians:(guName||guPhone)?[{id:uid(), name:guName, relation:'Guardian', phone:guPhone, email:a.parentEmail||''}]:[],
+        emergencyContacts:ecName?[{id:uid(), name:ecName, relation:'', phone:''}]:[],
+        medical:$('#en-med',o).value.trim(), favorite:false, studentNo:nextNo,
         notes:$('#en-no',o).value.trim(), active:true, startDate:$('#en-sd',o).value, photo:'', trialEnds};
       DB.data.students.push(student);
       a.enrolledStudentId = sid;
@@ -5315,7 +5789,7 @@ const AnaTabs = {
     if(behind.length) ins.push({i:'🎓',t:`${behind.length} student${behind.length>1?'s':''} flagged behind — see the flag column for why`, go:'#/analytics/students', r:'rules: attendance <70% · no L3 entry 14d · ½+ entries need review'});
     if(qN && qP && qN<qP*0.7) ins.push({i:'📖',t:`Memorization entries down: ${qN} this period vs ${qP} prior`, go:'#/analytics/students', r:'rule: drop >30%'});
     const dueF=fams.filter(fm=>{const fin=famFinance(fm.key); return fin.plan.monthly>0&&fin.monthStatus!=='Paid';});
-    if(dueF.length) ins.push({i:'💵',t:`${dueF.length} famil${dueF.length>1?'ies':'y'} not fully paid this month · $${outst} total outstanding`, go:'#/admin/families', r:'rule: month status ≠ Paid'});
+    if(dueF.length) ins.push({i:'💵',t:`${dueF.length} famil${dueF.length>1?'ies':'y'} not fully paid this month · $${outst} total outstanding`, go:'#/tuition/owe', r:'rule: month status ≠ Paid'});
     if(!act.some(s=>s.level==='Level 2')) ins.push({i:'🧩',t:'Level 2 is empty and its curriculum is still unbuilt — the first Green Book graduate has nowhere to land', go:'#/resource/pln-l2', r:'rule: 0 students + Planned resource'});
     const inc=act.filter(s=>regComplete(s).length).length;
     if(inc) ins.push({i:'📋',t:`${inc} student records incomplete (guardian / phone / emergency / photo)`, go:'#/admin/enroll', r:'rule: any required field empty'});
@@ -5426,7 +5900,7 @@ const AnaTabs = {
     const byCat={}; openT.forEach(t=>byCat[t.cat||'General']=(byCat[t.cat||'General']||0)+1);
     const inc=d.students.filter(s=>s.active!==false&&regComplete(s).length).length;
     el.innerHTML = `<div class="grid g2">
-     <div class="widget"><div class="whead"><h3>Tuition — this month</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/families">Manage →</button></div>
+     <div class="widget"><div class="whead"><h3>Tuition — this month</h3><button class="btn btn-ghost btn-sm" data-go="#/tuition/owe">Manage →</button></div>
       ${planned.length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <span class="tag tag-green">Paid ${stat.Paid}</span><span class="tag tag-gold">Partial ${stat.Partial}</span><span class="tag tag-red">Due ${stat.Due}</span>
         ${outst?`<span class="tag tag-red">$${outst} outstanding</span>`:''}</div>`
@@ -5477,7 +5951,7 @@ const AnaTabs = {
          ['🗓️','Class session report','Pick a date: who came, what was recited','sess'],
          ['🏫','Term summary','The whole school in one document — students, levels, curriculum, admin','term']]
         .map(([i,t,dsc,k])=>`<div class="card" style="cursor:pointer" data-rep="${k}"><div style="font-size:22px;margin-bottom:6px">${i}</div><b style="font-family:var(--f-display);font-size:16px">${t}</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">${dsc}</p></div>`).join('')}
-      <div class="card" style="cursor:pointer" data-go="#/admin/families"><div style="font-size:22px;margin-bottom:6px">💵</div><b style="font-family:var(--f-display);font-size:16px">Tuition report</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">Lives in Families & Tuition → 🖨 button</p></div>
+      <div class="card" style="cursor:pointer" data-go="#/tuition/families"><div style="font-size:22px;margin-bottom:6px">💵</div><b style="font-family:var(--f-display);font-size:16px">Tuition report</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">Lives in Tuition → 🖨 button</p></div>
       <div class="card" style="cursor:pointer" data-go="#/library"><div style="font-size:22px;margin-bottom:6px">🗂</div><b style="font-family:var(--f-display);font-size:16px">Missing resources report</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">Lives in Knowledge Base → ⚠ button</p></div>
      </div>`;
     wireCommon(el);
@@ -5735,6 +6209,7 @@ const NAV_ICONS = {
  chart:'<path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/>',
  spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>',
  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M19 12a7 7 0 0 0-.15-1.4l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.4-1.4L13.8 3h-3.6l-.35 2.3a7 7 0 0 0-2.4 1.4l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .48.05.94.15 1.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.4 1.4l.35 2.3h3.6l.35-2.3a7 7 0 0 0 2.4-1.4l2.3 1 2-3.4-2-1.5c.1-.46.15-.92.15-1.4Z"/>',
+ coins:'<circle cx="8.5" cy="8.5" r="5.5"/><path d="M8.5 6v5M6 8.5h5"/><path d="M13 15.5a5.5 5.5 0 1 0 5.5-5.5"/>',
 };
 function buildNav(){
   const groups={};
