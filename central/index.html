@@ -78,7 +78,7 @@ html[data-theme="dark"] body::before{opacity:.045}
 
 /* ---- app shell ---- */
 #app{display:flex;min-height:100dvh;position:relative;z-index:1}
-.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--green-deep);color:#e9e2cd;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:60;transition:transform .25s ease}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--green-deep);color:#e9e2cd;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:60;transition:transform .25s ease;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 html[data-theme="dark"] .sidebar{background:#0a130e;border-right:1px solid var(--line)}
 .brand{padding:22px 18px 16px;display:flex;align-items:center;gap:12px;position:relative}
 .brand .crest{width:44px;height:44px;flex-shrink:0;position:relative}
@@ -96,7 +96,7 @@ html[data-theme="dark"] .sidebar{background:#0a130e;border-right:1px solid var(-
 .nav a.on svg{opacity:1}
 .side-foot{padding:12px 16px;border-top:1px solid rgba(244,234,214,.1);font-size:11px;color:rgba(233,226,205,.6);font-family:var(--f-mono)}
 .main{flex:1;margin-left:var(--sidebar-w);min-width:0;display:flex;flex-direction:column}
-.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;padding:12px 22px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top)) 22px 12px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .hamb{display:none;padding:8px;border-radius:8px}
 .hamb:hover{background:var(--surface2)}
 .searchbtn{flex:1;max-width:520px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line2);border-radius:11px;padding:8.5px 14px;font-size:13.5px;color:var(--ink3);transition:box-shadow .15s,border-color .15s;text-align:left}
@@ -253,6 +253,21 @@ html[data-theme="dark"] .bar i{background:linear-gradient(90deg,var(--gold),var(
 .rstar.on{color:var(--gold)}
 .rstar:hover{background:var(--surface2)}
 
+/* ---- cover-style cards: curriculum/teaching resources get a book-cover
+   treatment instead of the plain icon+row layout, so real teaching content
+   reads as distinct from administrative paperwork at a glance ---- */
+.rcard-cover{padding:0;overflow:hidden;gap:0}
+.rcover{height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;position:relative}
+.rcover-ic{font-size:30px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.rcover-ar{font-family:var(--f-ar);font-size:13px;opacity:.92}
+.rcover-body{padding:13px 15px 15px;display:flex;flex-direction:column;gap:6px}
+.rcover-body h4{font-family:var(--f-display);font-size:15px;font-weight:600;line-height:1.3}
+html[data-theme="dark"] .rcover{filter:brightness(.9)}
+
+/* ---- Class Mode: big tablet-sized tap targets for live-class use ---- */
+.classmode-card{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:92px;border-radius:14px;border:1.5px solid var(--line2);padding:12px 8px;text-align:center;transition:transform .1s,background .15s;cursor:pointer}
+.classmode-card:active{transform:scale(.96)}
+
 /* ---- widgets ---- */
 .widget{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
 .widget .whead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -289,7 +304,7 @@ html[data-theme="dark"] .bar i{background:linear-gradient(90deg,var(--gold),var(
 .ovl.center{align-items:center;padding:16px}
 .modal h3{font-family:var(--f-display);font-size:20px;margin-bottom:14px}
 .mfoot{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
-#toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center}
+#toasts{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center}
 .toast{background:var(--green-deep);color:#f4ead6;padding:11px 20px;border-radius:11px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);animation:palin .2s ease;display:flex;gap:9px;align-items:center;border:1px solid rgba(212,168,75,.35)}
 html[data-theme="dark"] .toast{background:var(--gold-bright);color:#14211a;border-color:transparent}
 
@@ -312,20 +327,22 @@ html[data-theme="dark"] .gcenter circle{fill:var(--gold-bright)}
 .gcenter text{fill:#fff;font-weight:700}
 html[data-theme="dark"] .gcenter text{fill:#14211a}
 
-/* ---- AI ---- */
+/* ---- AI: a briefing console, not a chat app — this assistant computes from
+   data, it doesn't converse live, and the visual language says so. Queries
+   read like a command log; answers read like a report card, not a bubble. ---- */
 .ai-wrap{display:flex;flex-direction:column;height:calc(100dvh - 210px);min-height:420px}
-.ai-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:6px 2px 16px}
-.msg{max-width:82%;padding:12px 16px;border-radius:15px;font-size:14.5px;line-height:1.6}
-.msg.user{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:5px}
-html[data-theme="dark"] .msg.user{background:var(--gold-bright);color:#14211a}
-.msg.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px;font-family:var(--f-body);font-size:15px}
+.ai-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:6px 2px 16px}
+.msg{max-width:none;font-size:14.5px;line-height:1.6}
+.msg.user{align-self:stretch;background:none;border:none;padding:2px 4px;font-family:var(--f-mono);font-size:12.5px;color:var(--ink2);letter-spacing:.01em}
+.msg.user::before{content:'›\00a0';color:var(--gold-text);font-weight:700}
+.msg.ai{align-self:stretch;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:14px 16px;font-family:var(--f-body);font-size:15px}
 .msg.ai .rlink{display:block;margin-top:6px;padding:7px 11px;border:1px solid var(--line2);border-radius:9px;font-family:var(--f-ui);font-size:13px;font-weight:600;cursor:pointer}
 .msg.ai .rlink:hover{border-color:var(--gold);background:var(--surface2)}
 .ai-input{display:flex;gap:9px;padding-top:12px;border-top:1px solid var(--line)}
 .ai-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
-.typing i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink3);margin-right:4px;animation:tp 1s infinite}
-.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
-@keyframes tp{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+.typing{font-family:var(--f-mono);font-size:12.5px;color:var(--ink3);letter-spacing:.02em}
+.typing::after{content:'▋';margin-left:2px;animation:tp 1s step-end infinite}
+@keyframes tp{0%,100%{opacity:1}50%{opacity:0}}
 
 /* ---- misc ---- */
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line2);margin-bottom:18px;overflow-x:auto}
@@ -390,7 +407,6 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
   .hamb{display:flex}
   .content{padding:18px 14px 90px}
   .page-title{font-size:24px}
-  .msg{max-width:92%}
   .searchbtn kbd{display:none}
 }
 .login-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;
@@ -2418,18 +2434,36 @@ function openLetterPreview(html){
   // Rendered as an in-page overlay (not window.open): a new browser tab/window
   // can be silently blocked by sandboxed preview panes or popup blockers, with
   // no visible error. An <iframe srcdoc> gives the same visual/CSS isolation
-  // from the app's own styling without ever requesting a new window — nothing
-  // to allow, nothing that can be blocked. window.print() called from a button
-  // inside the iframe's own document prints only that document's content.
+  // from the app's own styling without ever requesting a new window.
+  // PRINT BUG (fixed): this overlay used to carry the app-wide "no-print" class,
+  // which the global @media print rule hides — that hid the letter itself
+  // (inside the iframe) during printing, leaving only the underlying app page
+  // visible, which is what actually printed. On top of that, iOS Safari does
+  // not reliably scope window.print() to an iframe's own document — it can
+  // print the parent page instead. Fix: the overlay itself is never no-print
+  // (only its button bar is, so those buttons don't show up on paper), and
+  // printing goes through a real new window with the letter's own HTML —
+  // the same reliable pattern used by every other print flow in this app —
+  // rather than depending on iframe-scoped printing.
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,20,15,.72);display:flex;flex-direction:column;padding:18px;box-sizing:border-box';
-  overlay.className = 'letter-overlay no-print';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,20,15,.72);display:flex;flex-direction:column;padding:18px;padding-top:calc(18px + env(safe-area-inset-top));box-sizing:border-box';
+  overlay.className = 'letter-overlay';
   const bar = document.createElement('div');
-  bar.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:12px;flex-shrink:0';
+  bar.className = 'no-print';
+  bar.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-shrink:0';
+  const printBtn = document.createElement('button');
+  printBtn.textContent = '🖨️ Print / Save as PDF';
+  printBtn.style.cssText = 'background:#1a4a35;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)';
+  printBtn.onclick = () => {
+    const w = window.open('', '_blank');
+    if(w){ w.document.write(html); w.document.close(); }
+    else toast('Pop-up blocked — allow pop-ups for this site, or use the Print button inside the preview below.');
+  };
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '\u2715 Close preview';
   closeBtn.style.cssText = 'background:#fff;color:#1a4a35;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)';
   closeBtn.onclick = () => overlay.remove();
+  bar.appendChild(printBtn);
   bar.appendChild(closeBtn);
   const frame = document.createElement('iframe');
   frame.style.cssText = 'flex:1;width:100%;border:none;border-radius:10px;background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.35)';
@@ -2831,8 +2865,25 @@ const Theme = {
 };
 
 /* ---------- shared renderers ---------- */
+const COVER_CATEGORIES = ['Curriculum','Lesson Slides','Teacher Resources','Student Resources','Assessments'];
+const COVER_ACCENTS = {'Qur’an':'#1a4a35','Islamic Studies':'#8a6520','Arabic':'#33607e','Administration':'#5c665a'};
 function rCard(r){
   const stTag = r.status==='Active'?'' : `<span class="tag ${r.status.startsWith('Missing')?'tag-red':r.status==='Planned'?'tag-blue':'tag-gold'}">${esc(r.status)}</span>`;
+  if(COVER_CATEGORIES.includes(r.category)){
+    const accent = COVER_ACCENTS[r.subject] || '#2c5f45';
+    return `<article class="rcard rcard-cover" data-open="${r.id}">
+      <button class="rstar ${r.favorite?'on':''}" data-fav="${r.id}" title="Favorite" aria-label="Toggle favorite">${r.favorite?'★':'☆'}</button>
+      <div class="rcover" style="background:linear-gradient(155deg,${accent},color-mix(in srgb,${accent} 60%,black))">
+        <span class="rcover-ic">${TYPE_ICON[r.type]||'📄'}</span>
+        ${r.ar?`<div class="rcover-ar">${esc(r.ar)}</div>`:''}
+      </div>
+      <div class="rcover-body">
+        <h4 role="button" tabindex="0" aria-label="Open ${esc(r.title)}">${r.pinned?'📌 ':''}${esc(r.title)}</h4>
+        <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span>${stTag}
+          <span style="margin-left:auto;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${rel(r.modified)}</span></div>
+      </div>
+    </article>`;
+  }
   return `<article class="rcard" data-open="${r.id}">
     <button class="rstar ${r.favorite?'on':''}" data-fav="${r.id}" title="Favorite" aria-label="Toggle favorite">${r.favorite?'★':'☆'}</button>
     <div class="rhead"><div class="ricon">${TYPE_ICON[r.type]||'📄'}</div>
@@ -2858,6 +2909,7 @@ function wireCards(root){
 /* ================= MODULE: DASHBOARD — MISSION CONTROL ================= */
 const WIDGETS = [
  {id:'focus', name:'Needs Attention (daily checklist)'},
+ {id:'momentum', name:'This Month’s Momentum'},
  {id:'kpis', name:'School Health KPIs'},
  {id:'quick', name:'Quick Actions'},
  {id:'week', name:'This Week’s Plan'},
@@ -2940,6 +2992,27 @@ render(v){
     return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
      ${items.length? `<div class="wlist">${items.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
      : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}`;
+  };
+  W.momentum = ()=>{
+    const cutoffD = new Date(Date.now()-30*864e5);
+    const cutoffIso = cutoffD.toISOString();
+    const recent = d.activity.filter(a=>a.t>=cutoffIso);
+    const promos = recent.filter(a=>/^Promoted /.test(a.text));
+    const achievements = recent.filter(a=>/^Achievement —|^Student of the Month —/.test(a.text));
+    const enrolled = recent.filter(a=>/^Enrolled/i.test(a.text));
+    const memoEntries = d.quran.filter(q=>q.date>=cutoffIso.slice(0,10)).length;
+    const memoPrev = d.quran.filter(q=>{ const t=new Date(q.date); return t<cutoffD && t>=new Date(cutoffD-30*864e5); }).length;
+    const gbDone = stu.filter(s=>s.level==='Level 1' && s.gb && s.gb.page>=GB_TOTAL).length;
+    const items=[];
+    if(promos.length) items.push({i:'🎓',t:`<b>${promos.length}</b> student${promos.length>1?'s':''} promoted`, go:'#/students'});
+    if(achievements.length) items.push({i:'🏅',t:`<b>${achievements.length}</b> achievement${achievements.length>1?'s':''} recorded`, go:'#/students'});
+    if(enrolled.length) items.push({i:'🌱',t:`<b>${enrolled.length}</b> new student${enrolled.length>1?'s':''} enrolled`, go:'#/students'});
+    if(memoEntries && memoEntries>=memoPrev) items.push({i:'📈',t:`Qur’ān entries up to <b>${memoEntries}</b>${memoPrev?' from '+memoPrev+' the month before':''}`, go:'#/students'});
+    else if(memoEntries) items.push({i:'📖',t:`<b>${memoEntries}</b> Qur’ān ${memoEntries===1?'entry':'entries'} logged this month`, go:'#/students'});
+    if(gbDone) items.push({i:'✅',t:`<b>${gbDone}</b> Green Book${gbDone>1?'s':''} complete, ready for Level 2`, go:'#/students'});
+    return `<div class="whead"><h3>✨ This month's momentum</h3></div>
+     ${items.length? `<div style="display:flex;flex-wrap:wrap;gap:10px">${items.map(x=>`<button class="chip" data-go="${x.go}" style="font-size:13px;padding:8px 14px">${x.i} ${x.t}</button>`).join('')}</div>`
+     : `<p style="font-family:var(--f-body);font-size:14.5px;color:var(--ink2)">Quiet month so far — log a promotion, achievement, or memorization entry and it'll show up here.</p>`}`;
   };
   W.kpis = ()=>{
     const cards = [
@@ -3028,7 +3101,7 @@ render(v){
   W.tuition = ()=> `<div class="whead"><h3>Tuition note</h3></div>
      <textarea id="tuitionNote" placeholder="Fee status, reminders, notes for Br. Abdallah… saved automatically.">${esc(d.settings.tuitionNote||'')}</textarea>`;
 
-  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}">${W[wid]()}</div>`; }
+  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}">${W[wid]()}</div>`; }
   h += `</div>`;
   v.innerHTML = h;
   wireCommon(v);
@@ -3418,7 +3491,8 @@ const Teacher = {
     // materials checklist across upcoming lessons
     const mats=upLessons.flatMap(L=>(L.materials||[]).map((m,i)=>({L,m,i})));
     el.innerHTML = `
-    ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div></div>`:''}
+    ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><button class="btn btn-p btn-sm no-print" id="enterClassMode" style="flex-shrink:0">🖥 Class Mode</button></div>`
+      :`<div class="no-print" style="margin-bottom:16px"><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
     <div class="sect">1 · Before class<span class="rule"></span></div>
     <div class="grid g2">
       <div class="widget"><div class="whead"><h3>${prepDay}’s plan</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/planner">Edit →</button></div>
@@ -3498,6 +3572,7 @@ const Teacher = {
       const min = k==='custom'? +($('#ttCustom',el).value||0) : +k;
       if(!min) return; Teacher.startTimer(min);
     });
+    const cmBtn=$('#enterClassMode',el); if(cmBtn) cmBtn.onclick=()=>Teacher.openClassMode();
   },
   startTimer(min){
     clearInterval(TT.iv); TT.end=Date.now()+min*60000;
@@ -3505,6 +3580,68 @@ const Teacher = {
     TT.iv=setInterval(()=>{ const left=TT.end-Date.now(); const e=$('#ttDisp');
       if(left<=0){ clearInterval(TT.iv); TT.end=null; if(e)e.textContent='00:00'; toast('⏰ Time is up'); return; }
       if(e) e.textContent=fmtLeft(left); },500);
+  },
+  /* ---------- CLASS MODE: full-screen, minimal-chrome, tablet-sized touch targets for
+     use DURING live class — sidebar/topbar hidden entirely, one job: take attendance
+     and log the two most time-pressured actions without hunting through menus ---------- */
+  openClassMode(){
+    const d=DB.data;
+    const date=today();
+    d.attendance[date]=d.attendance[date]||{};
+    const overlay=document.createElement('div');
+    overlay.id='classModeOverlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
+    const paint=()=>{
+      const rec=d.attendance[date];
+      const stu=d.students.filter(s=>s.active!==false && (!s.startDate||s.startDate<=date));
+      const present=Object.values(rec).filter(x=>x==='P').length;
+      const cyc={undefined:'P', P:'L', L:'A', A:undefined};
+      overlay.innerHTML=`
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-shrink:0;flex-wrap:wrap">
+          <b style="font-family:var(--f-display);font-size:19px">🖥 Class Mode</b>
+          <span style="font-family:var(--f-mono);font-size:13px;color:var(--ink2)">${present}/${stu.length} present</span>
+          <b id="cmTtDisp" style="font-family:var(--f-mono);font-size:19px;margin-left:auto">${TT.end?fmtLeft(TT.end-Date.now()):'--:--'}</b>
+          <button class="btn btn-o btn-sm" data-cmt="5">5m</button><button class="btn btn-o btn-sm" data-cmt="10">10m</button><button class="btn btn-o btn-sm" data-cmt="15">15m</button>
+          <button class="btn btn-ghost btn-sm" data-cmt="stop">■</button>
+          <button class="btn btn-o btn-sm" id="cmAllP">Mark all present</button>
+          <button class="btn btn-o btn-sm" id="cmQuran">📖 Memorization</button>
+          <button class="btn btn-o btn-sm" id="cmNote">📝 Note</button>
+          <button class="btn btn-p btn-sm" id="cmExit">✕ Exit Class Mode</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:18px">
+          <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">
+            ${stu.map(s=>{ const st=rec[s.id];
+              const bg = st==='P'?'var(--ok)':st==='L'?'var(--warn)':st==='A'?'var(--bad)':'var(--surface2)';
+              const fg = st?'#fff':'var(--ink)';
+              return `<button class="classmode-card" data-cmstu="${s.id}" style="background:${st?`color-mix(in srgb,${bg} 88%,transparent)`:bg};color:${fg};border-color:${st?'transparent':'var(--line2)'}">
+                <span style="font-size:15px;font-weight:600;line-height:1.25">${esc(s.preferredName||s.name)}</span>
+                <span style="font-size:12px;font-family:var(--f-mono);opacity:.85;margin-top:6px">${st||'tap to mark'}</span>
+              </button>`; }).join('')}
+          </div>
+          ${!stu.length?'<div class="empty"><h3>No students to mark</h3></div>':''}
+        </div>`;
+      $$('[data-cmstu]',overlay).forEach(b=>b.onclick=()=>{
+        const sid=b.dataset.cmstu; const next=cyc[rec[sid]];
+        if(next===undefined) delete rec[sid]; else rec[sid]=next;
+        DB.save(); paint();
+      });
+      $('#cmAllP',overlay).onclick=()=>{ stu.forEach(s=>rec[s.id]='P'); DB.log('Attendance: all present · '+date); DB.save(); paint(); };
+      $('#cmExit',overlay).onclick=()=>{ overlay.remove(); if(Router.parse().id==='teacher') Router.render(); };
+      $('#cmQuran',overlay).onclick=()=>Teacher.quickQuran();
+      $('#cmNote',overlay).onclick=()=>Teacher.quickStudent('Behavior note','behavior');
+      $$('[data-cmt]',overlay).forEach(b=>b.onclick=()=>{
+        const k=b.dataset.cmt;
+        if(k==='stop'){ clearInterval(TT.iv); TT.end=null; const e=$('#cmTtDisp',overlay); if(e)e.textContent='--:--'; return; }
+        Teacher.startTimer(+k);
+      });
+    };
+    // keep the header clock/countdown live while Class Mode is open; stop cleanly on exit
+    clearInterval(overlay._iv);
+    overlay._iv=setInterval(()=>{ const e=$('#cmTtDisp',overlay); if(e&&TT.end) e.textContent=fmtLeft(TT.end-Date.now()); },1000);
+    const cmObserver=new MutationObserver(()=>{ if(!document.body.contains(overlay)){ clearInterval(overlay._iv); cmObserver.disconnect(); } });
+    cmObserver.observe(document.body,{childList:true});
+    paint();
+    document.body.appendChild(overlay);
   },
   /* sequential fast-record: one modal, whole class */
   quickQuran(){
@@ -4070,6 +4207,61 @@ const Students = {
       DB.save(); toast(s.name+' promoted — mā shāʾ Allāh!'); Router.render();
     });
   },
+  /* ---------- printable one-pager: a keepsake, not a raw page dump — photo,
+     level, trend, achievements. Built to be something a parent keeps. ---------- */
+  printJourney(s, ctx){
+    const {tot,P,qlog,ach,age,sidFmt} = ctx;
+    const L1=s.level==='Level 1', L2=s.level==='Level 2';
+    let progVals=[], progLabel='', progNow='';
+    if(L1){ const glog=[...(s.gbLog||[])].sort((a,b)=>a.date.localeCompare(b.date)); progVals=glog.slice(-8).map(x=>x.page);
+      progLabel='Green Book progress'; progNow=((s.gb&&s.gb.page)||0)+' of 160 pages'; }
+    else if(L2){ const mlog=[...(s.musLog||[])].sort((a,b)=>a.date.localeCompare(b.date)); progVals=mlog.slice(-8).map(x=>x.page);
+      progLabel='Muṣḥaf reading progress'; progNow=((s.mus&&s.mus.page)||0)+' pages read'; }
+    else { progVals=[...Array(6)].map((_,i)=>{ const end=new Date(Date.now()-i*7*864e5), start=new Date(end-7*864e5);
+        return qlog.filter(q=>{ const t=new Date(q.date); return t>start&&t<=end; }).length; }).reverse();
+      const st=hifzStats(s); progLabel='Memorization entries, last 6 weeks'; progNow=st.pct.toFixed(0)+'% of path memorized'; }
+    const bars = vals=>{ if(!vals.length) return '<p style="color:#999;font-size:12px">Not enough entries yet for a trend.</p>';
+      const max=Math.max(...vals,1);
+      return `<div style="display:flex;align-items:flex-end;gap:5px;height:56px">${vals.map(v=>`<div style="flex:1;background:#b8872a;border-radius:3px 3px 0 0;height:${Math.max(4,v/max*56)}px" title="${v}"></div>`).join('')}</div>`; };
+    const stat=(n,l)=>`<div class="stat"><div class="n">${esc(String(n))}</div><div class="l">${esc(l)}</div></div>`;
+    const w=window.open('','_blank');
+    w.document.write(`<html><head><title>${esc(s.name)} — Student Journey</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Crimson+Pro&display=swap" rel="stylesheet">
+      <style>
+      body{font-family:'Crimson Pro',Georgia,serif;max-width:680px;margin:36px auto;padding:0 24px;color:#20261f}
+      h1{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#123626;margin:14px 0 2px}
+      .tag{font-size:12px;color:#8a6520;letter-spacing:.08em;text-transform:uppercase;font-weight:bold}
+      .head{display:flex;gap:16px;align-items:center;border-bottom:2px solid #1a4a35;padding-bottom:16px;margin-bottom:20px}
+      .head img{width:76px;height:76px;border-radius:14px;object-fit:cover;border:2px solid #e2d7bd}
+      .head .ph-fallback{width:76px;height:76px;border-radius:14px;background:#f4ead6;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#8a6520}
+      .meta{font-size:13px;color:#5c665a}
+      .stats{display:flex;gap:12px;margin:18px 0}
+      .stat{flex:1;background:#f4ead6;border:1px solid #e2d7bd;border-radius:10px;padding:12px;text-align:center}
+      .stat .n{font-size:22px;font-weight:bold;color:#1a4a35;font-family:'Playfair Display',Georgia,serif}
+      .stat .l{font-size:10.5px;color:#5c665a;margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+      h2{font-size:14px;color:#1a4a35;margin-top:24px;border-bottom:1px solid #ddd;padding-bottom:4px}
+      ul{padding-left:18px;font-size:14px}li{margin-bottom:4px}
+      .foot{margin-top:32px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic;text-align:center}
+      </style></head><body>
+      <div class="head">
+        ${s.photo?`<img src="${esc(s.photo)}">`:`<div class="ph-fallback">${esc(initials(s.name))}</div>`}
+        <div><div class="tag">Al-Madrasatu An-Nuriyyah</div>
+        <h1>${esc(s.preferredName||s.name)}</h1>
+        <div class="meta">${esc(s.level)} — ${esc(LEVEL_SUB[s.level])} · ${esc(sidFmt)}${age!=null?' · '+age+' years old':''}</div></div>
+      </div>
+      <div class="stats">
+        ${stat(tot?Math.round(P/tot*100)+'%':'—','Attendance')}
+        ${stat(ach.length,'Achievements')}
+        ${stat(progNow,progLabel.split(' ')[0]+' status')}
+      </div>
+      <h2>${esc(progLabel)}</h2>
+      ${bars(progVals)}
+      <h2>Achievements &amp; recognitions</h2>
+      ${ach.length?`<ul>${ach.slice(0,10).map(a=>`<li>${esc(a.text)} <span style="color:#999;font-size:11px">— ${fmtDate(a.date)}</span></li>`).join('')}</ul>`:'<p style="color:#999;font-size:13px">Nothing recorded yet.</p>'}
+      <div class="foot">Youth Educated… Family Cultivated… World Illuminated</div>
+      <script>window.print()<\/script></body></html>`);
+    w.document.close();
+  },
   /* ---------- LEVEL-AWARE PROFILE ---------- */
   profile(v,id){
     const s=DB.data.students.find(x=>x.id===id); const d=DB.data;
@@ -4174,7 +4366,7 @@ const Students = {
       DB.data.quran=DB.data.quran.filter(x=>x.sid!==id); DB.data.behavior=DB.data.behavior.filter(x=>x.sid!==id); DB.data.achievements=DB.data.achievements.filter(x=>x.sid!==id);
       for(const day in DB.data.attendance) delete DB.data.attendance[day][id];
       DB.log('Removed student: '+s.name); DB.save(); Router.go('#/students'); });
-    $('#sReport',v).onclick=()=>window.print();
+    $('#sReport',v).onclick=()=>Students.printJourney(s,{tot,P,qlog,ach,age,sidFmt});
     $('#sFav',v).onclick=()=>{ s.favorite=!s.favorite; DB.save(); Router.render(); };
     $('#sAI',v).onclick=()=>{ sessionStorage.setItem('ai_q', 'Give me a progress summary and 3 concrete recommendations for this student: '+aiCtx()); Router.go('#/ai'); };
     $('#sToggleActive',v).onclick=()=>{
@@ -4541,13 +4733,19 @@ const Admin = {
     const openT=d.tasks.filter(t=>!t.done);
     const overT=openT.filter(t=>t.due&&t.due<tdy);
     const nextEv=d.events.filter(e=>e.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
-    // needs-attention (admin automation)
+    // needs-attention (admin automation) — grouped so the list stays scannable as it grows
     const items=[];
-    overT.forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed'}));
-    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowM}));
-    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/tuition/families', tag:'reg fee', why:'registration fee set but not marked paid'}));
-    incompl.slice(0,4).forEach(s=>items.push({i:'📋',t:s.name+' — missing '+regComplete(s).join(', '), go:'#/students/'+s.id, tag:'registration', why:'required field(s) empty: '+regComplete(s).join(', ')}));
-    incoming.forEach(s=>items.push({i:'🌱',t:s.name+' starts '+fmtDate(s.startDate), go:'#/students/'+s.id, tag:'incoming', why:'start date on file is in the future'}));
+    overT.forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed', grp:'today'}));
+    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowM, grp:'financial'}));
+    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/tuition/families', tag:'reg fee', why:'registration fee set but not marked paid', grp:'financial'}));
+    incompl.slice(0,4).forEach(s=>items.push({i:'📋',t:s.name+' — missing '+regComplete(s).join(', '), go:'#/students/'+s.id, tag:'registration', why:'required field(s) empty: '+regComplete(s).join(', '), grp:'compliance'}));
+    incoming.forEach(s=>items.push({i:'🌱',t:s.name+' starts '+fmtDate(s.startDate), go:'#/students/'+s.id, tag:'incoming', why:'start date on file is in the future', grp:'week'}));
+    const GROUPS=[['today','Today'],['week','This Week'],['financial','Financial'],['compliance','Compliance']];
+    const groupedHtml = GROUPS.map(([gid,glabel])=>{
+      const gi=items.filter(x=>x.grp===gid); if(!gi.length) return '';
+      return `<div style="margin-bottom:12px"><div style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">${glabel} · ${gi.length}</div>
+        <div class="wlist">${gi.slice(0,6).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div></div>`;
+    }).join('');
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">
        ${[['🎓',act.length,'Active students','#/students'],
@@ -4559,7 +4757,7 @@ const Admin = {
          .map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:17px">${val}</b><span>${lab}</span></button>`).join('')}</div>
      <div class="grid g2">
       <div class="widget wfull"><div class="whead"><h3>⚡ Administrative attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
-        ${items.length?`<div class="wlist">${items.slice(0,10).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
+        ${items.length? groupedHtml
         :'<p style="font-family:var(--f-body);color:var(--ok)">The office is in order, al-ḥamdu lillāh.</p>'}</div>
       <div class="widget"><div class="whead"><h3>Upcoming</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/calendar">Calendar →</button></div>
         <div class="wlist">${nextEv.map(e=>`<div class="wrow" data-go="#/admin/calendar"><span class="m">${fmtDate(e.date)}</span><span class="t">${esc(e.title)}</span>${e.kind==='trip'?'<span class="tag tag-blue">trip</span>':''}</div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Nothing scheduled</div>'}</div></div>
@@ -4753,6 +4951,14 @@ const Tuition = {
     const statusVar={Paid:'--ok', Partial:'--warn', Due:'--bad', Excused:'--info'};
     const noPlan=fams.filter(f=>{ const p=DB.data.finance.plans[f.key]; return !p || !p.start; })
       .map(f=>({f, maxNo:Math.max(0,...f.members.map(s=>s.studentNo||0))})).sort((a,b)=>b.maxNo-a.maxNo).slice(0,2).map(x=>x.f);
+    const months12=[...Array(12)].map((_,i)=>{ const dt=new Date(); dt.setDate(1); dt.setMonth(dt.getMonth()-(11-i)); return dt.toISOString().slice(0,7); });
+    const rateTrend = months12.map(ym=>{
+      let exp=0, col=0;
+      fams.forEach(f=>{ const p=famPlan(f.key), monthly=famEffectiveMonthly(f.key);
+        if(monthly>0 && p.start && ym>=p.start) exp+=monthly;
+        col += DB.data.finance.payments.filter(x=>x.fam===f.key && x.date.slice(0,7)===ym && x.kind!=='excused' && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0); });
+      return exp>0? Math.round(Math.min(100,col/exp*100)) : (col>0?100:0);
+    });
     el.innerHTML = `
      <div class="grid g3" style="margin-bottom:8px">
        <div class="widget"><div class="whead"><h3>Collected to date</h3></div><div class="kpi">$${collected}<small>of $${expected} expected</small></div></div>
@@ -4760,6 +4966,7 @@ const Tuition = {
        <div class="widget"><div class="whead"><h3>Outstanding</h3></div><div class="kpi" style="${outstanding?'color:var(--bad)':''}">$${outstanding}<small>${dueNow.length} famil${dueNow.length===1?'y':'ies'} behind</small></div></div>
        <div class="widget"><div class="whead"><h3>Collection rate</h3></div><div class="kpi">${rate}%<small>${fams.length} active famil${fams.length===1?'y':'ies'}</small></div></div>
      </div>
+     <div class="widget" style="margin-bottom:18px">${spark(rateTrend,'Collection rate % · last 12 months',100)}</div>
      ${expectedThisMonth>0?`<div class="card" style="margin-bottom:18px">
        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-bottom:6px"><span>This month's collection progress</span><span>${thisMonthPct}%</span></div>
        <div class="bar" style="height:10px"><i style="width:${thisMonthPct}%"></i></div></div>`:''}
@@ -5138,8 +5345,20 @@ const Admissions = {
        <div class="ph-bar">${healthSegs.filter(([,,n])=>n>0).map(([key,,n])=>`<div class="ph-seg" data-phase="${key}" data-jump="${key}" style="width:${(n/healthTotal*100).toFixed(2)}%" title="${key} — ${n} · click to jump"></div>`).join('')}</div>
        <div class="ph-legend">${healthSegs.filter(([,,n])=>n>0).map(([key,label,n])=>`<span class="ph-item" data-jump="${key}"><i data-phase="${key}"></i>${esc(label)} <b>${n}</b></span>`).join('')}</div>
       </div>`;
+    // funnel strip: how far applications have progressed, at a glance, before
+    // opening a single card — "reached-or-past" counts (waitlist/not-a-fit
+    // excluded from the past-review stages since their true furthest stage
+    // isn't tracked structurally; enrolled counts as having passed everything)
+    const ord = ADM_STAGE_ORDER;
+    const atOrPast = stageId => { const idx=ord.indexOf(stageId); return active.filter(a=>ord.indexOf(a.stage)>=idx).length + enrolled.length; };
+    const funnel = [['Applied', d.admissions.length, null], ['Interviewed', atOrPast('interview'), 'interview'],
+      ['Agreement', atOrPast('agreement'), 'agreement'], ['Decision', atOrPast('decision'), 'decision'], ['Enrolled', enrolled.length, null]];
+    const funnelStrip = !d.admissions.length ? '' : `<div class="no-print" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 14px">
+       ${funnel.map(([label,n,jump],i)=>`${i>0?'<span style="color:var(--ink3);font-size:13px">→</span>':''}<button class="chip${jump?'':' btn-ghost'}" ${jump?`data-jump="${jump}"`:''} style="cursor:${jump?'pointer':'default'}"><b>${n}</b> ${esc(label)}</button>`).join('')}
+      </div>`;
     v.innerHTML = `<div class="page-wm"><div class="eyebrow">AMAN Admissions Pipeline</div><h2 class="page-title">AMAN Admissions</h2>
      <p class="page-sub">${esc(summary)}</p>
+     ${funnelStrip}
      ${healthStrip}
      <div class="filters no-print">
        <button class="btn btn-p btn-sm" id="admSync">⇪ Sync New Applications</button>
@@ -5876,6 +6095,16 @@ const inR=(d,a,b)=> d>=a && d<=b;
 function delta(cur, prev, unit){ if(prev==null||!isFinite(prev)) return '';
   const df=Math.round((cur-prev)*10)/10; if(!df) return '<span class="tag tag-dim">= prior</span>';
   return `<span class="tag ${df>0?'tag-green':'tag-red'}">${df>0?'▲':'▼'} ${Math.abs(df)}${unit||''} vs prior</span>`; }
+// compact version for embedding directly on a KPI card, next to the number —
+// only used where "prior period" is a real, cleanly computable comparison
+// (a dated, period-summed metric); point-in-time states like "active students
+// right now" or "curriculum % complete" have no historical snapshot in the
+// data model, so they don't get a fabricated arrow.
+function deltaMini(cur, prev){
+  if(prev==null||!isFinite(prev)||cur==null) return '';
+  const df=Math.round((cur-prev)*10)/10; if(!df) return '<span style="font-size:10px;font-weight:700;color:var(--ink3);margin-left:4px">=</span>';
+  return `<span style="font-size:10px;font-weight:700;margin-left:4px;color:${df>0?'var(--ok)':'var(--bad)'}">${df>0?'▲':'▼'}${Math.abs(df)}</span>`;
+}
 function attRate(a,b){ let P=0,T=0,sess=0;
   for(const day in DB.data.attendance){ if(!inR(day,a,b)) continue; sess++;
     for(const sid in DB.data.attendance[day]){ T++; if(DB.data.attendance[day][sid]==='P')P++; } }
@@ -5928,6 +6157,7 @@ const AnaTabs = {
     const L3=act.filter(s=>s.level==='Level 3');
     const avgH=L3.length? L3.reduce((a,s)=>a+hifzStats(s).pct,0)/L3.length : 0;
     const pays=d.finance.payments.filter(p=>inR(p.date,R.a,R.b)).reduce((a,p)=>a+(+p.amount||0),0);
+    const paysPrev=d.finance.payments.filter(p=>inR(p.date,R.pa,R.pb)).reduce((a,p)=>a+(+p.amount||0),0);
     const fams=famList().filter(fm=>!fm.solo);
     const outst=fams.reduce((a,fm)=>a+famFinance(fm.key).balance,0);
     const curAvg=Math.round((unitsPct('na')+unitsPct('tawhid')+unitsPct('mad'))/3);
@@ -5945,15 +6175,13 @@ const AnaTabs = {
     if(inc) ins.push({i:'📋',t:`${inc} student records incomplete (guardian / phone / emergency / photo)`, go:'#/admin/enroll', r:'rule: any required field empty'});
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">${[
-       ['🎓',act.length,'Active students','#/students'],
-       ['✅',att.rate!=null?att.rate+'%':'—','Attendance · '+att.sess+' sess.','#/analytics/students'],
-       ['📖',qN||'—','Qur’an entries','#/analytics/students'],
-       ['🕌',L3.length?avgH.toFixed(0)+'%':'—','Avg Ḥifẓ (L3)','#/analytics/students'],
-       ['💵',pays?'$'+pays:'—','Collected','#/analytics/admin'],
-       ['📚',curAvg+'%','Curriculum avg','#/analytics/curriculum']]
-      .map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></button>`).join('')}</div>
-     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-       ${delta(att.rate, attPrev.rate, 'pt')} ${qP?delta(qN,qP,''):''}</div>
+       ['🎓',act.length,'Active students','#/students',''],
+       ['✅',att.rate!=null?att.rate+'%':'—','Attendance · '+att.sess+' sess.','#/analytics/students',deltaMini(att.rate,attPrev.rate)],
+       ['📖',qN||'—','Qur’an entries','#/analytics/students',deltaMini(qN,qP)],
+       ['🕌',L3.length?avgH.toFixed(0)+'%':'—','Avg Ḥifẓ (L3)','#/analytics/students',''],
+       ['💵',pays?'$'+pays:'—','Collected','#/analytics/admin',deltaMini(pays,paysPrev)],
+       ['📚',curAvg+'%','Curriculum avg','#/analytics/curriculum','']]
+      .map(([i,val,lab,go,dm])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:18px">${val}${dm}</b><span>${lab}</span></button>`).join('')}</div>
      <div class="grid g2">
       <div class="widget wfull"><div class="whead"><h3>🧠 Computed insights</h3><span style="font-size:10.5px;color:var(--ink3)">every insight shows its rule — no black box</span></div>
        ${ins.length?`<div class="wlist">${ins.map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">${esc(x.r)}</span></span></div>`).join('')}</div>`
@@ -6489,7 +6717,7 @@ render(v){
     if(!text.trim()) return;
     add('user', esc(text)); q.value='';
     AIx.history.push({role:'user', content:text});
-    const typing=add('ai','<span class="typing"><i></i><i></i><i></i></span>');
+    const typing=add('ai','<span class="typing">computing</span>');
     // computed instantly — the brief pause is just for a natural chat feel, not a network round-trip
     setTimeout(()=>{
       const out=AIx.answer(text);
