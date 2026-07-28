@@ -1137,7 +1137,7 @@ const LETTER_CSS = `
   @media(max-width:560px){.cards{grid-template-columns:1fr;}.meta .recipient{text-align:left;}}
 
   @media print{
-    @page{size:Letter;margin:0.25in;}
+    @page{size:Letter;margin:0.2in;}
 
     /* ---- Shared: keep small callouts from splitting ---- */
     .cta, .dua{page-break-inside:avoid;}
@@ -1166,20 +1166,20 @@ const LETTER_CSS = `
     .mode-conditional .titleband .t{font-size:0.92rem !important;}
     .mode-conditional .titleband .sub{font-size:0.5rem !important;}
     .mode-conditional .body{padding:0.2in 0.65in 0.14in !important;}
-    .mode-conditional .meta{margin-bottom:8px !important;}
+    .mode-conditional .meta{margin-bottom:5px !important;}
     .mode-conditional .salutation{margin-bottom:6px !important;font-size:0.92rem !important;}
     .mode-conditional p{margin-bottom:5px !important;line-height:1.42 !important;font-size:0.9rem !important;}
     .mode-conditional .lead::first-letter{font-size:2rem !important;margin:3px 6px 0 0 !important;}
-    .mode-conditional .cards{margin:8px 0 !important;gap:9px !important;}
-    .mode-conditional .card{padding:0.6rem 0.8rem !important;}
+    .mode-conditional .cards{margin:5px 0 !important;gap:7px !important;}
+    .mode-conditional .card{padding:0.42rem 0.8rem !important;}
     .mode-conditional .card .chead{margin-bottom:0.4rem !important;font-size:0.55rem !important;}
     .mode-conditional .drow{margin-bottom:0.28rem !important;font-size:0.82rem !important;}
     .mode-conditional .cta{margin:7px 0 !important;padding:0.5rem 0.95rem !important;font-size:0.84rem !important;}
-    .mode-conditional .dua{margin:6px 0 !important;padding:0.45rem 1.1rem !important;font-size:0.84rem !important;}
-    .mode-conditional .closing{margin-top:5px !important;}
+    .mode-conditional .dua{margin:4px 0 !important;padding:0.4rem 1.1rem !important;font-size:0.84rem !important;}
+    .mode-conditional .closing{margin-top:3px !important;}
     .mode-conditional .closing .warm{margin-bottom:4px !important;}
-    .mode-conditional .footer{margin-top:5px !important;padding:5px 20px !important;}
-    .mode-conditional .body{padding-bottom:0.1in !important;}
+    .mode-conditional .footer{margin-top:3px !important;padding:4px 20px !important;}
+    .mode-conditional .body{padding-bottom:0.02in !important;}
 
     /* ===== WELCOME PACKET: multi-section; keep sections whole ===== */
     .mode-welcome .wp-section, .mode-welcome .wp-levels, .mode-welcome .wp-pillars, .mode-welcome .wp-checklist{break-inside:avoid !important;}
@@ -2331,6 +2331,8 @@ function renderLetterDocument(type, d){
   // the family, so the wrapper's generic date/recipient block and salutation
   // line would just duplicate it — skip both for this type only.
   const showMetaAndSalutation = type!=='welcome';
+  const crestImg = document.querySelector('.brand .crest img');
+  const crestSrc = crestImg ? crestImg.src : '';
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${esc(title)} \u2014 ${esc(d.students)}</title>
 <style>${LETTER_CSS}
 .toolbar{position:sticky;top:0;background:#1a4a35;padding:10px 16px;display:flex;gap:10px;justify-content:center;z-index:100}
@@ -2338,6 +2340,7 @@ function renderLetterDocument(type, d){
 .toolbar .p{background:#936c22;color:#fff}
 .toolbar .o{background:#fff;color:#1a4a35;border:1px solid #1a4a35}
 @media print{.toolbar{display:none}}
+@page{margin:0.2in !important}
 </style></head>
 <body class="mode-${type}">
 <div class="toolbar">
@@ -2347,6 +2350,7 @@ function renderLetterDocument(type, d){
 </div>
 <div class="sheet">
   <div class="hero">
+    <img class="logo" src="${crestSrc}" alt="Al-Madrasatu An-Nuriyyah (AMAN) logo">
     <div class="wm">\u0646\u0648\u0631</div>
     <div class="school">Al-Madrasatu An-Nuriyyah</div>
     <div class="arabic">\u0627\u0644\u0645\u062F\u0631\u0633\u0629 \u0627\u0644\u0646\u0648\u0631\u064A\u0629</div>
