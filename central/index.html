@@ -2444,6 +2444,29 @@ function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, inte
   ];
   return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
+function buildAgreementMailto(parentEmail, parentFirst, students, isPlural, agreementUrl){
+  const subject = 'AMAN \u2014 Parental Agreement Form for '+students;
+  const lines = [
+    'Assal\u0101mu \u02BFalaykum '+parentFirst+',',
+    '',
+    'Thank you for meeting with us \u2014 it was wonderful getting to know your family.',
+    '',
+    'The next step for '+students+' is completing the Parental Agreement Form together. You can fill it out here:',
+    agreementUrl,
+    '',
+    'That link recognizes your application automatically, so you shouldn\u2019t need to re-enter '+(isPlural?'your children\u2019s':'your child\u2019s')+' information.',
+    '',
+    'Once it\u2019s submitted, we\u2019ll follow up with the acceptance decision.',
+    '',
+    'Questions? Call or text us at (612) 444-2609.',
+    '',
+    'Barakall\u0101hu feekum,',
+    'Br. Abdallah bin Abdirahman',
+    'Enrollment Advisor & Accounting Manager',
+    'Al-Madrasatu An-Nuriyyah (AMAN)'
+  ];
+  return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+}
 
 // Accessibility: every ".field" block in the app is authored as
 // <div class="field"><label>Text</label><input/select/textarea …></div>
@@ -2511,7 +2534,7 @@ const DB = {
       ],
       meetings:[], activity:[],
       finance:{plans:{}, payments:[]}, families:{},
-      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'' }
+      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'' }
     };
   },
   load(){
@@ -2549,6 +2572,7 @@ const DB = {
     if(d.settings){
       const admNewUrl = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman';
       const amaNewUrl = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah';
+      const agrNewUrl = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement';
       // Every AMAN CSV link we've ever shipped as a default was a Google "Publish
       // to web" link (docs.google.com/.../pub?...&output=csv) — several different
       // gids across a few rounds of fixes, but all the same underlying approach.
@@ -2567,6 +2591,9 @@ const DB = {
       const isOldAmaanahPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.amaanahCsvUrl||'');
       if(!d.settings.amaanahCsvUrl || isOldAmaanahPublishLink) d.settings.amaanahCsvUrl=amaNewUrl;
       if(d.settings.amaanahLastSync===undefined) d.settings.amaanahLastSync='';
+      const isOldAgreementPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.agreementCsvUrl||'');
+      if(!d.settings.agreementCsvUrl || isOldAgreementPublishLink) d.settings.agreementCsvUrl=agrNewUrl;
+      if(d.settings.agreementLastSync===undefined) d.settings.agreementLastSync='';
     }
     if(Array.isArray(d.students)){ sotmLinkPhotos(d); migrateStudentContacts(d); }
     return d;
@@ -5066,6 +5093,7 @@ const Admissions = {
      ${healthStrip}
      <div class="filters no-print">
        <button class="btn btn-p btn-sm" id="admSync">⇪ Sync New Applications</button>
+       <button class="btn btn-o btn-sm" id="admSyncAgr">✅ Check Signed Agreements</button>
        <button class="btn btn-o btn-sm" id="admAdd">＋ Add Application</button>
        <button class="btn btn-ghost btn-sm" id="admCfg">⚙ Sync Settings</button>
        ${d.admissions.length?`<input type="search" id="admFind" placeholder="Find applicant or parent…" value="${esc(Admissions._find||'')}" style="max-width:220px">`:''}
@@ -5097,6 +5125,7 @@ const Admissions = {
     $('#admSync',v)&&($('#admSync',v).onclick=sync); $('#admSync2',v)&&($('#admSync2',v).onclick=sync);
     $('#admAdd',v)&&($('#admAdd',v).onclick=add); $('#admAdd2',v)&&($('#admAdd2',v).onclick=add);
     $('#admCfg',v)&&($('#admCfg',v).onclick=()=>Admissions.settingsForm());
+    $('#admSyncAgr',v)&&($('#admSyncAgr',v).onclick=()=>Admissions.syncAgreements());
     const f=$('#admFind',v); if(f){ f.oninput=()=>{ Admissions._find=f.value; clearTimeout(Admissions._ft); Admissions._ft=setTimeout(()=>{Router.render(); const nf=$('#admFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
   },
   _wireActions(v){
@@ -5107,6 +5136,7 @@ const Admissions = {
     if(act==='adv'){
       const next = admNextStage(a.stage);
       if(next==='interview') Admissions.interviewLetterForm(a);
+      else if(next==='agreement') Admissions.agreementLetterForm(a);
       else if(next) Admissions.stageTransitionForm(a, next);
     } else if(act==='wl'){
       admSetStage(a, 'waitlist', 'Placed on the Waiting List'); toast('Moved to Waiting List'); Router.render();
@@ -5123,6 +5153,33 @@ const Admissions = {
     } else if(act==='enroll'){ Admissions.enrollForm(a); }
     else if(act==='paid'){ Admissions.paymentReceivedForm(a); }
     else if(act==='note'){ Admissions.noteForm(a); }
+  },
+  agreementLetterForm(a){
+    const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && x.stage==='interview');
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Interview Done \u2014 Move to Agreement</h3>
+      <div id="ag-step1">
+      ${siblings.length?`<div class="field"><label>Include siblings from this same interview?</label>
+        ${siblings.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:4px;font-weight:400"><input type="checkbox" class="sib-cb" data-sid="${s.id}" checked style="width:auto"> ${esc(s.studentName)}</label>`).join('')}
+        </div>`:''}
+      <p style="font-size:13.5px;color:var(--ink2)">This moves the selected applicant(s) to the Agreement stage and prepares an email with a link to the Parental Agreement Form.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="ag-go">Confirm</button></div>
+      </div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#ag-go',o).onclick=()=>{
+      const selectedSibs = siblings.filter(s => { const cb = o.querySelector(`[data-sid="${s.id}"]`); return cb && cb.checked; });
+      const group = [a, ...selectedSibs];
+      group.forEach(x=> admSetStage(x, 'agreement', 'Interview complete \u2014 sent Parental Agreement Form link'));
+      const studentsJoined = admJoinNames(group.map(x=>x.studentName));
+      const agreementUrl = 'https://amanschoolmn.org/agreement/'+(a.appId?('?app='+encodeURIComponent(a.appId)):'');
+      const mailto = buildAgreementMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, agreementUrl);
+      Router.render();
+      toast('Moved to Agreement');
+      $('#ag-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send \u2014 review, then open it in your email client.</p>
+        <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">\ud83d\udce7 Open Email Draft</a></div>`;
+      wireFieldLabels(o);
+      $('[data-x=c2]',o).onclick=()=>o.remove();
+    };
   },
   interviewLetterForm(a){
     const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && x.stage==='review');
@@ -5403,6 +5460,43 @@ const Admissions = {
       toast(added? added+' new application'+(added===1?'':'s')+' imported' : 'No new applications');
     }catch(err){ toast(syncErrorMessage(err)); }
   },
+  agreementSettingsForm(){
+    const cur = DB.data.settings.agreementCsvUrl||'';
+    const o = overlay(`<div class="modal" style="max-width:520px"><h3>Agreement Sync Settings</h3>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Paste your Apps Script Web App URL with <code>?sheet=agreement</code> added to the end. AMAN Central reads this every time you tap "Check Signed Agreements" and matches each submission to its applicant by Application ID — nothing runs automatically in the background.</p>
+      <div class="field"><label>Apps Script export URL</label><input id="agr-url" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/…/exec?sheet=agreement"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ DB.data.settings.agreementCsvUrl=$('#agr-url',o).value.trim(); DB.save(); o.remove(); toast('Saved'); };
+  },
+  async syncAgreements(){
+    const url = (DB.data.settings.agreementCsvUrl||'').trim();
+    if(!url){ Admissions.agreementSettingsForm(); return; }
+    toast('Checking for signed agreements…');
+    try{
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const text = await res.text();
+      const rows = csvToObjects(text);
+      let matched=0;
+      rows.forEach(row=>{
+        const appId=(row['Application ID']||'').trim(); if(!appId) return;
+        const group = DB.data.admissions.filter(a=>a.appId===appId && !a.agreementSubmitted);
+        if(!group.length) return;
+        const signed = /^y/i.test(row['Signature Captured']||'');
+        group.forEach(a=>{
+          a.agreementSubmitted = true;
+          a.agreementSubmittedDate = (row['Timestamp']||'').trim() || today();
+          admLog(a, 'Parental Agreement Form submitted'+(signed?' (signed)':' (no signature on file)'));
+        });
+        matched += group.length;
+      });
+      DB.data.settings.agreementLastSync = new Date().toISOString();
+      if(matched) DB.log('Agreement sync: matched '+matched+' applicant'+(matched===1?'':'s'));
+      DB.save(); Router.render();
+      toast(matched? matched+' applicant'+(matched===1?'':'s')+' matched to a signed agreement' : 'No new agreement submissions found');
+    }catch(err){ toast(syncErrorMessage(err)); }
+  },
   enrollForm(a){
     const sameName = DB.data.students.some(x=>x.name.toLowerCase()===a.studentName.toLowerCase());
     const suggestLevel = /memoriz|Ḥāfi/i.test(a.quranLevel)? 'Level 3' : /fluent|slowly/i.test(a.quranLevel)? 'Level 2' : 'Level 1';
@@ -5467,6 +5561,7 @@ const Admissions = {
        <span class="tag ${admStageTagClass(a)}" style="font-size:13px;padding:6px 14px">${esc(admStageDisplay(a))}${a.stage==='waitlist'&&admWaitlistPos(a)?' #'+admWaitlistPos(a):''}</span>
      </div>
      ${siblings.length?`<div class="notice info" style="margin-top:14px">👪 Applying with ${siblings.map(s=>`<a data-go="#/admissions/${s.id}" style="text-decoration:underline;cursor:pointer">${esc(s.studentName)}</a>`).join(', ')} (same family submission)</div>`:''}
+     ${a.agreementSubmitted?`<div class="notice info" style="margin-top:14px;background:color-mix(in srgb,var(--ok) 10%,var(--surface));border-color:var(--ok)">✅ <div>Parental Agreement Form submitted${a.agreementSubmittedDate?' on '+fmtDate(a.agreementSubmittedDate):''}.</div></div>`:a.stage==='agreement'?`<div class="notice warn" style="margin-top:14px">⏳ <div>Waiting on the Parental Agreement Form. Tap "Check Signed Agreements" on the Admissions list once the family has submitted it.</div></div>`:''}
      <div class="sect">Actions<span class="rule"></span></div>
      <div class="card no-print" style="display:flex;gap:8px;flex-wrap:wrap">${admProfileActions(a)}</div>
      <div class="sect">Student<span class="rule"></span></div>
