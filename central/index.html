@@ -7,6 +7,15 @@
 <title>AMAN Central — Al-Madrasatu An-Nuriyyah</title>
 <meta name="description" content="AMAN Central — the operating system of Al-Madrasatu An-Nuriyyah.">
 <meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#123626">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AMAN Central">
+<!-- PWA notes: manifest.json, sw.js, and /icons live alongside this HTML file on
+     the server (see deployment notes shipped with this file) — install requires
+     real, fetchable files at those relative paths, not just this markup. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -2919,17 +2928,17 @@ render(v){
   W.focus = ()=>{
     const items=[];
     if(daysTo===0 && stu.length && !Object.keys(todayRec).length)
-      items.push({i:'✅',t:'Attendance not taken yet for today’s class', go:'#/students/attendance', tag:'now'});
-    openTasks.filter(t=>t.due&&t.due<tdy).forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue'}));
-    openTasks.filter(t=>!t.due||t.due>=tdy).slice(0,3-Math.min(2,items.length)).forEach(t=>items.push({i:'☐',t:t.text, go:'#/admin/tasks', tag:t.due?fmtDate(t.due):'task'}));
-    res.filter(r=>r.status==='Missing — Re-upload').forEach(r=>items.push({i:'📎',t:r.title+' — file needs re-linking', go:'#/resource/'+r.id, tag:'missing'}));
-    res.filter(r=>r.status==='Draft').forEach(r=>items.push({i:'✏️',t:r.title+' — decision pending', go:'#/resource/'+r.id, tag:'draft'}));
-    behind.slice(0,3).forEach(s=>items.push({i:'📖',t:s.name+' — no memorization entry in 14+ days', go:'#/students/'+s.id, tag:'check'}));
-    concerns.slice(0,3).forEach(s=>items.push({i:'⚠️',t:s.name+' — '+last4.filter(day=>d.attendance[day][s.id]==='A').length+' absences in last '+last4.length+' sessions', go:'#/students/'+s.id, tag:'attendance'}));
-    bdays.slice(0,2).forEach(b=>items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d'), go:'#/students/'+b.s.id, tag:'🎉'}));
-    res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned'}));
+      items.push({i:'✅',t:'Attendance not taken yet for today’s class', go:'#/students/attendance', tag:'now', why:'today is a scheduled class day and no attendance is recorded yet'});
+    openTasks.filter(t=>t.due&&t.due<tdy).forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed'}));
+    openTasks.filter(t=>!t.due||t.due>=tdy).slice(0,3-Math.min(2,items.length)).forEach(t=>items.push({i:'☐',t:t.text, go:'#/admin/tasks', tag:t.due?fmtDate(t.due):'task', why:'open task on your list'+(t.due?', due '+fmtDate(t.due):', no due date set')}));
+    res.filter(r=>r.status==='Missing — Re-upload').forEach(r=>items.push({i:'📎',t:r.title+' — file needs re-linking', go:'#/resource/'+r.id, tag:'missing', why:'resource status = "Missing — Re-upload"'}));
+    res.filter(r=>r.status==='Draft').forEach(r=>items.push({i:'✏️',t:r.title+' — decision pending', go:'#/resource/'+r.id, tag:'draft', why:'resource status = "Draft"'}));
+    behind.slice(0,3).forEach(s=>items.push({i:'📖',t:s.name+' — no memorization entry in 14+ days', go:'#/students/'+s.id, tag:'check', why:'Level 3, no Qur’ān entry logged in the last 14 days'}));
+    concerns.slice(0,3).forEach(s=>items.push({i:'⚠️',t:s.name+' — '+last4.filter(day=>d.attendance[day][s.id]==='A').length+' absences in last '+last4.length+' sessions', go:'#/students/'+s.id, tag:'attendance', why:last4.filter(day=>d.attendance[day][s.id]==='A').length+' of the last '+last4.length+' sessions marked absent (rule fires at 2+)'}));
+    bdays.slice(0,2).forEach(b=>items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d'), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days'}));
+    res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet'}));
     return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
-     ${items.length? `<div class="wlist">${items.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
+     ${items.length? `<div class="wlist">${items.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
      : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}`;
   };
   W.kpis = ()=>{
@@ -3598,13 +3607,24 @@ const Teacher = {
        ${slots.map((s,i)=>`<div class="field"><label>${s}</label><textarea data-pl="${day}_${i}" placeholder="Lesson, resources, students to check on…">${esc(wk['pl_'+day+'_'+i]||'')}</textarea></div>`).join('')}
       </div>`).join('')}</div>
      <div style="display:flex;gap:9px;margin-top:14px;flex-wrap:wrap" class="no-print">
-      <button class="btn btn-o" id="plPrint">Print week</button>
+      <button class="btn btn-o" id="plPrint">🖨 Print week — binder sheet</button>
       <button class="btn btn-o" id="plCopy">Copy Saturday → Sunday</button>
       <button class="btn btn-danger btn-sm" id="plClear">Clear week</button></div>`;
     $$('textarea[data-pl]',el).forEach(t=>t.oninput=()=>{ d.planner['pl_'+t.dataset.pl]=t.value; DB.save(); });
-    $('#plPrint',el).onclick=()=>window.print();
+    $('#plPrint',el).onclick=()=>Teacher.printWeek(days,slots,wk);
     $('#plCopy',el).onclick=()=>{ slots.forEach((s,i)=>{ d.planner['pl_Sunday_'+i]=d.planner['pl_Saturday_'+i]||''; }); DB.save(); Router.render(); toast('Copied to Sunday'); };
     $('#plClear',el).onclick=()=>confirmBox('Clear both days of the planner?',()=>{ days.forEach(day=>slots.forEach((s,i)=>delete d.planner['pl_'+day+'_'+i])); DB.save(); Router.render(); });
+  },
+  /* ---------- printable weekend planner: a real binder sheet, not a raw print of on-screen textareas ---------- */
+  printWeek(days,slots,wk){
+    const dateLine = day=>{ const {sat,sun}=aiNextWeekend(); return fmtDate(day==='Saturday'?sat:sun); };
+    const body = days.map(day=>`
+      <h2>${esc(day)} <span style="font-weight:400;color:#555;font-size:12px">· ${dateLine(day)}</span></h2>
+      <table><tbody>${slots.map((s,i)=>{ const txt=(wk['pl_'+day+'_'+i]||'').trim();
+        return `<tr><td style="width:150px;vertical-align:top;font-weight:600">${esc(s)}</td><td style="white-space:pre-wrap">${txt?esc(txt):'<span style="color:#999">— not planned —</span>'}</td></tr>`; }).join('')}</tbody></table>`).join('');
+    const w=window.open('','_blank');
+    w.document.write(`<html><head><title>Weekend Plan</title><style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px;border-bottom:1px solid #ddd;padding-bottom:4px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top}</style></head><body><h1>Weekend Lesson Plan</h1><div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · prepared ${new Date().toLocaleDateString()}</div>${body}<script>window.print()<\/script></body></html>`);
+    w.document.close();
   },
   /* ---------- LESSON PLANS (upgraded: materials, time, taught-state, auto-related) ---------- */
   lessons(el){
@@ -4116,6 +4136,18 @@ const Students = {
       <div class="widget"><div class="whead"><h3>Attendance</h3></div><div class="kpi">${tot?Math.round(P/tot*100)+'%':'—'}<small>${tot} session${tot===1?'':'s'}</small></div></div>
       <div class="widget"><div class="whead"><h3>${L1?'Green Book':'Qur’an entries'}</h3></div><div class="kpi">${L1?((s.gb&&s.gb.page)||0)+'<small>of 160 pages</small>':qlog.length+'<small>log entries</small>'}</div></div>
       <div class="widget"><div class="whead"><h3>Achievements</h3></div><div class="kpi">${ach.length}<small>recorded</small></div></div></div>
+     ${(()=>{ // trend sparklines — reuses the same spark() the Dashboard already uses, just underused here before
+       const attVals=att.slice(0,12).reverse().map(x=>x[1]==='P'?1:x[1]==='L'?0.5:0);
+       let progVals=[], progLabel='';
+       if(L1){ const glog=[...(s.gbLog||[])].sort((a,b)=>a.date.localeCompare(b.date)); progVals=glog.slice(-10).map(x=>x.page); progLabel='Green Book page · last '+progVals.length+' update'+(progVals.length===1?'':'s'); }
+       else if(L2){ const mlog=[...(s.musLog||[])].sort((a,b)=>a.date.localeCompare(b.date)); progVals=mlog.slice(-10).map(x=>x.page); progLabel='Muṣḥaf page · last '+progVals.length+' update'+(progVals.length===1?'':'s'); }
+       else { progVals=[...Array(6)].map((_,i)=>{ const end=new Date(Date.now()-i*7*864e5), start=new Date(end-7*864e5);
+         return qlog.filter(q=>{ const t=new Date(q.date); return t>start&&t<=end; }).length; }).reverse(); progLabel='Qur’ān entries / week · last 6 weeks'; }
+       if(attVals.length<2 && progVals.length<2) return '';
+       return `<div class="grid g2" style="margin-bottom:18px">
+         ${attVals.length>1?`<div class="widget"><div class="whead"><h3>Attendance trend</h3></div>${spark(attVals,'last '+attVals.length+' sessions (present/late/absent)')}</div>`:''}
+         ${progVals.length>1?`<div class="widget"><div class="whead"><h3>Progress trend</h3></div>${spark(progVals,progLabel)}</div>`:''}
+       </div>`; })()}
      ${s.active===false?`<div class="notice warn" style="margin-bottom:16px">🚪 <div><b>Inactive</b> — no longer enrolled at AMAN. All records preserved. Use "Reactivate" above to bring them back.</div></div>`:''}
      ${s.notes?`<div class="notice info" style="margin-bottom:16px">📝 <div>${esc(s.notes)}</div></div>`:''}
      <div id="lvlCard"></div>
@@ -4511,11 +4543,11 @@ const Admin = {
     const nextEv=d.events.filter(e=>e.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
     // needs-attention (admin automation)
     const items=[];
-    overT.forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue'}));
-    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition'}));
-    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/tuition/families', tag:'reg fee'}));
-    incompl.slice(0,4).forEach(s=>items.push({i:'📋',t:s.name+' — missing '+regComplete(s).join(', '), go:'#/students/'+s.id, tag:'registration'}));
-    incoming.forEach(s=>items.push({i:'🌱',t:s.name+' starts '+fmtDate(s.startDate), go:'#/students/'+s.id, tag:'incoming'}));
+    overT.forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed'}));
+    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowM}));
+    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/tuition/families', tag:'reg fee', why:'registration fee set but not marked paid'}));
+    incompl.slice(0,4).forEach(s=>items.push({i:'📋',t:s.name+' — missing '+regComplete(s).join(', '), go:'#/students/'+s.id, tag:'registration', why:'required field(s) empty: '+regComplete(s).join(', ')}));
+    incoming.forEach(s=>items.push({i:'🌱',t:s.name+' starts '+fmtDate(s.startDate), go:'#/students/'+s.id, tag:'incoming', why:'start date on file is in the future'}));
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">
        ${[['🎓',act.length,'Active students','#/students'],
@@ -4527,7 +4559,7 @@ const Admin = {
          .map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:17px">${val}</b><span>${lab}</span></button>`).join('')}</div>
      <div class="grid g2">
       <div class="widget wfull"><div class="whead"><h3>⚡ Administrative attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
-        ${items.length?`<div class="wlist">${items.slice(0,10).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
+        ${items.length?`<div class="wlist">${items.slice(0,10).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
         :'<p style="font-family:var(--f-body);color:var(--ok)">The office is in order, al-ḥamdu lillāh.</p>'}</div>
       <div class="widget"><div class="whead"><h3>Upcoming</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/calendar">Calendar →</button></div>
         <div class="wlist">${nextEv.map(e=>`<div class="wrow" data-go="#/admin/calendar"><span class="m">${fmtDate(e.date)}</span><span class="t">${esc(e.title)}</span>${e.kind==='trip'?'<span class="tag tag-blue">trip</span>':''}</div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Nothing scheduled</div>'}</div></div>
@@ -4899,17 +4931,25 @@ const Tuition = {
       .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
       .sort((a,b)=>b.fin.balance-a.fin.balance);
     el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">Families not yet paid for ${nowM} \u2014 sorted by balance owed.</p>
-     ${owing.length? owing.map(({f,fin,rec})=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
+     ${owing.length? owing.map(({f,fin,rec})=>{
+        const shortMsg = `As-sal\u0101mu \u02bfalaykum ${f.key} family \u2014 friendly reminder: $${Math.max(0,fin.monthly-fin.paidThisMonth)} is due for ${nowM} at AMAN (balance $${fin.balance}). Jaz\u0101kAllahu khayran!`;
+        const digits = rec.phone? rec.phone.replace(/[^0-9+]/g,'') : '';
+        return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
         <div><b style="font-family:var(--f-display);font-size:15.5px">\ud83d\udc6a ${esc(f.key)}</b>
           <span class="tag ${fin.monthStatus==='Partial'?'tag-gold':'tag-red'}" style="margin-left:6px">${fin.monthStatus}</span>
           <div style="font-size:12.5px;color:var(--ink2);margin-top:3px">Owes $${Math.max(0,fin.monthly-fin.paidThisMonth)} this month \u00b7 $${fin.balance} total balance${rec.phone?' \u00b7 '+esc(rec.phone):''}</div></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap" class="no-print">
-          ${rec.phone?`<a class="btn btn-ghost btn-sm" href="tel:${esc(rec.phone.replace(/[^0-9+]/g,''))}">\ud83d\udcde Call</a><a class="btn btn-ghost btn-sm" href="sms:${esc(rec.phone.replace(/[^0-9+]/g,''))}">\ud83d\udcac Text</a>`:''}
-          <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.monthly}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">\u2728 Reminder draft</button>
+          ${digits?`<a class="btn btn-ghost btn-sm" href="tel:${esc(digits)}">\ud83d\udcde Call</a><a class="btn btn-ghost btn-sm" href="sms:${esc(digits)}?&body=${encodeURIComponent(shortMsg)}">\ud83d\udcac Text reminder</a>`:''}
+          <button class="chip" data-copy="${esc(shortMsg)}">\ud83d\udccb Copy reminder</button>
+          <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.monthly}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">\u2728 Longer draft</button>
           <button class="btn btn-o btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
-        </div></div>`).join('') : '<div class="empty"><div class="big">\u2705</div><h3>Everyone\u2019s current</h3><p>No outstanding balances this month, al-\u1e25amdulill\u0101h.</p></div>'}`;
+        </div></div>`; }).join('') : '<div class="empty"><div class="big">\u2705</div><h3>Everyone\u2019s current</h3><p>No outstanding balances this month, al-\u1e25amdulill\u0101h.</p></div>'}`;
     wireCommon(el);
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
+    $$('button[data-copy]',el).forEach(b=>b.onclick=()=>{
+      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(b.dataset.copy).then(()=>toast('Copied to clipboard')).catch(()=>toast('Could not copy — select the text manually'));
+      else toast('Could not copy — select the text manually');
+    });
     $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
   },
   /* ---------- shared payment / excuse form ---------- */
@@ -5022,11 +5062,21 @@ function admProfileActions(a){
 function admField(label, val){
   return `<div><label style="display:block;font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px">${esc(label)}</label><div style="font-size:14px">${val? esc(val) : '<span style="color:var(--ink3)">—</span>'}</div></div>`;
 }
+function admAgeDays(a){
+  const since=(a.log&&a.log[0]&&a.log[0].date)||a.submitted||today();
+  return Math.max(0, Math.round((new Date(today())-new Date(since))/864e5));
+}
+function agingBadge(days){
+  if(days==null) return '';
+  const cls = days>=8?'tag-red':days>=4?'tag-gold':'tag-dim';
+  return `<span class="tag ${cls}" title="${days} day${days===1?'':'s'} since the last stage change — nothing has moved on this application" style="margin-left:4px">${days}d</span>`;
+}
 function admCard(a){
   const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id);
   const lastLog = (a.log&&a.log[0]) || null;
   const wlPos = a.stage==='waitlist'? admWaitlistPos(a) : null;
-  const stageTag = `<span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlPos?' #'+wlPos:''}</span>`;
+  const ageDays = ['notfit','enrolled'].includes(a.stage)? null : admAgeDays(a);
+  const stageTag = `<span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlPos?' #'+wlPos:''}</span>${agingBadge(ageDays)}`;
   const justMoved = a.id===admLastMoved;
   if(justMoved) admLastMoved = null;
   const phase = admPhaseKey(a);
@@ -5628,7 +5678,8 @@ function amaField(label, val){
 function amaCard(a){
   const siblings = DB.data.amaanahApplications.filter(x=>x.appId===a.appId && x.id!==a.id);
   const lastLog = (a.log&&a.log[0]) || null;
-  const stageTag = `<span class="tag ${amaStageTagClass(a)}">${esc(amaStageDisplay(a))}</span>`;
+  const ageDays = ['accepted','denied'].includes(a.stage)? null : admAgeDays(a);
+  const stageTag = `<span class="tag ${amaStageTagClass(a)}">${esc(amaStageDisplay(a))}</span>${agingBadge(ageDays)}`;
   return `<div class="card" style="display:flex;flex-direction:column;gap:8px">
     <div style="cursor:pointer" data-go="#/amaanah-admissions/${a.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><b>${esc(a.participantName)||'(unnamed)'}</b>${stageTag}</div>
@@ -6048,7 +6099,8 @@ const AnaTabs = {
       ${[['📋','Attendance report','Per-student presence across every session in range','att'],
          ['📖','Memorization report','Every L3 student: path, position, %, entries in range','memo'],
          ['🗓️','Class session report','Pick a date: who came, what was recited','sess'],
-         ['🏫','Term summary','The whole school in one document — students, levels, curriculum, admin','term']]
+         ['🏫','Term summary','The whole school in one document — students, levels, curriculum, admin','term'],
+         ['🏛️','Board & donor report','One-page external summary — impact numbers only, no family-level detail','board']]
         .map(([i,t,dsc,k])=>`<div class="card" style="cursor:pointer" data-rep="${k}"><div style="font-size:22px;margin-bottom:6px">${i}</div><b style="font-family:var(--f-display);font-size:16px">${t}</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">${dsc}</p></div>`).join('')}
       <div class="card" style="cursor:pointer" data-go="#/tuition/families"><div style="font-size:22px;margin-bottom:6px">💵</div><b style="font-family:var(--f-display);font-size:16px">Tuition report</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">Lives in Tuition → 🖨 button</p></div>
       <div class="card" style="cursor:pointer" data-go="#/library"><div style="font-size:22px;margin-bottom:6px">🗂</div><b style="font-family:var(--f-display);font-size:16px">Missing resources report</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">Lives in Knowledge Base → ⚠ button</p></div>
@@ -6098,11 +6150,60 @@ const AnaReports = {
      <h2>Qur'an</h2><p>${d.quran.filter(q=>inR(q.date,R.a,R.b)).length} entries in range. Class-wide Ḥifẓ: ${L3.reduce((a,s)=>a+hifzStats(s).pages,0).toFixed(0)} pages memorized.</p>
      <h2>Curriculum</h2><p>Madinah Arabic ${unitsPct('mad')}% · Names & Attributes ${unitsPct('na')}% · Tawhid ${unitsPct('tawhid')}% · Lessons taught: ${d.lessons.filter(L=>L.taught).length}.</p>
      <h2>Administration</h2><p>Tuition collected in range: $${d.finance.payments.filter(p=>inR(p.date,R.a,R.b)).reduce((a,p)=>a+(+p.amount||0),0)} · Outstanding: $${outst} · Open tasks: ${d.tasks.filter(t=>!t.done).length}.</p>
-     <h2>Knowledge Base</h2><p>${d.resources.length} resources; ${d.resources.filter(r=>r.status==='Planned').length} planned gaps; ${d.resources.filter(r=>r.status.startsWith('Missing')).length} awaiting re-upload.</p>`); }
+     <h2>Knowledge Base</h2><p>${d.resources.length} resources; ${d.resources.filter(r=>r.status==='Planned').length} planned gaps; ${d.resources.filter(r=>r.status.startsWith('Missing')).length} awaiting re-upload.</p>`); },
+  /* ---------- board(): a one-page external-facing report — aggregate numbers only, no
+     family names or individual balances, since this is meant to leave the building ---------- */
+  board(R){ const d=DB.data;
+    const act=d.students.filter(s=>s.active!==false);
+    const att=attRate(R.a,R.b);
+    const L3=act.filter(s=>s.level==='Level 3');
+    const curAvg=Math.round((unitsPct('na')+unitsPct('tawhid')+unitsPct('mad'))/3);
+    const pagesMem=L3.reduce((a,s)=>a+hifzStats(s).pages,0);
+    const collected=d.finance.payments.filter(p=>inR(p.date,R.a,R.b)&&p.kind!=='excused').reduce((a,p)=>a+(+p.amount||0),0);
+    const stat=(n,l)=>`<div class="stat"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`;
+    const w=window.open('','_blank');
+    w.document.write(`<html><head><title>AMAN Impact Summary</title><style>
+      body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#20261f}
+      h1{font-family:Georgia,serif;font-size:24px;color:#123626;margin-bottom:2px}
+      .tag{font-size:12.5px;color:#8a6520;letter-spacing:.06em;text-transform:uppercase;font-weight:bold}
+      .meta{font-size:12px;color:#666;margin:6px 0 22px}
+      .stats{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:26px}
+      .stat{flex:1;min-width:130px;background:#f4ead6;border:1px solid #e2d7bd;border-radius:10px;padding:14px 12px;text-align:center}
+      .stat .n{font-size:26px;font-weight:bold;color:#1a4a35}
+      .stat .l{font-size:11px;color:#5c665a;margin-top:2px}
+      p{font-size:14.5px;line-height:1.6}
+      .foot{margin-top:30px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic}
+      </style></head><body>
+      <div class="tag">Al-Madrasatu An-Nuriyyah</div>
+      <h1>Impact Summary</h1>
+      <div class="meta">${R.a} → ${R.b} · prepared ${new Date().toLocaleDateString()}</div>
+      <div class="stats">
+        ${stat(act.length,'Active students')}
+        ${stat(att.rate!=null?att.rate+'%':'—','Attendance rate')}
+        ${stat(pagesMem.toFixed(0),'Qur\u2019ān pages memorized (Ḥifẓ track)')}
+        ${stat(curAvg+'%','Curriculum completion')}
+      </div>
+      <p>Al-Madrasatu An-Nuriyyah (AMAN) served ${act.length} students across three learning levels this period, from first Arabic letters through full Qur\u2019ān memorization. ${att.rate!=null?`Attendance held at ${att.rate}% across ${att.sess} sessions. `:''}${pagesMem?`Ḥifẓ students collectively memorized ${pagesMem.toFixed(0)} pages of the Qur\u2019ān in this period. `:''}Community support covered $${collected} in tuition during this period, directly sustaining weekly instruction.</p>
+      <div class="foot">Youth Educated… Family Cultivated… World Illuminated</div>
+      <script>window.print()<\/script></body></html>`);
+    w.document.close(); }
 };
 
-/* ================= MODULE: AI ASSISTANT — THE OS BEHIND AMAN ================= */
-function aiContext(){ // fresh, compact, grounded snapshot — rebuilt every message
+/* ================= MODULE: AI ASSISTANT — OFFLINE OPERATIONS ASSISTANT =================
+   Earlier versions of this module called the Anthropic API directly from the browser
+   with no API key attached — a real key can never live safely in a public GitHub
+   Pages file, since anyone can view-source it. Every request 401'd/CORS-failed and
+   silently fell back to a small local answer function. In effect this was already a
+   rule-based assistant wearing a "live chat" costume.
+   This version drops the costume. Nothing below calls a network model. Every answer
+   is computed instantly from DB.data, on this device, every time — which also means
+   no tuition or student data ever leaves the browser. AIx.answer() is the dispatcher;
+   aiContext() and AI_SYSTEM just below are RESERVED, NOT CURRENTLY CALLED — they were
+   solid prompt-engineering work for a real model call, kept here in case a small
+   backend proxy (e.g. a Cloudflare Worker holding a real key server-side) ever gets
+   built. Do not point a fetch() at api.anthropic.com from this file again — the key
+   would be public the moment this is pushed to GitHub Pages. */
+function aiContext(){ // fresh, compact, grounded snapshot — rebuilt every message; RESERVED, see note above
   const d=DB.data, tdy=today();
   const act=d.students.filter(s=>s.active!==false);
   const a90=new Date(Date.now()-90*864e5).toISOString().slice(0,10);
@@ -6151,42 +6252,251 @@ RULES:
 Use them whenever a follow-up, reminder, event, or lesson plan is the natural outcome. Never claim you saved something — the teacher approves each block.
 5. BE CONCISE by default (a few sentences); expand only for lesson plans, quizzes, drafts. Use **bold** sparingly and "- " bullets for lists.
 6. Respect AMAN conventions: tagline "Youth Educated… Family Cultivated… World Illuminated", الأمانة always with ال, warm respectful tone with parents, Islamic phrases natural (in sha Allah, ma sha Allah).`;
+
+/* ---------- rule engine: shared helpers ---------- */
+function aiNextWeekend(){
+  const now=new Date(), day=now.getDay();
+  const add=(dt,n)=>{ const x=new Date(dt); x.setDate(x.getDate()+n); return x; };
+  const sat = day===6? now : day===0? add(now,-1) : add(now,6-day);
+  const iso = x=>x.toISOString().slice(0,10);
+  return {sat: iso(sat), sun: iso(add(sat,1))};
+}
+function aiWeakestArea(){
+  const areas=[['Madinah Arabic','mad'],['Names & Attributes of Allah','na'],['Tawḥīd','tawhid']];
+  return areas.reduce((a,b)=>unitsPct(b[1])<=unitsPct(a[1])?b:a);
+}
+function aiBehindList(){
+  return stuFlags(new Date(Date.now()-30*864e5).toISOString().slice(0,10), today())
+    .filter(x=>x.flags.some(f=>f[0]==='behind'));
+}
+function aiPromoList(){
+  const promo=[];
+  DB.data.students.filter(s=>s.active!==false).forEach(s=>{
+    if(s.level==='Level 1' && s.gb && s.gb.page>=GB_TOTAL) promo.push({s, why:'Green Book complete ('+s.gb.page+'/160)'});
+    if(s.level==='Level 2'){ const log=[...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+      if(log.length>=3 && log.every(x=>x.fluency==='Strong')) promo.push({s, why:'3 consecutive Strong readings'}); }
+  });
+  return promo;
+}
+function aiFamsDue(){
+  return famList().filter(f=>!f.solo).map(f=>({f, fin:famFinance(f.key)}))
+    .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
+    .sort((a,b)=>b.fin.balance-a.fin.balance);
+}
+function aiCopyBox(msg){
+  return `<div class="ai-copybox" style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0;white-space:pre-wrap;font-family:var(--f-body);font-size:14.5px">${esc(msg)}</div><button class="btn btn-o btn-sm" data-copy="${esc(msg)}">📋 Copy message</button>`;
+}
+function aiCantWrite(topic){
+  const hits=Search.run(topic,4);
+  return `I can't draft original prose from scratch offline — real free-form writing needs a language model, and this assistant only computes from your data, it doesn't invent text. Saying otherwise would just be the same broken promise this replaced.<br><br>${hits.length? 'Closest thing already in your Knowledge Base:<br>'+hits.map(r=>`<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`).join('') : 'Nothing close already exists in your Knowledge Base.'}<br><br><span style="font-size:12.5px;color:var(--ink3)">Fastest real path: paste this request into claude.ai (or any AI chat), then save the result here as a new resource.</span>`;
+}
+function aiPermissionSlipHTML(title,dateStr){
+  return `<h2 style="font-family:Georgia,serif">Field Trip Permission Slip</h2><p>Al-Madrasatu An-Nuriyyah (AMAN)</p><p><b>Trip:</b> ${esc(title)}<br><b>Date:</b> ${esc(dateStr)}</p><p>As-salāmu ʿalaykum wa raḥmatullāhi wa barakātuh,<br>In shā’ Allāh we will be taking students on the above trip. Please complete and return this slip.</p><p>Student name: ______________________<br>Parent/Guardian name: ______________________<br>Emergency contact &amp; phone: ______________________<br>I give permission for my child to attend:  ☐ Yes &nbsp; ☐ No<br>Parent/Guardian signature: ______________________ &nbsp; Date: ______________________</p><p>Jazākumullāhu khayran,<br>Al-Madrasatu An-Nuriyyah</p>`;
+}
+/* ---------- rule engine: intent handlers (each returns final HTML, or null/falsy to fall through) ---------- */
+function aiTuitionReminderHandler(text){
+  const m=text.match(/family\s+([^:]+):\s*monthly\s*\$([\d.?]+),\s*status\s*(\w+),\s*outstanding balance\s*\$([\d.]+)/i);
+  if(m){
+    const [,fam,monthly,status,balance]=m; const nowM=today().slice(0,7);
+    const msg=`As-salāmu ʿalaykum ${fam.trim()} family,\n\nJust a gentle reminder that AMAN tuition for ${nowM} is $${monthly}${/partial/i.test(status)?' (partially received, jazākumullāhu khayran)':''}. Current outstanding balance: $${balance}.\n\nYou can pay by Zelle, CashApp, or in person — whatever's easiest. Let me know if anything's changed on your end.\n\nJazākumullāhu khayran,\nUstādh Nur\nAl-Madrasatu An-Nuriyyah`;
+    return `Drafted from this family's real balance in Tuition — nothing invented:<br>${aiCopyBox(msg)}`;
+  }
+  const due=aiFamsDue();
+  if(!due.length) return `No family owes anything this month, al-ḥamdu lillāh — nothing to remind.`;
+  const list=due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance} (${fin.monthStatus})`).join('<br>');
+  return `I need a specific family to draft a real reminder — so the amount is right, not invented. ${due.length} famil${due.length===1?'y':'ies'} currently owe:<br>${list}<br><br>Tap <b>✨ Reminder draft</b> next to any family in <b>Tuition → Who Owes Now</b> and I'll write the exact message with their real balance.`;
+}
+function aiParentUpdate(text){
+  const m=text.match(/parent progress update.*?for:\s*(.+)$/is);
+  if(!m) return null;
+  const stats=m[1].trim();
+  const nameMatch=stats.match(/^([^(]+)\(/);
+  const name=nameMatch?nameMatch[1].trim():'your child';
+  const msg=`As-salāmu ʿalaykum! A quick update on ${name} at AMAN:\n\n${stats}\n\nJazākumullāhu khayran for your continued support at home.\n\n— Ustādh Nur`;
+  return `Drafted from ${esc(name)}'s live record:<br>${aiCopyBox(msg)}`;
+}
+function aiParentClassMessage(){
+  const d=DB.data, tdy=today();
+  const rec=d.attendance[tdy]||{};
+  const present=Object.values(rec).filter(x=>x==='P').length;
+  const total=d.students.filter(s=>s.active!==false).length;
+  const hwOpen=(d.homework||[]).filter(h=>!h.reviewed).length;
+  const dayName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+  const msg=`As-salāmu ʿalaykum wa raḥmatullāh,\n\nJazākumullāhu khayran for a great class today (${dayName}) — ${present} of ${total} students present, al-ḥamdu lillāh.${hwOpen?' Homework was assigned — please check in with your child this week.':''}\n\nBārak Allāhu fīkum,\nUstādh Nur\nAl-Madrasatu An-Nuriyyah`;
+  return aiCopyBox(msg);
+}
+function aiClassSummary(){
+  const d=DB.data, tdy=today();
+  const rec=d.attendance[tdy]||{};
+  const present=Object.values(rec).filter(x=>x==='P').length, absent=Object.values(rec).filter(x=>x==='A').length;
+  const total=d.students.filter(s=>s.active!==false).length;
+  const qToday=d.quran.filter(q=>q.date===tdy).length;
+  const behind=aiBehindList();
+  let s=`Today: ${present} of ${total} present${absent?`, ${absent} absent`:''}. ${qToday} Qur'ān ${qToday===1?'entry':'entries'} logged.<br><br>`;
+  s+= behind.length? `For next session, focus on: ${behind.slice(0,4).map(x=>`<button class="rlink" data-s="${x.s.id}">🎓 ${esc(x.s.name)}</button>`).join(' ')} — no memorization entry in 14+ days.` : `No one is currently flagged behind — good position to introduce new material.`;
+  return s;
+}
+function aiPermissionSlipHandler(text){
+  const m=text.match(/for:\s*(.+?)\s+on\s+([A-Za-z]+ \d{1,2}, \d{4})/);
+  const title=m?m[1]:'[Trip name]', dateStr=m?m[2]:'[Date]';
+  const body=aiPermissionSlipHTML(title,dateStr);
+  const lead=m? `Ready — this trip's actual title and date, not invented:` : `No specific trip attached to this request, so here's a blank fill-in-the-blank version. Ask again from the event's own Permission Slip button for one auto-filled with real details:`;
+  return `${lead}<br><div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:14px;margin:8px 0;font-family:var(--f-body);font-size:14px">${body}</div><button class="btn btn-o btn-sm" data-print-slip="${esc(title)}|${esc(dateStr)}">🖨 Print slip</button>`;
+}
+function aiWarmups(){
+  const tips=['Rapid-fire vocabulary review — call a word, students race to give the meaning','60-second "who remembers" — one question from last week per student','Pair-share: each student tells a partner one thing they practiced at home','Whiteboard race — write today\u2019s key term as fast and neatly as possible'];
+  const start=new Date().getDate()%tips.length;
+  const pick=[0,1,2].map(i=>tips[(start+i)%tips.length]);
+  return `A few tried-and-true options (a fixed rotation, not generated for today specifically — that would need real language generation):<br>`+pick.map((t,i)=>`${i+1}. ${t}`).join('<br>');
+}
+function aiAnnouncementTemplate(){
+  const d=DB.data, tdy=today();
+  const nextEv=d.events.filter(e=>e.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const msg=`As-salāmu ʿalaykum wa raḥmatullāhi wa barakātuh,\n\n[Your announcement here]${nextEv?`\n\nReminder: ${nextEv.title} is coming up on ${fmtDate(nextEv.date)}.`:''}\n\nJazākumullāhu khayran,\nUstādh Nur\nAl-Madrasatu An-Nuriyyah`;
+  return `Can't write the actual announcement content offline — but here's a ready shell with your real next event dropped in so it's not just a blank box:<br>${aiCopyBox(msg)}`;
+}
+function aiLessonBuilder(){
+  const d=DB.data;
+  const {sat}=aiNextWeekend();
+  const untaught=d.lessons.filter(L=>!L.taught).sort((a,b)=>a.date.localeCompare(b.date));
+  const [areaName,areaKey]=aiWeakestArea();
+  let out=`Next class day: <b>${fmtDate(sat)}</b>. `;
+  out+= untaught.length? `You already have ${untaught.length} un-taught lesson${untaught.length===1?'':'s'} queued — start with <b>${esc(untaught[0].title)}</b> (${esc(untaught[0].subject)}).<br><br>` : `No lesson plans queued yet. Weakest curriculum area right now is <b>${areaName}</b> at ${unitsPct(areaKey)}% — that's the natural next lesson.<br><br>`;
+  const title = untaught.length? untaught[0].title : areaName+' — next unit';
+  out += `<div class="ai-act" data-act="lesson" data-a="${esc(sat)}" data-b="${esc(title)}" data-c="${esc('Continue '+areaName)}">📝 <span><b>Lesson:</b> ${esc(title)} · ${esc(sat)}</span><button class="btn btn-p btn-sm">Add</button></div>`;
+  out += `<div style="font-size:12.5px;color:var(--ink3);margin-top:6px">This drops a dated placeholder on the calendar so nothing slips — the full slot-by-slot Planner is still where the real content goes.</div>`;
+  return out;
+}
+function aiKBCleanup(){
+  const res=DB.data.resources;
+  const broken=res.filter(r=>r.status==='Missing — Re-upload');
+  const seen={}, dupes=[];
+  res.forEach(r=>{ const k=(r.title||'').toLowerCase().trim(); if(seen[k]) dupes.push(r); else seen[k]=1; });
+  const meta=res.filter(r=>!r.subject||!r.grade||!r.status);
+  const steps=[];
+  if(broken.length) steps.push(`Re-link or remove ${broken.length} resource${broken.length===1?'':'s'} marked "Missing — Re-upload" — actually broken right now for anyone who opens them.`);
+  if(dupes.length) steps.push(`Merge or retitle ${dupes.length} duplicate title${dupes.length===1?'':'s'} — pick the canonical version, archive the other.`);
+  if(meta.length) steps.push(`Fill in ${meta.length} resource${meta.length===1?'':'s'} with incomplete metadata — lowest priority, do this last.`);
+  if(!steps.length) return `${res.length} resources, all clean — nothing broken, no duplicates, no missing metadata.`;
+  return `${res.length} resources total. Suggested order (roughly 30 min):<br>`+steps.map((s,i)=>`${i+1}. ${s}`).join('<br>')+`<br><br><button class="btn btn-o btn-sm" data-go="#/library">Open Knowledge Base →</button>`;
+}
+function aiWorkflowTips(){
+  const d=DB.data;
+  const openT=d.tasks.filter(t=>!t.done).length;
+  const overT=d.tasks.filter(t=>!t.done&&t.due&&t.due<today()).length;
+  const incomplete=d.students.filter(s=>s.active!==false&&regComplete(s).length).length;
+  const tips=[];
+  if(overT>3) tips.push(`${overT} tasks are overdue — that's the biggest drag right now. A fixed 10-minute weekly task triage would catch this before it piles up.`);
+  if(incomplete) tips.push(`${incomplete} student record${incomplete>1?'s are':' is'} missing a required field (guardian/phone/emergency/photo) — closing these now prevents scrambling later.`);
+  if(openT>15) tips.push(`${openT} open tasks total — worth splitting into "this week" vs "someday" so the list stays actionable instead of just long.`);
+  if(!tips.length) return `Nothing structurally wrong right now — ${openT} open tasks, records look complete. The workflow itself is in decent shape.`;
+  return tips.map((t,i)=>`${i+1}. ${t}`).join('<br>');
+}
+function aiMemoReview(){
+  const b=aiBehindList();
+  if(!b.length) return 'No one is flagged behind in the last 30 days, al-ḥamdu lillāh.';
+  return `${b.length} student${b.length>1?'s':''} flagged — every flag states its rule:<br>`+b.map(x=>`<button class="rlink" data-s="${x.s.id}">🎓 ${esc(x.s.name)}</button> <span style="font-size:12px;color:var(--ink3)">${esc(x.flags.map(f=>f[1]).join('; '))}</span>`).join('<br>');
+}
+function aiPromotions(){
+  const p=aiPromoList();
+  if(!p.length) return 'No one currently meets the promotion criteria (Green Book complete, or 3 consecutive Strong Muṣḥaf readings).';
+  return `${p.length} ready:<br>`+p.map(x=>`<button class="rlink" data-s="${x.s.id}">🎓 ${esc(x.s.name)}</button> <span style="font-size:12px;color:var(--ink3)">${esc(x.why)}</span>`).join('<br>');
+}
+function aiTuitionFollowup(){
+  const due=aiFamsDue();
+  if(!due.length) return 'Every family is current this month, al-ḥamdu lillāh.';
+  return `${due.length} famil${due.length===1?'y':'ies'} owe this month:<br>`+due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance} (${fin.monthStatus})`).join('<br>')+`<br><br><button class="btn btn-o btn-sm" data-go="#/tuition/owe">Open Who Owes Now →</button>`;
+}
+function aiHomeworkSuggest(text){
+  const lvlM=text.match(/level\s*(\d)/i);
+  const level = lvlM? 'Level '+lvlM[1] : 'Level 1';
+  const res=DB.data.resources.filter(r=>(r.grade===level||r.grade==='All Levels'));
+  const active=res.filter(r=>r.status==='Active'), planned=res.filter(r=>r.status==='Planned');
+  let out=`Can't write new homework content offline, but here's what's already on hand for ${esc(level)}:<br>`;
+  out+= active.length? active.slice(0,6).map(r=>`<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`).join('') : `No active resources tagged for ${esc(level)} yet.`;
+  if(planned.length) out+=`<br><span style="font-size:12.5px;color:var(--ink3)">${planned.length} more planned but not built yet.</span>`;
+  out+=`<br><br><button class="btn btn-o btn-sm" data-go="#/teacher/homework">＋ Open homework form →</button>`;
+  return out;
+}
+function aiMonthSummary(){
+  const d=DB.data, ym=today().slice(0,7);
+  const act=d.students.filter(s=>s.active!==false);
+  const days=Object.keys(d.attendance).filter(day=>day.startsWith(ym));
+  let P=0,tot=0; days.forEach(day=>{ Object.values(d.attendance[day]).forEach(v=>{ tot++; if(v==='P')P++; }); });
+  const rate=tot?Math.round(P/tot*100):null;
+  const qN=d.quran.filter(q=>q.date.startsWith(ym)).length;
+  const curAvg=Math.round((unitsPct('na')+unitsPct('tawhid')+unitsPct('mad'))/3);
+  const collected=d.finance.payments.filter(p=>p.date.startsWith(ym)&&p.kind!=='excused').reduce((a,p)=>a+(+p.amount||0),0);
+  const outst=famList().filter(f=>!f.solo).reduce((a,f)=>a+famFinance(f.key).balance,0);
+  return `${ym}: ${act.length} active students${days.length?`, attendance ${rate}% over ${days.length} session${days.length===1?'':'s'}`:', no sessions logged yet this month'}. ${qN} Qur'ān ${qN===1?'entry':'entries'} this month. Curriculum average ${curAvg}%. $${collected} collected so far, $${outst} total outstanding across all families.`;
+}
+function aiPrioritize(){
+  const d=DB.data, tdy=today();
+  const items=[];
+  const overT=d.tasks.filter(t=>!t.done&&t.due&&t.due<tdy);
+  const openT=d.tasks.filter(t=>!t.done&&(!t.due||t.due>=tdy));
+  const behind=aiBehindList();
+  const due=aiFamsDue();
+  const missing=d.resources.filter(r=>r.status==='Missing — Re-upload');
+  if(overT.length) items.push(`⏰ ${overT.length} overdue task${overT.length>1?'s':''} — oldest: ${esc(overT[0].text)}`);
+  if(behind.length) items.push(`📖 ${behind.length} student${behind.length>1?'s':''} need a memorization check`);
+  if(due.length) items.push(`💵 ${due.length} famil${due.length===1?'y':'ies'} owe tuition this month`);
+  if(missing.length) items.push(`📎 ${missing.length} resource${missing.length>1?'s':''} need re-linking`);
+  if(openT.length) items.push(`☐ ${openT.length} open task${openT.length>1?'s':''} on the list`);
+  if(!items.length) return 'Nothing urgent on the board this week, al-ḥamdu lillāh — good time to work ahead on curriculum.';
+  return items.map((t,i)=>`${i+1}. ${t}`).join('<br>');
+}
+const AI_PATTERNS = [
+  [/tuition reminder/i, t=>aiTuitionReminderHandler(t)],
+  [/parent progress update/i, t=>aiParentUpdate(t)],
+  [/summarizing today.?s class/i, ()=>aiParentClassMessage()],
+  [/summarize today/i, ()=>aiClassSummary()],
+  [/permission slip/i, t=>aiPermissionSlipHandler(t)],
+  [/code of conduct|absence.*attendance policy|health.*emergency policy/i, t=>aiCantWrite(t)],
+  [/warm-up activit/i, ()=>aiWarmups()],
+  [/simplify.*topic/i, t=>aiCantWrite(t)],
+  [/school announcement|announcement for parents/i, ()=>aiAnnouncementTemplate()],
+  [/lesson plan|curriculum left off/i, ()=>aiLessonBuilder()],
+  [/knowledge base health|cleanup plan/i, ()=>aiKBCleanup()],
+  [/improve.*workflow/i, ()=>aiWorkflowTips()],
+  [/memoriz.*review|hifz review|behind|struggl/i, ()=>aiMemoReview()],
+  [/promot/i, ()=>aiPromotions()],
+  [/tuition follow|families need tuition|who owes/i, ()=>aiTuitionFollowup()],
+  [/homework/i, t=>aiHomeworkSuggest(t)],
+  [/summar(y|ize)|status report/i, ()=>aiMonthSummary()],
+  [/prioritiz|this week|what should i (do|focus)/i, ()=>aiPrioritize()],
+];
+
 Registry.register({ id:'ai', name:'AI Assistant', icon:'spark', group:'Intelligence',
 render(v){
-  v.innerHTML = `<div class="eyebrow">AI Workspace · Operations Manager</div><h2 class="page-title">Assistant</h2>
-   <p class="page-sub">Sees the whole school live — students, tuition, tasks, curriculum, resources. Explains every recommendation with the data behind it.</p>
+  v.innerHTML = `<div class="eyebrow">Operations Assistant · Instant · Offline · Explainable</div><h2 class="page-title">Assistant</h2>
+   <p class="page-sub">Every answer here is computed live from your school's data, right on this device — nothing is sent anywhere. Ask a question or tap a shortcut.</p>
    <div class="ai-wrap"><div class="ai-msgs" id="aiMsgs"></div>
     <div class="ai-chips no-print" id="aiChips">
      ${['Build this weekend’s lesson plan','Who needs memorization review, and why?','Who is ready for promotion?','Draft a parent announcement','Which families need tuition follow-up?','Generate homework for Level 1','Summarize this month’s progress','What should I prioritize this week?'].map(c=>`<button class="chip" data-chip="${esc(c)}">${esc(c)}</button>`).join('')}
      <button class="chip" id="aiNew" style="margin-left:auto">🗑 New chat</button></div>
-    <div class="ai-input no-print"><input id="aiQ" placeholder="Ask anything, or tell me what to prepare…"><button class="btn btn-p" id="aiSend">Send</button></div></div>`;
+    <div class="ai-input no-print"><input id="aiQ" placeholder="Ask about students, tuition, tasks, or curriculum…"><button class="btn btn-p" id="aiSend">Send</button></div></div>`;
   const msgs=$('#aiMsgs',v), q=$('#aiQ',v);
   const add=(cls,html)=>{ const m=document.createElement('div'); m.className='msg '+cls; m.innerHTML=html; msgs.append(m); msgs.scrollTop=msgs.scrollHeight; return m; };
   AIx.history = AIx.history||[];
-  const render=el=>{ AIx.wire(el); };
-  // restore or open with proactive briefing (computed locally — instant, offline, rule-transparent)
-  if(AIx.history.length){ AIx.history.forEach(h=>{ const el=add(h.role==='user'?'user':'ai', h.role==='user'?esc(h.content):AIx.format(h.content)); if(h.role!=='user') render(el); }); }
-  else render(add('ai', AIx.briefing()));
-  async function send(text){
+  // restore prior turns (already-rendered HTML, computed — not markdown needing reformatting) or open with the proactive briefing
+  if(AIx.history.length){
+    AIx.history.forEach(h=>{ const el=add(h.role==='user'?'user':'ai', h.role==='user'?esc(h.content):h.content); if(h.role!=='user') AIx.wire(el); });
+  } else {
+    AIx.wire(add('ai', AIx.briefing()));
+  }
+  function send(text){
     if(!text.trim()) return;
     add('user', esc(text)); q.value='';
-    const typing=add('ai','<span class="typing"><i></i><i></i><i></i></span>');
     AIx.history.push({role:'user', content:text});
-    try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:2000,
-          system: AI_SYSTEM+'\n\n'+aiContext(),
-          messages: AIx.history.slice(-12) })});
-      const data=await resp.json();
-      const out=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n')||'(no reply)';
+    const typing=add('ai','<span class="typing"><i></i><i></i><i></i></span>');
+    // computed instantly — the brief pause is just for a natural chat feel, not a network round-trip
+    setTimeout(()=>{
+      const out=AIx.answer(text);
       AIx.history.push({role:'assistant', content:out});
-      typing.innerHTML=AIx.format(out); render(typing);
-    }catch(e){
-      const local=AIx.local(text);
-      typing.innerHTML=local; render(typing);
-    }
-    msgs.scrollTop=msgs.scrollHeight;
+      typing.innerHTML=out; AIx.wire(typing);
+      msgs.scrollTop=msgs.scrollHeight;
+    }, 220);
   }
   $('#aiSend',v).onclick=()=>send(q.value);
   q.onkeydown=e=>{ if(e.key==='Enter') send(q.value); };
@@ -6196,36 +6506,35 @@ render(v){
 }});
 const AIx = {
   history:[],
-  /* ---- render: tokens → buttons, action blocks → approval cards, markdown-lite ---- */
-  format(raw){
-    let h=esc(raw);
-    // action blocks
-    h=h.replace(/\[\[task:\s*([^\]|]+?)(?:\s*\|\s*([\d-]{0,10}))?\s*\]\]/g,(m,txt,due)=>
-      `<div class="ai-act" data-act="task" data-a="${esc(txt.trim())}" data-b="${esc(due||'')}">☑️ <span><b>Task:</b> ${esc(txt.trim())}${due?' · due '+esc(due):''}</span><button class="btn btn-p btn-sm">Add</button></div>`);
-    h=h.replace(/\[\[event:\s*([\d-]{8,10})\s*\|\s*([^\]]+?)\s*\]\]/g,(m,dt,ti)=>
-      `<div class="ai-act" data-act="event" data-a="${esc(dt)}" data-b="${esc(ti)}">🗓️ <span><b>Event:</b> ${esc(ti)} · ${esc(dt)}</span><button class="btn btn-p btn-sm">Add</button></div>`);
-    h=h.replace(/\[\[lesson:\s*([\d-]{8,10})\s*\|\s*([^|\]]+?)\s*\|\s*([^\]]*?)\s*\]\]/g,(m,dt,ti,obj)=>
-      `<div class="ai-act" data-act="lesson" data-a="${esc(dt)}" data-b="${esc(ti)}" data-c="${esc(obj)}">📝 <span><b>Lesson:</b> ${esc(ti)} · ${esc(dt)}</span><button class="btn btn-p btn-sm">Add</button></div>`);
-    // entity tokens → buttons (resources and students share one namespace)
-    h=h.replace(/\{\{([a-z0-9-]+)\}\}/gi,(m,id)=>{ const r=DB.res(id);
-      if(r) return `<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`;
-      const s=DB.data.students.find(x=>x.id===id);
-      if(s) return `<button class="rlink" data-s="${s.id}">🎓 ${esc(s.name)}</button>`;
-      return esc(id); });
-    // markdown-lite
-    h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
-    h=h.split('\n').map(line=> line.startsWith('- ')? '<div style="padding-left:14px">• '+line.slice(2)+'</div>' : line).join('\n');
-    return h.replace(/\n/g,'<br>').replace(/(<\/div>)<br>/g,'$1');
-  },
+  /* ---- wire: entity/action buttons on any message bubble (briefing, rule answers, restored history) ---- */
   wire(el){
     $$('.rlink[data-r]',el).forEach(b=>b.onclick=()=>Router.go('#/resource/'+b.dataset.r));
     $$('.rlink[data-s]',el).forEach(b=>b.onclick=()=>Router.go('#/students/'+b.dataset.s));
+    $$('[data-go]',el).forEach(b=>b.onclick=()=>Router.go(b.dataset.go));
+    $$('[data-copy]',el).forEach(b=>b.onclick=()=>{
+      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(b.dataset.copy).then(()=>toast('Copied to clipboard')).catch(()=>toast('Could not copy — select the text manually'));
+      else toast('Could not copy — select the text manually');
+    });
+    $$('[data-print-slip]',el).forEach(b=>b.onclick=()=>{
+      const [title,dateStr]=b.dataset.printSlip.split('|');
+      const w=window.open('','_blank');
+      w.document.write(`<html><head><title>Permission Slip</title><style>body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.7}h2{color:#1a4a35}</style></head><body>${aiPermissionSlipHTML(title,dateStr)}<script>window.print()<\/script></body></html>`);
+      w.document.close();
+    });
     $$('.ai-act',el).forEach(card=>{ const btn=$('button',card); if(!btn) return;
       btn.onclick=()=>{ const k=card.dataset.act, a=card.dataset.a, b=card.dataset.b, c=card.dataset.c||'';
-        if(k==='task'){ DB.data.tasks.unshift({id:uid(), text:a, due:b, done:false, pri:'Normal', cat:'General', link:''}); DB.log('Task added via AI: '+a); }
-        if(k==='event'){ DB.data.events.push({id:uid(), date:a, title:b, kind:'event', checklist:[]}); DB.log('Event added via AI: '+b); }
-        if(k==='lesson'){ DB.data.lessons.unshift({id:uid(), title:b, subject:'Islamic Studies', date:a, est:null, objective:c, plan:'', materials:[], matDone:[], resources:[], taught:false}); DB.log('Lesson added via AI: '+b); }
-        DB.save(); btn.textContent='Added ✓'; btn.disabled=true; btn.classList.remove('btn-p'); btn.classList.add('btn-o'); toast('Approved — added to '+(k==='task'?'Tasks':k==='event'?'Calendar':'Lesson Plans')); };});
+        if(k==='task'){ DB.data.tasks.unshift({id:uid(), text:a, due:b, done:false, pri:'Normal', cat:'General', link:''}); DB.log('Task added via Assistant: '+a); }
+        if(k==='event'){ DB.data.events.push({id:uid(), date:a, title:b, kind:'event', checklist:[]}); DB.log('Event added via Assistant: '+b); }
+        if(k==='lesson'){ DB.data.lessons.unshift({id:uid(), title:b, subject:'Islamic Studies', date:a, est:null, objective:c, plan:'', materials:[], matDone:[], resources:[], taught:false}); DB.log('Lesson added via Assistant: '+b); }
+        DB.save(); btn.textContent='Added ✓'; btn.disabled=true; btn.classList.remove('btn-p'); btn.classList.add('btn-o'); toast('Added to '+(k==='task'?'Tasks':k==='event'?'Calendar':'Lesson Plans')); };});
+  },
+  /* ---- answer: rule dispatcher — every branch is computed from DB.data, nothing invented ---- */
+  answer(text){
+    for(const [re,fn] of AI_PATTERNS){
+      if(re.test(text)){ const out=fn(text); if(out) return out; }
+    }
+    const hits=Search.run(text,5);
+    return hits.length? `Nothing rule-based matches that yet — closest from your Knowledge Base:<br>${hits.map(r=>`<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`).join('')}` : `No rule covers that yet, and nothing close in the Knowledge Base either. This assistant answers from computed data — try a shortcut above, or ask about students, tuition, tasks, or curriculum directly.`;
   },
   /* ---- proactive briefing: local rules, instant, transparent ---- */
   briefing(){
@@ -6256,17 +6565,6 @@ const AIx = {
     h+=`<br><span style="font-size:12px;color:var(--ink3)">Every item above shows the rule that fired. Ask me anything — I'll answer from live data and explain with the numbers.</span>`;
     return h;
   },
-  /* ---- offline fallback: local answers, not just search ---- */
-  local(text){
-    const tx=text.toLowerCase();
-    if(/behind|review|support|struggl/.test(tx)){
-      const b=stuFlags(new Date(Date.now()-30*864e5).toISOString().slice(0,10), today()).filter(x=>x.flags.some(f=>f[0]==='behind'));
-      return 'Offline — computed locally:<br>'+(b.length? b.map(x=>`<button class="rlink" data-s="${x.s.id}">🎓 ${esc(x.s.name)}</button> <span style="font-size:12px;color:var(--ink3)">${esc(x.flags.map(f=>f[1]).join('; '))}</span>`).join('<br>') : 'No one flagged behind in the last 30 days.');
-    }
-    if(/promot/.test(tx)) return 'Offline — computed locally:<br>'+this.briefing();
-    const hits=Search.run(text,5);
-    return 'Offline right now — closest Knowledge Base matches:'+(hits.length? hits.map(r=>`<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`).join('') : '<br>No local matches. Full answers need internet.');
-  }
 };
 
 /* ================= MODULE: SETTINGS ================= */
@@ -6359,6 +6657,12 @@ $('#login-user').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#login-
 $('#login-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 wireFieldLabels(document);
 if(sessionStorage.getItem(AUTH_KEY)==='ok'){ showApp(); } else { $('#login-user').focus(); }
+// PWA: register the app-shell service worker regardless of login state — this
+// only caches the shell (this page, manifest, icons), never DB data, and is
+// what makes "Add to Home Screen" / offline-open actually available.
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
 </script>
 </body>
 </html>
