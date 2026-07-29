@@ -2648,6 +2648,7 @@ const DB = {
     const blob = new Blob([JSON.stringify(this.data,null,1)], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = 'AMAN-Central-Backup-'+today()+'.json'; a.click(); URL.revokeObjectURL(a.href);
+    this.data.settings.lastBackupAt = new Date().toISOString(); this.saveNow();
     toast('Backup downloaded');
   },
   import(file){
@@ -2989,6 +2990,10 @@ render(v){
     concerns.slice(0,3).forEach(s=>items.push({i:'⚠️',t:s.name+' — '+last4.filter(day=>d.attendance[day][s.id]==='A').length+' absences in last '+last4.length+' sessions', go:'#/students/'+s.id, tag:'attendance', why:last4.filter(day=>d.attendance[day][s.id]==='A').length+' of the last '+last4.length+' sessions marked absent (rule fires at 2+)'}));
     bdays.slice(0,2).forEach(b=>items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d'), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days'}));
     res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet'}));
+    const lastBk=d.settings.lastBackupAt;
+    const bkDays=lastBk? Math.floor((Date.now()-new Date(lastBk))/864e5) : null;
+    if(bkDays==null || bkDays>14)
+      items.push({i:'🛟',t: bkDays==null?'No backup has ever been exported':'Backup overdue — last export '+bkDays+'d ago', go:'#/settings', tag:'backup', why:'everything here lives in this browser only — rule fires past 14 days since last export'});
     return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
      ${items.length? `<div class="wlist">${items.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
      : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}`;
@@ -3613,9 +3618,12 @@ const Teacher = {
             ${stu.map(s=>{ const st=rec[s.id];
               const bg = st==='P'?'var(--ok)':st==='L'?'var(--warn)':st==='A'?'var(--bad)':'var(--surface2)';
               const fg = st?'#fff':'var(--ink)';
-              return `<button class="classmode-card" data-cmstu="${s.id}" style="background:${st?`color-mix(in srgb,${bg} 88%,transparent)`:bg};color:${fg};border-color:${st?'transparent':'var(--line2)'}">
-                <span style="font-size:15px;font-weight:600;line-height:1.25">${esc(s.preferredName||s.name)}</span>
-                <span style="font-size:12px;font-family:var(--f-mono);opacity:.85;margin-top:6px">${st||'tap to mark'}</span>
+              const stName={P:'present',L:'late',A:'absent'}[st]||'unmarked';
+              const nextName={undefined:'present',P:'late',L:'absent',A:'unmarked'}[st];
+              const name=s.preferredName||s.name;
+              return `<button class="classmode-card" data-cmstu="${s.id}" aria-label="${esc(name)} — currently ${stName}. Tap to mark ${nextName}." style="background:${st?`color-mix(in srgb,${bg} 88%,transparent)`:bg};color:${fg};border-color:${st?'transparent':'var(--line2)'}">
+                <span style="font-size:15px;font-weight:600;line-height:1.25">${esc(name)}</span>
+                <span style="font-size:12px;font-family:var(--f-mono);opacity:.85;margin-top:6px" aria-hidden="true">${st||'tap to mark'}</span>
               </button>`; }).join('')}
           </div>
           ${!stu.length?'<div class="empty"><h3>No students to mark</h3></div>':''}
@@ -6798,23 +6806,41 @@ const AIx = {
 /* ================= MODULE: SETTINGS ================= */
 Registry.register({ id:'settings', name:'Settings', icon:'gear', group:'System',
 render(v){
+  const d=DB.data;
+  const bytes = new Blob([JSON.stringify(d)]).size;
+  const pctUsed = Math.min(100, Math.round(bytes/(5*1024*1024)*100));
+  const lastBackup = d.settings.lastBackupAt;
+  const daysSince = lastBackup? Math.floor((Date.now()-new Date(lastBackup))/864e5) : null;
+  const backupTone = daysSince==null? 'var(--bad)' : daysSince<=7? 'var(--ok)' : daysSince<=30? 'var(--warn)' : 'var(--bad)';
+  const backupMsg = daysSince==null? 'Never exported — this is the only real backup that exists' : daysSince===0? 'Backed up today' : `Last backup ${daysSince} day${daysSince===1?'':'s'} ago`;
   v.innerHTML = `<div class="eyebrow">System</div><h2 class="page-title">Settings</h2>
    <p class="page-sub">Theme, data safety, and housekeeping.</p>
    <div class="grid g2">
-    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">Appearance</h3>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🎨 Appearance</h3>
      <button class="btn btn-o" id="sTheme">Toggle light / dark</button></div>
-    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">Backup & restore</h3>
-     <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">All data lives in this browser’s storage. Export a JSON backup weekly — it restores everything: resources, students, attendance, plans.</p>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🛟 Data safety</h3>
+     <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Everything lives in this browser only — no server, no sync. This export is the only real copy that exists anywhere else.</p>
+     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+       <span style="width:9px;height:9px;border-radius:50%;background:${backupTone};flex-shrink:0"></span>
+       <span style="font-size:13px;font-weight:600">${esc(backupMsg)}</span></div>
+     <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:12px">Storage used: ${(bytes/1024).toFixed(0)} KB of ~5 MB (${pctUsed}%)</div>
      <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sExp">Export backup</button>
       <label class="btn btn-o" style="cursor:pointer">Import backup<input type="file" id="sImp" accept=".json" hidden></label></div></div>
-    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">Collections</h3>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🗂️ Collections</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Add a new Knowledge Base collection.</p>
      <div style="display:flex;gap:9px"><input id="sCol" placeholder="e.g., Media Library"><button class="btn btn-o" id="sColAdd">Add</button></div></div>
-    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px;color:var(--bad)">Danger zone</h3>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">ℹ️ About this install</h3>
+     <div class="wlist" style="font-size:13px">
+       <div class="wrow" style="cursor:default"><span class="t">Students on roster</span><span class="m">${d.students.length}</span></div>
+       <div class="wrow" style="cursor:default"><span class="t">Knowledge Base resources</span><span class="m">${d.resources.length}</span></div>
+       <div class="wrow" style="cursor:default"><span class="t">Admissions on file</span><span class="m">${d.admissions.length}</span></div>
+       <div class="wrow" style="cursor:default"><span class="t">Activity log entries</span><span class="m">${d.activity.length}</span></div>
+     </div></div>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px;color:var(--bad)">⚠️ Danger zone</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Reset wipes everything in this browser and restores the seed catalog. Export a backup first.</p>
      <button class="btn btn-danger" id="sReset">Reset AMAN Central</button></div></div>`;
   $('#sTheme',v).onclick=()=>Theme.toggle();
-  $('#sExp',v).onclick=()=>DB.export();
+  $('#sExp',v).onclick=()=>{ DB.export(); Router.render(); };
   $('#sImp',v).onchange=e=>{ if(e.target.files[0]) DB.import(e.target.files[0]); };
   $('#sColAdd',v).onclick=()=>{ const c=$('#sCol',v).value.trim(); if(!c)return;
     if(DB.data.collections.includes(c)){toast('Collection exists');return;}
