@@ -268,6 +268,21 @@ html[data-theme="dark"] .rcover{filter:brightness(.9)}
 .classmode-card{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:92px;border-radius:14px;border:1.5px solid var(--line2);padding:12px 8px;text-align:center;transition:transform .1s,background .15s;cursor:pointer}
 .classmode-card:active{transform:scale(.96)}
 
+/* ---- Browse Curriculum: Subject → Book folder tree ---- */
+.kb-tree{display:flex;flex-direction:column;gap:10px}
+.kb-subject{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.kb-subject-head{width:100%;display:flex;align-items:center;gap:10px;padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left}
+.kb-subject-head:hover{background:var(--surface2)}
+.kb-subject-head .tag{margin-left:auto}
+.kb-books{padding:0 16px 16px}
+.kb-book{border-top:1px solid var(--line);padding-top:4px;margin-top:4px}
+.kb-book:first-child{border-top:none;margin-top:0}
+.kb-book-head{width:100%;display:flex;align-items:center;gap:9px;padding:10px 6px;background:none;border:none;cursor:pointer;text-align:left;border-radius:8px}
+.kb-book-head:hover{background:var(--surface2)}
+.kb-book-head .tag{margin-left:auto}
+.kb-chevron{display:inline-block;transition:transform .15s;color:var(--ink3);font-size:12px;width:10px}
+.kb-chevron.open{transform:rotate(90deg)}
+
 /* ---- widgets ---- */
 .widget{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
 .widget .whead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -353,6 +368,7 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .pill-att.P{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
 .pill-att.A{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
 .pill-att.L{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn);border-color:var(--warn)}
+.pill-att.E{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
 .notice{display:flex;gap:11px;padding:13px 15px;border-radius:var(--r-sm);font-size:13.5px;border:1px solid;align-items:flex-start}
 .notice.warn{background:color-mix(in srgb,var(--warn) 9%,transparent);border-color:color-mix(in srgb,var(--warn) 35%,transparent);color:var(--ink)}
 .notice.info{background:color-mix(in srgb,var(--info) 8%,transparent);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
@@ -502,7 +518,7 @@ const STATUSES = ['Active','Draft','Needs Update','Missing — Re-upload','Plann
 
 /* ---------- seed resource catalog (recovered from full AMAN history) ---------- */
 function R(o){ return Object.assign({
-  id:'', title:'', ar:'', desc:'', subject:'Islamic Studies', category:'Curriculum',
+  id:'', title:'', ar:'', desc:'', subject:'Islamic Studies', category:'Curriculum', series:'',
   tags:[], keywords:[], objectives:[], difficulty:'All Levels', grade:'All Levels',
   author:'Ustāth Nuradin Aliy', version:'1.0', status:'Active',
   created:'2026-06-01', modified:'2026-07-01', type:'html',
@@ -549,52 +565,52 @@ R({id:'broch-amaanah', title:'Amaanah Programs Brochure', type:'html', subject:'
   related:['broch-aman']}),
 
 // ——— ISLAMIC STUDIES — NAMES & ATTRIBUTES ———
-R({id:'na-text', title:'Names & Attributes of Allah — Textbook', ar:'الأسماء الحسنى', type:'book', category:'Curriculum',
+R({id:'na-text', title:'Names & Attributes of Allah — Textbook', ar:'الأسماء الحسنى', type:'book', category:'Curriculum', series:'Names & Attributes of Allah',
   desc:'Mercy-first curriculum: 9 units, 47 Names, 30 lessons, 11-section lesson framework (A–K), 3-layer model, gamification system.',
   tags:['names of allah','asma ul husna','aqeedah','textbook'], keywords:['Ar-Rahman','Ar-Rahim','mercy-first','9 units'],
   objectives:['Children know Allah better after every lesson','Move beyond memorization to relationship'],
   difficulty:'Foundational', created:'2026-07-01', modified:'2026-07-04', version:'2.0',
   aiSummary:'Flagship Islamic Studies curriculum. One HTML file per unit plus Teacher Hub.',
   related:['na-slides','na-hub','na-flash','na-cert']}),
-R({id:'na-slides', title:'Names & Attributes — Slide Decks', type:'slides', category:'Lesson Slides',
+R({id:'na-slides', title:'Names & Attributes — Slide Decks', type:'slides', category:'Lesson Slides', series:'Names & Attributes of Allah',
   desc:'Classroom slide decks matching the textbook 1:1 — 13 slides per lesson, keyboard/click/swipe navigation, progress bar.',
   tags:['names of allah','slides','classroom'], difficulty:'Foundational', created:'2026-07-02', modified:'2026-07-04',
   related:['na-text','na-hub']}),
-R({id:'na-hub', title:'Names & Attributes — Teacher Hub & Master Index', type:'html', category:'Teacher Resources',
+R({id:'na-hub', title:'Names & Attributes — Teacher Hub & Master Index', type:'html', category:'Teacher Resources', series:'Names & Attributes of Allah',
   desc:'Ties all 9 units together: lesson plans, pacing, answer keys, unit directory, quick-access chips.',
   tags:['teacher hub','pacing','answer keys'], grade:'Staff / Admin', created:'2026-07-03', modified:'2026-07-04',
   related:['na-text','na-slides','na-flash','na-cert']}),
-R({id:'na-flash', title:'Names & Attributes — Flashcards', type:'html', category:'Student Resources',
+R({id:'na-flash', title:'Names & Attributes — Flashcards', type:'html', category:'Student Resources', series:'Names & Attributes of Allah',
   desc:'Printable review cards covering all 47 Names.', tags:['flashcards','review','print'],
   difficulty:'Foundational', created:'2026-07-03', modified:'2026-07-03', related:['na-text']}),
-R({id:'na-cert', title:'Names & Attributes — Unit Certificates', type:'html', category:'Recognition',
+R({id:'na-cert', title:'Names & Attributes — Unit Certificates', type:'html', category:'Recognition', series:'Names & Attributes of Allah',
   desc:'Completion certificates for each of the 9 units.', subject:'Recognition',
   tags:['certificates','completion'], created:'2026-07-03', modified:'2026-07-03', related:['na-text','rec-achieve']}),
 
 // ——— ISLAMIC STUDIES — TAWHID ———
-R({id:'tawhid-slides', title:'Tawhid Lesson Slides (Taʿlīm al-Ṣibyān)', ar:'تعليم الصبيان التوحيد', type:'slides', category:'Lesson Slides',
+R({id:'tawhid-slides', title:'Tawhid Lesson Slides (Taʿlīm al-Ṣibyān)', ar:'تعليم الصبيان التوحيد', type:'slides', category:'Lesson Slides', series:'Tawhid — Taʿlīm al-Ṣibyān',
   desc:'49-slide interactive deck on Shaykh Muhammad ibn Abd al-Wahhab’s treatise — every ayah and hadith source-matched with page citations. Arabic Drill Mode (D), timer, font controls, print handout generator, shortcuts panel.',
   tags:['tawhid','aqeedah','slides','arabic drill'], keywords:['Ta\u2019lim al-Sibyan','9 lesson tabs','kufr bit-taghut'],
   objectives:['Teach the six foundational questions of belief','Cover every Arabic sentence of the source text'],
   difficulty:'Intermediate', created:'2026-06-18', modified:'2026-06-22', version:'3.0',
   aiSummary:'Elementary/middle-school adapted; Arabic text untouched; English prose age-tuned.',
   related:['tawhid-assign','na-text']}),
-R({id:'tawhid-assign', title:'Tawhid Assignment Suite', type:'html', category:'Assessments',
+R({id:'tawhid-assign', title:'Tawhid Assignment Suite', type:'html', category:'Assessments', series:'Tawhid — Taʿlīm al-Ṣibyān',
   desc:'5-tab suite: 9 classwork sheets, 6 homework sheets, 4 quizzes (40–50 pts), mid-unit + 100-pt final test, and full answer key with 19-ayah/5-hadith evidence chart.',
   tags:['tawhid','homework','quiz','test','answer key'], difficulty:'Intermediate',
   created:'2026-06-19', modified:'2026-06-20', related:['tawhid-slides']}),
 
 // ——— ARABIC — MADINAH BOOK 1 ———
-R({id:'mad-guide', title:'Madinah Book 1 — Teacher’s Guide', type:'html', subject:'Arabic', category:'Teacher Resources',
+R({id:'mad-guide', title:'Madinah Book 1 — Teacher’s Guide', type:'html', subject:'Arabic', category:'Teacher Resources', series:'Madinah Book 1',
   desc:'10 lessons, each with tabbed Grammar, Vocabulary, Teaching Script, and Exercises. Built for a teacher fluent in reading, not lecturing.',
   tags:['madinah','arabic','grammar','teaching script'], keywords:['Dr. V. Abdur Rahim','Book 1'],
   difficulty:'Foundational', grade:'Staff / Admin', created:'2026-06-17', modified:'2026-06-19',
   related:['mad-assign','mad-toolkit','mad-alpha','mad-student']}),
-R({id:'mad-assign', title:'Madinah Book 1 — Assignments & Tests', type:'html', subject:'Arabic', category:'Assessments',
+R({id:'mad-assign', title:'Madinah Book 1 — Assignments & Tests', type:'html', subject:'Arabic', category:'Assessments', series:'Madinah Book 1',
   desc:'9 homework sheets, 3 lesson quizzes, midterm, final, speaking & writing rubrics, parent progress notes, 36-student class tracker.',
   tags:['madinah','homework','tests','rubrics'], difficulty:'Foundational', created:'2026-06-18', modified:'2026-06-19',
   related:['mad-guide']}),
-R({id:'mad-toolkit', title:'Madinah Teacher Toolkit', type:'app', subject:'Arabic', category:'Teacher Resources',
+R({id:'mad-toolkit', title:'Madinah Teacher Toolkit', type:'app', subject:'Arabic', category:'Teacher Resources', series:'Madinah Book 1',
   desc:'6 interactive tools: alphabet reference, flashcard generator, progress tracker, Qur’anic verse connections per grammar concept, 20-error correction log, 10 warm-ups.',
   tags:['toolkit','flashcards','warm-ups','error log'], grade:'Staff / Admin', created:'2026-06-18', modified:'2026-06-19',
   related:['mad-guide','mad-alpha']}),
@@ -602,12 +618,12 @@ R({id:'mad-alpha', title:'Interactive Arabic Alphabet App (v2)', type:'app', sub
   desc:'Audio pronunciation, canvas letter drawing with baseline zones, 3 difficulty levels, 4 practice modes, mistake review, connections & baseline teaching pages.',
   tags:['alphabet','app','canvas','audio','practice'], difficulty:'Foundational', created:'2026-06-19', modified:'2026-06-19', version:'2.0',
   related:['mad-guide','mad-toolkit','greenbook']}),
-R({id:'mad-student', title:'Madinah Book 1 — Student Tools', type:'html', subject:'Arabic', category:'Student Resources',
+R({id:'mad-student', title:'Madinah Book 1 — Student Tools', type:'html', subject:'Arabic', category:'Student Resources', series:'Madinah Book 1',
   desc:'Companion practice tools for Book 1 students.', tags:['madinah','practice','students'],
   difficulty:'Foundational', created:'2026-06-19', modified:'2026-06-19', related:['mad-guide']}),
 
 // ——— QUR’AN ———
-R({id:'greenbook', title:'The Green Book (L1 Core Text)', ar:'مُعَلِّمُ الْقِرَاءَةِ الْعَرَبِيَّةِ', type:'book', subject:'Qur’an', category:'Curriculum',
+R({id:'greenbook', title:'The Green Book (L1 Core Text)', ar:'مُعَلِّمُ الْقِرَاءَةِ الْعَرَبِيَّةِ', type:'book', subject:'Qur’an', category:'Curriculum', series:'Green Book (Level 1 Core Text)',
   desc:'مُعَلِّمُ الْقِرَاءَةِ الْعَرَبِيَّةِ مَعَ قَاعِدَةٍ بَغْدَادِيَّة — the physical core text of Level 1. Indexed here for curriculum mapping; the book itself is physical.',
   tags:['green book','qaida','level 1','reading'], difficulty:'Foundational', grade:'Level 1 — Green Book',
   loc:{kind:'online', href:''}, created:'2026-05-01', modified:'2026-05-01',
@@ -679,7 +695,7 @@ R({id:'lib-v4', title:'AMAN Library v4 (superseded)', type:'html', subject:'Scho
   tags:['library','hub','archive'], status:'Missing — Re-upload', loc:{kind:'missing', href:''},
   created:'2026-07-14', modified:'2026-07-15',
   aiSummary:'Superseded by AMAN Central. Re-upload only if you want it archived byte-for-byte.', related:[]}),
-R({id:'pln-l2', title:'Level 2 Reading Curriculum', type:'book', subject:'Qur’an', category:'Curriculum',
+R({id:'pln-l2', title:'Level 2 Reading Curriculum', type:'book', subject:'Qur’an', category:'Curriculum', series:'Level 2 Reading Curriculum',
   desc:'PLANNED — Level 2 (Reading from the Muṣḥaf → Juz ʿAmma, Tabārak, Qad Samiʿ) currently has 0 students and no dedicated materials. Needed before the first Green Book graduates arrive.',
   tags:['level 2','reading','planned'], status:'Planned', difficulty:'Intermediate', grade:'Level 2 — Reading',
   loc:{kind:'missing', href:''}, created:'2026-07-15', modified:'2026-07-15', related:['greenbook','xls-hifdh']}),
@@ -687,7 +703,7 @@ R({id:'pln-emergency', title:'Emergency Procedures Document', type:'doc', subjec
   desc:'PLANNED — no formal emergency procedures document exists in the AMAN archive. High priority for a facility serving 36 children.',
   tags:['emergency','safety','planned'], status:'Planned', grade:'Staff / Admin',
   loc:{kind:'missing', href:''}, created:'2026-07-15', modified:'2026-07-15', related:[]}),
-R({id:'pln-seerah', title:'Seerah Curriculum', type:'book', subject:'Islamic Studies', category:'Curriculum',
+R({id:'pln-seerah', title:'Seerah Curriculum', type:'book', subject:'Islamic Studies', category:'Curriculum', series:'Seerah Curriculum',
   desc:'PLANNED — Islamic Studies currently covers ʿAqīdah (Tawhid, Names & Attributes). Seerah is the natural next pillar.',
   tags:['seerah','planned'], status:'Planned', loc:{kind:'missing', href:''},
   created:'2026-07-15', modified:'2026-07-15', related:['na-text','tawhid-slides']}),
@@ -3168,9 +3184,9 @@ function wResList(title, arr, meta, emptyMsg){
     :`<div class="wrow" style="color:var(--ink3);cursor:default">${emptyMsg||'Nothing yet'}</div>`}</div>`;
 }
 function attSummary(){
-  const a=DB.data.attendance; let P=0,A=0,L=0,sessions=0;
-  for(const day in a){ sessions++; for(const sid in a[day]){ const v=a[day][sid]; if(v==='P')P++; else if(v==='A')A++; else if(v==='L')L++; } }
-  const tot=P+A+L; return {P,A,L,sessions,rate: tot?Math.round(P/tot*100):0};
+  const a=DB.data.attendance; let P=0,A=0,L=0,E=0,sessions=0;
+  for(const day in a){ sessions++; for(const sid in a[day]){ const v=a[day][sid]; if(v==='P')P++; else if(v==='A')A++; else if(v==='L')L++; else if(v==='E')E++; } }
+  const tot=P+A+L+E; return {P,A,L,E,sessions,rate: tot?Math.round(P/tot*100):0};
 }
 function unitsPct(key){ const p=DB.data.planner['prog_'+key]; return p==null? {na:33,tawhid:100,mad:20}[key] ?? 0 : +p; }
 function wireCommon(v){
@@ -3232,6 +3248,9 @@ render(v, param){
   const colCount = c=> c==='All'? d.resources.length : d.resources.filter(r=>r.category===c).length;
   const missingN = d.resources.filter(r=>r.status==='Missing — Re-upload'||r.status==='Planned'||(r.loc.kind==='device'&&!r.loc.href)).length;
   // ---- render ----
+  const modeToggle = `<div class="no-print" style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--line);border-radius:10px;padding:3px;width:fit-content">
+    <button class="btn btn-sm ${state.browse?'':'btn-p'}" style="border-radius:7px;${state.browse?'background:transparent;color:var(--ink2)':''}" data-mode="filter">🔍 Search &amp; Filter</button>
+    <button class="btn btn-sm ${state.browse?'btn-p':''}" style="border-radius:7px;${state.browse?'':'background:transparent;color:var(--ink2)'}" data-mode="browse">📚 Browse Curriculum</button></div>`;
   v.innerHTML = `
    <div class="eyebrow">Digital Brain · Single Source of Truth</div>
    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -3241,6 +3260,8 @@ render(v, param){
       <button class="btn btn-o btn-sm" id="kbReport">⚠ Missing report${missingN?' ('+missingN+')':''}</button>
       <button class="btn btn-p btn-sm" id="ladd">＋ Add resource</button></div></div>
    ${dupes.length?`<div class="notice warn no-print" style="margin-bottom:14px">🔁 <div><b>${dupes.length} possible duplicate title${dupes.length>1?'s':''}:</b> ${dupes.map(g=>esc(g[0].title)).join(' · ')} — review and consolidate rather than adding copies. <button class="btn btn-o btn-sm" data-go="#/analytics">Review in Analytics</button></div></div>`:''}
+   ${modeToggle}
+   ${state.browse? kbCurriculumTree() : `
    ${frequent.length&&state.smart==='all'&&!state.q?`<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="eyebrow" style="margin-right:2px">Fast access</span>${frequent.map(r=>`<button class="chip" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.slice(0,26))} <span style="opacity:.6">${r.opens}×</span></button>`).join('')}</div>`:''}
    <div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">${SMART.map(([id,name])=>`<button class="chip ${state.smart===id?'on':''}" data-smart="${id}">${name}</button>`).join('')}</div>
    <div class="filters no-print">
@@ -3254,9 +3275,18 @@ render(v, param){
    </div>
    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px" class="no-print">${cols.map(c=>`<button class="chip ${c===state.col?'on':''}" data-col="${esc(c)}">${esc(c)} <span style="opacity:.6;font-family:var(--f-mono);font-size:10px">${colCount(c)}</span></button>`).join('')}</div>
    ${list.length? kbBody(list, state.view)
-     : `<div class="empty"><div class="big">🕮</div><h3>Nothing matches</h3><p>Clear a filter, switch smart view, or add the resource this spot is waiting for.</p><button class="btn btn-p" id="lempty-add">Add resource</button></div>`}`;
+     : `<div class="empty"><div class="big">🕮</div><h3>Nothing matches</h3><p>Clear a filter, switch smart view, or add the resource this spot is waiting for.</p><button class="btn btn-p" id="lempty-add">Add resource</button></div>`}`}`;
   // ---- wiring ----
   wireCards(v); wireCommon(v);
+  $$('[data-mode]',v).forEach(b=>b.onclick=()=>{ state.browse=b.dataset.mode==='browse'; Router.render(); });
+  $$('[data-tsub]',v).forEach(b=>b.onclick=()=>{
+    if(!state.openSubj) state.openSubj=new Set(Object.keys(kbBySubject()));
+    if(state.openSubj.has(b.dataset.tsub)) state.openSubj.delete(b.dataset.tsub); else state.openSubj.add(b.dataset.tsub);
+    Router.render(); });
+  $$('[data-tbook]',v).forEach(b=>b.onclick=()=>{
+    if(!state.openBook) state.openBook=new Set(kbAllBookKeys());
+    if(state.openBook.has(b.dataset.tbook)) state.openBook.delete(b.dataset.tbook); else state.openBook.add(b.dataset.tbook);
+    Router.render(); });
   $$('[data-smart]',v).forEach(b=>b.onclick=()=>{state.smart=b.dataset.smart; Router.render();});
   $$('[data-col]',v).forEach(b=>b.onclick=()=>{state.col=b.dataset.col; Router.render();});
   $$('[data-view]',v).forEach(b=>b.onclick=()=>{state.view=b.dataset.view; d.settings.kbView=state.view; DB.save(); Router.render();});
@@ -3271,7 +3301,64 @@ render(v, param){
   const ea=$('#lempty-add',v); if(ea) ea.onclick=()=>ResourceForm.open();
   $('#kbReport',v).onclick=()=>kbMissingReport();
 }});
-const Library = { state:{col:'All', sub:'All Subjects', status:'Any status', type:'Any type', grade:'Any grade', sort:'Recently modified', smart:'all', view:'cards', q:''} };
+const Library = { state:{col:'All', sub:'All Subjects', status:'Any status', type:'Any type', grade:'Any grade', sort:'Recently modified', smart:'all', view:'cards', q:'', browse:false, openSubj:null, openBook:null} };
+/* ---------- Browse Curriculum: Subject → Book/Series folders, cover-card contents ----------
+   Scoped to the same "real teaching content" categories as the cover-card treatment —
+   administrative/brand/communication resources stay out of this view on purpose;
+   they're still one click away via Search & Filter. */
+const CURRICULUM_SUBJECT_ORDER = ['Qur’an','Islamic Studies','Arabic'];
+function kbBySubject(){
+  const items = DB.data.resources.filter(r=>COVER_CATEGORIES.includes(r.category));
+  const by = {};
+  items.forEach(r=>{ (by[r.subject]=by[r.subject]||[]).push(r); });
+  return by;
+}
+function kbAllBookKeys(){
+  const by = kbBySubject(); const keys=[];
+  Object.entries(by).forEach(([subj,items])=>{
+    const series = new Set(items.map(r=>r.series||'— Unsorted —'));
+    series.forEach(s=>keys.push(subj+'|'+s));
+  });
+  return keys;
+}
+function kbCurriculumTree(){
+  const by = kbBySubject();
+  const subjects = Object.keys(by).sort((a,b)=>{
+    const ia=CURRICULUM_SUBJECT_ORDER.indexOf(a), ib=CURRICULUM_SUBJECT_ORDER.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b);
+  });
+  if(!subjects.length) return `<div class="empty"><div class="big">📚</div><h3>No curriculum content yet</h3><p>Tag a resource's category as Curriculum, Lesson Slides, Teacher Resources, Student Resources, or Assessments, and it'll show up here, organized by subject and book.</p></div>`;
+  const openSubj = Library.state.openSubj || new Set(subjects);
+  const allBookKeys = kbAllBookKeys();
+  const openBook = Library.state.openBook || new Set(allBookKeys);
+  return `<div class="kb-tree">${subjects.map(subj=>{
+    const items = by[subj];
+    const bySeries = {};
+    items.forEach(r=>{ (bySeries[r.series||'— Unsorted —']=bySeries[r.series||'— Unsorted —']||[]).push(r); });
+    const seriesNames = Object.keys(bySeries).sort((a,b)=> a==='— Unsorted —'?1 : b==='— Unsorted —'?-1 : a.localeCompare(b));
+    const isOpen = openSubj.has(subj);
+    return `<div class="kb-subject">
+      <button class="kb-subject-head" data-tsub="${esc(subj)}">
+        <span class="kb-chevron ${isOpen?'open':''}">▸</span>
+        <span style="font-family:var(--f-display);font-size:17px;font-weight:600">${esc(subj)}</span>
+        <span class="tag tag-dim">${items.length} resource${items.length===1?'':'s'} · ${seriesNames.length} book${seriesNames.length===1?'':'s'}</span>
+      </button>
+      ${isOpen? `<div class="kb-books">${seriesNames.map(sn=>{
+        const bookItems = bySeries[sn];
+        const bkey = subj+'|'+sn;
+        const bOpen = openBook.has(bkey);
+        return `<div class="kb-book">
+          <button class="kb-book-head" data-tbook="${esc(bkey)}">
+            <span class="kb-chevron ${bOpen?'open':''}">▸</span>
+            <span style="font-size:15px">${sn==='— Unsorted —'?'📎':'📘'}</span>
+            <span style="font-family:var(--f-body);font-weight:600;font-size:14.5px">${esc(sn)}</span>
+            <span class="tag tag-dim">${bookItems.length}</span>
+          </button>
+          ${bOpen? `<div class="grid g3" style="margin:10px 0 6px 30px">${bookItems.map(rCard).join('')}</div>` : ''}
+        </div>`; }).join('')}</div>` : ''}
+    </div>`;
+  }).join('')}</div>`;
+}
 function kbBody(list, view){
   if(view==='cards') return `<div class="grid g3">${list.map(rCard).join('')}</div>`;
   if(view==='list') return `<div class="card" style="padding:4px 12px"><div class="scrollx"><table class="tbl"><thead><tr><th></th><th>Title</th><th>Collection</th><th>Grade</th><th>Status</th><th>Modified</th><th>Opens</th><th></th></tr></thead><tbody>${
@@ -3412,6 +3499,9 @@ const ResourceForm = {
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
         <div class="field"><label>Subject</label><select id="f-sub">${opts(SUBJECTS,d.subject)}</select></div>
         <div class="field"><label>Collection</label><select id="f-cat">${opts(DB.data.collections,d.category)}</select></div>
+        <div class="field"><label>Book / series (optional) — groups it under Browse Curriculum</label>
+          <input id="f-series" list="f-series-list" value="${esc(d.series||'')}" placeholder="e.g., Madinah Book 1">
+          <datalist id="f-series-list">${[...new Set(DB.data.resources.map(r=>r.series).filter(Boolean))].map(s=>`<option value="${esc(s)}">`).join('')}</datalist></div>
         <div class="field"><label>Grade level</label><select id="f-grade">${opts(GRADES,d.grade)}</select></div>
         <div class="field"><label>Difficulty</label><select id="f-diff">${opts(DIFFS,d.difficulty)}</select></div>
         <div class="field"><label>Type</label><select id="f-type">${opts(Object.keys(TYPE_ICON),d.type)}</select></div>
@@ -3443,7 +3533,7 @@ const ResourceForm = {
       if(!isNew) d.versions.unshift({version:d.version, date:new Date().toISOString(), note:($('#f-revnote',o).value.trim()||'Edited'), snap:this.snap(d)});
       Object.assign(d, {
         title:g('#f-title'), ar:g('#f-ar'), desc:g('#f-desc'),
-        subject:$('#f-sub',o).value, category:$('#f-cat',o).value, grade:$('#f-grade',o).value,
+        subject:$('#f-sub',o).value, category:$('#f-cat',o).value, series:g('#f-series'), grade:$('#f-grade',o).value,
         difficulty:$('#f-diff',o).value, type:$('#f-type',o).value, status:$('#f-status',o).value,
         author:g('#f-author'), version:g('#f-ver'),
         loc:{kind:$('#f-lkind',o).value, href:g('#f-href')},
@@ -3537,7 +3627,7 @@ const Teacher = {
     <div class="grid g2">
       <div class="widget"><div class="whead"><h3>Today’s summary</h3></div>
         ${marked||qToday.length? `<div class="wlist">
-          <div class="wrow" data-go="#/students/attendance"><span>✅</span><span class="t">${present} present · ${Object.values(todayRec).filter(x=>x==='A').length} absent · ${Object.values(todayRec).filter(x=>x==='L').length} late</span></div>
+          <div class="wrow" data-go="#/students/attendance"><span>✅</span><span class="t">${present} present · ${Object.values(todayRec).filter(x=>x==='A').length} absent · ${Object.values(todayRec).filter(x=>x==='E').length} excused · ${Object.values(todayRec).filter(x=>x==='L').length} late</span></div>
           <div class="wrow" style="cursor:default"><span>📖</span><span class="t">${qToday.length} memorization entr${qToday.length===1?'y':'ies'} recorded</span></div></div>`
         :'<p style="font-size:13px;color:var(--ink2)">Take attendance and record progress — the summary builds itself here.</p>'}
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
@@ -3600,7 +3690,7 @@ const Teacher = {
       const rec=d.attendance[date];
       const stu=d.students.filter(s=>s.active!==false && (!s.startDate||s.startDate<=date));
       const present=Object.values(rec).filter(x=>x==='P').length;
-      const cyc={undefined:'P', P:'L', L:'A', A:undefined};
+      const cyc={undefined:'P', P:'L', L:'A', A:'E', E:undefined};
       overlay.innerHTML=`
         <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-shrink:0;flex-wrap:wrap">
           <b style="font-family:var(--f-display);font-size:19px">🖥 Class Mode</b>
@@ -3616,10 +3706,10 @@ const Teacher = {
         <div style="flex:1;overflow-y:auto;padding:18px">
           <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">
             ${stu.map(s=>{ const st=rec[s.id];
-              const bg = st==='P'?'var(--ok)':st==='L'?'var(--warn)':st==='A'?'var(--bad)':'var(--surface2)';
+              const bg = st==='P'?'var(--ok)':st==='L'?'var(--warn)':st==='A'?'var(--bad)':st==='E'?'var(--info)':'var(--surface2)';
               const fg = st?'#fff':'var(--ink)';
-              const stName={P:'present',L:'late',A:'absent'}[st]||'unmarked';
-              const nextName={undefined:'present',P:'late',L:'absent',A:'unmarked'}[st];
+              const stName={P:'present',L:'late',A:'absent, unexcused',E:'absent, excused'}[st]||'unmarked';
+              const nextName={undefined:'present',P:'late',L:'absent',A:'excused absence',E:'unmarked'}[st];
               const name=s.preferredName||s.name;
               return `<button class="classmode-card" data-cmstu="${s.id}" aria-label="${esc(name)} — currently ${stName}. Tap to mark ${nextName}." style="background:${st?`color-mix(in srgb,${bg} 88%,transparent)`:bg};color:${fg};border-color:${st?'transparent':'var(--line2)'}">
                 <span style="font-size:15px;font-weight:600;line-height:1.25">${esc(name)}</span>
@@ -3825,16 +3915,26 @@ const Teacher = {
   },
   quiz(el){
     const d=DB.data;
-    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px" class="no-print">
-      <span style="font-size:13.5px;color:var(--ink2)">${d.quizzes.length} quiz${d.quizzes.length===1?'':'zes'} — build, save, print handouts with answer keys</span>
+    d.planner.qzFilter = d.planner.qzFilter || 'All';
+    const subjs = ['All', ...new Set(d.quizzes.map(q=>q.subject))];
+    const shown = d.planner.qzFilter==='All'? d.quizzes : d.quizzes.filter(q=>q.subject===d.planner.qzFilter);
+    const totalQs = d.quizzes.reduce((a,q)=>a+q.qs.length,0);
+    const totalPts = d.quizzes.reduce((a,q)=>a+q.qs.reduce((x,y)=>x+(+y.pts||0),0),0);
+    el.innerHTML = `<div class="kpis" style="margin-bottom:16px">${[
+       ['🧪',d.quizzes.length,'Quizzes'],['❓',totalQs,'Total questions'],['🏆',totalPts,'Total points']]
+       .map(([i,val,lab])=>`<div class="kpi-card" style="cursor:default"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
+     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap" class="no-print">
+      ${subjs.length>2?`<div style="display:flex;gap:6px;flex-wrap:wrap">${subjs.map(s=>`<button class="chip${d.planner.qzFilter===s?' on':''}" data-qf="${esc(s)}">${esc(s)}</button>`).join('')}</div>`:'<span></span>'}
       <button class="btn btn-p btn-sm" id="qzAdd">＋ New quiz</button></div>
-     ${d.quizzes.length? `<div class="grid g2">${d.quizzes.map(Q=>`
+     ${shown.length? `<div class="grid g2">${shown.map(Q=>`
       <div class="card"><div style="display:flex;justify-content:space-between"><h3 style="font-family:var(--f-display);font-size:17px">${esc(Q.title)}</h3>
        <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-print="${Q.id}">Print</button><button class="btn btn-danger btn-sm" data-del="${Q.id}">✕</button></div></div>
        <p style="font-size:12.5px;color:var(--ink2);margin:4px 0 10px">${esc(Q.subject)} · ${Q.qs.length} question${Q.qs.length===1?'':'s'} · ${Q.qs.reduce((a,q)=>a+(+q.pts||0),0)} pts</p>
        <ol style="font-family:var(--f-body);font-size:14.5px;padding-left:20px;display:flex;flex-direction:column;gap:5px">${Q.qs.slice(0,4).map(q=>`<li>${esc(q.q)}</li>`).join('')}${Q.qs.length>4?'<li style="list-style:none;color:var(--ink3)">…</li>':''}</ol>
       </div>`).join('')}</div>`
+     : d.quizzes.length? `<div class="empty"><div class="big">🔍</div><h3>No quizzes in ${esc(d.planner.qzFilter)}</h3></div>`
      : `<div class="empty"><div class="big">🧪</div><h3>No quizzes yet</h3><p>Build a quiz with per-question points; print produces a student sheet and a separate answer key.</p></div>`}`;
+    $$('button[data-qf]',el).forEach(b=>b.onclick=()=>{ d.planner.qzFilter=b.dataset.qf; DB.save(); Router.render(); });
     $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this quiz?',()=>{ d.quizzes=d.quizzes.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render();}));
     $$('[data-print]',el).forEach(b=>b.onclick=()=>{
       const Q=d.quizzes.find(x=>x.id===b.dataset.print);
@@ -3875,33 +3975,44 @@ const Teacher = {
   notes(el){ simpleJournal(el, 'notes_teach', 'Teaching notes', 'Observations, ideas, things to try next session…'); },
   reflect(el){ simpleJournal(el, 'notes_reflect', 'Lesson reflections', 'What landed? What flopped? What will you change?'); },
   curriculum(el){
-    const rows = [['na','Names & Attributes of Allah','9 units · 30 lessons'],['tawhid','Tawhid (Taʿlīm al-Ṣibyān)','9 lessons · 49 slides'],['mad','Madinah Arabic Book 1','10 lessons']];
-    el.innerHTML = `<div class="grid g2">${rows.map(([k,t,sub])=>{
+    const rows = [['na','📿','Names & Attributes of Allah','9 units · 30 lessons'],['tawhid','☪️','Tawhid (Taʿlīm al-Ṣibyān)','9 lessons · 49 slides'],['mad','🖋️','Madinah Arabic Book 1','10 lessons']];
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px">ℹ️ <div>These percentages are self-reported — you set them, nothing computes them automatically. They feed Analytics, the Board Report, and the AI Assistant's summaries, so keep them honest and current.</div></div>
+     <div class="grid g2">${rows.map(([k,ic,t,sub])=>{
       const p = unitsPct(k);
-      return `<div class="card"><h3 style="font-family:var(--f-display);font-size:17px">${t}</h3>
+      const upd = DB.data.planner['progU_'+k];
+      return `<div class="card"><h3 style="font-family:var(--f-display);font-size:17px">${ic} ${t}</h3>
        <p style="font-size:12.5px;color:var(--ink2);margin:2px 0 12px">${sub}</p>
        <div class="bar" style="margin-bottom:10px"><i style="width:${p}%"></i></div>
        <label>Completion — ${p}%</label>
        <input type="range" min="0" max="100" value="${p}" data-prog="${k}" style="padding:0">
+       <div class="prog-upd" style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin-top:8px">${upd?'updated '+rel(upd):'never updated — showing default'}</div>
       </div>`;}).join('')}
-      <div class="card"><h3 style="font-family:var(--f-display);font-size:17px">Qur’an — Ḥifẓ</h3>
+      <div class="card"><h3 style="font-family:var(--f-display);font-size:17px">📖 Qur’an — Ḥifẓ</h3>
       <p style="font-family:var(--f-body);font-size:14.5px;color:var(--ink2);margin-top:6px">Per-student pace lives in the Ḥifẓ Tracker spreadsheet and each student’s profile → Qur’an log. This card intentionally doesn’t duplicate it.</p>
       <button class="btn btn-o btn-sm" style="margin-top:10px" data-go="#/resource/xls-hifdh">Open Ḥifẓ Tracker entry</button></div></div>`;
     wireCommon(el);
-    $$('input[data-prog]',el).forEach(r=>r.oninput=()=>{ DB.data.planner['prog_'+r.dataset.prog]=+r.value; DB.save();
+    $$('input[data-prog]',el).forEach(r=>r.oninput=()=>{ DB.data.planner['prog_'+r.dataset.prog]=+r.value; DB.data.planner['progU_'+r.dataset.prog]=new Date().toISOString(); DB.save();
       r.closest('.card').querySelector('label').textContent='Completion — '+r.value+'%';
-      r.closest('.card').querySelector('.bar i').style.width=r.value+'%'; });
+      r.closest('.card').querySelector('.bar i').style.width=r.value+'%';
+      r.closest('.card').querySelector('.prog-upd').textContent='updated just now'; });
   }
 };
 function simpleJournal(el, key, title, ph){
   const d=DB.data; d.planner[key]=d.planner[key]||[];
   const list=d.planner[key];
+  const q=(d.planner['q_'+key]||'').toLowerCase();
+  const shown = q? list.filter(n=>n.t.toLowerCase().includes(q)) : list;
   el.innerHTML = `<div class="card" style="margin-bottom:16px"><label>${title} — new entry</label>
     <textarea id="j-in" placeholder="${ph}"></textarea>
     <div style="display:flex;justify-content:flex-end;margin-top:9px"><button class="btn btn-p btn-sm" id="j-add">Save entry</button></div></div>
-   <div class="wlist">${list.map((n,i)=>`<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span><button class="btn btn-ghost btn-sm" data-jd="${i}">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`).join('')||'<div class="empty"><p>No entries yet.</p></div>'}</div>`;
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px" class="no-print">
+     <span style="font-size:12.5px;color:var(--ink2)">${list.length} entr${list.length===1?'y':'ies'}${q?', '+shown.length+' matching':''}</span>
+     ${list.length>3?`<input id="j-q" placeholder="Search entries…" value="${esc(d.planner['q_'+key]||'')}" style="max-width:200px">`:''}</div>
+   <div class="wlist">${shown.map(n=>{ const i=list.indexOf(n); return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span><button class="btn btn-ghost btn-sm" data-jd="${i}">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`; }).join('')||(q?`<div class="empty"><p>No entries match "${esc(q)}".</p></div>`:'<div class="empty"><p>No entries yet.</p></div>')}</div>`;
   $('#j-add',el).onclick=()=>{ const t=$('#j-in',el).value.trim(); if(!t)return;
     list.unshift({d:new Date().toISOString(), t}); DB.save(); Router.render(); toast('Saved'); };
+  const qi=$('#j-q',el); if(qi) qi.oninput=()=>{ d.planner['q_'+key]=qi.value; DB.save();
+    clearTimeout(simpleJournal._t); simpleJournal._t=setTimeout(()=>Router.render(),200); };
   $$('button[data-jd]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this entry?',()=>{ list.splice(+b.dataset.jd,1); DB.save(); Router.render(); }));
 }
 
@@ -4270,6 +4381,95 @@ const Students = {
       <script>window.print()<\/script></body></html>`);
     w.document.close();
   },
+  /* ---------- Absence Notice: same escalating design as the standalone tool this
+     replaces, but auto-filled from real attendance data instead of hand-typed and
+     hand-counted. Unexcused count is cumulative since enrollment, matching the
+     policy language ("three (3) unexcused absences" — not "three this term"). ---------- */
+  unexcusedCount(sid){
+    const a=DB.data.attendance; let n=0;
+    for(const day in a){ if(a[day][sid]==='A') n++; }
+    return n;
+  },
+  printAbsenceNotice(s){
+    const n = this.unexcusedCount(s.id);
+    const stage = Math.min(3, Math.max(1, n||1));
+    const PAL = {
+      1:{strong:'#f1a81e', on:'#1a1207', tint:'#fdeecb', hot:'#b8540a', kicker:'Attendance Notice', title:'First Notice', stage:'1st Unexcused Absence'},
+      2:{strong:'#ea7317', on:'#fff', tint:'#fde0c4', hot:'#a8340a', kicker:'Attendance Notice — Escalated', title:'Second Notice', stage:'2nd Unexcused Absence'},
+      3:{strong:'#d61f1f', on:'#ffe9a8', tint:'#fbdcd6', hot:'#a10d0d', kicker:'Final Warning', title:'Final Notice', stage:'3rd Unexcused Absence'}
+    };
+    const p = PAL[stage];
+    const who = esc(s.preferredName||s.name);
+    const parent = (s.guardians&&s.guardians[0]&&s.guardians[0].name) || '';
+    const dots = [1,2,3].map(i=>`<div class="dot ${i<=stage?'filled':'empty'}">${i}</div>`).join('');
+    const lead = stage===1
+      ? `This message is to notify you that <strong>${who}</strong> now has <strong>one (1) unexcused absence</strong>, without prior notice. Our policy is clear: <span class="hot">three (3) unexcused absences result in removal from the program</span>. We don\u2019t want it to reach that point — we\u2019re committed to working with you so <strong>${who}</strong> stays enrolled and benefits fully.`
+      : stage===2
+      ? `This message is to notify you that <strong>${who}</strong> now has <strong>two (2) unexcused absences</strong>, both without prior notice. <span class="hot">One more will mean removal from the program.</span> We truly want to avoid that, and we\u2019re ready to work with you so <strong>${who}</strong> stays enrolled and benefits fully.`
+      : `This is a <span class="hot">FINAL NOTICE</span> that <strong>${who}</strong> has now reached <strong>${n>=3?'three (3) or more':'three (3)'} unexcused absence${n===1?'':'s'}</strong>. As per AMAN policy, this results in <strong>immediate removal from the program</strong>. Please contact us right away if you believe this was recorded in error.`;
+    const warn = stage===3? 'Per AMAN policy, three (3) unexcused absences result in immediate removal from the program.' : 'Three (3) unexcused absences will result in immediate removal from the program.';
+    const crestImg = (document.querySelector('.crest img')||{}).src || '';
+    const overCap = n>3? `<p style="text-align:center;color:#a10d0d;font-weight:700;font-size:13px;margin-top:10px">Note: ${n} unexcused absences on file — already past the 3-absence threshold. This prints as a Final Notice; confirm the removal conversation separately.</p>` : '';
+    const w=window.open('','_blank');
+    w.document.write(`<html><head><title>AMAN — Unexcused Absence Notice — ${who}</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=Crimson+Pro:ital,wght@0,400;0,600;0,700&display=swap" rel="stylesheet">
+      <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        html,body{background:#fff}
+        html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        body{font-family:'Crimson Pro',Georgia,serif;color:#1a1207;line-height:1.6;padding:0}
+        .sheet{width:7.4in;max-width:100%;margin:24px auto;background:#fdfaf3;box-shadow:0 8px 40px rgba(0,0,0,.15);border:1px solid rgba(0,0,0,.06)}
+        .accent{height:8px;background:${p.strong}}
+        .nhead{text-align:center;padding:24px 30px 14px;border-bottom:1px solid rgba(184,135,42,.22);margin:0 30px}
+        .nhead img{width:76px;height:auto;display:block;margin:0 auto 8px}
+        .nhead .brandname{font-family:'Playfair Display',serif;font-weight:700;font-size:1.18rem;color:#1a4a35}
+        .nhead .brandline{font-size:.56rem;letter-spacing:.3em;text-transform:uppercase;color:#7a5518;font-weight:700;margin-top:3px}
+        .dateline{display:flex;justify-content:space-between;padding:10px 38px 0;font-size:.92rem;color:#5a4a30}
+        .dateline .salam{font-weight:600;color:#1a4a35}
+        .nblock{margin:14px 30px 0;border-radius:14px;overflow:hidden;border:1px solid rgba(0,0,0,.08);box-shadow:0 8px 28px rgba(0,0,0,.10)}
+        .nbanner{background:${p.strong};color:${p.on};padding:20px 26px 18px;text-align:center}
+        .kicker{font-size:.66rem;letter-spacing:.34em;text-transform:uppercase;font-weight:700;opacity:.9;margin-bottom:6px}
+        .ntitle{font-family:'Playfair Display',serif;font-weight:900;font-size:3rem;line-height:.95}
+        .nstage{font-weight:600;font-size:1.05rem;margin-top:8px;opacity:.95}
+        .counter{display:flex;justify-content:center;gap:14px;margin:16px 0 2px}
+        .dot{width:26px;height:26px;border-radius:50%;border:2.5px solid ${p.on};display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;font-family:'Playfair Display',serif}
+        .dot.filled{background:${p.on};color:${p.strong}}
+        .dot.empty{opacity:.5}
+        .nmsg{background:${p.tint};padding:22px 30px 24px;text-align:center}
+        .nmsg .greeting{font-size:1.05rem;margin-bottom:12px;font-weight:600}
+        .nmsg .lead{font-size:1.16rem;max-width:96%;margin:0 auto}
+        .hot{color:${p.hot};font-weight:700}
+        .warn{margin:18px auto 0;max-width:90%;background:#fff;border:2px solid ${p.strong};border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:12px;justify-content:center}
+        .warn p{font-weight:700;font-size:1.12rem}
+        .nfoot{padding:22px 38px 10px;text-align:center}
+        .nfoot .baraka{font-family:'Playfair Display',serif;font-style:italic;font-size:1.15rem;color:#1a4a35}
+        .nfoot .sig{font-weight:700;font-size:1.15rem;margin-top:8px}
+        .nfoot .role{font-style:italic;font-size:.98rem;color:#5a4a30}
+        .nfoot .org{font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem;color:#1a4a35;margin-top:16px;border-top:1px solid rgba(184,135,42,.4);padding-top:12px}
+        .nfoot .motto{font-style:italic;font-size:.74rem;color:#8a7350;margin-top:4px}
+        @media print{ body{padding:0} .sheet{box-shadow:none;border:none;margin:0;width:100%} @page{margin:0.25in} }
+      </style></head><body>
+      <div class="sheet"><div class="accent"></div>
+      <div class="nhead">${crestImg?`<img src="${crestImg}" alt="AMAN crest">`:''}
+        <div class="brandname">Al-Madrasatu An-Nuriyyah</div><div class="brandline">Islamic Weekend School &bull; AMAN</div></div>
+      <div class="dateline"><span class="salam">As-Salaamu \u2018Alaykum Wa Rahmatullah</span><span>${fmtDate(today())}</span></div>
+      <div class="nblock">
+        <div class="nbanner"><div class="kicker">${p.kicker}</div><div class="ntitle">${p.title}</div><div class="nstage">${p.stage}</div>
+          <div class="counter">${dots}</div></div>
+        <div class="nmsg"><p class="greeting">${parent?'Dear '+esc(parent)+',':'Dear Parent/Guardian,'}</p>
+          <p class="lead">${lead}</p>
+          <div class="warn"><span style="font-size:1.3rem">\u26a0\ufe0f</span><p>${warn}</p></div>
+          ${overCap}
+        </div>
+      </div>
+      <div class="nfoot"><div class="baraka">Barakallahu feekum,</div>
+        <div class="sig">Br. Abdallah bin Abdirahman</div><div class="role">Enrollment Advisor &amp; Accounting Manager</div>
+        <div class="org">Al-Madrasatu An-Nuriyyah (AMAN)</div><div class="motto">Youth Educated\u2026 Family Cultivated\u2026 World Illuminated</div></div>
+      </div>
+      <script>window.print()<\/script></body></html>`);
+    w.document.close();
+    DB.log('Absence notice ('+p.title+') printed for '+s.name);
+  },
   /* ---------- LEVEL-AWARE PROFILE ---------- */
   profile(v,id){
     const s=DB.data.students.find(x=>x.id===id); const d=DB.data;
@@ -4300,7 +4500,9 @@ const Students = {
        <button class="btn btn-ghost btn-sm" id="sFav" title="${s.favorite?'Remove from favorites':'Add to favorites'}" style="font-size:17px;line-height:1;padding:9px 12px;color:var(--gold)">${s.favorite?'★':'☆'}</button>
        <button class="btn btn-o" id="sEdit">Edit</button>
        <button class="btn btn-o" id="sAI">✨ AI insight</button>
-       <button class="btn btn-o" id="sReport">Print report</button></div></div>
+       <button class="btn btn-o" id="sReport">Print report</button>
+       ${(()=>{ const n=Students.unexcusedCount(s.id); return n? `<button class="btn ${n>=3?'btn-danger':'btn-o'}" id="sAbsence">🔔 Absence notice <span style="font-family:var(--f-mono);font-size:11px">(${n} unexcused)</span></button>` : ''; })()}
+       </div></div>
      <div style="display:flex;gap:16px;margin:0 0 16px" class="no-print">
        <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
        <button id="sDel" style="background:none;border:none;color:var(--bad);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">Delete</button></div>
@@ -4375,6 +4577,7 @@ const Students = {
       for(const day in DB.data.attendance) delete DB.data.attendance[day][id];
       DB.log('Removed student: '+s.name); DB.save(); Router.go('#/students'); });
     $('#sReport',v).onclick=()=>Students.printJourney(s,{tot,P,qlog,ach,age,sidFmt});
+    const absBtn=$('#sAbsence',v); if(absBtn) absBtn.onclick=()=>Students.printAbsenceNotice(s);
     $('#sFav',v).onclick=()=>{ s.favorite=!s.favorite; DB.save(); Router.render(); };
     $('#sAI',v).onclick=()=>{ sessionStorage.setItem('ai_q', 'Give me a progress summary and 3 concrete recommendations for this student: '+aiCtx()); Router.go('#/ai'); };
     $('#sToggleActive',v).onclick=()=>{
@@ -4622,12 +4825,12 @@ const Students = {
      <div class="filters no-print">
       <input type="date" value="${date}" id="attDate" style="max-width:170px">
       <button class="btn btn-o btn-sm" id="allP">Mark all present</button>
-      <span style="font-size:12.5px;color:var(--ink2)">P present · A absent · L late — saves instantly</span></div>
+      <span style="font-size:12.5px;color:var(--ink2)">P present · A absent (unexcused) · L late · E excused absence — saves instantly</span></div>
      ${stu.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span></div>
         <div class="card" style="padding:8px 14px"><table class="tbl"><tbody>${g.map(s=>`
          <tr><td style="width:44px">${avatarHTML(s)}</td><td>${esc(s.name)}</td>
-          <td style="text-align:right;white-space:nowrap">${['P','A','L'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}">${k}</button>`).join(' ')}</td></tr>`).join('')}
+          <td style="text-align:right;white-space:nowrap">${['P','A','L','E'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',A:'Absent — unexcused',L:'Late',E:'Absent — excused'}[k]}">${k}</button>`).join(' ')}</td></tr>`).join('')}
         </tbody></table></div>`; }).join('')
       : `<div class="empty"><h3>No students to mark</h3><p>Import or add students first.</p><button class="btn btn-p" data-go="#/students">Go to Students</button></div>`}`;
     wireCommon(v);
@@ -4869,8 +5072,32 @@ const Admin = {
   tasks(el){
     const d=DB.data;
     const PR={High:0,Normal:1,Low:2};
-    const tasks=[...d.tasks].sort((a,b)=>(a.done?1:0)-(b.done?1:0) || (PR[a.pri||'Normal']-PR[b.pri||'Normal']) || String(a.due||'9').localeCompare(String(b.due||'9')));
-    el.innerHTML = `<div class="card" style="margin-bottom:16px"><label>New task</label>
+    const tdy=today();
+    const weekOut=new Date(Date.now()+7*864e5).toISOString().slice(0,10);
+    const open=d.tasks.filter(t=>!t.done), done=d.tasks.filter(t=>t.done);
+    const overdue=open.filter(t=>t.due&&t.due<tdy);
+    const dueToday=open.filter(t=>t.due===tdy);
+    const thisWeek=open.filter(t=>t.due&&t.due>tdy&&t.due<=weekOut);
+    const later=open.filter(t=>t.due&&t.due>weekOut);
+    const noDue=open.filter(t=>!t.due);
+    const sortP=(a,b)=>(PR[a.pri||'Normal']-PR[b.pri||'Normal'])||String(a.due||'9').localeCompare(String(b.due||'9'));
+    [overdue,dueToday,thisWeek,later,noDue].forEach(g=>g.sort(sortP));
+    const high=open.filter(t=>t.pri==='High').length;
+    const row = t=>{
+      const link = t.link? (t.link[0]==='s'? d.students.find(s=>s.id===t.link.slice(2)) : DB.res(t.link.slice(2))) : null;
+      return `<div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;${t.done?'opacity:.5':''}">
+       <input type="checkbox" ${t.done?'checked':''} data-tk="${t.id}" aria-label="Mark '${esc(t.text)}' done" style="width:auto">
+       <span style="flex:1;min-width:150px;${t.done?'text-decoration:line-through':''}">${esc(t.text)}</span>
+       ${t.pri==='High'?'<span class="tag tag-red">high</span>':t.pri==='Low'?'<span class="tag tag-dim">low</span>':''}
+       ${t.cat&&t.cat!=='General'?`<span class="tag tag-blue">${esc(t.cat)}</span>`:''}
+       ${link?`<button class="chip" data-go="${t.link[0]==='s'?'#/students/':'#/resource/'}${esc(t.link.slice(2))}">${t.link[0]==='s'?'🎓':'📄'} ${esc((link.name||link.title).slice(0,22))}</button>`:''}
+       ${t.due?`<span class="tag ${t.due<today()&&!t.done?'tag-red':'tag-dim'}">${fmtDate(t.due)}</span>`:''}
+       <button class="btn btn-ghost btn-sm" data-del="${t.id}">✕</button></div>`; };
+    const groups=[['Overdue',overdue,'var(--bad)'],['Today',dueToday,'var(--gold-text)'],['This Week',thisWeek,'var(--ink3)'],['Later',later,'var(--ink3)'],['No due date',noDue,'var(--ink3)']];
+    el.innerHTML = `<div class="kpis" style="margin-bottom:16px">${[
+       ['☐',open.length,'Open tasks'],['⏰',overdue.length,'Overdue'],['🔴',high,'High priority'],['✅',done.length,'Completed']]
+       .map(([i,val,lab])=>`<div class="kpi-card" style="cursor:default"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
+     <div class="card" style="margin-bottom:16px"><label>New task</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tk-t" placeholder="What needs doing?" aria-label="Task description" style="flex:2;min-width:180px">
        <select id="tk-p" aria-label="Priority" style="max-width:110px"><option>Normal</option><option>High</option><option>Low</option></select>
        <select id="tk-c" aria-label="Category" style="max-width:140px">${['General','Tuition','Enrollment','Communication','Facility','Event'].map(c=>`<option>${c}</option>`).join('')}</select>
@@ -4879,16 +5106,9 @@ const Admin = {
        <select id="tk-l"><option value="">— none —</option>
         <optgroup label="Students">${d.students.filter(s=>s.active!==false).map(s=>`<option value="s:${s.id}">${esc(s.name)}</option>`).join('')}</optgroup>
         <optgroup label="Resources">${d.resources.slice(0,40).map(r=>`<option value="r:${r.id}">${esc(r.title.slice(0,40))}</option>`).join('')}</optgroup></select></div></div>
-     <div class="wlist">${tasks.map(t=>{
-       const link = t.link? (t.link[0]==='s'? d.students.find(s=>s.id===t.link.slice(2)) : DB.res(t.link.slice(2))) : null;
-       return `<div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;${t.done?'opacity:.5':''}">
-       <input type="checkbox" ${t.done?'checked':''} data-tk="${t.id}" aria-label="Mark '${esc(t.text)}' done" style="width:auto">
-       <span style="flex:1;min-width:150px;${t.done?'text-decoration:line-through':''}">${esc(t.text)}</span>
-       ${t.pri==='High'?'<span class="tag tag-red">high</span>':t.pri==='Low'?'<span class="tag tag-dim">low</span>':''}
-       ${t.cat&&t.cat!=='General'?`<span class="tag tag-blue">${esc(t.cat)}</span>`:''}
-       ${link?`<button class="chip" data-go="${t.link[0]==='s'?'#/students/':'#/resource/'}${esc(t.link.slice(2))}">${t.link[0]==='s'?'🎓':'📄'} ${esc((link.name||link.title).slice(0,22))}</button>`:''}
-       ${t.due?`<span class="tag ${t.due<today()&&!t.done?'tag-red':'tag-dim'}">${fmtDate(t.due)}</span>`:''}
-       <button class="btn btn-ghost btn-sm" data-del="${t.id}">✕</button></div>`; }).join('')||'<div class="empty"><p>No tasks.</p></div>'}</div>`;
+     ${groups.map(([label,list,color])=> list.length? `<div style="margin:16px 0 8px"><b style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:${color}">${label} · ${list.length}</b></div><div class="wlist">${list.map(row).join('')}</div>` : '').join('')}
+     ${done.length? `<details style="margin-top:18px" class="no-print"><summary style="cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700">Completed · ${done.length}</summary><div class="wlist" style="margin-top:10px">${done.map(row).join('')}</div></details>` : ''}
+     ${!d.tasks.length?'<div class="empty"><p>No tasks.</p></div>':''}`;
     wireCommon(el);
     $('#tk-add',el).onclick=()=>{ const t=$('#tk-t',el).value.trim(); if(!t)return;
       d.tasks.unshift({id:uid(), text:t, due:$('#tk-d',el).value, done:false, pri:$('#tk-p',el).value, cat:$('#tk-c',el).value, link:$('#tk-l',el).value||''});
@@ -4899,11 +5119,14 @@ const Admin = {
   meetings(el){ simpleJournal(el, 'notes_meet', 'Meeting notes', 'Attendees, decisions, follow-ups…'); },
   staff(el){
     const d=DB.data;
-    el.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:12px" class="no-print"><button class="btn btn-p btn-sm" id="sfAdd">＋ Add staff</button></div>
-     <div class="grid g2">${d.staff.map(s=>`<div class="card" style="display:flex;gap:13px;align-items:center">
-       <div class="avatar" style="width:44px;height:44px">${esc(initials(s.name))}</div>
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px" class="no-print">
+      <span style="font-size:13.5px;color:var(--ink2)">${d.staff.length} staff member${d.staff.length===1?'':'s'}</span>
+      <button class="btn btn-p btn-sm" id="sfAdd">＋ Add staff</button></div>
+     ${d.staff.length? `<div class="grid g2">${d.staff.map(s=>`<div class="card" style="display:flex;gap:13px;align-items:center">
+       <div class="avatar" style="width:44px;height:44px;flex-shrink:0">${esc(initials(s.name))}</div>
        <div style="flex:1;min-width:0"><b>${esc(s.name)}</b><br><span style="font-size:12.5px;color:var(--ink2)">${esc(s.role)}</span>${s.contact?`<br><span style="font-size:12px;font-family:var(--f-mono)">${esc(s.contact)}</span>`:''}</div>
-       <button class="btn btn-ghost btn-sm" data-del="${s.id}">✕</button></div>`).join('')}</div>`;
+       <button class="btn btn-ghost btn-sm" data-del="${s.id}">✕</button></div>`).join('')}</div>`
+     : `<div class="empty"><div class="big">👥</div><h3>No staff on file</h3><p>Add teachers, assistants, or volunteers — name, role, and a way to reach them.</p></div>`}`;
     $('#sfAdd',el).onclick=()=>{
       const o=overlay(`<div class="modal" style="max-width:420px"><h3>Add staff</h3>
        <div class="field"><label>Name</label><input id="sf-n"></div>
@@ -6357,8 +6580,8 @@ const AnaReports = {
     const act=d.students.filter(s=>s.active!==false);
     const rows=act.map(s=>{ const vals=days.map(day=>d.attendance[day][s.id]).filter(Boolean);
       const P=vals.filter(x=>x==='P').length;
-      return `<tr><td>${esc(s.name)}</td><td>${s.level.replace('Level ','L')}</td><td>${P}</td><td>${vals.filter(x=>x==='A').length}</td><td>${vals.filter(x=>x==='L').length}</td><td>${vals.length?Math.round(P/vals.length*100)+'%':'—'}</td></tr>`; }).join('');
-    repShell('Attendance Report · '+R.a+' → '+R.b, `<h2>${days.length} sessions</h2><table><thead><tr><th>Student</th><th>Lvl</th><th>P</th><th>A</th><th>L</th><th>Rate</th></tr></thead><tbody>${rows}</tbody></table>`); },
+      return `<tr><td>${esc(s.name)}</td><td>${s.level.replace('Level ','L')}</td><td>${P}</td><td>${vals.filter(x=>x==='A').length}</td><td>${vals.filter(x=>x==='E').length}</td><td>${vals.filter(x=>x==='L').length}</td><td>${vals.length?Math.round(P/vals.length*100)+'%':'—'}</td></tr>`; }).join('');
+    repShell('Attendance Report · '+R.a+' → '+R.b, `<h2>${days.length} sessions</h2><table><thead><tr><th>Student</th><th>Lvl</th><th>P</th><th>A (unexcused)</th><th>E (excused)</th><th>L</th><th>Rate</th></tr></thead><tbody>${rows}</tbody></table>`); },
   memo(R){ const d=DB.data;
     const L3=d.students.filter(s=>s.active!==false&&s.level==='Level 3');
     const rows=L3.map(s=>{ const st=hifzStats(s); const q=d.quran.filter(x=>x.sid===s.id&&inR(x.date,R.a,R.b));
