@@ -1728,6 +1728,22 @@ function buildOfficialMailto(parentEmail, parentFirst, students, isPlural, start
   ];
   return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
+/* ---------- SMS/text equivalents ----------
+   Every mailto builder above has a matching *Sms function here: same facts,
+   a fraction of the words — built for a phone screen, not an inbox. Short
+   and warm, not a transcription of the email. smsHref() turns any of these
+   into a real sms: link, or '' if there's no phone on file for that guardian
+   (callers check for that before showing a Text button). */
+function smsHref(phone, body){
+  const digits=(phone||'').replace(/[^0-9+]/g,'');
+  return digits? 'sms:'+digits+'?&body='+encodeURIComponent(body) : '';
+}
+function buildWelcomeSms(parentFirst, students, isPlural){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', welcome to the AMAN family! '+students+' '+(isPlural?'are':'is')+' officially enrolled. Check your email for the Welcome Packet \u2014 schedule, what to bring, how to reach us. Questions? Reply here or call (612) 444-2609. \u2014 AMAN';
+}
+function buildOfficialSms(parentFirst, students, isPlural, startDate, totalDue){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', wonderful news \u2014 '+students+' '+(isPlural?'are':'is')+' officially accepted to AMAN! Classes start '+startDate+'. '+totalDue+' due to secure the spot \u2014 full details emailed. Questions? Reply here or call (612) 444-2609. \u2014 AMAN';
+}
 
 // ---------- Student of the Month certificate ----------
 const SOTM_CSS = `
@@ -2364,6 +2380,15 @@ function buildPaymentReceivedMailto(parentEmail, parentFirst, students, isPlural
   ];
   return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
+function buildWaitlistOfferSms(parentFirst, students){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', good news \u2014 a place has opened at AMAN for '+students+'! Reply here or call (612) 444-2609 within a couple days to accept \u2014 details emailed too. \u2014 AMAN';
+}
+function buildWaitlistReleaseSms(parentFirst, students, isPlural){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', we hadn\u2019t heard back so we\u2019ve released '+students+'\u2019s waitlist '+(isPlural?'spots':'spot')+' at AMAN for now. Situation changed? Reply here or call (612) 444-2609 \u2014 happy to add '+(isPlural?'them':'you')+' back. \u2014 AMAN';
+}
+function buildPaymentReceivedSms(parentFirst, students, isPlural, amount, firstDayFmt){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', payment received'+(amount?' ('+amount+')':'')+' \u2014 '+(isPlural?'their places are':'this place is')+' fully secured at AMAN'+(firstDayFmt?'! First day: '+firstDayFmt+', 9AM\u20132PM.':'.')+' Welcome to the family! \u2014 AMAN';
+}
 function renderLetterDocument(type, d){
   const body = type==='conditional' ? renderConditionalLetterBody(d) : type==='official' ? renderOfficialLetterBody(d) : type==='welcome' ? renderWelcomeLetterBody(d) : '';
   const title = type==='conditional' ? 'Conditional Acceptance Letter' : type==='official' ? 'Official Acceptance Letter' : type==='welcome' ? 'Welcome to AMAN' : '';
@@ -2387,6 +2412,7 @@ function renderLetterDocument(type, d){
 <div class="toolbar">
   <button class="p" onclick="window.print()">🖨️ Print / Save as PDF</button>
   <a class="o" href="${d.mailto}" target="_blank">📧 Open Email Draft</a>
+  ${d.sms?`<a class="o" href="${d.sms}" target="_blank">💬 Text</a>`:''}
   ${(type==='official'||type==='welcome')?`<button class="o" onclick="window.parent.openLetterPreview(window.parent.renderClassroomChecklist())">🎒 Supplies Checklist</button>`:''}
 </div>
 <div class="sheet">
@@ -2526,6 +2552,12 @@ function buildAgreementMailto(parentEmail, parentFirst, students, isPlural, agre
   ];
   return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
+function buildInterviewSms(parentFirst, students, isPlural, interviewDate, interviewTime){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', '+students+' '+(isPlural?'have been':'has been')+' conditionally accepted to AMAN! One step left: a Parent Interview on '+interviewDate+' at '+interviewTime+' (~30 min). Reply here or call (612) 444-2609 to confirm. \u2014 AMAN';
+}
+function buildAgreementSms(parentFirst, students, agreementUrl){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', thanks for meeting with us! Next step for '+students+': complete the Parent Agreement Form \u2014 '+agreementUrl+' \u2014 Questions? Call/text (612) 444-2609. \u2014 AMAN';
+}
 
 // Accessibility: every ".field" block in the app is authored as
 // <div class="field"><label>Text</label><input/select/textarea …></div>
@@ -2575,7 +2607,7 @@ const DB = {
       schema:this.SCHEMA,
       resources:SEED_RESOURCES.map(r=>JSON.parse(JSON.stringify(r))),
       collections:[...SEED_COLLECTIONS],
-      students: ROSTER.map(rosterStudent), attendance:{}, quran:[], behavior:[], achievements:[],
+      students: ROSTER.map(rosterStudent), attendance:{}, attendanceReasons:{}, quran:[], behavior:[], achievements:[],
       admissions:[], amaanahApplications:[],
       lessons:[], planner:{}, quizzes:[], homework:[], reflections:[],
       tasks:[
@@ -3193,6 +3225,10 @@ function wireCommon(v){
   $$('[data-go]',v).forEach(el=>el.addEventListener('click',()=>Router.go(el.dataset.go)));
   $$('[data-act=addres]',v).forEach(el=>el.onclick=()=>ResourceForm.open());
   $$('[data-act=backup]',v).forEach(el=>el.onclick=()=>DB.export());
+  $$('[data-copy]',v).forEach(el=>el.onclick=()=>{
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(el.dataset.copy).then(()=>toast('Copied to clipboard')).catch(()=>toast('Could not copy — select the text manually'));
+    else toast('Could not copy — select the text manually');
+  });
   wireFieldLabels(v);
 }
 
@@ -3375,21 +3411,40 @@ function kbBody(list, view){
     ${r.status!=='Active'?`<span class="tag ${r.status.startsWith('Missing')?'tag-red':r.status==='Planned'?'tag-blue':'tag-gold'}">${esc(r.status)}</span>`:''}
     <span class="m">${esc(r.category)} · ${rel(r.modified)}</span></div>`).join('')}</div>`;
 }
+/* ---------- shared print-window opener ----------
+   Every printable document in this app (data reports, letters, permission
+   slips, absence notices, weekly plans, quizzes) used to open its own
+   window and duplicate the same boilerplate — font links, print-color-adjust,
+   the trailing window.print() script. That meant one font change or one
+   popup-blocked fallback had to be copied into eight places by hand, which
+   is exactly the kind of drift that causes silent inconsistency later.
+   Everything now goes through this one function for the plumbing; callers
+   still supply their own <style> and body, so a plain data table and a
+   branded parent letter can still look nothing alike — only the mechanics
+   are shared, not the design. */
+function printWindow(title, styleCss, bodyHtml){
+  const w=window.open('','_blank');
+  if(!w){ toast('Pop-up blocked — allow pop-ups for this site to print.'); return null; }
+  w.document.write(`<html><head><title>${esc(title)}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}${styleCss||''}</style>
+    </head><body>${bodyHtml}<script>window.print()<\/script></body></html>`);
+  w.document.close();
+  return w;
+}
 function kbMissingReport(){
   const d=DB.data;
   const missing=d.resources.filter(r=>r.status==='Missing — Re-upload');
   const planned=d.resources.filter(r=>r.status==='Planned');
   const unlinked=d.resources.filter(r=>r.loc.kind==='device'&&!r.loc.href&&r.status==='Active');
   const sec=(t,arr,note)=> arr.length?`<h2>${t} (${arr.length})</h2><ol>${arr.map(r=>`<li><b>${esc(r.title)}</b> — ${esc(r.desc.slice(0,140))}</li>`).join('')}</ol>${note?`<p class="n">${note}</p>`:''}`:'';
-  const w=window.open('','_blank');
-  w.document.write(`<html><head><title>AMAN — Missing Resources Report</title><style>body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px}.meta{font-size:12px;color:#555}li{margin:8px 0;font-size:14px}.n{font-size:12px;color:#666;font-style:italic}</style></head><body>
-   <h1>Missing Resources Report</h1><div class="meta">Al-Madrasatu An-Nuriyyah · Knowledge Base · ${new Date().toLocaleDateString()}</div>
-   ${sec('Files needing re-upload', missing,'Re-upload these so the Knowledge Base reaches 100% coverage.')}
-   ${sec('Planned — does not exist yet', planned,'Recommended builds, in priority order as flagged on the dashboard.')}
-   ${sec('On device but not linked', unlinked,'Open each resource → Edit → Location and paste its Drive link, site URL, or folder path.')}
-   ${!missing.length&&!planned.length&&!unlinked.length?'<p>Nothing missing — the Knowledge Base is fully linked, mā shāʾ Allāh.</p>':''}
-   <script>window.print()<\/script></body></html>`);
-  w.document.close();
+  printWindow('AMAN — Missing Resources Report',
+    `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px}.meta{font-size:12px;color:#555}li{margin:8px 0;font-size:14px}.n{font-size:12px;color:#666;font-style:italic}`,
+    `<h1>Missing Resources Report</h1><div class="meta">Al-Madrasatu An-Nuriyyah · Knowledge Base · ${new Date().toLocaleDateString()}</div>
+     ${sec('Files needing re-upload', missing,'Re-upload these so the Knowledge Base reaches 100% coverage.')}
+     ${sec('Planned — does not exist yet', planned,'Recommended builds, in priority order as flagged on the dashboard.')}
+     ${sec('On device but not linked', unlinked,'Open each resource → Edit → Location and paste its Drive link, site URL, or folder path.')}
+     ${!missing.length&&!planned.length&&!unlinked.length?'<p>Nothing missing — the Knowledge Base is fully linked, mā shāʾ Allāh.</p>':''}`);
 }
 
 /* ================= MODULE: SEARCH RESULTS ================= */
@@ -3821,14 +3876,12 @@ const Teacher = {
     $$('button[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this assignment?',()=>{ d.homework=d.homework.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render(); }));
     $$('button[data-print]',el).forEach(b=>b.onclick=()=>{
       const h=d.homework.find(x=>x.id===b.dataset.print);
-      const w=window.open('','_blank');
-      w.document.write(`<html><head><title>${esc(h.title)}</title><style>body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.6}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}p{font-size:15px}.blank{border-bottom:1px solid #999;display:inline-block;min-width:200px}</style></head><body>
-        <h1>Homework — ${esc(h.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(h.level)} · ${h.due?'Due '+fmtDate(h.due):''} · Name: <span class="blank"></span></div>
-        ${h.notes?`<p>${esc(h.notes).replace(/\n/g,'<br>')}</p>`:''}
-        ${h.resources.length?`<p><b>Materials:</b> ${h.resources.map(rid=>{const r=DB.res(rid);return r?esc(r.title):''}).filter(Boolean).join(' · ')}</p>`:''}
-        <p style="margin-top:40px">Parent signature: <span class="blank"></span></p>
-        <script>window.print()<\/script></body></html>`);
-      w.document.close();
+      printWindow('Homework — '+h.title,
+        `body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.6}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}p{font-size:15px}.blank{border-bottom:1px solid #999;display:inline-block;min-width:200px}`,
+        `<h1>Homework — ${esc(h.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(h.level)} · ${h.due?'Due '+fmtDate(h.due):''} · Name: <span class="blank"></span></div>
+         ${h.notes?`<p>${esc(h.notes).replace(/\n/g,'<br>')}</p>`:''}
+         ${h.resources.length?`<p><b>Materials:</b> ${h.resources.map(rid=>{const r=DB.res(rid);return r?esc(r.title):''}).filter(Boolean).join(' · ')}</p>`:''}
+         <p style="margin-top:40px">Parent signature: <span class="blank"></span></p>`);
     });
   },
   /* ---------- PLANNER (preserved, + copy-forward) ---------- */
@@ -3857,9 +3910,9 @@ const Teacher = {
       <h2>${esc(day)} <span style="font-weight:400;color:#555;font-size:12px">· ${dateLine(day)}</span></h2>
       <table><tbody>${slots.map((s,i)=>{ const txt=(wk['pl_'+day+'_'+i]||'').trim();
         return `<tr><td style="width:150px;vertical-align:top;font-weight:600">${esc(s)}</td><td style="white-space:pre-wrap">${txt?esc(txt):'<span style="color:#999">— not planned —</span>'}</td></tr>`; }).join('')}</tbody></table>`).join('');
-    const w=window.open('','_blank');
-    w.document.write(`<html><head><title>Weekend Plan</title><style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px;border-bottom:1px solid #ddd;padding-bottom:4px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top}</style></head><body><h1>Weekend Lesson Plan</h1><div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · prepared ${new Date().toLocaleDateString()}</div>${body}<script>window.print()<\/script></body></html>`);
-    w.document.close();
+    printWindow('Weekend Plan',
+      `body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px;border-bottom:1px solid #ddd;padding-bottom:4px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top}`,
+      `<h1>Weekend Lesson Plan</h1><div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · prepared ${new Date().toLocaleDateString()}</div>${body}`);
   },
   /* ---------- LESSON PLANS (upgraded: materials, time, taught-state, auto-related) ---------- */
   lessons(el){
@@ -3938,13 +3991,11 @@ const Teacher = {
     $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this quiz?',()=>{ d.quizzes=d.quizzes.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render();}));
     $$('[data-print]',el).forEach(b=>b.onclick=()=>{
       const Q=d.quizzes.find(x=>x.id===b.dataset.print);
-      const w=window.open('','_blank');
-      w.document.write(`<html><head><title>${esc(Q.title)}</title><style>body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:16px;margin-top:34px;color:#1a4a35}.meta{font-size:12px;color:#555}li{margin:14px 0}.ans{page-break-before:always}.blank{border-bottom:1px solid #999;display:inline-block;min-width:220px}</style></head><body>
-       <h1>${esc(Q.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(Q.subject)} · Name: <span class="blank"></span> · Date: ______</div>
-       <ol>${Q.qs.map(q=>`<li>${esc(q.q)} <b>(${esc(q.pts)} pts)</b><br><br><span class="blank" style="min-width:96%">&nbsp;</span></li>`).join('')}</ol>
-       <div class="ans"><h2>Answer Key — teacher copy</h2><ol>${Q.qs.map(q=>`<li>${esc(q.q)}<br><b>→ ${esc(q.a||'—')}</b></li>`).join('')}</ol></div>
-       <script>window.print()<\/script></body></html>`);
-      w.document.close();
+      printWindow(Q.title,
+        `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:16px;margin-top:34px;color:#1a4a35}.meta{font-size:12px;color:#555}li{margin:14px 0}.ans{page-break-before:always}.blank{border-bottom:1px solid #999;display:inline-block;min-width:220px}`,
+        `<h1>${esc(Q.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(Q.subject)} · Name: <span class="blank"></span> · Date: ______</div>
+         <ol>${Q.qs.map(q=>`<li>${esc(q.q)} <b>(${esc(q.pts)} pts)</b><br><br><span class="blank" style="min-width:96%">&nbsp;</span></li>`).join('')}</ol>
+         <div class="ans"><h2>Answer Key — teacher copy</h2><ol>${Q.qs.map(q=>`<li>${esc(q.q)}<br><b>→ ${esc(q.a||'—')}</b></li>`).join('')}</ol></div>`);
     });
     $('#qzAdd',el).onclick=()=>{
       const qs=[];
@@ -4343,11 +4394,8 @@ const Students = {
       const max=Math.max(...vals,1);
       return `<div style="display:flex;align-items:flex-end;gap:5px;height:56px">${vals.map(v=>`<div style="flex:1;background:#b8872a;border-radius:3px 3px 0 0;height:${Math.max(4,v/max*56)}px" title="${v}"></div>`).join('')}</div>`; };
     const stat=(n,l)=>`<div class="stat"><div class="n">${esc(String(n))}</div><div class="l">${esc(l)}</div></div>`;
-    const w=window.open('','_blank');
-    w.document.write(`<html><head><title>${esc(s.name)} — Student Journey</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Crimson+Pro&display=swap" rel="stylesheet">
-      <style>
-      body{font-family:'Crimson Pro',Georgia,serif;max-width:680px;margin:36px auto;padding:0 24px;color:#20261f}
+    printWindow(s.name+' — Student Journey',
+      `body{font-family:'Crimson Pro',Georgia,serif;max-width:680px;margin:36px auto;padding:0 24px;color:#20261f}
       h1{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#123626;margin:14px 0 2px}
       .tag{font-size:12px;color:#8a6520;letter-spacing:.08em;text-transform:uppercase;font-weight:bold}
       .head{display:flex;gap:16px;align-items:center;border-bottom:2px solid #1a4a35;padding-bottom:16px;margin-bottom:20px}
@@ -4360,9 +4408,8 @@ const Students = {
       .stat .l{font-size:10.5px;color:#5c665a;margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
       h2{font-size:14px;color:#1a4a35;margin-top:24px;border-bottom:1px solid #ddd;padding-bottom:4px}
       ul{padding-left:18px;font-size:14px}li{margin-bottom:4px}
-      .foot{margin-top:32px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic;text-align:center}
-      </style></head><body>
-      <div class="head">
+      .foot{margin-top:32px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic;text-align:center}`,
+      `<div class="head">
         ${s.photo?`<img src="${esc(s.photo)}">`:`<div class="ph-fallback">${esc(initials(s.name))}</div>`}
         <div><div class="tag">Al-Madrasatu An-Nuriyyah</div>
         <h1>${esc(s.preferredName||s.name)}</h1>
@@ -4377,9 +4424,7 @@ const Students = {
       ${bars(progVals)}
       <h2>Achievements &amp; recognitions</h2>
       ${ach.length?`<ul>${ach.slice(0,10).map(a=>`<li>${esc(a.text)} <span style="color:#999;font-size:11px">— ${fmtDate(a.date)}</span></li>`).join('')}</ul>`:'<p style="color:#999;font-size:13px">Nothing recorded yet.</p>'}
-      <div class="foot">Youth Educated… Family Cultivated… World Illuminated</div>
-      <script>window.print()<\/script></body></html>`);
-    w.document.close();
+      <div class="foot">Youth Educated… Family Cultivated… World Illuminated</div>`);
   },
   /* ---------- Absence Notice: same escalating design as the standalone tool this
      replaces, but auto-filled from real attendance data instead of hand-typed and
@@ -4390,7 +4435,9 @@ const Students = {
     for(const day in a){ if(a[day][sid]==='A') n++; }
     return n;
   },
-  printAbsenceNotice(s){
+  /* ---------- shared stage/message logic — both the printed notice and the
+     text/copy version pull from this one place, so the two never drift ---------- */
+  absenceStageInfo(s){
     const n = this.unexcusedCount(s.id);
     const stage = Math.min(3, Math.max(1, n||1));
     const PAL = {
@@ -4399,24 +4446,34 @@ const Students = {
       3:{strong:'#d61f1f', on:'#ffe9a8', tint:'#fbdcd6', hot:'#a10d0d', kicker:'Final Warning', title:'Final Notice', stage:'3rd Unexcused Absence'}
     };
     const p = PAL[stage];
-    const who = esc(s.preferredName||s.name);
+    const who = s.preferredName||s.name;
     const parent = (s.guardians&&s.guardians[0]&&s.guardians[0].name) || '';
+    const phone = (s.guardians&&s.guardians[0]&&s.guardians[0].phone) || '';
+    const leadPlain = stage===1
+      ? `${who} now has one (1) unexcused absence, without prior notice. AMAN policy: three (3) unexcused absences result in removal from the program. We don\u2019t want it to reach that point — we\u2019re glad to work with you so ${who} stays enrolled.`
+      : stage===2
+      ? `${who} now has two (2) unexcused absences, both without prior notice. One more will mean removal from the program. We truly want to avoid that — let\u2019s talk so ${who} stays enrolled.`
+      : `FINAL NOTICE: ${who} has reached ${n>=3?'three (3) or more':'three (3)'} unexcused absence${n===1?'':'s'}. Per AMAN policy, this results in immediate removal from the program. Please contact us right away if you believe this was recorded in error.`;
+    return {n, stage, p, who, parent, phone, leadPlain};
+  },
+  absenceMessageText(s){
+    const {parent, leadPlain} = this.absenceStageInfo(s);
+    return `As-sal\u0101mu \u02bfalaykum ${parent?parent+',':'AMAN family,'}\n\n${leadPlain}\n\nJaz\u0101kumull\u0101hu khayran,\nBr. Abdallah bin Abdirahman\nAl-Madrasatu An-Nuriyyah`;
+  },
+  printAbsenceNotice(s){
+    const {n, stage, p, who, parent} = this.absenceStageInfo(s);
     const dots = [1,2,3].map(i=>`<div class="dot ${i<=stage?'filled':'empty'}">${i}</div>`).join('');
     const lead = stage===1
-      ? `This message is to notify you that <strong>${who}</strong> now has <strong>one (1) unexcused absence</strong>, without prior notice. Our policy is clear: <span class="hot">three (3) unexcused absences result in removal from the program</span>. We don\u2019t want it to reach that point — we\u2019re committed to working with you so <strong>${who}</strong> stays enrolled and benefits fully.`
+      ? `This message is to notify you that <strong>${esc(who)}</strong> now has <strong>one (1) unexcused absence</strong>, without prior notice. Our policy is clear: <span class="hot">three (3) unexcused absences result in removal from the program</span>. We don\u2019t want it to reach that point — we\u2019re committed to working with you so <strong>${esc(who)}</strong> stays enrolled and benefits fully.`
       : stage===2
-      ? `This message is to notify you that <strong>${who}</strong> now has <strong>two (2) unexcused absences</strong>, both without prior notice. <span class="hot">One more will mean removal from the program.</span> We truly want to avoid that, and we\u2019re ready to work with you so <strong>${who}</strong> stays enrolled and benefits fully.`
-      : `This is a <span class="hot">FINAL NOTICE</span> that <strong>${who}</strong> has now reached <strong>${n>=3?'three (3) or more':'three (3)'} unexcused absence${n===1?'':'s'}</strong>. As per AMAN policy, this results in <strong>immediate removal from the program</strong>. Please contact us right away if you believe this was recorded in error.`;
+      ? `This message is to notify you that <strong>${esc(who)}</strong> now has <strong>two (2) unexcused absences</strong>, both without prior notice. <span class="hot">One more will mean removal from the program.</span> We truly want to avoid that, and we\u2019re ready to work with you so <strong>${esc(who)}</strong> stays enrolled and benefits fully.`
+      : `This is a <span class="hot">FINAL NOTICE</span> that <strong>${esc(who)}</strong> has now reached <strong>${n>=3?'three (3) or more':'three (3)'} unexcused absence${n===1?'':'s'}</strong>. As per AMAN policy, this results in <strong>immediate removal from the program</strong>. Please contact us right away if you believe this was recorded in error.`;
     const warn = stage===3? 'Per AMAN policy, three (3) unexcused absences result in immediate removal from the program.' : 'Three (3) unexcused absences will result in immediate removal from the program.';
     const crestImg = (document.querySelector('.crest img')||{}).src || '';
     const overCap = n>3? `<p style="text-align:center;color:#a10d0d;font-weight:700;font-size:13px;margin-top:10px">Note: ${n} unexcused absences on file — already past the 3-absence threshold. This prints as a Final Notice; confirm the removal conversation separately.</p>` : '';
-    const w=window.open('','_blank');
-    w.document.write(`<html><head><title>AMAN — Unexcused Absence Notice — ${who}</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=Crimson+Pro:ital,wght@0,400;0,600;0,700&display=swap" rel="stylesheet">
-      <style>
-        *{box-sizing:border-box;margin:0;padding:0}
+    printWindow('AMAN — Unexcused Absence Notice — '+who,
+      `*{box-sizing:border-box;margin:0;padding:0}
         html,body{background:#fff}
-        html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
         body{font-family:'Crimson Pro',Georgia,serif;color:#1a1207;line-height:1.6;padding:0}
         .sheet{width:7.4in;max-width:100%;margin:24px auto;background:#fdfaf3;box-shadow:0 8px 40px rgba(0,0,0,.15);border:1px solid rgba(0,0,0,.06)}
         .accent{height:8px;background:${p.strong}}
@@ -4447,9 +4504,8 @@ const Students = {
         .nfoot .role{font-style:italic;font-size:.98rem;color:#5a4a30}
         .nfoot .org{font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem;color:#1a4a35;margin-top:16px;border-top:1px solid rgba(184,135,42,.4);padding-top:12px}
         .nfoot .motto{font-style:italic;font-size:.74rem;color:#8a7350;margin-top:4px}
-        @media print{ body{padding:0} .sheet{box-shadow:none;border:none;margin:0;width:100%} @page{margin:0.25in} }
-      </style></head><body>
-      <div class="sheet"><div class="accent"></div>
+        @media print{ body{padding:0} .sheet{box-shadow:none;border:none;margin:0;width:100%} @page{margin:0.25in} }`,
+      `<div class="sheet"><div class="accent"></div>
       <div class="nhead">${crestImg?`<img src="${crestImg}" alt="AMAN crest">`:''}
         <div class="brandname">Al-Madrasatu An-Nuriyyah</div><div class="brandline">Islamic Weekend School &bull; AMAN</div></div>
       <div class="dateline"><span class="salam">As-Salaamu \u2018Alaykum Wa Rahmatullah</span><span>${fmtDate(today())}</span></div>
@@ -4465,9 +4521,7 @@ const Students = {
       <div class="nfoot"><div class="baraka">Barakallahu feekum,</div>
         <div class="sig">Br. Abdallah bin Abdirahman</div><div class="role">Enrollment Advisor &amp; Accounting Manager</div>
         <div class="org">Al-Madrasatu An-Nuriyyah (AMAN)</div><div class="motto">Youth Educated\u2026 Family Cultivated\u2026 World Illuminated</div></div>
-      </div>
-      <script>window.print()<\/script></body></html>`);
-    w.document.close();
+      </div>`);
     DB.log('Absence notice ('+p.title+') printed for '+s.name);
   },
   /* ---------- LEVEL-AWARE PROFILE ---------- */
@@ -4501,7 +4555,13 @@ const Students = {
        <button class="btn btn-o" id="sEdit">Edit</button>
        <button class="btn btn-o" id="sAI">✨ AI insight</button>
        <button class="btn btn-o" id="sReport">Print report</button>
-       ${(()=>{ const n=Students.unexcusedCount(s.id); return n? `<button class="btn ${n>=3?'btn-danger':'btn-o'}" id="sAbsence">🔔 Absence notice <span style="font-family:var(--f-mono);font-size:11px">(${n} unexcused)</span></button>` : ''; })()}
+       ${(()=>{ const n=Students.unexcusedCount(s.id); if(!n) return '';
+         const phone=(s.guardians&&s.guardians[0]&&s.guardians[0].phone)||'';
+         const digits=phone.replace(/[^0-9+]/g,'');
+         const msg=Students.absenceMessageText(s);
+         return `<button class="btn ${n>=3?'btn-danger':'btn-o'}" id="sAbsence">🔔 Absence notice <span style="font-family:var(--f-mono);font-size:11px">(${n} unexcused)</span></button>
+           ${digits?`<a class="btn btn-ghost btn-sm" href="sms:${esc(digits)}?&body=${encodeURIComponent(msg)}" title="Text this family">💬 Text</a>`:''}
+           <button class="btn btn-ghost btn-sm" data-copy="${esc(msg)}" title="Copy message text">📋 Copy</button>`; })()}
        </div></div>
      <div style="display:flex;gap:16px;margin:0 0 16px" class="no-print">
        <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
@@ -4818,7 +4878,9 @@ const Students = {
     const d=DB.data;
     const date = Students._attDate||today();
     d.attendance[date]=d.attendance[date]||{};
+    d.attendanceReasons[date]=d.attendanceReasons[date]||{};
     const rec=d.attendance[date];
+    const reasons=d.attendanceReasons[date];
     const stu=d.students.filter(s=>s.active!==false && (!s.startDate||s.startDate<=date));
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div class="eyebrow" style="margin-top:12px">Attendance</div><h2 class="page-title">Session attendance</h2>
@@ -4829,8 +4891,10 @@ const Students = {
      ${stu.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span></div>
         <div class="card" style="padding:8px 14px"><table class="tbl"><tbody>${g.map(s=>`
-         <tr><td style="width:44px">${avatarHTML(s)}</td><td>${esc(s.name)}</td>
-          <td style="text-align:right;white-space:nowrap">${['P','A','L','E'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',A:'Absent — unexcused',L:'Late',E:'Absent — excused'}[k]}">${k}</button>`).join(' ')}</td></tr>`).join('')}
+         <tr><td style="width:44px">${avatarHTML(s)}</td><td>${esc(s.name)}${rec[s.id]==='E'&&reasons[s.id]?`<div style="font-size:11px;color:var(--info);font-style:italic;margin-top:2px">${esc(reasons[s.id])}</div>`:''}</td>
+          <td style="text-align:right;white-space:nowrap">
+           ${rec[s.id]==='E'?`<button class="btn btn-ghost btn-sm" data-reason="${s.id}" title="Add/edit reason" style="padding:5px 8px">📝</button>`:''}
+           ${['P','A','L','E'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',A:'Absent — unexcused',L:'Late',E:'Absent — excused'}[k]}">${k}</button>`).join(' ')}</td></tr>`).join('')}
         </tbody></table></div>`; }).join('')
       : `<div class="empty"><h3>No students to mark</h3><p>Import or add students first.</p><button class="btn btn-p" data-go="#/students">Go to Students</button></div>`}`;
     wireCommon(v);
@@ -4839,7 +4903,19 @@ const Students = {
     $$('button[data-att]',v).forEach(b=>b.onclick=()=>{
       const [sid,k]=b.dataset.att.split('_');
       rec[sid] = rec[sid]===k? undefined : k; if(rec[sid]===undefined) delete rec[sid];
+      if(rec[sid]!=='E') delete reasons[sid];
       DB.save(); Router.render();
+    });
+    $$('button[data-reason]',v).forEach(b=>b.onclick=()=>{
+      const sid=b.dataset.reason; const s=stu.find(x=>x.id===sid);
+      const o=overlay(`<div class="modal" style="max-width:420px"><h3>Excused absence — reason</h3>
+        <p style="font-size:13px;color:var(--ink2);margin-bottom:10px">${esc(s.name)} · ${fmtDate(date)}. Optional — helps if this ever needs a paper trail.</p>
+        <div class="field"><label>Reason</label><textarea id="rz-t" placeholder="e.g., called in sick, family emergency, doctor's appointment…">${esc(reasons[sid]||'')}</textarea></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+      $('[data-x=c]',o).onclick=()=>o.remove();
+      $('[data-x=s]',o).onclick=()=>{ const t=$('#rz-t',o).value.trim();
+        if(t) reasons[sid]=t; else delete reasons[sid];
+        DB.save(); o.remove(); Router.render(); };
     });
   },
 };
@@ -5384,10 +5460,6 @@ const Tuition = {
         </div></div>`; }).join('') : '<div class="empty"><div class="big">\u2705</div><h3>Everyone\u2019s current</h3><p>No outstanding balances this month, al-\u1e25amdulill\u0101h.</p></div>'}`;
     wireCommon(el);
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
-    $$('button[data-copy]',el).forEach(b=>b.onclick=()=>{
-      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(b.dataset.copy).then(()=>toast('Copied to clipboard')).catch(()=>toast('Could not copy — select the text manually'));
-      else toast('Could not copy — select the text manually');
-    });
     $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
   },
   /* ---------- shared payment / excuse form ---------- */
@@ -5672,11 +5744,12 @@ const Admissions = {
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const agreementUrl = 'https://amanschoolmn.org/agreement/'+(a.appId?('?app='+encodeURIComponent(a.appId)):'');
       const mailto = buildAgreementMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, agreementUrl);
+      const sms = smsHref(a.parentPhone, buildAgreementSms(admFirstName(a.parentName), studentsJoined, agreementUrl));
       Router.render();
       toast('Moved to Agreement');
       $('#ag-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send \u2014 review, then open it in your email client.</p>
         <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">\ud83d\udce7 Open Email Draft</a></div>`;
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">\ud83d\udce7 Open Email Draft</a>${sms?`<a class="btn btn-o" href="${sms}" target="_blank">\ud83d\udcac Text</a>`:''}</div>`;
       wireFieldLabels(o);
       $('[data-x=c2]',o).onclick=()=>o.remove();
     };
@@ -5710,12 +5783,13 @@ const Admissions = {
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const addr = admSplitAddress(a.address);
       const mailto = buildInterviewMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt);
+      const sms = smsHref(a.parentPhone, buildInterviewSms(admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt));
       const html = renderLetterDocument('conditional', {
         students: studentsJoined, program: prog,
         interviewDate: interviewDateFmt, interviewTime: interviewTimeFmt, interviewLoc: loc,
         parentFull: a.parentName, parentFirst: admFirstName(a.parentName),
         street: addr.street, citystate: addr.citystate,
-        letterDate: fmtDate(today()), mailto: mailto
+        letterDate: fmtDate(today()), mailto: mailto, sms: sms
       });
       o.remove();
       toast('Moved to Parent Interview — opening the letter');
@@ -5761,13 +5835,14 @@ const Admissions = {
       const tuitionCardText = n>1 ? money(tui*n)+' / month' : money(tui)+' / month';
       const addr = admSplitAddress(a.address);
       const mailto = buildOfficialMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, n>1, startFmt, totalDue);
+      const sms = smsHref(a.parentPhone, buildOfficialSms(admFirstName(a.parentName), studentsJoined, n>1, startFmt, totalDue));
       const html = renderLetterDocument('official', {
         students: studentsJoined, startDate: startFmt, classTime: classTime, classLoc: loc,
         tuitionCardText: tuitionCardText, regEach: money(reg), tuiEach: money(tui),
         totalDue: totalDue, totalBreak: totalBreak, zelle: 'amanschool.mn@gmail.com', cashapp: '(952) 217-3629',
         parentFull: a.parentName, parentFirst: admFirstName(a.parentName),
         street: addr.street, citystate: addr.citystate,
-        letterDate: fmtDate(today()), mailto: mailto
+        letterDate: fmtDate(today()), mailto: mailto, sms: sms
       });
       o.remove();
       toast('Accepted — opening the letter');
@@ -5785,11 +5860,12 @@ const Admissions = {
     $('#wo-go',o).onclick=()=>{
       admSetStage(a, 'interview', 'Spot opened — resumed at Parent Interview');
       const mailto = buildWaitlistOfferMailto(a.parentEmail, admFirstName(a.parentName), a.studentName);
+      const sms = smsHref(a.parentPhone, buildWaitlistOfferSms(admFirstName(a.parentName), a.studentName));
       Router.render();
       toast('Resumed pipeline');
       $('#wo-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
         <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a>${sms?`<a class="btn btn-o" href="${sms}" target="_blank">💬 Text</a>`:''}</div>`;
       wireFieldLabels(o);
       $('[data-x=c2]',o).onclick=()=>o.remove();
     };
@@ -5811,11 +5887,12 @@ const Admissions = {
       group.forEach(x=> admSetStage(x, 'notfit', 'Waitlist spot released — no response'));
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const mailto = buildWaitlistReleaseMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1);
+      const sms = smsHref(a.parentPhone, buildWaitlistReleaseSms(admFirstName(a.parentName), studentsJoined, group.length>1));
       Router.render();
       toast('Marked Not a Fit Right Now');
       $('#wr-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
         <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a>${sms?`<a class="btn btn-o" href="${sms}" target="_blank">💬 Text</a>`:''}</div>`;
       wireFieldLabels(o);
       $('[data-x=c2]',o).onclick=()=>o.remove();
     };
@@ -5871,11 +5948,12 @@ const Admissions = {
       DB.save();
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const mailto = buildPaymentReceivedMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, amount, paidOnFmt, firstDayFmt);
+      const sms = smsHref(a.parentPhone, buildPaymentReceivedSms(admFirstName(a.parentName), studentsJoined, group.length>1, amount, firstDayFmt));
       Router.render();
       toast('Payment logged to the timeline and family ledger');
       $('#pd-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
         <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a></div>`;
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a>${sms?`<a class="btn btn-o" href="${sms}" target="_blank">💬 Text</a>`:''}</div>`;
       wireFieldLabels(o);
       $('[data-x=c2]',o).onclick=()=>o.remove();
     };
@@ -6043,9 +6121,10 @@ const Admissions = {
       DB.log('Enrolled: '+n+' (from admissions)');
       const addr = admSplitAddress(a.address);
       const mailto = buildWelcomeMailto(a.parentEmail, admFirstName(a.parentName), n, false);
+      const sms = smsHref(a.parentPhone, buildWelcomeSms(admFirstName(a.parentName), n, false));
       const html = renderLetterDocument('welcome', {
         students: n, term: term, parentFull: a.parentName, parentFirst: admFirstName(a.parentName),
-        street: addr.street, citystate: addr.citystate, letterDate: fmtDate(today()), mailto: mailto
+        street: addr.street, citystate: addr.citystate, letterDate: fmtDate(today()), mailto: mailto, sms: sms
       });
       DB.save(); o.remove(); toast(n+' enrolled — mā shāʾ Allāh!'); celebrate(); Router.go('#/students/'+sid);
       openLetterPreview(html);
@@ -6570,9 +6649,9 @@ const AnaTabs = {
 };
 /* ---------- printable reports ---------- */
 function repShell(title, body){
-  const w=window.open('','_blank');
-  w.document.write(`<html><head><title>${esc(title)}</title><style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:14px;color:#1a4a35;margin-top:24px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #ccc}th{font-size:10.5px;text-transform:uppercase;color:#1a4a35}</style></head><body><h1>${esc(title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · prepared ${new Date().toLocaleDateString()}</div>${body}<script>window.print()<\/script></body></html>`);
-  w.document.close();
+  printWindow(title,
+    `body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:14px;color:#1a4a35;margin-top:24px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #ccc}th{font-size:10.5px;text-transform:uppercase;color:#1a4a35}`,
+    `<h1>${esc(title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · prepared ${new Date().toLocaleDateString()}</div>${body}`);
 }
 const AnaReports = {
   att(R){ const d=DB.data;
@@ -6620,9 +6699,8 @@ const AnaReports = {
     const pagesMem=L3.reduce((a,s)=>a+hifzStats(s).pages,0);
     const collected=d.finance.payments.filter(p=>inR(p.date,R.a,R.b)&&p.kind!=='excused').reduce((a,p)=>a+(+p.amount||0),0);
     const stat=(n,l)=>`<div class="stat"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`;
-    const w=window.open('','_blank');
-    w.document.write(`<html><head><title>AMAN Impact Summary</title><style>
-      body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#20261f}
+    printWindow('AMAN Impact Summary',
+      `body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#20261f}
       h1{font-family:Georgia,serif;font-size:24px;color:#123626;margin-bottom:2px}
       .tag{font-size:12.5px;color:#8a6520;letter-spacing:.06em;text-transform:uppercase;font-weight:bold}
       .meta{font-size:12px;color:#666;margin:6px 0 22px}
@@ -6631,9 +6709,8 @@ const AnaReports = {
       .stat .n{font-size:26px;font-weight:bold;color:#1a4a35}
       .stat .l{font-size:11px;color:#5c665a;margin-top:2px}
       p{font-size:14.5px;line-height:1.6}
-      .foot{margin-top:30px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic}
-      </style></head><body>
-      <div class="tag">Al-Madrasatu An-Nuriyyah</div>
+      .foot{margin-top:30px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic}`,
+      `<div class="tag">Al-Madrasatu An-Nuriyyah</div>
       <h1>Impact Summary</h1>
       <div class="meta">${R.a} → ${R.b} · prepared ${new Date().toLocaleDateString()}</div>
       <div class="stats">
@@ -6643,9 +6720,8 @@ const AnaReports = {
         ${stat(curAvg+'%','Curriculum completion')}
       </div>
       <p>Al-Madrasatu An-Nuriyyah (AMAN) served ${act.length} students across three learning levels this period, from first Arabic letters through full Qur\u2019ān memorization. ${att.rate!=null?`Attendance held at ${att.rate}% across ${att.sess} sessions. `:''}${pagesMem?`Ḥifẓ students collectively memorized ${pagesMem.toFixed(0)} pages of the Qur\u2019ān in this period. `:''}Community support covered $${collected} in tuition during this period, directly sustaining weekly instruction.</p>
-      <div class="foot">Youth Educated… Family Cultivated… World Illuminated</div>
-      <script>window.print()<\/script></body></html>`);
-    w.document.close(); }
+      <div class="foot">Youth Educated… Family Cultivated… World Illuminated</div>`);
+  }
 };
 
 /* ================= MODULE: AI ASSISTANT — OFFLINE OPERATIONS ASSISTANT =================
@@ -6976,9 +7052,7 @@ const AIx = {
     });
     $$('[data-print-slip]',el).forEach(b=>b.onclick=()=>{
       const [title,dateStr]=b.dataset.printSlip.split('|');
-      const w=window.open('','_blank');
-      w.document.write(`<html><head><title>Permission Slip</title><style>body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.7}h2{color:#1a4a35}</style></head><body>${aiPermissionSlipHTML(title,dateStr)}<script>window.print()<\/script></body></html>`);
-      w.document.close();
+      printWindow('Permission Slip', `body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.7}h2{color:#1a4a35}`, aiPermissionSlipHTML(title,dateStr));
     });
     $$('.ai-act',el).forEach(card=>{ const btn=$('button',card); if(!btn) return;
       btn.onclick=()=>{ const k=card.dataset.act, a=card.dataset.a, b=card.dataset.b, c=card.dataset.c||'';
