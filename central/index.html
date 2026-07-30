@@ -2646,7 +2646,7 @@ const DB = {
         {id:uid(), name:'Br. Abdallah bin Abdirahman', role:'Enrollment Advisor · Accounting Manager', contact:''},
       ],
       meetings:[], activity:[],
-      finance:{plans:{}, payments:[]}, families:{},
+      finance:{plans:{}, payments:[]}, families:{}, unmatchedAgreements:[],
       settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'' }
     };
   },
@@ -2707,6 +2707,7 @@ const DB = {
       const isOldAgreementPublishLink = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/2PACX-1vRde4h61gl8MwLisISrEoKr-k28KvrDUL_sGaGly0G9CDkU_OC-ua6XY2k037YlyCrIY2lGOxPtHtAO\/pub\?/.test(d.settings.agreementCsvUrl||'');
       if(!d.settings.agreementCsvUrl || isOldAgreementPublishLink) d.settings.agreementCsvUrl=agrNewUrl;
       if(d.settings.agreementLastSync===undefined) d.settings.agreementLastSync='';
+      if(!Array.isArray(d.unmatchedAgreements)) d.unmatchedAgreements=[];
     }
     if(Array.isArray(d.students)){ sotmLinkPhotos(d); migrateStudentContacts(d); }
     return d;
@@ -5693,6 +5694,15 @@ const Admissions = {
        ${d.admissions.length?`<input type="search" id="admFind" placeholder="Find applicant or parent…" value="${esc(Admissions._find||'')}" style="max-width:220px">`:''}
        <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${d.settings.admissionsLastSync?'Last synced '+rel(d.settings.admissionsLastSync):'Never synced'}</span>
      </div>
+     ${(()=>{ const pending = d.unmatchedAgreements.map((u,i)=>({u,i})).filter(x=>!x.u.dismissed); return pending.length?`<details class="no-print" open style="margin-bottom:14px">
+       <summary style="cursor:pointer;padding:10px 14px;background:color-mix(in srgb,var(--warn) 10%,var(--surface));border:1px solid var(--warn);border-radius:10px;font-size:13.5px;font-weight:600">⚠ ${pending.length} agreement submission${pending.length===1?'':'s'} couldn\u2019t be auto-matched \u2014 needs a quick manual match</summary>
+       <div style="margin-top:8px">${pending.map(({u,i})=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+         <div><b>${esc(u.parentName||'(no name given)')}</b> ${u.parentEmail?'<span style="color:var(--ink2);font-size:12.5px">· '+esc(u.parentEmail)+'</span>':''}
+           <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(u.studentNames||'(students not listed)')}</div>
+           <div style="font-size:11.5px;color:var(--ink3);margin-top:2px;font-family:var(--f-mono)">${u.timestamp?fmtDate(u.timestamp):''} \u00b7 ${esc(u.matchMethod||'no match info')}${u.signatureCaptured?' \u00b7 signed':' \u00b7 no signature'}</div></div>
+         <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-p btn-sm" data-match-unmatched="${i}">Match to applicant</button><button class="btn btn-ghost btn-sm" data-dismiss-unmatched="${i}">Dismiss</button></div>
+       </div>`).join('')}</div>
+     </details>`:''; })()}
      ${!d.admissions.length? `<div class="empty"><div class="big">📥</div><h3>No applications yet</h3>
         <p>Sync from the website's Google Sheet, or add a phone / walk-in application manually.</p>
         <div style="display:flex;gap:9px;justify-content:center"><button class="btn btn-p" id="admSync2">Sync New Applications</button><button class="btn btn-o" id="admAdd2">Add manually</button></div></div>`
@@ -5720,6 +5730,10 @@ const Admissions = {
     $('#admAdd',v)&&($('#admAdd',v).onclick=add); $('#admAdd2',v)&&($('#admAdd2',v).onclick=add);
     $('#admCfg',v)&&($('#admCfg',v).onclick=()=>Admissions.settingsForm());
     $('#admSyncAgr',v)&&($('#admSyncAgr',v).onclick=()=>Admissions.syncAgreements());
+    $$('[data-match-unmatched]',v).forEach(b=>b.onclick=()=>Admissions.matchAgreementForm(+b.dataset.matchUnmatched));
+    $$('[data-dismiss-unmatched]',v).forEach(b=>b.onclick=()=>{ const i=+b.dataset.dismissUnmatched;
+      confirmBox('Dismiss this submission? It won\u2019t be matched to any applicant, and won\u2019t show up again on future syncs.', ()=>{
+        DB.data.unmatchedAgreements[i].dismissed = true; DB.save(); toast('Dismissed'); Router.render(); }); });
     const f=$('#admFind',v); if(f){ f.oninput=()=>{ Admissions._find=f.value; clearTimeout(Admissions._ft); Admissions._ft=setTimeout(()=>{Router.render(); const nf=$('#admFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
   },
   _wireActions(v){
@@ -6087,6 +6101,40 @@ const Admissions = {
       toast(added? added+' new application'+(added===1?'':'s')+' imported' : 'No new applications');
     }catch(err){ toast(syncErrorMessage(err)); }
   },
+  matchAgreementForm(idx){
+    const entry = DB.data.unmatchedAgreements[idx];
+    if(!entry){ toast('Already resolved'); return; }
+    const candidates = DB.data.admissions.filter(a=>!a.agreementSubmitted);
+    const nameHint = (entry.studentNames||'').toLowerCase();
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Match to applicant</h3>
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:10px">Submitted by <b>${esc(entry.parentName||'—')}</b>${entry.parentEmail?' ('+esc(entry.parentEmail)+')':''} for <b>${esc(entry.studentNames||'—')}</b>. Select every applicant this covers \u2014 check siblings too if this was one family submission.</p>
+      <input type="search" id="ma-find" placeholder="Search by student or parent name…" style="margin-bottom:8px">
+      <div id="ma-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:6px"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Confirm match</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const renderList=(filter)=>{
+      const f=(filter||'').toLowerCase();
+      const shown = candidates.filter(a=>!f || a.studentName.toLowerCase().includes(f) || (a.parentName||'').toLowerCase().includes(f));
+      $('#ma-list',o).innerHTML = shown.length? shown.map(a=>{
+        const suggested = nameHint && nameHint.includes(a.studentName.toLowerCase().split(' ')[0]);
+        return `<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;padding:6px 4px;font-weight:400;border-bottom:1px solid var(--line)"><input type="checkbox" class="ma-cb" data-aid="${a.id}" ${suggested?'checked':''} style="width:auto">${esc(a.studentName)} <span style="color:var(--ink3);font-size:12px">\u2014 ${esc(a.parentName||'—')} \u00b7 ${esc(admStageDisplay(a))}</span></label>`;
+      }).join('') : '<p style="font-size:12.5px;color:var(--ink3);padding:8px">No matching applicants.</p>';
+    };
+    renderList('');
+    $('#ma-find',o).oninput=e=>renderList(e.target.value);
+    $('[data-x=s]',o).onclick=()=>{
+      const selected = candidates.filter(a=>{ const cb=o.querySelector(`[data-aid="${a.id}"]`); return cb && cb.checked; });
+      if(!selected.length){ toast('Select at least one applicant'); return; }
+      selected.forEach(a=>{
+        a.agreementSubmitted = true;
+        a.agreementSubmittedDate = entry.timestamp || today();
+        admLog(a, 'Parental Agreement Form submitted (manually matched)'+(entry.signatureCaptured?' (signed)':' (no signature on file)'));
+      });
+      DB.data.unmatchedAgreements.splice(idx,1);
+      DB.log('Agreement submission manually matched to '+selected.map(a=>a.studentName).join(', '));
+      DB.save(); o.remove(); toast('Matched'); Router.render();
+    };
+  },
   agreementSettingsForm(){
     const cur = DB.data.settings.agreementCsvUrl||'';
     const o = overlay(`<div class="modal" style="max-width:520px"><h3>Agreement Sync Settings</h3>
@@ -6105,23 +6153,47 @@ const Admissions = {
       if(!res.ok) throw new Error('HTTP '+res.status);
       const text = await res.text();
       const rows = csvToObjects(text);
-      let matched=0;
+      let matched=0, unmatched=0;
+      const haveUnmatched = new Set(DB.data.unmatchedAgreements.map(u=>u.key));
       rows.forEach(row=>{
-        const appId=(row['Application ID']||'').trim(); if(!appId) return;
-        const group = DB.data.admissions.filter(a=>a.appId===appId && !a.agreementSubmitted);
-        if(!group.length) return;
-        const signed = /^y/i.test(row['Signature Captured']||'');
-        group.forEach(a=>{
-          a.agreementSubmitted = true;
-          a.agreementSubmittedDate = (row['Timestamp']||'').trim() || today();
-          admLog(a, 'Parental Agreement Form submitted'+(signed?' (signed)':' (no signature on file)'));
-        });
-        matched += group.length;
+        const appId=(row['Application ID']||'').trim();
+        const ts=(row['Timestamp']||'').trim();
+        const parentEmail=(row['Parent Email']||'').trim();
+        const key = ts+'|'+parentEmail;
+        // No Application ID at all (family used "I can't find it — continue
+        // without verifying") or an ID that doesn't match any known
+        // applicant (typo, or the admission hasn't been synced in yet) —
+        // either way, don't silently drop a real family's submission.
+        // Surface it for staff to match by hand instead.
+        const group = appId ? DB.data.admissions.filter(a=>a.appId===appId && !a.agreementSubmitted) : [];
+        if(appId && group.length){
+          const signed = /^y/i.test(row['Signature Captured']||'');
+          group.forEach(a=>{
+            a.agreementSubmitted = true;
+            a.agreementSubmittedDate = ts || today();
+            admLog(a, 'Parental Agreement Form submitted'+(signed?' (signed)':' (no signature on file)'));
+          });
+          matched += group.length;
+        } else {
+          const alreadyDone = appId && DB.data.admissions.some(a=>a.appId===appId && a.agreementSubmitted);
+          if(alreadyDone || haveUnmatched.has(key)) return;
+          DB.data.unmatchedAgreements.push({
+            key, timestamp:ts, parentName:(row['Parent Name']||'').trim(), parentEmail,
+            studentNames:(row['Student Names']||'').trim(), matchMethod:(row['Match Method']||'').trim(),
+            signatureCaptured: /^y/i.test(row['Signature Captured']||'')
+          });
+          haveUnmatched.add(key);
+          unmatched++;
+        }
       });
       DB.data.settings.agreementLastSync = new Date().toISOString();
       if(matched) DB.log('Agreement sync: matched '+matched+' applicant'+(matched===1?'':'s'));
+      if(unmatched) DB.log('Agreement sync: '+unmatched+' submission'+(unmatched===1?'':'s')+' need'+(unmatched===1?'s':'')+' manual matching');
       DB.save(); Router.render();
-      toast(matched? matched+' applicant'+(matched===1?'':'s')+' matched to a signed agreement' : 'No new agreement submissions found');
+      const parts=[];
+      if(matched) parts.push(matched+' applicant'+(matched===1?'':'s')+' matched');
+      if(unmatched) parts.push(unmatched+' need'+(unmatched===1?'s':'')+' manual matching');
+      toast(parts.length? parts.join(' · ') : 'No new agreement submissions found');
     }catch(err){ toast(syncErrorMessage(err)); }
   },
   enrollForm(a){
