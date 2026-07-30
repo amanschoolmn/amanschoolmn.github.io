@@ -39,23 +39,35 @@
   .topbar{
     background:var(--forest);
     border-bottom:1px solid rgba(232,185,35,0.25);
-    padding:14px 24px;
+    padding:12px 16px;
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:10px;
   }
   .topbar .brand{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
     font-family:var(--font-display);
     color:var(--gold-soft);
     font-size:15px;
     font-weight:700;
     text-decoration:none;
+    min-width:0; /* required for text-overflow to work inside a flex item */
+    flex-shrink:1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .topbar .brand img{
-    width:34px;height:34px;object-fit:contain;
+    width:30px;height:30px;object-fit:contain;
+    flex-shrink:0;
+  }
+  .topbar .brand .brand-text{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
   .topbar .back-link{
     color:#c9d6cf;
@@ -63,8 +75,24 @@
     text-decoration:none;
     border-bottom:1px solid rgba(201,214,207,0.4);
     padding-bottom:1px;
+    flex-shrink:0;
+    white-space:nowrap;
   }
+  .topbar .back-link .full-label{ display:inline; }
+  .topbar .back-link .short-label{ display:none; }
   .topbar .back-link:hover{ color:var(--gold-soft); border-color:var(--gold-soft); }
+
+  @media (max-width:480px){
+    .topbar{ padding:10px 14px; }
+    .topbar .brand{ font-size:13px; gap:7px; }
+    .topbar .brand img{ width:26px; height:26px; }
+    .topbar .back-link{ font-size:12.5px; }
+    .topbar .back-link .full-label{ display:none; }
+    .topbar .back-link .short-label{ display:inline; }
+  }
+  @media (max-width:360px){
+    .topbar .brand{ font-size:12px; }
+  }
 
   /* ---- Page shell ---- */
   .wrap{
@@ -356,17 +384,32 @@
 
   #student-list{ margin-bottom:10px; }
   .student-row{
-    display:flex;
-    align-items:flex-start;
-    gap:8px;
-    margin-bottom:12px;
+    display:block;
+    margin-bottom:14px;
     padding:14px;
     background:#fff;
     border:1.5px solid var(--border);
     border-radius:10px;
   }
+  .student-row-body{
+    min-width:0;
+  }
+  .student-row-head{
+    display:flex;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .student-number{
+    font-family:var(--font-display);
+    font-size:13px;
+    font-weight:700;
+    color:var(--forest);
+    background:var(--cream);
+    border:1px solid var(--gold);
+    border-radius:20px;
+    padding:3px 12px;
+  }
   .student-row .student-name-fields{
-    flex:1;
     display:grid;
     grid-template-columns:1fr 0.7fr 1fr;
     gap:8px;
@@ -401,20 +444,20 @@
   }
   .student-remove{
     flex-shrink:0;
-    width:34px;height:34px;
-    margin-top:19px;
+    width:30px;height:30px;
     border-radius:8px;
     border:1.5px solid var(--border);
     background:#fff;
     color:var(--muted);
-    font-size:20px;
+    font-size:18px;
     line-height:1;
     cursor:pointer;
     display:flex;
     align-items:center;
     justify-content:center;
+    margin-left:auto;
   }
-  .student-row:only-child .student-remove{
+  .student-row:only-of-type .student-remove{
     visibility:hidden;
   }
   .student-remove:hover{
@@ -586,9 +629,12 @@
 <div class="topbar">
   <a class="brand" href="https://amanschoolmn.org/">
     <img src="/assets/img/logo-mark.png" alt="AMAN logo">
-    Al-Madrasatu An-Nuriyyah
+    <span class="brand-text">Al-Madrasatu An-Nuriyyah</span>
   </a>
-  <a class="back-link" href="https://amanschoolmn.org/admissions/">← Admissions Process</a>
+  <a class="back-link" href="https://amanschoolmn.org/admissions/">
+    <span class="full-label">← Admissions Process</span>
+    <span class="short-label">← Admissions</span>
+  </a>
 </div>
 
 <div class="wrap">
@@ -710,28 +756,33 @@
         <div class="field">
           <label>Student(s) Covered by This Agreement<span class="req">*</span></label>
           <div class="hint" style="margin-top:0;margin-bottom:10px;">
-            This agreement applies to every child listed below. Add a row for each child you have enrolled or applying at AMAN.
+            Register as many children as needed — each student has their own section. Use "Add Another Student" to add more.
           </div>
           <div id="student-list">
             <div class="student-row">
-              <div class="student-name-fields">
-                <div class="name-field">
-                  <label>First Name</label>
-                  <input type="text" class="s-fname" placeholder="First" required autocomplete="off">
+              <div class="student-row-body">
+                <div class="student-row-head">
+                  <span class="student-number">Student 1</span>
+                  <button type="button" class="student-remove" aria-label="Remove student" title="Remove">&times;</button>
                 </div>
-                <div class="name-field">
-                  <label>Middle Name</label>
-                  <input type="text" class="s-mname" placeholder="Middle (optional)" autocomplete="off">
-                </div>
-                <div class="name-field">
-                  <label>Last Name</label>
-                  <input type="text" class="s-lname" placeholder="Last" required autocomplete="off">
+                <div class="student-name-fields">
+                  <div class="name-field">
+                    <label>First Name</label>
+                    <input type="text" class="s-fname" placeholder="First" required autocomplete="off">
+                  </div>
+                  <div class="name-field">
+                    <label>Middle Name</label>
+                    <input type="text" class="s-mname" placeholder="Middle (or N/A)" required autocomplete="off">
+                  </div>
+                  <div class="name-field">
+                    <label>Last Name</label>
+                    <input type="text" class="s-lname" placeholder="Last" required autocomplete="off">
+                  </div>
                 </div>
               </div>
-              <button type="button" class="student-remove" aria-label="Remove student" title="Remove">&times;</button>
             </div>
           </div>
-          <button type="button" class="add-student-btn" id="add-student-btn">+ Add another child</button>
+          <button type="button" class="add-student-btn" id="add-student-btn">+ Add Another Student</button>
         </div>
 
         <div class="field">
@@ -791,7 +842,7 @@
   // SET THIS ONCE — used for both the lookup (GET/JSONP) and the
   // submit-time logging (POST) calls below. This is the same Apps Script
   // deployment URL used by /apply/'s APPS_SCRIPT_URL in main.js.
-  var LOOKUP_BASE = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec';
+  var LOOKUP_BASE = 'APPS_SCRIPT_URL_HERE';
 
   function jsonp(url, onData) {
     var cbName = 'amanLookupCb_' + Date.now();
@@ -842,12 +893,17 @@
     (result.students || []).forEach(function (s) {
       var row = makeStudentRow();
       row.querySelector('.s-fname').value = s.fname || '';
-      row.querySelector('.s-mname').value = s.mname || '';
+      // Middle name is required on this form even though Step 1 may not
+      // have required it — a matched child with no middle name on file
+      // gets "N/A" here rather than leaving a required, read-only field
+      // blank with no way for the parent to fix it themselves.
+      row.querySelector('.s-mname').value = (s.mname && s.mname.trim()) ? s.mname : 'N/A';
       row.querySelector('.s-lname').value = s.lname || '';
       row.querySelectorAll('input').forEach(function (i) { i.readOnly = true; });
       row.querySelector('.student-remove').style.display = 'none';
       studentList.appendChild(row);
     });
+    renumberStudents();
     addStudentBtn.style.display = 'none'; // matched families can't add unlisted children here
 
     var names = (result.students || []).map(function (s) {
@@ -981,38 +1037,66 @@
     hasSignature = false;
   });
 
-  // ---- Dynamic student list (multi-child support) ----
+  // ---- Dynamic student list (multi-child support, unlimited students) ----
   const studentList = document.getElementById('student-list');
   const addStudentBtn = document.getElementById('add-student-btn');
+
+  function renumberStudents() {
+    const rows = studentList.querySelectorAll('.student-row');
+    rows.forEach((row, i) => {
+      row.querySelector('.student-number').textContent = 'Student ' + (i + 1);
+    });
+    // Only hide the remove button when exactly one student remains —
+    // there must always be at least one.
+    const showRemove = rows.length > 1;
+    rows.forEach((row) => {
+      row.querySelector('.student-remove').style.visibility = showRemove ? 'visible' : 'hidden';
+    });
+  }
+
+  function wireRemove(row) {
+    row.querySelector('.student-remove').addEventListener('click', function () {
+      if (studentList.querySelectorAll('.student-row').length > 1) {
+        row.remove();
+        renumberStudents();
+      }
+    });
+  }
 
   function makeStudentRow() {
     const row = document.createElement('div');
     row.className = 'student-row';
     row.innerHTML =
-      '<div class="student-name-fields">' +
-        '<div class="name-field"><label>First Name</label><input type="text" class="s-fname" placeholder="First" required autocomplete="off"></div>' +
-        '<div class="name-field"><label>Middle Name</label><input type="text" class="s-mname" placeholder="Middle (optional)" autocomplete="off"></div>' +
-        '<div class="name-field"><label>Last Name</label><input type="text" class="s-lname" placeholder="Last" required autocomplete="off"></div>' +
-      '</div>' +
-      '<button type="button" class="student-remove" aria-label="Remove student" title="Remove">&times;</button>';
-    row.querySelector('.student-remove').addEventListener('click', function () {
-      if (studentList.querySelectorAll('.student-row').length > 1) {
-        row.remove();
-      }
-    });
+      '<div class="student-row-body">' +
+        '<div class="student-row-head">' +
+          '<span class="student-number">Student</span>' +
+          '<button type="button" class="student-remove" aria-label="Remove student" title="Remove">&times;</button>' +
+        '</div>' +
+        '<div class="student-name-fields">' +
+          '<div class="name-field"><label>First Name</label><input type="text" class="s-fname" placeholder="First" required autocomplete="off"></div>' +
+          '<div class="name-field"><label>Middle Name</label><input type="text" class="s-mname" placeholder="Middle (or N/A)" required autocomplete="off"></div>' +
+          '<div class="name-field"><label>Last Name</label><input type="text" class="s-lname" placeholder="Last" required autocomplete="off"></div>' +
+        '</div>' +
+      '</div>';
+    wireRemove(row);
     return row;
   }
 
+  // No cap — a family can register as many students as needed, matching
+  // the same "Add Another Student" pattern used on the main enrollment form.
   addStudentBtn.addEventListener('click', function () {
     studentList.appendChild(makeStudentRow());
+    renumberStudents();
+    // Bring the newly-added row's first field into view so a long list
+    // doesn't leave the parent wondering whether anything happened.
+    const newRow = studentList.lastElementChild;
+    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    newRow.querySelector('.s-fname').focus({ preventScroll: true });
   });
 
-  // Wire the "remove" button already present on the first row
-  studentList.querySelector('.student-remove').addEventListener('click', function () {
-    if (studentList.querySelectorAll('.student-row').length > 1) {
-      studentList.querySelector('.student-row').remove();
-    }
-  });
+  // Wire the remove button already present on the first (page-load) row
+  wireRemove(studentList.querySelector('.student-row'));
+  renumberStudents();
 
   function collectStudents() {
     return Array.from(studentList.querySelectorAll('.student-row'))
@@ -1021,7 +1105,7 @@
         mname: row.querySelector('.s-mname').value.trim(),
         lname: row.querySelector('.s-lname').value.trim(),
       }))
-      .filter((s) => s.fname.length > 0 || s.lname.length > 0)
+      .filter((s) => s.fname.length > 0 || s.mname.length > 0 || s.lname.length > 0)
       .map((s) => ({
         ...s,
         full: [s.fname, s.mname, s.lname].filter((v) => v).join(' '),
@@ -1046,25 +1130,36 @@
       return;
     }
 
-    // Native validation only catches genuinely empty required fields. A
-    // row where the parent typed a first name but left last name blank is
-    // still caught above — but a row where BOTH are empty is invisible to
-    // checkValidity() once collectStudents() filters it out, so we also
-    // reject "0 students" and "any non-empty row missing a required part"
-    // explicitly here.
-    const incompleteRow = Array.from(studentList.querySelectorAll('.student-row')).some((row) => {
-      const f = row.querySelector('.s-fname').value.trim();
-      const l = row.querySelector('.s-lname').value.trim();
-      return (f && !l) || (!f && l); // one filled, one blank = incomplete
+    // Native validation only catches genuinely empty required fields, and
+    // treats whitespace as "filled" (browsers don't trim before checking
+    // required). So we still need an explicit check here for:
+    //   - a row where some but not all of first/middle/last have real
+    //     content ("Amina" + "" + "Hassan" — missing middle)
+    //   - a row that's whitespace-only across ALL THREE fields — this
+    //     passes native validation entirely but is not a real name
+    // Either case marks that row incomplete; collectStudents() would
+    // otherwise silently drop a fully-blank row without saying why.
+    const rows = Array.from(studentList.querySelectorAll('.student-row'));
+    const rowFillState = rows.map((row) => {
+      const f = row.querySelector('.s-fname').value.trim().length > 0;
+      const m = row.querySelector('.s-mname').value.trim().length > 0;
+      const l = row.querySelector('.s-lname').value.trim().length > 0;
+      return { f, m, l, allFilled: f && m && l, allEmpty: !f && !m && !l };
     });
+    const incompleteRow = rowFillState.some((s) => !s.allFilled && !s.allEmpty);
+    const allRowsBlank = rowFillState.every((s) => s.allEmpty);
 
     const agreed = document.getElementById('agree').checked;
     const students = collectStudents();
 
     if (!agreed || !hasSignature || students.length === 0 || incompleteRow) {
-      errorEl.textContent = incompleteRow
-        ? 'Please enter both a first and last name for every student listed.'
-        : 'Please check the agreement box, list at least one student (first and last name), and provide your signature before submitting.';
+      if (incompleteRow) {
+        errorEl.textContent = 'Please enter a first, middle, and last name for every student listed. If a student has no middle name, enter "N/A".';
+      } else if (allRowsBlank) {
+        errorEl.textContent = 'Please enter at least one student\u2019s first, middle, and last name.';
+      } else {
+        errorEl.textContent = 'Please check the agreement box and provide your signature before submitting.';
+      }
       errorEl.classList.add('show');
       return;
     }
