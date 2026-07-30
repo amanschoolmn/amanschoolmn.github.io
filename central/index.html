@@ -2316,6 +2316,28 @@ function renderSOTMCertificate(d){
 </body></html>`;
 }
 
+function buildWaitlistPlacementMailto(parentEmail, parentFirst, students, isPlural){
+  const subject = students+' — Waiting List at AMAN';
+  const lines = [
+    'Assal\u0101mu \u02BFalaykum '+parentFirst+',',
+    '',
+    'Thank you for your patience. Our '+(isPlural?'levels are':'level is')+' currently full, so we\u2019ve placed '+students+' on our waiting list for the next available '+(isPlural?'spots':'spot')+'.',
+    '',
+    'We review the list in the order applications came in, and we\u2019ll reach out by email or text the moment a place opens \u2014 there\u2019s nothing you need to do in the meantime.',
+    '',
+    'If you have any questions, reply here or call/text (612) 444-2609.',
+    '',
+    'Barakall\u0101hu feekum,',
+    'Br. Abdallah bin Abdirahman',
+    'Enrollment Advisor & Accounting Manager',
+    'Al-Madrasatu An-Nuriyyah (AMAN)',
+    'https://amanschoolmn.org'
+  ];
+  return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+}
+function buildWaitlistPlacementSms(parentFirst, students, isPlural){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', our '+(isPlural?'levels are':'level is')+' currently full, so we\u2019ve placed '+students+' on AMAN\u2019s waiting list. We\u2019ll reach out the moment a '+(isPlural?'spot opens':'spot opens')+' \u2014 nothing needed from you now. Questions? Call/text (612) 444-2609. \u2014 AMAN';
+}
 function buildWaitlistOfferMailto(parentEmail, parentFirst, students){
   const subject = 'A Place Has Opened at AMAN for '+students;
   const lines = [
@@ -5711,7 +5733,7 @@ const Admissions = {
       else if(next==='agreement') Admissions.agreementLetterForm(a);
       else if(next) Admissions.stageTransitionForm(a, next);
     } else if(act==='wl'){
-      admSetStage(a, 'waitlist', 'Placed on the Waiting List'); toast('Moved to Waiting List'); Router.render();
+      Admissions.waitlistPlacementForm(a);
     } else if(act==='nf'){
       if(a.stage==='waitlist'){ Admissions.waitlistReleaseForm(a); }
       else confirmBox('Mark '+a.studentName+' as Not a Fit Right Now? The family is welcome to reapply.', ()=>{
@@ -5848,6 +5870,33 @@ const Admissions = {
       toast('Accepted — opening the letter');
       Router.render();
       openLetterPreview(html);
+    };
+  },
+  waitlistPlacementForm(a){
+    const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && x.stage!=='waitlist' && x.stage!=='notfit' && x.stage!=='enrolled');
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Move to Waiting List</h3>
+      <div id="wl-step1">
+      ${siblings.length?`<div class="field"><label>Include siblings in this application too?</label>
+        ${siblings.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:4px;font-weight:400"><input type="checkbox" class="sib-cb" data-sid="${s.id}" checked style="width:auto"> ${esc(s.studentName)}</label>`).join('')}
+        </div>`:''}
+      <p style="font-size:13.5px;color:var(--ink2)">This places ${esc(a.studentName)} on the Waiting List and prepares an email + text letting the family know.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="wl-go">Confirm</button></div>
+      </div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#wl-go',o).onclick=()=>{
+      const selectedSibs = siblings.filter(s => { const cb = o.querySelector(`[data-sid="${s.id}"]`); return cb && cb.checked; });
+      const group = [a, ...selectedSibs];
+      group.forEach(x=> admSetStage(x, 'waitlist', 'Placed on the Waiting List'));
+      const studentsJoined = admJoinNames(group.map(x=>x.studentName));
+      const mailto = buildWaitlistPlacementMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1);
+      const sms = smsHref(a.parentPhone, buildWaitlistPlacementSms(admFirstName(a.parentName), studentsJoined, group.length>1));
+      Router.render();
+      toast('Moved to Waiting List');
+      $('#wl-step1',o).innerHTML = `<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px">Ready to send — review, then open it in your email client.</p>
+        <div class="field"><label>Preview</label><textarea readonly style="min-height:180px;font-size:12.5px;font-family:var(--f-mono)">${esc(decodeURIComponent(mailto.split('&body=')[1]||''))}</textarea></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c2">Close</button><a class="btn btn-p" href="${mailto}" target="_blank">📧 Open Email Draft</a>${sms?`<a class="btn btn-o" href="${sms}" target="_blank">💬 Text</a>`:''}</div>`;
+      wireFieldLabels(o);
+      $('[data-x=c2]',o).onclick=()=>o.remove();
     };
   },
   waitlistOfferForm(a){
