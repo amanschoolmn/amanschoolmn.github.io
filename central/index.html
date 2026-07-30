@@ -146,7 +146,7 @@ html[data-theme="dark"] .btn-p{background:var(--gold-bright);color:#14211a}
 .chip:hover{border-color:var(--gold)}
 .chip.on{background:var(--green);border-color:var(--green);color:#fff}
 html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(--gold-bright);color:#14211a}
-.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:600;font-family:var(--f-mono);letter-spacing:.02em}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:600;font-family:var(--f-mono);letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
 .tag-green{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
 .tag-gold{background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--warn)}
 .tag-red{background:color-mix(in srgb,var(--bad) 13%,transparent);color:var(--bad)}
@@ -282,6 +282,16 @@ html[data-theme="dark"] .rcover{filter:brightness(.9)}
 .kb-book-head .tag{margin-left:auto}
 .kb-chevron{display:inline-block;transition:transform .15s;color:var(--ink3);font-size:12px;width:10px}
 .kb-chevron.open{transform:rotate(90deg)}
+/* Same chevron, reused inside native <details>/<summary> sections that opt in
+   via .dtl (Personal information, Parents & guardians, Emergency contacts) —
+   the [open] attribute is native, so no JS is needed to keep this in sync.
+   Scoped to .dtl rather than applied to every <summary> in the app: several
+   other collapsible sections elsewhere still rely on the browser's own
+   default disclosure triangle for their only toggle affordance, and hiding
+   it globally would leave those with none. */
+.dtl>summary{list-style:none}
+.dtl>summary::-webkit-details-marker{display:none}
+.dtl[open]>summary .kb-chevron{transform:rotate(90deg)}
 
 /* ---- widgets ---- */
 .widget{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
@@ -294,6 +304,16 @@ html[data-theme="dark"] .rcover{filter:brightness(.9)}
 .wrow:hover{background:var(--surface2)}
 .wrow .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
 .wrow .m{font-family:var(--f-mono);font-size:11px;color:var(--ink3);flex-shrink:0}
+/* .wrow-wrap: same row, but for content that can't be guaranteed to fit one
+   line on a phone (a date tag plus a variable-length list of missing
+   fields, several status chips, etc.) — wraps instead of forcing the row
+   wider than the viewport or squeezing a .tag down into an unreadable
+   sliver. .rowtags always starts its own line so "who/what" and its tags
+   never fight for the same row on a narrow screen. */
+.wrow-wrap{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:9px 8px;border-radius:9px;font-size:13.5px;cursor:pointer;transition:background .12s}
+.wrow-wrap:hover{background:var(--surface2)}
+.wrow-wrap .t{flex:1 1 auto;min-width:120px;font-weight:500;white-space:normal}
+.rowtags{flex-basis:100%;display:flex;flex-wrap:wrap;gap:5px}
 .hero{background:linear-gradient(133deg,var(--green-deep),var(--green) 55%,#2c5f45);border-radius:18px;padding:26px 28px;color:#f4ead6;position:relative;overflow:hidden;box-shadow:var(--shadow-lg);margin-bottom:18px}
 .hero::before{content:"";position:absolute;top:-70px;right:-40px;width:280px;height:280px;background:radial-gradient(circle,rgba(212,168,75,.4),transparent 65%);animation:breathe 7s ease-in-out infinite}
 .hero .ar{font-family:var(--f-ar);font-size:19px;color:var(--gold-bright);display:block;margin-bottom:4px}
@@ -363,6 +383,10 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line2);margin-bottom:18px;overflow-x:auto}
 .tabs button{padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2.5px solid transparent;white-space:nowrap}
 .tabs button.on{color:var(--ink);border-bottom-color:var(--gold)}
+/* Toggled by JS (see wireCommon) only while there's more tab content hidden
+   past the right edge — a fade reads as "scroll for more" instead of a tab
+   label just getting cut off mid-word with no explanation. */
+.tabs.has-more{-webkit-mask-image:linear-gradient(to right,#000 90%,transparent 100%);mask-image:linear-gradient(to right,#000 90%,transparent 100%)}
 .avatar{overflow:hidden;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--green-soft),var(--green-deep));color:#f4ead6;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;font-family:var(--f-display);flex-shrink:0}
 .pill-att{width:32px;height:32px;border-radius:9px;border:1px solid var(--line2);font-weight:700;font-size:11.5px;color:var(--ink3);transition:all .1s}
 .pill-att.P{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
@@ -2879,6 +2903,14 @@ const Router = {
     if(window.innerWidth<=900) $('#sidebar').classList.remove('open');
     v.focus({preventScroll:true}); window.scrollTo(0,0);
     $('#foot-count').textContent = DB.data.resources.length;
+    // Tab bars (Admin/Teacher/Tuition/etc.) are rendered by each module's
+    // outer wrapper, not the inner tab-content div the module itself calls
+    // wireCommon on — so this is the one place guaranteed to see every
+    // .tabs element after every render, module-agnostic.
+    $$('.tabs',v).forEach(t=>{
+      const check=()=>t.classList.toggle('has-more', t.scrollWidth > t.clientWidth+4 && t.scrollLeft < t.scrollWidth-t.clientWidth-4);
+      check(); t.addEventListener('scroll', check, {passive:true});
+    });
   }
 };
 window.addEventListener('hashchange', ()=>{ Router.current = location.hash; Router.render(); });
@@ -4640,6 +4672,61 @@ const Students = {
       DB.save(); o.remove(); toast(isNew?'Student added':'Saved'); Router.render();
     };
   },
+  /* ---------- application details — everything from the website's Student
+     Application Form that isn't already covered by the core roster fields
+     (name/level/gender/dob) or the guardians/emergency-contacts lists.
+     Auto-filled at enrollment from the admission record when one exists;
+     always editable from here regardless, since a manually-added student
+     has no admission record to pull from. ---------- */
+  applicationForm(s){
+    const ap = s.application || {};
+    const o = overlay(`<div class="modal" style="max-width:520px"><h3>Application details — ${esc(s.name)}</h3>
+      <p style="font-size:12.5px;color:var(--ink3);margin-top:-6px">From the website's Student Application Form. Auto-filled at enrollment when there's a matching application; editable here either way.</p>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Application ID</label><input id="ap-appid" value="${esc(ap.applicationId)}"></div>
+        <div class="field"><label>Student status</label><input id="ap-status" value="${esc(ap.studentStatus)}" placeholder="New, Returning, Transfer…"></div>
+        <div class="field"><label>Grade</label><input id="ap-grade" value="${esc(ap.grade)}"></div>
+        <div class="field"><label>Program</label><input id="ap-program" value="${esc(ap.program)}"></div>
+        <div class="field"><label>Qur'an reading level</label><input id="ap-qlevel" value="${esc(ap.quranReadingLevel)}"></div>
+        <div class="field"><label>Qur'an memorized</label><input id="ap-qmem" value="${esc(ap.quranMemorized)}"></div>
+        <div class="field"><label>Arabic level</label><input id="ap-arabic" value="${esc(ap.arabicLevel)}"></div>
+        <div class="field"><label>Previous Islamic school</label><input id="ap-prev" value="${esc(ap.prevSchool)}"></div>
+        <div class="field"><label>Contact preference</label><input id="ap-cpref" value="${esc(ap.contactPref)}"></div>
+        <div class="field"><label>Authorized pickup</label><input id="ap-pickup" value="${esc(ap.pickup)}"></div>
+        <div class="field"><label>Heard about us via</label><input id="ap-heard" value="${esc(ap.heard)}"></div>
+      </div>
+      <div class="field"><label>Home address</label><input id="ap-addr" value="${esc(ap.address)}"></div>
+      <div class="field"><label>Subject interests</label><input id="ap-interests" value="${esc(ap.interests)}"></div>
+      <div class="field"><label>Goals</label><input id="ap-goals" value="${esc(ap.goals)}"></div>
+      <div class="field"><label>Learning needs</label><input id="ap-learn" value="${esc(ap.learningNeeds)}"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Health conditions</label><input id="ap-health" value="${esc(ap.healthConditions)}"></div>
+        <div class="field"><label>Allergies</label><input id="ap-allergy" value="${esc(ap.allergy)}"></div>
+        <div class="field"><label>Allergy details</label><input id="ap-allergydet" value="${esc(ap.allergyDetail)}"></div>
+        <div class="field"><label>Medications</label><input id="ap-meds" value="${esc(ap.meds)}"></div>
+      </div>
+      <div class="sect" style="margin:6px 0 8px">Consent on file<span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Liability waiver agreed</label><input id="ap-waiver" value="${esc(ap.waiverAgreed)}"></div>
+        <div class="field"><label>Media consent agreed</label><input id="ap-media" value="${esc(ap.mediaAgreed)}"></div>
+        <div class="field"><label>Signed by</label><input id="ap-signedby" value="${esc(ap.signedBy)}"></div>
+        <div class="field"><label>Date signed</label><input id="ap-signeddate" value="${esc(ap.signedDate)}"></div>
+      </div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const g = id => $(id,o).value.trim();
+    $('[data-x=s]',o).onclick=()=>{
+      s.application = {
+        applicationId:g('#ap-appid'), studentStatus:g('#ap-status'), grade:g('#ap-grade'), program:g('#ap-program'),
+        quranReadingLevel:g('#ap-qlevel'), quranMemorized:g('#ap-qmem'), arabicLevel:g('#ap-arabic'), prevSchool:g('#ap-prev'),
+        contactPref:g('#ap-cpref'), address:g('#ap-addr'), pickup:g('#ap-pickup'), heard:g('#ap-heard'),
+        interests:g('#ap-interests'), goals:g('#ap-goals'), learningNeeds:g('#ap-learn'),
+        healthConditions:g('#ap-health'), allergy:g('#ap-allergy'), allergyDetail:g('#ap-allergydet'), meds:g('#ap-meds'),
+        waiverAgreed:g('#ap-waiver'), mediaAgreed:g('#ap-media'), signedBy:g('#ap-signedby'), signedDate:g('#ap-signeddate')
+      };
+      DB.log('Updated application details — '+s.name); DB.save(); o.remove(); toast('Saved'); Router.render();
+    };
+  },
   contactForm(s, listKey, existing, hasEmail){
     const isNew = !existing;
     const g = existing || {id:uid(), name:'', relation:'', phone:'', email:''};
@@ -4857,8 +4944,8 @@ const Students = {
      <div style="display:flex;gap:16px;margin:0 0 16px" class="no-print">
        <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
        <button id="sDel" style="background:none;border:none;color:var(--bad);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">Delete</button></div>
-     <details class="no-print" open style="margin-bottom:16px">
-       <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px">Personal information</summary>
+     <details class="no-print dtl" open style="margin-bottom:16px">
+       <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px"><span class="kb-chevron">▸</span>Personal information<button class="btn btn-ghost btn-sm" id="apEdit" style="margin-left:auto;font-weight:600">✎ Edit</button></summary>
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
          ${admField('Full name', s.name)}${admField('Preferred', s.preferredName)}
          ${admField('Student ID', sidFmt)}${admField('Level', s.level+' — '+LEVEL_SUB[s.level])}
@@ -4866,17 +4953,41 @@ const Students = {
          ${admField('Enrolled', s.startDate?fmtDate(s.startDate):'')}${admField('Status', s.active!==false?'Active':'Inactive')}
          <div style="grid-column:1/-1">${admField('Medical', s.medical)}</div>
        </div>
+       ${(()=>{ const ap=s.application||{};
+         const has = Object.values(ap).some(v=>v);
+         if(!has) return `<p style="font-size:12.5px;color:var(--ink3);margin:10px 2px 0">No application details on file yet — from the website's Student Application Form, or enter by hand. <button class="btn btn-ghost btn-sm" id="apEdit2" style="padding:2px 6px;text-decoration:underline">Add now →</button></p>`;
+         return `<div class="sect" style="margin:14px 0 8px;font-size:13px">From the application<span class="rule"></span></div>
+         <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+           ${admField('Application ID', ap.applicationId)}${admField('Student status', ap.studentStatus)}
+           ${admField('Grade', ap.grade)}${admField('Program', ap.program)}
+           ${admField("Qur'an reading level", ap.quranReadingLevel)}${admField("Qur'an memorized", ap.quranMemorized)}
+           ${admField('Arabic level', ap.arabicLevel)}${admField('Previous Islamic school', ap.prevSchool)}
+           ${admField('Contact preference', ap.contactPref)}${admField('Authorized pickup', ap.pickup)}
+           ${admField('Heard about us via', ap.heard)}${admField('Signed by', ap.signedBy?ap.signedBy+(ap.signedDate?' · '+ap.signedDate:''):'')}
+           <div style="grid-column:1/-1">${admField('Home address', ap.address)}</div>
+           <div style="grid-column:1/-1">${admField('Subject interests', ap.interests)}</div>
+           <div style="grid-column:1/-1">${admField('Goals', ap.goals)}</div>
+           <div style="grid-column:1/-1">${admField('Learning needs', ap.learningNeeds)}</div>
+           <div style="grid-column:1/-1">${admField('Health conditions', ap.healthConditions)}</div>
+           ${admField('Allergies', ap.allergy)}${admField('Allergy details', ap.allergyDetail)}
+           <div style="grid-column:1/-1">${admField('Medications', ap.meds)}</div>
+           ${admField('Waiver agreed', ap.waiverAgreed)}${admField('Media consent agreed', ap.mediaAgreed)}
+         </div>`; })()}
      </details>
-     <div class="sect no-print" style="margin-bottom:8px;display:flex;align-items:center">Parents &amp; guardians<span class="rule"></span><button class="btn btn-ghost btn-sm" id="gAdd" style="padding:5px 11px">+</button></div>
-     ${s.guardians&&s.guardians.length? s.guardians.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
-        <div><b>${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${[g.phone,g.email].filter(Boolean).map(esc).join(' · ')||'—'}</div></div>
-        <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-gedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-gdel="${g.id}" style="color:var(--bad)">Remove</button></div>
-       </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px;margin-bottom:16px" class="no-print">No contacts yet — add the primary guardian.</p>'}
-     <div class="sect no-print" style="margin:18px 0 8px;display:flex;align-items:center">Emergency contacts<span class="rule"></span><button class="btn btn-ghost btn-sm" id="ecAdd" style="padding:5px 11px">+</button></div>
-     ${s.emergencyContacts&&s.emergencyContacts.length? s.emergencyContacts.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
-        <div><b>🚨 ${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(g.phone)||'—'}</div></div>
-        <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-ecedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-ecdel="${g.id}" style="color:var(--bad)">Remove</button></div>
-       </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px;margin-bottom:8px" class="no-print">None on file.</p>'}
+     <details class="no-print dtl" open style="margin-bottom:16px">
+       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>Parents &amp; guardians<span class="rule"></span><button class="btn btn-ghost btn-sm" id="gAdd" style="padding:5px 11px;flex-shrink:0">+</button></summary>
+       ${s.guardians&&s.guardians.length? s.guardians.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
+          <div><b>${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${[g.phone,g.email].filter(Boolean).map(esc).join(' · ')||'—'}</div></div>
+          <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-gedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-gdel="${g.id}" style="color:var(--bad)">Remove</button></div>
+         </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px" class="no-print">No contacts yet — add the primary guardian.</p>'}
+     </details>
+     <details class="no-print dtl" open style="margin-bottom:16px">
+       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>Emergency contacts<span class="rule"></span><button class="btn btn-ghost btn-sm" id="ecAdd" style="padding:5px 11px;flex-shrink:0">+</button></summary>
+       ${s.emergencyContacts&&s.emergencyContacts.length? s.emergencyContacts.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
+          <div><b>🚨 ${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(g.phone)||'—'}</div></div>
+          <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-ecedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-ecdel="${g.id}" style="color:var(--bad)">Remove</button></div>
+         </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px" class="no-print">None on file.</p>'}
+     </details>
      <div style="display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 16px" class="no-print">
        <button class="chip" data-go="#/students/attendance">✅ Attendance</button>
        ${L3||L2?`<button class="chip" id="qAdd">📖 ${L3?'Record memorization':'Record recitation'}</button>`:''}
@@ -4922,6 +5033,8 @@ const Students = {
     wireCommon(v);
     $$('button[data-ai]',v).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $('#sEdit',v).onclick=()=>this.form(s);
+    $('#apEdit',v) && $('#apEdit',v).addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); this.applicationForm(s); });
+    $('#apEdit2',v) && ($('#apEdit2',v).onclick=()=>this.applicationForm(s));
     $('#sDel',v).onclick=()=>confirmBox('Delete '+s.name+' and their records from Central? This cannot be undone.',()=>{
       DB.data.students=DB.data.students.filter(x=>x.id!==id);
       DB.data.quran=DB.data.quran.filter(x=>x.sid!==id); DB.data.behavior=DB.data.behavior.filter(x=>x.sid!==id); DB.data.achievements=DB.data.achievements.filter(x=>x.sid!==id);
@@ -4937,10 +5050,10 @@ const Students = {
         s.active = willBeActive; DB.log((willBeActive?'Reactivated ':'Deactivated ')+s.name);
         DB.save(); toast(willBeActive?'Reactivated':'Deactivated'); Router.render(); });
     };
-    $('#gAdd',v)&&($('#gAdd',v).onclick=()=>Students.contactForm(s,'guardians',null,true));
+    $('#gAdd',v) && $('#gAdd',v).addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); Students.contactForm(s,'guardians',null,true); });
     $$('[data-gedit]',v).forEach(b=>b.onclick=()=>Students.contactForm(s,'guardians', s.guardians.find(g=>g.id===b.dataset.gedit), true));
     $$('[data-gdel]',v).forEach(b=>b.onclick=()=>confirmBox('Remove this guardian contact?', ()=>{ s.guardians=s.guardians.filter(g=>g.id!==b.dataset.gdel); DB.save(); toast('Removed'); Router.render(); }));
-    $('#ecAdd',v)&&($('#ecAdd',v).onclick=()=>Students.contactForm(s,'emergencyContacts',null,false));
+    $('#ecAdd',v) && $('#ecAdd',v).addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); Students.contactForm(s,'emergencyContacts',null,false); });
     $$('[data-ecedit]',v).forEach(b=>b.onclick=()=>Students.contactForm(s,'emergencyContacts', s.emergencyContacts.find(g=>g.id===b.dataset.ecedit), false));
     $$('[data-ecdel]',v).forEach(b=>b.onclick=()=>confirmBox('Remove this emergency contact?', ()=>{ s.emergencyContacts=s.emergencyContacts.filter(g=>g.id!==b.dataset.ecdel); DB.save(); toast('Removed'); Router.render(); }));
     const auto=(el,fn)=>{ if(el) el.onchange=()=>{ fn(el.value); DB.save(); }; };
@@ -5361,16 +5474,29 @@ const Admin = {
     const act=d.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>tdy));
     const incoming=d.students.filter(s=>s.active!==false && s.startDate&&s.startDate>tdy);
     const gone=d.students.filter(s=>s.active===false);
-    const done=act.filter(s=>!regComplete(s).length);
+    const withMiss = act.map(s=>({s, miss:regComplete(s)}));
+    const done = withMiss.filter(x=>!x.miss.length);
+    const incomplete = withMiss.filter(x=>x.miss.length);
+    // shared row: icon + name (+optional date tag), missing/complete tags
+    // always wrap onto their own line via .rowtags — this is what was
+    // breaking on phones: a long "starts <date>" tag getting squeezed into
+    // an unreadable circle, and a "missing: …" string running off-screen.
+    const stuRow = (s, dateTag, miss, okLabel)=> `<div class="wrow-wrap ${miss.length?'frow':''}" data-go="#/students/${s.id}">
+      <span>${miss.length?(dateTag?'🌱':'📋'):'✅'}</span>
+      <span class="t">${esc(s.name)}${dateTag?' · '+esc(s.level):''}</span>
+      ${dateTag||''}
+      <div class="rowtags">${miss.length? miss.map(m=>`<span class="tag tag-gold">${esc(m)}</span>`).join('') : `<span class="tag tag-green">${okLabel}</span>`}</div>
+    </div>`;
     el.innerHTML = `<div class="grid g3" style="margin-bottom:16px">
       <div class="widget"><div class="whead"><h3>Enrolled</h3></div><div class="kpi">${act.length}</div></div>
       <div class="widget"><div class="whead"><h3>Records complete</h3></div><div class="kpi">${done.length}<small>of ${act.length}</small></div></div>
-      <div class="widget"><div class="whead"><h3>Incoming</h3></div><div class="kpi">${incoming.length}<small>start ${incoming[0]?fmtDate(incoming[0].startDate):''}</small></div></div></div>
+      <div class="widget"><div class="whead"><h3>Incoming</h3></div><div class="kpi">${incoming.length}<small>${incoming[0]?'start '+fmtDate(incoming[0].startDate):'none scheduled'}</small></div></div></div>
      ${incoming.length?`<div class="sect">Incoming students<span class="rule"></span></div>
-      <div class="wlist" style="margin-bottom:14px">${incoming.map(s=>`<div class="wrow frow" data-go="#/students/${s.id}"><span>🌱</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span><span class="m">${regComplete(s).length?'missing: '+regComplete(s).join(', '):'record complete ✓'}</span></div>`).join('')}</div>`:''}
+      <div class="wlist" style="margin-bottom:14px">${incoming.map(s=>stuRow(s, `<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`, regComplete(s), 'record complete ✓')).join('')}</div>`:''}
      <div class="sect">Registration completeness<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">tap a student to complete their record</span></div>
-     <div class="wlist">${act.map(s=>{ const miss=regComplete(s);
-       return `<div class="wrow ${miss.length?'frow':''}" data-go="#/students/${s.id}"><span>${miss.length?'📋':'✅'}</span><span class="t">${esc(s.name)}</span>${miss.length?miss.map(m=>`<span class="tag tag-gold">${m}</span>`).join(''):'<span class="tag tag-green">complete</span>'}</div>`; }).join('')}</div>
+     ${incomplete.length? `<div class="wlist">${incomplete.map(x=>stuRow(x.s, null, x.miss, 'complete')).join('')}</div>`
+       : `<div class="empty"><div class="big">✅</div><h3>Every active record is complete</h3><p>DOB, guardian, phone, emergency contact, and photo are all on file, mā shāʾ Allāh.</p></div>`}
+     ${done.length? `<details style="margin-top:${incomplete.length?'10px':'0'}" class="no-print"><summary style="cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700">✓ Complete · ${done.length}</summary><div class="wlist" style="margin-top:8px">${done.map(x=>stuRow(x.s, null, x.miss, 'complete')).join('')}</div></details>`:''}
      ${gone.length?`<div class="sect">Withdrawn<span class="rule"></span></div>
       <div class="wlist">${gone.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span>🚪</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="m">records kept</span></div>`).join('')}</div>`:''}
      <p style="font-size:12px;color:var(--ink3);margin-top:14px">Waiting list: planned for the online-registration version (v7 roadmap) — not built as an empty shell.</p>`;
@@ -6532,7 +6658,20 @@ const Admissions = {
         guardians:(guName||guPhone)?[{id:uid(), name:guName, relation:'Guardian', phone:guPhone, email:a.parentEmail||''}]:[],
         emergencyContacts:ecName?[{id:uid(), name:ecName, relation:'', phone:''}]:[],
         medical:$('#en-med',o).value.trim(), favorite:false, studentNo:nextNo,
-        notes:$('#en-no',o).value.trim(), active:true, startDate:$('#en-sd',o).value, photo:'', trialEnds};
+        notes:$('#en-no',o).value.trim(), active:true, startDate:$('#en-sd',o).value, photo:'', trialEnds,
+        // Everything the family entered on the website application form,
+        // carried forward so it doesn't have to be retyped — see "Personal
+        // information" on the student's profile. Blank where the applicant
+        // left something blank; editable from here on either way.
+        application: {
+          applicationId: a.appId||'', studentStatus: a.studentStatus||'', grade: a.studentGrade||'',
+          program: a.program||'', quranReadingLevel: a.quranLevel||'', quranMemorized: a.hifz||'',
+          arabicLevel: a.arabicLevel||'', prevSchool: a.prevSchool||'',
+          contactPref: a.contactPref||'', address: a.address||'', pickup: a.pickup||'', heard: a.heard||'',
+          interests: a.interests||'', goals: a.goals||'', learningNeeds: a.learning||'',
+          healthConditions: a.health||'', allergy: a.allergy||'', allergyDetail: a.allergyDetail||'', meds: a.meds||'',
+          waiverAgreed: a.waiverAgreed||'', mediaAgreed: a.mediaAgreed||'', signedBy: a.signedBy||'', signedDate: a.signedDate||''
+        }};
       DB.data.students.push(student);
       a.enrolledStudentId = sid;
       admSetStage(a, 'enrolled', 'Enrolled into the student roster'+(trialEnds?' — trial period through '+fmtDate(trialEnds):''));
