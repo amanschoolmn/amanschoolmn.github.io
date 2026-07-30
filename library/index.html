@@ -493,6 +493,7 @@
       </select>
       <button type="button" class="ctl-btn" id="checklistToggle">Setup Checklist</button>
       <button type="button" class="ctl-btn" id="themeToggle">Ink Mode</button>
+      <span class="pin-indicator" id="persistenceLabel"></span>
       <span class="pin-indicator" id="pinIndicator"></span>
     </div>
     <input type="file" id="importInput" multiple hidden accept=".html,.htm,.xlsx,.pptx,.zip">
@@ -503,18 +504,21 @@
     <summary>How to get your files into the hub</summary>
     <p>
       Tap <strong>Import Files</strong> and multi-select everything from your phone at once — the hub matches each
-      one to its card by file name and remembers it from then on, right inside Claude. Tap any card afterward and
-      it opens the real file in a viewer on this page, no new tab, no dead link.
+      one to its card by file name and remembers it from then on. Tap any card afterward and it opens the real file
+      in a viewer on this page, no new tab, no dead link.
     </p>
     <p>
       Prefer one at a time, or need to replace a single file? Use the small <strong>Upload</strong> button on that
       card. The <strong>Setup Checklist</strong> above shows which ON DEVICE files still need uploading.
     </p>
     <p>
-      Two honest limits: the built-in upload only works while you're using this hub inside Claude — if you save
-      this file and open it directly in your phone's browser instead, put your files in a <code>files</code> folder
-      next to it and the same cards will open them from there. And Excel/PowerPoint files (<code>.xlsx</code>,
-      <code>.pptx</code>) can't be previewed inline — the viewer gives you a direct download for those instead.
+      Where uploads are remembered depends on where you're viewing this page — shown next to Ink Mode above.
+      Inside Claude, files save to your Claude account. Opened as a regular webpage (like on
+      <code>amanschoolmn.org</code>), they save to that browser instead, so re-uploading on a different phone or
+      browser starts fresh. If neither is available, uploads only last until you close the tab. Any file can always
+      fall back to a <code>files</code> folder saved next to this page, no upload required. And Excel/PowerPoint
+      files (<code>.xlsx</code>, <code>.pptx</code>) can't be previewed inline either way — the viewer gives you a
+      direct download for those instead.
     </p>
   </details>
 
@@ -600,7 +604,6 @@
   const state = { activeCategory: null, view:'library', sort:'category', pinned: new Set() };
   let uploadedIds = new Set();
   let pendingUploadItemId = null;
-  const hasStorage = !!(window.storage && typeof window.storage.get === 'function');
 
   function catById(id){ return categories.find(c=>c.id===id); }
   function itemById(id){ return libraryItems.find(i=>i.id===id); }
@@ -615,11 +618,63 @@
         || catById(item.category).label.toLowerCase().includes(q);
   }
 
-  /* ---------------- storage helpers ---------------- */
+  /* ---------------- storage adapter ----------------
+     Tries Claude's built-in artifact storage first, falls back to this
+     browser's localStorage, and finally to in-memory (this tab only)
+     if neither persists. Every tier is wrapped so a blocked API never
+     breaks the app — it just drops to the next one. */
+  const hasClaudeStorage = !!(window.storage && typeof window.storage.get === 'function');
+  const hasLocalStorage = (()=>{
+    try{ const k='__aman_ls_test__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; }
+    catch(e){ return false; }
+  })();
+  const persistenceLabel = hasClaudeStorage ? 'Saves to Claude' : (hasLocalStorage ? 'Saves to this browser' : 'Saves for this tab only');
+  const memoryStore = new Map();
+
+  async function storageSet(key, value){
+    if(hasClaudeStorage){
+      try{ const res = await window.storage.set(key, value); if(res) return {ok:true}; }
+      catch(e){ /* fall through to next tier */ }
+    }
+    if(hasLocalStorage){
+      try{ localStorage.setItem(key, value); return {ok:true}; }
+      catch(e){ return {ok:false, error:"This browser's storage is full — try the files folder for this one instead."}; }
+    }
+    memoryStore.set(key, value);
+    return {ok:true};
+  }
+
+  async function storageGet(key){
+    if(hasClaudeStorage){
+      try{ const res = await window.storage.get(key); if(res && res.value) return res.value; }
+      catch(e){ /* fall through */ }
+    }
+    if(hasLocalStorage){
+      try{ const v = localStorage.getItem(key); if(v) return v; }
+      catch(e){ /* fall through */ }
+    }
+    return memoryStore.has(key) ? memoryStore.get(key) : null;
+  }
+
+  async function storageListKeys(prefix){
+    if(hasClaudeStorage){
+      try{ const res = await window.storage.list(prefix); if(res && res.keys) return res.keys; }
+      catch(e){ /* fall through */ }
+    }
+    if(hasLocalStorage){
+      try{
+        const keys = [];
+        for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.startsWith(prefix)) keys.push(k); }
+        if(keys.length) return keys;
+      }catch(e){ /* fall through */ }
+    }
+    return Array.from(memoryStore.keys()).filter(k=>k.startsWith(prefix));
+  }
+
+  /* ---------------- file storage helpers ---------------- */
   async function storeFileForItem(itemId, file){
     const item = itemById(itemId);
     if(!item) return {ok:false,error:'Unknown item'};
-    if(!hasStorage) return {ok:false,error:"Built-in storage isn't available outside Claude — use the files folder for this one instead."};
     const binary = isBinaryHref(item.href);
     try{
       const content = await new Promise((resolve,reject)=>{
@@ -629,8 +684,8 @@
         if(binary) reader.readAsDataURL(file); else reader.readAsText(file);
       });
       const payload = JSON.stringify({filename:file.name, dataType: binary?'dataurl':'text', content, size:file.size, uploadedAt:Date.now()});
-      const res = await window.storage.set('filelib:'+itemId, payload);
-      if(!res) return {ok:false,error:'Storage save failed (file may be too large — 5MB limit).'};
+      const res = await storageSet('filelib:'+itemId, payload);
+      if(!res.ok) return res;
       uploadedIds.add(itemId);
       return {ok:true};
     }catch(err){
@@ -639,19 +694,17 @@
   }
 
   async function getStoredFile(itemId){
-    if(!hasStorage) return null;
     try{
-      const res = await window.storage.get('filelib:'+itemId);
-      if(!res || !res.value) return null;
-      return JSON.parse(res.value);
+      const value = await storageGet('filelib:'+itemId);
+      if(!value) return null;
+      return JSON.parse(value);
     }catch(e){ return null; }
   }
 
   async function refreshUploadedIndex(){
-    if(!hasStorage){ uploadedIds = new Set(); return; }
     try{
-      const res = await window.storage.list('filelib:');
-      uploadedIds = new Set((res && res.keys ? res.keys : []).map(k=>k.replace('filelib:','')));
+      const keys = await storageListKeys('filelib:');
+      uploadedIds = new Set(keys.map(k=>k.replace('filelib:','')));
     }catch(e){ uploadedIds = new Set(); }
   }
 
@@ -953,6 +1006,7 @@
 
   document.getElementById('heroMeta').textContent =
     `Updated ${lastUpdated} · ${libraryItems.length} files across ${categories.length} categories`;
+  document.getElementById('persistenceLabel').textContent = persistenceLabel;
 
   buildChips();
   render();
