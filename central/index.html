@@ -523,6 +523,13 @@ function R(o){ return Object.assign({
   author:'Ustāth Nuradin Aliy', version:'1.0', status:'Active',
   created:'2026-06-01', modified:'2026-07-01', type:'html',
   loc:{kind:'device', href:''}, aiSummary:'', notes:'', related:[],
+  // units: which unit(s) of its book this resource covers, e.g. "4" or "4-6" —
+  // freeform so partial/uneven curricula don't fight the field. prereq: resource
+  // IDs that must be Active before this one is considered ready to teach from —
+  // separate from `related` (similarity-based) because a prerequisite is a
+  // direction, not just a connection. Both power the Knowledge Base completeness
+  // and sequencing views; see kbBookCompleteness() and the Resource detail page.
+  units:'', prereq:[],
   pinned:false, favorite:false, opens:0, versions:[]
 }, o); }
 
@@ -2435,6 +2442,8 @@ function renderLetterDocument(type, d){
   <button class="p" onclick="window.print()">🖨️ Print / Save as PDF</button>
   <a class="o" href="${d.mailto}" target="_blank">📧 Open Email Draft</a>
   ${d.sms?`<a class="o" href="${d.sms}" target="_blank">💬 Text</a>`:''}
+  ${d.gcalUrl?`<a class="o" href="${d.gcalUrl}" target="_blank">📅 Add to Google Calendar</a>`:''}
+  ${d.icsHref?`<a class="o" href="${d.icsHref}" download="AMAN-Parent-Interview.ics">⬇ Download Invite (.ics)</a>`:''}
   ${(type==='official'||type==='welcome')?`<button class="o" onclick="window.parent.openLetterPreview(window.parent.renderClassroomChecklist())">🎒 Supplies Checklist</button>`:''}
 </div>
 <div class="sheet">
@@ -2581,6 +2590,43 @@ function buildAgreementSms(parentFirst, students, agreementUrl){
   return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', thanks for meeting with us! Next step for '+students+': complete the Parent Agreement Form \u2014 '+agreementUrl+' \u2014 Questions? Call/text (612) 444-2609. \u2014 AMAN';
 }
 
+/* ---------- calendar integration: .ics download + Google Calendar quick-add ----------
+   AMAN Central has no backend, so "real calendar integration" here means
+   handing the browser's own calendar app (or Google Calendar) a standards-
+   based event it can add itself, rather than leaving the date sitting only
+   in this app. Both a .ics file (Apple Calendar, Outlook, most phones) and a
+   Google Calendar quick-add link are generated, and both carry a reminder —
+   dateStr/timeStr are the raw <input type=date>/<input type=time> values
+   (local school time), interpreted in the browser's own timezone so the
+   family sees the correct time on their end regardless of where they view it. */
+function icsStamp(dt){ return dt.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z'; }
+function buildCalendarEvent(dateStr, timeStr, durationMin, title, location, description){
+  const start = new Date(dateStr+'T'+(timeStr||'12:00')+':00');
+  const end = new Date(start.getTime() + (durationMin||30)*60000);
+  return {start, end, title, location, description};
+}
+function icsDownloadHref(ev){
+  const esc2 = s => String(s||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AMAN Central//EN','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    'UID:'+uid()+'@amanschoolmn.org',
+    'DTSTAMP:'+icsStamp(new Date()),
+    'DTSTART:'+icsStamp(ev.start),
+    'DTEND:'+icsStamp(ev.end),
+    'SUMMARY:'+esc2(ev.title),
+    'LOCATION:'+esc2(ev.location),
+    'DESCRIPTION:'+esc2(ev.description),
+    'BEGIN:VALARM','TRIGGER:-PT60M','ACTION:DISPLAY','DESCRIPTION:Reminder','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  return 'data:text/calendar;charset=utf8,'+encodeURIComponent(ics);
+}
+function googleCalendarHref(ev){
+  const p = new URLSearchParams({action:'TEMPLATE', text:ev.title, dates:icsStamp(ev.start)+'/'+icsStamp(ev.end), details:ev.description||'', location:ev.location||''});
+  return 'https://calendar.google.com/calendar/render?'+p.toString();
+}
+
 // Accessibility: every ".field" block in the app is authored as
 // <div class="field"><label>Text</label><input/select/textarea …></div>
 // without an explicit for=/id= pairing (screen readers won't announce the
@@ -2623,7 +2669,7 @@ function amaanahFromRow(row){
 }
 
 const DB = {
-  KEY:'aman_central_v1', SCHEMA:4, data:null, _t:null,
+  KEY:'aman_central_v1', SCHEMA:5, data:null, _t:null,
   defaults(){
     return {
       schema:this.SCHEMA,
@@ -2647,7 +2693,12 @@ const DB = {
       ],
       meetings:[], activity:[],
       finance:{plans:{}, payments:[]}, families:{}, unmatchedAgreements:[],
-      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'' }
+      // bookMeta: per-book (subject|series) tracking config for the Knowledge Base
+      // completeness view — currently just { totalUnits } per book, keyed by
+      // kbBookKey(). Absent/empty for a book = "not tracking gaps yet", never
+      // treated as "complete" — see kbBookCompleteness().
+      bookMeta:{},
+      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'', lastTuitionCheckMonth:'' }
     };
   },
   load(){
@@ -2677,6 +2728,16 @@ const DB = {
     if(d.schema<4){
       if(!Array.isArray(d.amaanahApplications)) d.amaanahApplications=[];
       d.schema=4;
+    }
+    if(d.schema<5){
+      // backfill fields added for Knowledge Base sequencing/completeness —
+      // older saved resources predate `units`/`prereq` and won't have them.
+      (d.resources||[]).forEach(r=>{
+        if(typeof r.units!=='string') r.units='';
+        if(!Array.isArray(r.prereq)) r.prereq=[];
+      });
+      if(!d.bookMeta || typeof d.bookMeta!=='object') d.bookMeta={};
+      d.schema=5;
     }
     const def = this.defaults();
     for(const k of Object.keys(def)) if(!(k in d)) d[k] = def[k];
@@ -2708,6 +2769,7 @@ const DB = {
       if(!d.settings.agreementCsvUrl || isOldAgreementPublishLink) d.settings.agreementCsvUrl=agrNewUrl;
       if(d.settings.agreementLastSync===undefined) d.settings.agreementLastSync='';
       if(!Array.isArray(d.unmatchedAgreements)) d.unmatchedAgreements=[];
+      if(d.settings.lastTuitionCheckMonth===undefined) d.settings.lastTuitionCheckMonth='';
     }
     if(Array.isArray(d.students)){ sotmLinkPhotos(d); migrateStudentContacts(d); }
     return d;
@@ -2867,35 +2929,41 @@ const Graph = {
 };
 
 /* ---------- command palette ---------- */
+/* Shared with Shortcuts.open() below so the cheat-sheet can never drift from
+   what the palette actually offers — one list, two views. */
+const PALETTE_ACTIONS = [
+  {t:'Go to Dashboard', i:'🏠', run:()=>Router.go('#/dashboard')},
+  {t:'Go to Knowledge Base', i:'📚', run:()=>Router.go('#/library')},
+  {t:'Go to Students', i:'🎓', run:()=>Router.go('#/students')},
+  {t:'Go to Teacher Workspace', i:'🗒️', run:()=>Router.go('#/teacher')},
+  {t:'Go to Administration', i:'🏛️', run:()=>Router.go('#/admin')},
+  {t:'Go to Admissions', i:'📥', run:()=>Router.go('#/admissions')},
+  {t:'Sync new applications', i:'⇪', run:()=>{Router.go('#/admissions'); setTimeout(()=>Admissions.sync(),150);}},
+  {t:'Go to Amaanah Admissions', i:'🛡️', run:()=>Router.go('#/amaanah-admissions')},
+  {t:'Sync new Amaanah applications', i:'⇪', run:()=>{Router.go('#/amaanah-admissions'); setTimeout(()=>Amaanah.sync(),150);}},
+  {t:'Go to Analytics', i:'📈', run:()=>Router.go('#/analytics')},
+  {t:'Ask the AI Assistant', i:'✨', run:()=>Router.go('#/ai')},
+  {t:'Add a resource', i:'➕', run:()=>ResourceForm.open()},
+  {t:'Take attendance (today)', i:'✅', run:()=>Router.go('#/students/attendance')},
+  {t:'Open today’s planner', i:'📅', run:()=>Router.go('#/teacher/planner')},
+  {t:'New lesson plan', i:'📝', run:()=>Router.go('#/teacher/lessons')},
+  {t:'Add a student', i:'👤', run:()=>{Router.go('#/students'); setTimeout(()=>Students.form(),80);}},
+  {t:'Toggle dark mode', i:'🌙', run:()=>Theme.toggle()},
+  {t:'Export backup (JSON)', i:'💾', run:()=>DB.export()},
+  {t:'Open Settings', i:'⚙️', run:()=>Router.go('#/settings')},
+  {t:'Keyboard shortcuts', i:'⌨️', run:()=>Shortcuts.open()},
+];
 const Palette = {
   open(){
     if($('.pal')) return;
     const o = overlay(`<div class="pal" role="dialog" aria-label="Command palette">
-      <input id="palQ" placeholder="Search resources, students, actions…" autocomplete="off">
-      <div class="pal-list" id="palList"></div></div>`);
+      <input id="palQ" placeholder="Search resources, students, actions… (? for shortcuts)" autocomplete="off">
+      <div class="pal-list" id="palList"></div>
+      <div style="padding:7px 14px;font-size:11px;color:var(--ink3);border-top:1px solid var(--line)">↑↓ navigate · ↵ select · Esc close · <b>?</b> for the full shortcut guide</div>
+      </div>`);
     const q = $('#palQ',o), list = $('#palList',o);
     let items=[], sel=0;
-    const actions = [
-      {t:'Go to Dashboard', i:'🏠', run:()=>Router.go('#/dashboard')},
-      {t:'Go to Knowledge Base', i:'📚', run:()=>Router.go('#/library')},
-      {t:'Go to Students', i:'🎓', run:()=>Router.go('#/students')},
-      {t:'Go to Teacher Workspace', i:'🗒️', run:()=>Router.go('#/teacher')},
-      {t:'Go to Administration', i:'🏛️', run:()=>Router.go('#/admin')},
-      {t:'Go to Admissions', i:'📥', run:()=>Router.go('#/admissions')},
-      {t:'Sync new applications', i:'⇪', run:()=>{Router.go('#/admissions'); setTimeout(()=>Admissions.sync(),150);}},
-      {t:'Go to Amaanah Admissions', i:'🛡️', run:()=>Router.go('#/amaanah-admissions')},
-      {t:'Sync new Amaanah applications', i:'⇪', run:()=>{Router.go('#/amaanah-admissions'); setTimeout(()=>Amaanah.sync(),150);}},
-      {t:'Go to Analytics', i:'📈', run:()=>Router.go('#/analytics')},
-      {t:'Ask the AI Assistant', i:'✨', run:()=>Router.go('#/ai')},
-      {t:'Add a resource', i:'➕', run:()=>ResourceForm.open()},
-      {t:'Take attendance (today)', i:'✅', run:()=>Router.go('#/students/attendance')},
-      {t:'Open today’s planner', i:'📅', run:()=>Router.go('#/teacher/planner')},
-      {t:'New lesson plan', i:'📝', run:()=>Router.go('#/teacher/lessons')},
-      {t:'Add a student', i:'👤', run:()=>{Router.go('#/students'); setTimeout(()=>Students.form(),80);}},
-      {t:'Toggle dark mode', i:'🌙', run:()=>Theme.toggle()},
-      {t:'Export backup (JSON)', i:'💾', run:()=>DB.export()},
-      {t:'Open Settings', i:'⚙️', run:()=>Router.go('#/settings')},
-    ];
+    const actions = PALETTE_ACTIONS;
     const build = ()=>{
       const v = q.value.trim(); items=[]; let html='';
       const acts = v ? actions.filter(a=>a.t.toLowerCase().includes(v.toLowerCase())) : actions.slice(0,6);
@@ -2925,9 +2993,37 @@ const Palette = {
     build(); q.focus();
   }
 };
+/* ---------- shortcuts cheat-sheet ----------
+   ⌘K is discoverable once, but its range (typed actions, student/resource
+   search, "ask AI: …") isn't obvious from the search box alone — this is the
+   one-time "here's what you can type" surface, reachable by ? or by typing
+   "shortcuts" into the palette itself. */
+const Shortcuts = {
+  open(){
+    if($('.modal') && $('.modal').dataset.shortcuts) return;
+    const o = overlay(`<div class="modal" data-shortcuts="1" style="max-width:520px"><h3>Keyboard shortcuts</h3>
+      <div class="sect" style="margin-top:2px">Global<span class="rule"></span></div>
+      <div class="wlist" style="margin-bottom:14px">
+        ${[['⌘K / Ctrl+K','Open the command palette'],['/','Also opens the command palette'],['?','Show this guide'],['Esc','Close any dialog or the palette']]
+          .map(([k,d])=>`<div class="wrow" style="cursor:default"><span class="tag tag-dim" style="font-family:var(--f-mono);min-width:78px;text-align:center">${esc(k)}</span><span class="t">${esc(d)}</span></div>`).join('')}
+      </div>
+      <div class="sect">Inside the palette<span class="rule"></span></div>
+      <div class="wlist" style="margin-bottom:14px">
+        ${[['↑ / ↓','Move through results'],['Enter','Open the highlighted result'],['type text','Search resources, students, and everything below at once']]
+          .map(([k,d])=>`<div class="wrow" style="cursor:default"><span class="tag tag-dim" style="font-family:var(--f-mono);min-width:78px;text-align:center">${esc(k)}</span><span class="t">${esc(d)}</span></div>`).join('')}
+      </div>
+      <div class="sect">Things you can type<span class="rule"></span></div>
+      <div class="wlist" style="max-height:260px;overflow-y:auto">
+        ${PALETTE_ACTIONS.map(a=>`<div class="wrow" style="cursor:default"><span>${a.i}</span><span class="t">${esc(a.t)}</span></div>`).join('')}
+      </div>
+      <div class="mfoot"><button class="btn btn-p" data-x="c">Got it</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+  }
+};
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); Palette.open(); }
   if(e.key==='/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); Palette.open(); }
+  if(e.key==='?' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); Shortcuts.open(); }
 });
 
 /* ---------- theme ---------- */
@@ -2939,8 +3035,16 @@ const Theme = {
 /* ---------- shared renderers ---------- */
 const COVER_CATEGORIES = ['Curriculum','Lesson Slides','Teacher Resources','Student Resources','Assessments'];
 const COVER_ACCENTS = {'Qur’an':'#1a4a35','Islamic Studies':'#8a6520','Arabic':'#33607e','Administration':'#5c665a'};
+/* prerequisites that aren't themselves Active yet — the sequencing gap a
+   resource being "ready" (status Active) doesn't by itself guarantee, since
+   its prereq could still be Planned/Draft/Missing. Returns the unmet ones. */
+function prereqGapFor(r){
+  return (r.prereq||[]).map(id=>DB.res(id)).filter(p=>p && p.status!=='Active');
+}
 function rCard(r){
   const stTag = r.status==='Active'?'' : `<span class="tag ${r.status.startsWith('Missing')?'tag-red':r.status==='Planned'?'tag-blue':'tag-gold'}">${esc(r.status)}</span>`;
+  const pGap = r.status==='Active' ? prereqGapFor(r) : [];
+  const pTag = pGap.length? `<span class="tag tag-gold" title="Requires ${esc(pGap.map(p=>p.title).join(', '))} to be Active first">⚠ prereq gap</span>` : '';
   if(COVER_CATEGORIES.includes(r.category)){
     const accent = COVER_ACCENTS[r.subject] || '#2c5f45';
     return `<article class="rcard rcard-cover" data-open="${r.id}">
@@ -2951,7 +3055,7 @@ function rCard(r){
       </div>
       <div class="rcover-body">
         <h4 role="button" tabindex="0" aria-label="Open ${esc(r.title)}">${r.pinned?'📌 ':''}${esc(r.title)}</h4>
-        <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span>${stTag}
+        <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span>${stTag}${pTag}
           <span style="margin-left:auto;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${rel(r.modified)}</span></div>
       </div>
     </article>`;
@@ -2962,7 +3066,7 @@ function rCard(r){
       <div><h4 role="button" tabindex="0" aria-label="Open ${esc(r.title)}">${r.pinned?'📌 ':''}${esc(r.title)}</h4>
       ${r.ar?`<div style="font-family:var(--f-ar);font-size:13px;color:var(--gold-text)">${esc(r.ar)}</div>`:''}</div></div>
     <p class="rdesc">${esc(r.desc)}</p>
-    <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span><span class="tag tag-dim">${esc(r.subject)}</span>${stTag}
+    <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span><span class="tag tag-dim">${esc(r.subject)}</span>${stTag}${pTag}
       <span style="margin-left:auto;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${rel(r.modified)}</span></div>
   </article>`;
 }
@@ -3028,6 +3132,14 @@ render(v){
   const concerns = stu.filter(s=> last4.filter(day=>d.attendance[day][s.id]==='A').length>=2 );
   // birthdays within 14 days (only if DOBs exist)
   const bdays = stu.filter(s=>s.dob).map(s=>({s, in:daysToBirthday(s.dob)})).filter(x=>x.in>=0&&x.in<=14).sort((a,b)=>a.in-b.in);
+  // tuition: recurring monthly check — "Who Owes Now" used to require a visit
+  // to Tuition to discover; this surfaces it here every session (in Needs
+  // Attention) and, once per calendar month, as a banner offering to draft
+  // every reminder in one action rather than one family at a time.
+  const nowYM = tdy.slice(0,7);
+  const overdueFamsNow = famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false))
+    .map(f=>({f, fin:famFinance(f.key)})).filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused');
+  const tuitionCheckPending = overdueFamsNow.length>0 && d.settings.lastTuitionCheckMonth!==nowYM;
 
   // ---- hero: compact command strip ----
   const hijri = (()=>{ try{ return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date()); }catch(e){ return ''; } })();
@@ -3044,6 +3156,11 @@ render(v){
         ${nextClass?`<span class="tag tag-gold" style="margin-top:5px">${daysTo===0?'Class today':daysTo===1?'Class tomorrow':'Next class in '+daysTo+' days'} · ${esc(nextClass.title.split('—')[0].trim())}</span>`:''}
       </div>
     </div></div>
+  ${tuitionCheckPending? `<div class="notice warn no-print" id="tuitionMonthlyBanner" style="margin-top:12px">📋 <div style="flex:1"><b>Monthly tuition check — ${nowYM}</b><br>${overdueFamsNow.length} famil${overdueFamsNow.length===1?'y has':'ies have'} not yet paid for this month.
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn btn-p btn-sm" id="tuitionBannerDraft">✉️ Draft reminders</button>
+      <button class="btn btn-ghost btn-sm" id="tuitionBannerDismiss">Dismiss for this month</button>
+    </div></div></div>`:''}
   <div style="display:flex;justify-content:flex-end;margin:0 0 10px"><button class="btn btn-ghost btn-sm no-print" id="custBtn">⚙ Customize · drag cards to reorder</button></div>
   <div class="grid g2" id="dashGrid">`;
 
@@ -3061,6 +3178,7 @@ render(v){
     concerns.slice(0,3).forEach(s=>items.push({i:'⚠️',t:s.name+' — '+last4.filter(day=>d.attendance[day][s.id]==='A').length+' absences in last '+last4.length+' sessions', go:'#/students/'+s.id, tag:'attendance', why:last4.filter(day=>d.attendance[day][s.id]==='A').length+' of the last '+last4.length+' sessions marked absent (rule fires at 2+)'}));
     bdays.slice(0,2).forEach(b=>items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d'), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days'}));
     res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet'}));
+    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM}));
     const lastBk=d.settings.lastBackupAt;
     const bkDays=lastBk? Math.floor((Date.now()-new Date(lastBk))/864e5) : null;
     if(bkDays==null || bkDays>14)
@@ -3181,6 +3299,8 @@ render(v){
   h += `</div>`;
   v.innerHTML = h;
   wireCommon(v);
+  $('#tuitionBannerDraft',v) && ($('#tuitionBannerDraft',v).onclick=()=>{ d.settings.lastTuitionCheckMonth=nowYM; DB.save(); Tuition.draftAllReminders(); Router.render(); });
+  $('#tuitionBannerDismiss',v) && ($('#tuitionBannerDismiss',v).onclick=()=>{ d.settings.lastTuitionCheckMonth=nowYM; DB.save(); toast('Dismissed — will check again next month'); Router.render(); });
   // live clock
   const tick=()=>{ const el=$('#dClock'); if(!el){clearInterval(Dashboard._clk);return;} el.textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); };
   tick(); Dashboard._clk=setInterval(tick, 15000);
@@ -3346,16 +3466,22 @@ render(v, param){
     if(!state.openBook) state.openBook=new Set(kbAllBookKeys());
     if(state.openBook.has(b.dataset.tbook)) state.openBook.delete(b.dataset.tbook); else state.openBook.add(b.dataset.tbook);
     Router.render(); });
+  $$('[data-tsetup]',v).forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    const key=b.dataset.tsetup, i=key.indexOf('|');
+    BookMeta.setTotal(key, key.slice(0,i), key.slice(i+1));
+  });
   $$('[data-smart]',v).forEach(b=>b.onclick=()=>{state.smart=b.dataset.smart; Router.render();});
   $$('[data-col]',v).forEach(b=>b.onclick=()=>{state.col=b.dataset.col; Router.render();});
   $$('[data-view]',v).forEach(b=>b.onclick=()=>{state.view=b.dataset.view; d.settings.kbView=state.view; DB.save(); Router.render();});
-  $('#lq',v).oninput = e=>{state.q=e.target.value; clearTimeout(Library._t); Library._t=setTimeout(()=>Router.render(),240);};
-  if(state.q){ const lq=$('#lq',v); lq.focus(); lq.setSelectionRange(lq.value.length,lq.value.length); }
-  $('#lsub',v).onchange=e=>{state.sub=e.target.value;Router.render();};
-  $('#ltype',v).onchange=e=>{state.type=e.target.value;Router.render();};
-  $('#lgrade',v).onchange=e=>{state.grade=e.target.value;Router.render();};
-  $('#lstat',v).onchange=e=>{state.status=e.target.value;Router.render();};
-  $('#lsort',v).onchange=e=>{state.sort=e.target.value;Router.render();};
+  const lq=$('#lq',v);
+  if(lq){ lq.oninput = e=>{state.q=e.target.value; clearTimeout(Library._t); Library._t=setTimeout(()=>Router.render(),240);};
+    if(state.q){ lq.focus(); lq.setSelectionRange(lq.value.length,lq.value.length); } }
+  const lsub=$('#lsub',v); if(lsub) lsub.onchange=e=>{state.sub=e.target.value;Router.render();};
+  const ltype=$('#ltype',v); if(ltype) ltype.onchange=e=>{state.type=e.target.value;Router.render();};
+  const lgrade=$('#lgrade',v); if(lgrade) lgrade.onchange=e=>{state.grade=e.target.value;Router.render();};
+  const lstat=$('#lstat',v); if(lstat) lstat.onchange=e=>{state.status=e.target.value;Router.render();};
+  const lsort=$('#lsort',v); if(lsort) lsort.onchange=e=>{state.sort=e.target.value;Router.render();};
   $('#ladd',v).onclick=()=>ResourceForm.open();
   const ea=$('#lempty-add',v); if(ea) ea.onclick=()=>ResourceForm.open();
   $('#kbReport',v).onclick=()=>kbMissingReport();
@@ -3380,6 +3506,77 @@ function kbAllBookKeys(){
   });
   return keys;
 }
+function kbBookKey(subj, series){ return subj+'|'+(series||'— Unsorted —'); }
+/* "4" -> [4] · "4-6" -> [4,5,6] · "3, 5" -> [3,5] · "4-6, 9" -> [4,5,6,9] */
+function parseUnitList(str){
+  const out = new Set();
+  String(str||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(part=>{
+    const m = part.match(/^(\d+)\s*-\s*(\d+)$/);
+    if(m){ let a=+m[1], b=+m[2]; if(a>b){ const t=a; a=b; b=t; } for(let i=a;i<=b;i++) out.add(i); }
+    else { const n=+part; if(Number.isFinite(n) && n>0) out.add(n); }
+  });
+  return [...out].sort((a,b)=>a-b);
+}
+function unitFirstNum(str){ const l=parseUnitList(str); return l.length? l[0] : null; }
+/* [4,5,6,9] -> "4–6, 9" — collapses consecutive runs for compact display */
+function fmtUnitRanges(nums){
+  if(!nums.length) return '';
+  const out=[]; let start=nums[0], prev=nums[0];
+  for(let i=1;i<=nums.length;i++){
+    const n=nums[i];
+    if(n===prev+1){ prev=n; continue; }
+    out.push(start===prev? String(start) : start+'–'+prev);
+    start=n; prev=n;
+  }
+  return out.join(', ');
+}
+/* ---------- per-book completeness: gaps, not just counts ----------
+   A book only gets a gap signal once you've told AMAN Central how many units
+   it has (bookMeta.totalUnits) — no total, no claim either way, since a
+   fabricated "complete" or "incomplete" is worse than no signal at all.
+   Once a total is set, a category (Lesson Slides, Assessments, …) is only
+   checked for gaps if at least one resource in that category has actually
+   been tagged with a unit number — untracked categories stay silent rather
+   than being flagged as 100% missing. Only Active resources count as
+   coverage; Planned/Draft/Missing don't fill the gap they're meant to fill. */
+function kbBookCompleteness(subj, series){
+  const key = kbBookKey(subj, series);
+  const meta = DB.data.bookMeta[key];
+  const total = (meta && meta.totalUnits>0) ? meta.totalUnits : null;
+  if(!total) return {key, total:null, gaps:[]};
+  const items = DB.data.resources.filter(r=>COVER_CATEGORIES.includes(r.category) && r.subject===subj && (r.series||'— Unsorted —')===series);
+  const byCat = {};
+  items.forEach(r=>{
+    const u = parseUnitList(r.units); if(!u.length) return;
+    const c = (byCat[r.category] = byCat[r.category] || new Set());
+    if(r.status==='Active') u.forEach(n=>c.add(n));
+  });
+  const gaps=[];
+  Object.entries(byCat).forEach(([cat,covered])=>{
+    const missing=[]; for(let i=1;i<=total;i++) if(!covered.has(i)) missing.push(i);
+    if(missing.length) gaps.push({category:cat, missing});
+  });
+  return {key, total, gaps};
+}
+const BookMeta = {
+  setTotal(key, subj, series){
+    const meta = DB.data.bookMeta[key] || {};
+    const o = overlay(`<div class="modal" style="max-width:400px"><h3>Track completeness — ${esc(series)}</h3>
+      <p style="font-size:13px;color:var(--ink2);font-family:var(--f-body)">Set how many units this book has. Once set, the Knowledge Base flags which units are missing from any category you've started tagging by unit (Lesson Slides, Assessments, etc.) — categories you haven't tagged yet stay untouched, not falsely flagged.</p>
+      <div class="field"><label>Total units in this book</label><input id="bm-total" type="number" min="1" step="1" value="${meta.totalUnits||''}"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button>${meta.totalUnits?'<button class="btn btn-danger btn-sm" data-x="clear">Stop tracking</button>':''}<button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const clearBtn = o.querySelector('[data-x=clear]');
+    if(clearBtn) clearBtn.onclick=()=>{ delete DB.data.bookMeta[key]; DB.log('Stopped tracking unit completeness — '+series); DB.save(); o.remove(); Router.render(); };
+    $('[data-x=s]',o).onclick=()=>{
+      const n=+$('#bm-total',o).value;
+      if(!n || n<1){ toast('Enter a total unit count of 1 or more'); return; }
+      DB.data.bookMeta[key]={totalUnits:n};
+      DB.log('Set '+series+' to '+n+' units for completeness tracking');
+      DB.save(); o.remove(); toast('Now tracking '+n+' units for '+series); Router.render();
+    };
+  }
+};
 function kbCurriculumTree(){
   const by = kbBySubject();
   const subjects = Object.keys(by).sort((a,b)=>{
@@ -3403,9 +3600,22 @@ function kbCurriculumTree(){
         <span class="tag tag-dim">${items.length} resource${items.length===1?'':'s'} · ${seriesNames.length} book${seriesNames.length===1?'':'s'}</span>
       </button>
       ${isOpen? `<div class="kb-books">${seriesNames.map(sn=>{
-        const bookItems = bySeries[sn];
+        // sequence: items with a unit number sort in that order (Unit 3 before
+        // Unit 4) — items without one keep their original relative order at the end.
+        const bookItems = bySeries[sn].slice().sort((a,b)=>{
+          const ua=unitFirstNum(a.units), ub=unitFirstNum(b.units);
+          if(ua==null && ub==null) return 0;
+          if(ua==null) return 1; if(ub==null) return -1;
+          return ua-ub;
+        });
         const bkey = subj+'|'+sn;
         const bOpen = openBook.has(bkey);
+        const comp = sn==='— Unsorted —'? {key:bkey,total:null,gaps:[]} : kbBookCompleteness(subj, sn);
+        const compBadge = comp.total==null
+          ? `<button class="tag tag-dim" data-tsetup="${esc(bkey)}" title="Track unit-level completeness for this book" style="border:none;cursor:pointer">＋ track completeness</button>`
+          : comp.gaps.length
+          ? `<button class="tag tag-red" data-tsetup="${esc(bkey)}" title="Click to edit total units" style="border:none;cursor:pointer">⚠ ${comp.gaps.length} gap${comp.gaps.length===1?'':'s'}</button>`
+          : `<button class="tag tag-green" data-tsetup="${esc(bkey)}" title="Click to edit total units" style="border:none;cursor:pointer">✓ complete · ${comp.total} units</button>`;
         return `<div class="kb-book">
           <button class="kb-book-head" data-tbook="${esc(bkey)}">
             <span class="kb-chevron ${bOpen?'open':''}">▸</span>
@@ -3413,6 +3623,9 @@ function kbCurriculumTree(){
             <span style="font-family:var(--f-body);font-weight:600;font-size:14.5px">${esc(sn)}</span>
             <span class="tag tag-dim">${bookItems.length}</span>
           </button>
+          ${sn!=='— Unsorted —'? `<div style="margin:4px 0 0 30px" class="no-print">${compBadge}</div>`:''}
+          ${bOpen && comp.gaps.length? `<div style="margin:8px 0 0 30px;display:flex;flex-direction:column;gap:3px">${comp.gaps.map(g=>
+            `<div style="font-size:12px;color:var(--ink2);font-family:var(--f-mono)">missing <b>${esc(g.category)}</b> for unit${g.missing.length===1?'':'s'} ${fmtUnitRanges(g.missing)}</div>`).join('')}</div>` : ''}
           ${bOpen? `<div class="grid g3" style="margin:10px 0 6px 30px">${bookItems.map(rCard).join('')}</div>` : ''}
         </div>`; }).join('')}</div>` : ''}
     </div>`;
@@ -3450,7 +3663,19 @@ function printWindow(title, styleCss, bodyHtml){
   if(!w){ toast('Pop-up blocked — allow pop-ups for this site to print.'); return null; }
   w.document.write(`<html><head><title>${esc(title)}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <style>*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}${styleCss||''}</style>
+    <style>*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+    /* Print-safety defaults shared by every report/roster that goes through this
+       function — the same "looks different on paper than on screen" risk that
+       was fixed for the acceptance letters (which print via their own real
+       window, not this one) also applies to multi-page tables here: without
+       these, a table header doesn't repeat past page 1 and a row can split
+       across a page break mid-line. Low specificity on purpose — any caller's
+       styleCss below can still override a rule for its own document. */
+    table{border-collapse:collapse} thead{display:table-header-group} tfoot{display:table-footer-group}
+    tr{page-break-inside:avoid;break-inside:avoid} img{max-width:100%}
+    h1,h2,h3{page-break-after:avoid;break-after:avoid}
+    @page{margin:0.6in}
+    ${styleCss||''}</style>
     </head><body>${bodyHtml}<script>window.print()<\/script></body></html>`);
   w.document.close();
   return w;
@@ -3461,13 +3686,25 @@ function kbMissingReport(){
   const planned=d.resources.filter(r=>r.status==='Planned');
   const unlinked=d.resources.filter(r=>r.loc.kind==='device'&&!r.loc.href&&r.status==='Active');
   const sec=(t,arr,note)=> arr.length?`<h2>${t} (${arr.length})</h2><ol>${arr.map(r=>`<li><b>${esc(r.title)}</b> — ${esc(r.desc.slice(0,140))}</li>`).join('')}</ol>${note?`<p class="n">${note}</p>`:''}`:'';
+  // per-book unit gaps — only books someone has opted into tracking (bookMeta.totalUnits)
+  const bookGaps=[];
+  kbAllBookKeys().forEach(key=>{
+    const i=key.indexOf('|'), subj=key.slice(0,i), series=key.slice(i+1);
+    if(series==='— Unsorted —') return;
+    const comp = kbBookCompleteness(subj, series);
+    if(comp.total!=null && comp.gaps.length) bookGaps.push({subj, series, gaps:comp.gaps});
+  });
+  const bookGapsSec = bookGaps.length? `<h2>Book completeness gaps (${bookGaps.length})</h2><ol>${bookGaps.map(bg=>
+    `<li><b>${esc(bg.series)}</b> (${esc(bg.subj)})<ul>${bg.gaps.map(g=>`<li>${esc(g.category)} — missing unit${g.missing.length===1?'':'s'} ${fmtUnitRanges(g.missing)}</li>`).join('')}</ul></li>`).join('')}</ol>
+    <p class="n">Only books with a total unit count set (Knowledge Base → Browse Curriculum → track completeness) appear here.</p>` : '';
   printWindow('AMAN — Missing Resources Report',
-    `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px}.meta{font-size:12px;color:#555}li{margin:8px 0;font-size:14px}.n{font-size:12px;color:#666;font-style:italic}`,
+    `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:15px;color:#1a4a35;margin-top:26px}.meta{font-size:12px;color:#555}li{margin:8px 0;font-size:14px}ul{margin:4px 0 0}.n{font-size:12px;color:#666;font-style:italic}`,
     `<h1>Missing Resources Report</h1><div class="meta">Al-Madrasatu An-Nuriyyah · Knowledge Base · ${new Date().toLocaleDateString()}</div>
      ${sec('Files needing re-upload', missing,'Re-upload these so the Knowledge Base reaches 100% coverage.')}
      ${sec('Planned — does not exist yet', planned,'Recommended builds, in priority order as flagged on the dashboard.')}
      ${sec('On device but not linked', unlinked,'Open each resource → Edit → Location and paste its Drive link, site URL, or folder path.')}
-     ${!missing.length&&!planned.length&&!unlinked.length?'<p>Nothing missing — the Knowledge Base is fully linked, mā shāʾ Allāh.</p>':''}`);
+     ${bookGapsSec}
+     ${!missing.length&&!planned.length&&!unlinked.length&&!bookGaps.length?'<p>Nothing missing — the Knowledge Base is fully linked, mā shāʾ Allāh.</p>':''}`);
 }
 
 /* ================= MODULE: SEARCH RESULTS ================= */
@@ -3489,6 +3726,17 @@ render(v,id){
   if(!r){ v.innerHTML='<div class="empty"><h3>Resource not found</h3></div>'; return; }
   r.opens++; r.lastOpened=new Date().toISOString(); DB.save();
   const relres = Graph.related(id, 10);
+  const prereqs = (r.prereq||[]).map(pid=>DB.res(pid)).filter(Boolean);
+  const requiredBy = DB.data.resources.filter(x=>(x.prereq||[]).includes(r.id));
+  const myUnit = unitFirstNum(r.units);
+  let prevRes=null, nextRes=null;
+  if(myUnit!=null && r.series){
+    const withUnits = DB.data.resources.filter(x=>x.id!==r.id && x.series===r.series && x.subject===r.subject && x.category===r.category)
+      .map(x=>({x,u:unitFirstNum(x.units)})).filter(o=>o.u!=null).sort((a,b)=>a.u-b.u);
+    const before = withUnits.filter(o=>o.u<myUnit).pop();
+    const after = withUnits.find(o=>o.u>myUnit);
+    prevRes = before? before.x : null; nextRes = after? after.x : null;
+  }
   const locBtn = r.loc.kind==='online' && r.loc.href
     ? `<a class="btn btn-p" href="${esc(r.loc.href)}" target="_blank" rel="noopener">Open ↗</a>`
     : r.loc.kind==='missing'
@@ -3522,6 +3770,17 @@ render(v,id){
        .map(([k,val])=>`<div><div class="k">${k}</div><div class="v">${esc(val)}</div></div>`).join('')}
    </div>
    ${r.objectives.length?`<div class="sect">Learning objectives<span class="rule"></span></div><ul style="font-family:var(--f-body);font-size:15.5px;padding-left:20px;display:flex;flex-direction:column;gap:5px">${r.objectives.map(o=>`<li>${esc(o)}</li>`).join('')}</ul>`:''}
+   ${(myUnit!=null || prereqs.length || requiredBy.length) ? `<div class="sect">Sequence & prerequisites<span class="rule"></span></div>
+   ${myUnit!=null? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+      ${prevRes?`<button class="chip" data-open="${prevRes.id}">← ${esc(prevRes.title)}</button>`:`<span class="tag tag-dim">— first in ${esc(r.series)} —</span>`}
+      <span class="tag tag-gold">this covers unit${parseUnitList(r.units).length>1?'s':''} ${esc(fmtUnitRanges(parseUnitList(r.units)))}</span>
+      ${nextRes?`<button class="chip" data-open="${nextRes.id}">${esc(nextRes.title)} →</button>`:`<span class="tag tag-dim">— last in ${esc(r.series)} —</span>`}
+   </div>`:''}
+   ${prereqs.length? `<div style="margin-bottom:${requiredBy.length?'12px':'0'}"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">Requires first</div>
+     <div class="wlist">${prereqs.map(p=>`<div class="wrow" data-open="${p.id}"><span>${p.status==='Active'?'✓':'⚠'}</span><span class="t">${esc(p.title)}</span><span class="tag ${p.status==='Active'?'tag-green':'tag-gold'}">${esc(p.status)}</span></div>`).join('')}</div></div>`:''}
+   ${requiredBy.length? `<div><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">Required by</div>
+     <div class="wlist">${requiredBy.map(x=>`<div class="wrow" data-open="${x.id}"><span>${TYPE_ICON[x.type]||'📄'}</span><span class="t">${esc(x.title)}</span><span class="tag tag-dim">${esc(x.status)}</span></div>`).join('')}</div></div>`:''}
+   `:''}
    <div class="sect">Tags & keywords<span class="rule"></span></div>
    <div style="display:flex;gap:7px;flex-wrap:wrap">${r.tags.map(t=>`<button class="chip" data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}${r.keywords.map(k=>`<span class="tag tag-dim">${esc(k)}</span>`).join('')||''}</div>
    <div class="sect">Knowledge graph<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">explicit links + shared tags & subject</span></div>
@@ -3580,6 +3839,7 @@ const ResourceForm = {
         <div class="field"><label>Book / series (optional) — groups it under Browse Curriculum</label>
           <input id="f-series" list="f-series-list" value="${esc(d.series||'')}" placeholder="e.g., Madinah Book 1">
           <datalist id="f-series-list">${[...new Set(DB.data.resources.map(r=>r.series).filter(Boolean))].map(s=>`<option value="${esc(s)}">`).join('')}</datalist></div>
+        <div class="field"><label>Unit(s) covered (optional) — e.g. 4 or 4-6</label><input id="f-units" value="${esc(d.units||'')}" placeholder="leave blank if not unit-specific"></div>
         <div class="field"><label>Grade level</label><select id="f-grade">${opts(GRADES,d.grade)}</select></div>
         <div class="field"><label>Difficulty</label><select id="f-diff">${opts(DIFFS,d.difficulty)}</select></div>
         <div class="field"><label>Type</label><select id="f-type">${opts(Object.keys(TYPE_ICON),d.type)}</select></div>
@@ -3596,6 +3856,9 @@ const ResourceForm = {
       <div class="field"><label>Related resource IDs (comma-separated) — pick from suggestions</label>
         <input id="f-rel" value="${esc(d.related.join(', '))}">
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">${DB.data.resources.filter(x=>x.id!==d.id).slice(0,60).map(x=>`<button class="chip" data-rid="${x.id}" title="${esc(x.title)}">${esc(x.title.slice(0,26))}</button>`).join('')}</div></div>
+      <div class="field"><label>Prerequisites — must be Active before this is ready to teach from</label>
+        <input id="f-prereq" value="${esc((d.prereq||[]).join(', '))}">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">${DB.data.resources.filter(x=>x.id!==d.id).slice(0,60).map(x=>`<button class="chip" data-preq="${x.id}" title="${esc(x.title)}">${esc(x.title.slice(0,26))}</button>`).join('')}</div></div>
       <div class="field"><label>AI summary</label><textarea id="f-ais">${esc(d.aiSummary)}</textarea></div>
       <div class="field"><label>Notes</label><textarea id="f-notes">${esc(d.notes)}</textarea></div>
       ${isNew?'':`<div class="field"><label>Revision note for this edit</label><input id="f-revnote" placeholder="What changed?"></div>`}
@@ -3604,6 +3867,9 @@ const ResourceForm = {
     $$('button[data-rid]',o).forEach(b=>b.onclick=()=>{ const f=$('#f-rel',o);
       const cur=f.value.split(',').map(s=>s.trim()).filter(Boolean);
       if(!cur.includes(b.dataset.rid)){ cur.push(b.dataset.rid); f.value=cur.join(', '); b.classList.add('on'); } });
+    $$('button[data-preq]',o).forEach(b=>b.onclick=()=>{ const f=$('#f-prereq',o);
+      const cur=f.value.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!cur.includes(b.dataset.preq)){ cur.push(b.dataset.preq); f.value=cur.join(', '); b.classList.add('on'); } });
     $('[data-x=cancel]',o).onclick=()=>o.remove();
     $('[data-x=save]',o).onclick=()=>{
       const g=id=>$(id,o).value.trim();
@@ -3619,6 +3885,8 @@ const ResourceForm = {
         keywords:g('#f-kw').split(',').map(s=>s.trim()).filter(Boolean),
         objectives:$('#f-obj',o).value.split('\n').map(s=>s.trim()).filter(Boolean),
         related:g('#f-rel').split(',').map(s=>s.trim()).filter(x=>DB.res(x)),
+        units:g('#f-units'),
+        prereq:g('#f-prereq').split(',').map(s=>s.trim()).filter(x=>DB.res(x) && x!==d.id),
         aiSummary:g('#f-ais'), notes:g('#f-notes'),
         modified:new Date().toISOString().slice(0,10)
       });
@@ -5263,6 +5531,11 @@ render(v,param){
   $$('[data-tab]',v).forEach(b=>b.onclick=()=>Router.go('#/tuition/'+b.dataset.tab));
   (Tuition[tab]||Tuition.overview)($('#tt',v));
 }});
+/* shared by Tuition.owe() and Tuition.draftAllReminders() so the wording
+   never drifts between the one-at-a-time and batch paths. */
+function tuitionReminderMsg(famKey, fin, nowM){
+  return `As-sal\u0101mu \u02bfalaykum ${famKey} family \u2014 friendly reminder: $${Math.max(0,fin.monthly-fin.paidThisMonth)} is due for ${nowM} at AMAN (balance $${fin.balance}). Jaz\u0101kAllahu khayran!`;
+}
 const Tuition = {
   /* ---------- OVERVIEW ---------- */
   overview(el){
@@ -5440,8 +5713,9 @@ const Tuition = {
         return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.monthly?'$'+fin.monthly:'\u2014'}</td><td>${fin.monthStatus}</td><td>${fin.balance?'$'+fin.balance:'\u2014'}</td><td>$${fin.paid}</td></tr>`; }).join('');
       const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>AMAN Tuition Report</title>
 <style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #ccc}th{font-size:11px;text-transform:uppercase;color:#1a4a35}
+thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
 .toolbar{max-width:740px;margin:0 auto 10px;text-align:center}.toolbar button{background:#1a4a35;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-weight:600;cursor:pointer}
-@media print{.toolbar{display:none}}</style></head><body>
+@media print{.toolbar{display:none}}@page{margin:0.6in}</style></head><body>
 <div class="toolbar"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
 <h1>Tuition Report \u2014 ${today().slice(0,7)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah \u00b7 prepared for Br. Abdallah bin Abdirahman \u00b7 ${new Date().toLocaleDateString()}</div>
 <table><thead><tr><th>Family</th><th>Students</th><th>Monthly</th><th>This month</th><th>Balance</th><th>Total paid</th></tr></thead><tbody>${rows}</tbody></table>
@@ -5467,9 +5741,9 @@ const Tuition = {
     const owing=fams.map(f=>({f, fin:famFinance(f.key), rec:famRec(f.key)}))
       .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
       .sort((a,b)=>b.fin.balance-a.fin.balance);
-    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">Families not yet paid for ${nowM} \u2014 sorted by balance owed.</p>
+    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">Families not yet paid for ${nowM} \u2014 sorted by balance owed.${owing.length?' <button class="chip no-print" id="tuDraftAll" style="margin-left:6px">\u2709\ufe0f Draft all reminders</button>':''}</p>
      ${owing.length? owing.map(({f,fin,rec})=>{
-        const shortMsg = `As-sal\u0101mu \u02bfalaykum ${f.key} family \u2014 friendly reminder: $${Math.max(0,fin.monthly-fin.paidThisMonth)} is due for ${nowM} at AMAN (balance $${fin.balance}). Jaz\u0101kAllahu khayran!`;
+        const shortMsg = tuitionReminderMsg(f.key, fin, nowM);
         const digits = rec.phone? rec.phone.replace(/[^0-9+]/g,'') : '';
         return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
         <div><b style="font-family:var(--f-display);font-size:15.5px">\ud83d\udc6a ${esc(f.key)}</b>
@@ -5484,6 +5758,27 @@ const Tuition = {
     wireCommon(el);
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
+    $('#tuDraftAll',el) && ($('#tuDraftAll',el).onclick=()=>Tuition.draftAllReminders());
+  },
+  /* ---------- draft every overdue family's reminder in one place — the
+     "autopilot" half of Who Owes Now: instead of opening each family and
+     copying one at a time, this assembles all of them so a batch of
+     WhatsApp/SMS sends takes one visit, not N. ---------- */
+  draftAllReminders(){
+    const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
+    const nowM=today().slice(0,7);
+    const owing=fams.map(f=>({f, fin:famFinance(f.key), rec:famRec(f.key)}))
+      .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
+      .sort((a,b)=>b.fin.balance-a.fin.balance);
+    if(!owing.length){ toast('No outstanding balances this month, al-ḥamdu lillāh'); return; }
+    const msgs = owing.map(({f,fin})=>({fam:f.key, msg:tuitionReminderMsg(f.key, fin, nowM)}));
+    const allText = msgs.map(m=>m.msg).join('\n\n');
+    const o = overlay(`<div class="modal" style="max-width:520px"><h3>Reminders drafted \u2014 ${owing.length} famil${owing.length===1?'y':'ies'}</h3>
+      <p style="font-size:13px;color:var(--ink2)">Copy each one individually below, or copy all of them at once and split them out when sending.</p>
+      <div class="wlist" style="max-height:320px;overflow-y:auto;margin-bottom:10px">${msgs.map(m=>`<div class="wrow" style="cursor:default;align-items:flex-start"><span class="t" style="white-space:normal;font-size:12.5px">${esc(m.msg)}</span><button class="chip" data-copy="${esc(m.msg)}" style="flex-shrink:0">\ud83d\udccb</button></div>`).join('')}</div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="chip" data-copy="${esc(allText)}">\ud83d\udccb Copy all ${owing.length}</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    wireCommon(o);
   },
   /* ---------- shared payment / excuse form ---------- */
   payForm(fam, prefillYM){
@@ -5815,17 +6110,20 @@ const Admissions = {
       const interviewDateFmt = fmtDate(dateVal);
       const interviewTimeFmt = fmtTime(timeVal);
       const note = 'Interview scheduled for '+interviewDateFmt+' at '+interviewTimeFmt;
-      group.forEach(x=> admSetStage(x, 'interview', note));
+      group.forEach(x=>{ x.interviewDate=dateVal; x.interviewTime=timeVal; x.interviewLoc=loc; admSetStage(x, 'interview', note); });
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const addr = admSplitAddress(a.address);
       const mailto = buildInterviewMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt);
       const sms = smsHref(a.parentPhone, buildInterviewSms(admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt));
+      const calEv = buildCalendarEvent(dateVal, timeVal, 30, 'AMAN Parent Interview — '+studentsJoined, loc,
+        'Parent Interview for '+studentsJoined+' at Al-Madrasatu An-Nuriyyah (AMAN). Bring any remaining enrollment questions — this completes the Parental Agreement Form together.');
       const html = renderLetterDocument('conditional', {
         students: studentsJoined, program: prog,
         interviewDate: interviewDateFmt, interviewTime: interviewTimeFmt, interviewLoc: loc,
         parentFull: a.parentName, parentFirst: admFirstName(a.parentName),
         street: addr.street, citystate: addr.citystate,
-        letterDate: fmtDate(today()), mailto: mailto, sms: sms
+        letterDate: fmtDate(today()), mailto: mailto, sms: sms,
+        gcalUrl: googleCalendarHref(calEv), icsHref: icsDownloadHref(calEv)
       });
       o.remove();
       toast('Moved to Parent Interview — opening the letter');
@@ -6261,6 +6559,15 @@ const Admissions = {
        <span class="tag ${admStageTagClass(a)}" style="font-size:13px;padding:6px 14px">${esc(admStageDisplay(a))}${a.stage==='waitlist'&&admWaitlistPos(a)?' #'+admWaitlistPos(a):''}</span>
      </div>
      ${siblings.length?`<div class="notice info" style="margin-top:14px">👪 Applying with ${siblings.map(s=>`<a data-go="#/admissions/${s.id}" style="text-decoration:underline;cursor:pointer">${esc(s.studentName)}</a>`).join(', ')} (same family submission)</div>`:''}
+     ${a.stage==='interview' && a.interviewDate? (()=>{
+        const calEv = buildCalendarEvent(a.interviewDate, a.interviewTime, 30, 'AMAN Parent Interview — '+esc(a.studentName), a.interviewLoc||AMAN_ADDRESS,
+          'Parent Interview for '+esc(a.studentName)+' at Al-Madrasatu An-Nuriyyah (AMAN).');
+        return `<div class="notice info no-print" style="margin-top:14px">📅 <div style="flex:1"><b>Parent Interview — ${esc(fmtDate(a.interviewDate))} at ${esc(fmtTime(a.interviewTime))}</b><br>${esc(a.interviewLoc||AMAN_ADDRESS)}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <a class="btn btn-o btn-sm" href="${googleCalendarHref(calEv)}" target="_blank">📅 Add to Google Calendar</a>
+            <a class="btn btn-o btn-sm" href="${icsDownloadHref(calEv)}" download="AMAN-Parent-Interview.ics">⬇ Download Invite (.ics)</a>
+          </div></div></div>`;
+     })():''}
      ${a.agreementSubmitted?`<div class="notice info" style="margin-top:14px;background:color-mix(in srgb,var(--ok) 10%,var(--surface));border-color:var(--ok)">✅ <div>Parental Agreement Form submitted${a.agreementSubmittedDate?' on '+fmtDate(a.agreementSubmittedDate):''}.</div></div>`:a.stage==='agreement'?`<div class="notice warn" style="margin-top:14px">⏳ <div>Waiting on the Parental Agreement Form. Tap "Check Signed Agreements" on the Admissions list once the family has submitted it.</div></div>`:''}
      <div class="sect">Actions<span class="rule"></span></div>
      <div class="card no-print" style="display:flex;gap:8px;flex-wrap:wrap">${admProfileActions(a)}</div>
