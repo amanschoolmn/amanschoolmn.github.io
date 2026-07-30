@@ -6466,29 +6466,68 @@ const Admissions = {
       admLog(a,n); DB.save(); o.remove(); toast('Note added'); Router.render(); };
   },
   form(){
-    const o = overlay(`<div class="modal" style="max-width:480px"><h3>Add application (phone / walk-in)</h3>
+    const o = overlay(`<div class="modal" style="max-width:560px"><h3>Add application (phone / walk-in)</h3>
+      <p style="font-size:12.5px;color:var(--ink3);margin-top:-6px">Same fields as the website's Student Application Form — fill in whatever the family shares with you; only the student's name is required.</p>
       <div class="field"><label>Student full name</label><input id="adm-sn"></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
        <div class="field"><label>Date of birth</label><input id="adm-dob" type="date"></div>
        <div class="field"><label>Gender</label><select id="adm-g"><option value="">—</option><option>Male</option><option>Female</option></select></div>
+       <div class="field"><label>Student status</label><input id="adm-status" placeholder="New, Returning, Transfer…"></div>
+       <div class="field"><label>Grade</label><input id="adm-grade"></div>
       </div>
+      <div class="field"><label>Program</label><input id="adm-program"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Qur'an reading level</label><input id="adm-qlevel"></div>
+       <div class="field"><label>Qur'an memorized</label><input id="adm-qmem"></div>
+       <div class="field"><label>Arabic level</label><input id="adm-arabic"></div>
+       <div class="field"><label>Previous Islamic school</label><input id="adm-prev"></div>
+      </div>
+      <div class="sect" style="margin:14px 0 8px;font-size:14px">Parent / guardian<span class="rule"></span></div>
       <div class="field"><label>Parent / guardian name</label><input id="adm-pn"></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
        <div class="field"><label>Phone</label><input id="adm-pp"></div>
        <div class="field"><label>Email</label><input id="adm-pe"></div>
+       <div class="field"><label>Contact preference</label><input id="adm-cpref" placeholder="Phone, text, email…"></div>
+       <div class="field"><label>Authorized pickup</label><input id="adm-pickup"></div>
+      </div>
+      <div class="field"><label>Home address</label><input id="adm-addr"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Emergency contact</label><input id="adm-emerg" placeholder="Name and phone"></div>
+       <div class="field"><label>Heard about us via</label><input id="adm-heard"></div>
+      </div>
+      <div class="sect" style="margin:14px 0 8px;font-size:14px">Interests &amp; needs<span class="rule"></span></div>
+      <div class="field"><label>Subject interests</label><input id="adm-interests"></div>
+      <div class="field"><label>Goals</label><input id="adm-goals"></div>
+      <div class="field"><label>Learning needs</label><input id="adm-learn"></div>
+      <div class="sect" style="margin:14px 0 8px;font-size:14px">Health<span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Health conditions</label><input id="adm-health"></div>
+       <div class="field"><label>Allergies</label><input id="adm-allergy"></div>
+       <div class="field"><label>Allergy details</label><input id="adm-allergydet"></div>
+       <div class="field"><label>Medications</label><input id="adm-meds"></div>
+      </div>
+      <div class="sect" style="margin:14px 0 8px;font-size:14px">Consent<span class="rule"></span></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Liability waiver agreed</label><input id="adm-waiver" placeholder="Yes — verbal, over the phone"></div>
+       <div class="field"><label>Media consent agreed</label><input id="adm-media" placeholder="Yes — verbal, over the phone"></div>
+       <div class="field"><label>Signed by</label><input id="adm-signedby"></div>
+       <div class="field"><label>Date signed</label><input id="adm-signeddate" type="date"></div>
       </div>
       <div class="field"><label>Notes</label><textarea id="adm-no" placeholder="How they applied, anything discussed…"></textarea></div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Add to pipeline</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
     $('[data-x=s]',o).onclick=()=>{
       const n=$('#adm-sn',o).value.trim(); if(!n){toast('Student name required');return;}
-      const note = $('#adm-no',o).value.trim();
+      const g = id => $(id,o).value.trim();
+      const note = g('#adm-no');
       const rec = { id:uid(), sourceId:'', appId:'manual-'+uid(), studentIdx:1, ref:'', submitted:today(),
-        studentName:n, studentStatus:'', studentDob:$('#adm-dob',o).value, studentAge:'', studentGender:$('#adm-g',o).value, studentGrade:'',
-        program:'', quranLevel:'', hifz:'', arabicLevel:'', prevSchool:'',
-        parentName:$('#adm-pn',o).value.trim(), parentEmail:$('#adm-pe',o).value.trim(), parentPhone:$('#adm-pp',o).value.trim(), contactPref:'',
-        address:'', emergency:'', pickup:'', heard:'', interests:'', goals:'', learning:'',
-        health:'', allergy:'', allergyDetail:'', meds:'', waiverAgreed:'', mediaAgreed:'', signedBy:'', signedDate:'',
+        studentName:n, studentStatus:g('#adm-status'), studentDob:$('#adm-dob',o).value, studentAge:'', studentGender:$('#adm-g',o).value, studentGrade:g('#adm-grade'),
+        program:g('#adm-program'), quranLevel:g('#adm-qlevel'), hifz:g('#adm-qmem'), arabicLevel:g('#adm-arabic'), prevSchool:g('#adm-prev'),
+        parentName:g('#adm-pn'), parentEmail:g('#adm-pe'), parentPhone:g('#adm-pp'), contactPref:g('#adm-cpref'),
+        address:g('#adm-addr'), emergency:g('#adm-emerg'), pickup:g('#adm-pickup'), heard:g('#adm-heard'),
+        interests:g('#adm-interests'), goals:g('#adm-goals'), learning:g('#adm-learn'),
+        health:g('#adm-health'), allergy:g('#adm-allergy'), allergyDetail:g('#adm-allergydet'), meds:g('#adm-meds'),
+        waiverAgreed:g('#adm-waiver'), mediaAgreed:g('#adm-media'), signedBy:g('#adm-signedby'), signedDate:$('#adm-signeddate',o).value,
         stage:'review', decision:'', waitlistSince:'', enrolledStudentId:'',
         log:[{date:today(), text:'Added manually (phone / walk-in)'+(note?': '+note:'')}] };
       DB.data.admissions.push(rec); DB.log('Application added manually: '+n); DB.save(); o.remove(); toast('Added to pipeline'); Router.render();
