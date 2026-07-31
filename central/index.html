@@ -6090,6 +6090,11 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
           </div>
         </div>
       </div></div>
+      <div id="prResult" style="display:none;margin:14px 0;padding:12px;background:var(--surface2);border-radius:10px;text-align:center">
+        <p style="font-size:12.5px;color:var(--ink2);margin:0 0 10px">\u2705 Flyer ready. If tapping the button below doesn\u2019t start a download (common on iPhone), press and hold the image and choose <b>Save Image</b>.</p>
+        <img id="prResultImg" style="max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.2);margin-bottom:10px" alt="Generated flyer \u2014 press and hold to save">
+        <div><a id="prResultLink" class="btn btn-p" style="display:inline-block;text-decoration:none" download>\u2b07 Tap to Download</a></div>
+      </div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" id="prCopyTxt">\ud83d\udccb Copy as text</button><button class="btn btn-p" id="prDownload">\u2b07 Download PNG</button></div>
       </div>`, true);
     const card=$('#pr-card',o), wrap=$('#prCardWrap',o), frame=$('#prStageFrame',o);
@@ -6114,16 +6119,40 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
     ['pr-student','pr-period','pr-due','pr-amount','pr-cashapp','pr-zelle','pr-contact'].forEach(id=>{ $('#'+id,o).oninput=renderCard; });
     $$('#prStatusPick button',o).forEach(b=>b.onclick=()=>{ $$('#prStatusPick button',o).forEach(x=>x.classList.remove('on')); b.classList.add('on'); curStatus=b.dataset.v; renderCard(); });
     $$('#prSizePick button',o).forEach(b=>b.onclick=()=>{ $$('#prSizePick button',o).forEach(x=>x.classList.remove('on')); b.classList.add('on'); curSize=b.dataset.sz; card.classList.toggle('pr-compact', curSize==='half'); fitCard(); });
-    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=c]',o).onclick=()=>{ const img=$('#prResultImg',o); if(img&&img.src&&img.src.startsWith('blob:')) URL.revokeObjectURL(img.src); o.remove(); };
     $('#prDownload',o).onclick=async()=>{
       if(typeof html2canvas!=='function'){ toast('PNG export library failed to load \u2014 check your connection and try again'); return; }
-      const canvas = await html2canvas(card, {scale:2, backgroundColor:null});
-      const link = document.createElement('a');
-      const slug = (($('#pr-student',o).value||'reminder')).replace(/[^a-z0-9]+/gi,'_');
-      link.download = 'AMAN_'+curStatus+'_'+slug+'.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      DB.log('Generated payment reminder flyer \u2014 '+famKey);
+      const btn = $('#prDownload',o), origLabel = btn.textContent;
+      btn.textContent = 'Generating\u2026'; btn.disabled = true;
+      try {
+        const canvas = await html2canvas(card, {scale:2, backgroundColor:null});
+        const slug = (($('#pr-student',o).value||'reminder')).replace(/[^a-z0-9]+/gi,'_');
+        const filename = 'AMAN_'+curStatus+'_'+slug+'.png';
+        canvas.toBlob(blob=>{
+          btn.textContent = origLabel; btn.disabled = false;
+          if(!blob){ toast('Could not generate the image \u2014 try again'); return; }
+          const url = URL.createObjectURL(blob);
+          // Try the automatic download first (works on desktop and most
+          // Android browsers) \u2014 but iOS Safari can silently ignore a
+          // programmatic download click once the async render above has
+          // spent its "user activation" window, with no error to catch.
+          // Since that failure is invisible, always surface a real,
+          // tappable link plus the image itself right after, so there's a
+          // path that works even when the automatic one doesn't.
+          const auto = document.createElement('a');
+          auto.href = url; auto.download = filename;
+          document.body.appendChild(auto); auto.click(); document.body.removeChild(auto);
+          $('#prResultImg',o).src = url;
+          const link = $('#prResultLink',o);
+          link.href = url; link.download = filename;
+          $('#prResult',o).style.display = 'block';
+          $('#prResult',o).scrollIntoView({behavior:'smooth', block:'nearest'});
+        }, 'image/png');
+        DB.log('Generated payment reminder flyer \u2014 '+famKey);
+      } catch(e) {
+        btn.textContent = origLabel; btn.disabled = false;
+        toast('Could not generate the image \u2014 try again');
+      }
     };
     $('#prCopyTxt',o).onclick=()=>{
       const d = { student:$('#pr-student',o).value, period:$('#pr-period',o).value, due:$('#pr-due',o).value, amount:$('#pr-amount',o).value, cashapp:$('#pr-cashapp',o).value, zelle:$('#pr-zelle',o).value };
