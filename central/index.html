@@ -18,7 +18,7 @@
      real, fetchable files at those relative paths, not just this markup. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" crossorigin="anonymous">
 <!-- Payment reminder flyer (Tuition → Who Owes Now) renders to PNG via html2canvas. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -6125,32 +6125,43 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
       const btn = $('#prDownload',o), origLabel = btn.textContent;
       btn.textContent = 'Generating\u2026'; btn.disabled = true;
       try {
-        const canvas = await html2canvas(card, {scale:2, backgroundColor:null});
+        // useCORS pairs with the crossorigin="anonymous" now on the Google
+        // Fonts <link> in <head> \u2014 without both, html2canvas throws a
+        // SecurityError trying to read that stylesheet's rules while
+        // cloning the page, which is what "Could not generate the image"
+        // was actually masking.
+        const canvas = await html2canvas(card, {scale:2, backgroundColor:null, useCORS:true});
         const slug = (($('#pr-student',o).value||'reminder')).replace(/[^a-z0-9]+/gi,'_');
         const filename = 'AMAN_'+curStatus+'_'+slug+'.png';
         canvas.toBlob(blob=>{
           btn.textContent = origLabel; btn.disabled = false;
           if(!blob){ toast('Could not generate the image \u2014 try again'); return; }
-          const url = URL.createObjectURL(blob);
-          // Try the automatic download first (works on desktop and most
-          // Android browsers) \u2014 but iOS Safari can silently ignore a
-          // programmatic download click once the async render above has
-          // spent its "user activation" window, with no error to catch.
-          // Since that failure is invisible, always surface a real,
-          // tappable link plus the image itself right after, so there's a
-          // path that works even when the automatic one doesn't.
-          const auto = document.createElement('a');
-          auto.href = url; auto.download = filename;
-          document.body.appendChild(auto); auto.click(); document.body.removeChild(auto);
-          $('#prResultImg',o).src = url;
-          const link = $('#prResultLink',o);
-          link.href = url; link.download = filename;
-          $('#prResult',o).style.display = 'block';
-          $('#prResult',o).scrollIntoView({behavior:'smooth', block:'nearest'});
+          try {
+            const url = URL.createObjectURL(blob);
+            // Try the automatic download first (works on desktop and most
+            // Android browsers) \u2014 but iOS Safari can silently ignore a
+            // programmatic download click once the async render above has
+            // spent its "user activation" window, with no error to catch.
+            // Since that failure is invisible, always surface a real,
+            // tappable link plus the image itself right after, so there's a
+            // path that works even when the automatic one doesn't.
+            const auto = document.createElement('a');
+            auto.href = url; auto.download = filename;
+            document.body.appendChild(auto); auto.click(); document.body.removeChild(auto);
+            $('#prResultImg',o).src = url;
+            const link = $('#prResultLink',o);
+            link.href = url; link.download = filename;
+            $('#prResult',o).style.display = 'block';
+            if($('#prResult',o).scrollIntoView) $('#prResult',o).scrollIntoView({behavior:'smooth', block:'nearest'});
+          } catch(e2) {
+            console.error('Flyer result display failed:', e2);
+            toast('Image generated, but showing it failed \u2014 try again');
+          }
         }, 'image/png');
         DB.log('Generated payment reminder flyer \u2014 '+famKey);
       } catch(e) {
         btn.textContent = origLabel; btn.disabled = false;
+        console.error('Flyer PNG generation failed:', e);
         toast('Could not generate the image \u2014 try again');
       }
     };
