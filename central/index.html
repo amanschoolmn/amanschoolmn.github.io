@@ -3894,7 +3894,7 @@ const ResourceForm = {
       <div class="field"><label>AI summary</label><textarea id="f-ais">${esc(d.aiSummary)}</textarea></div>
       <div class="field"><label>Notes</label><textarea id="f-notes">${esc(d.notes)}</textarea></div>
       ${isNew?'':`<div class="field"><label>Revision note for this edit</label><input id="f-revnote" placeholder="What changed?"></div>`}
-      <div class="mfoot"><button class="btn btn-o" data-x="cancel">Cancel</button><button class="btn btn-p" data-x="save">${isNew?'Add to library':'Save changes'}</button></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Add to library':'Save changes'}</button></div>
     </div>`, true);
     $$('button[data-rid]',o).forEach(b=>b.onclick=()=>{ const f=$('#f-rel',o);
       const cur=f.value.split(',').map(s=>s.trim()).filter(Boolean);
@@ -3902,8 +3902,8 @@ const ResourceForm = {
     $$('button[data-preq]',o).forEach(b=>b.onclick=()=>{ const f=$('#f-prereq',o);
       const cur=f.value.split(',').map(s=>s.trim()).filter(Boolean);
       if(!cur.includes(b.dataset.preq)){ cur.push(b.dataset.preq); f.value=cur.join(', '); b.classList.add('on'); } });
-    $('[data-x=cancel]',o).onclick=()=>o.remove();
-    $('[data-x=save]',o).onclick=()=>{
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
       const g=id=>$(id,o).value.trim();
       if(!g('#f-title')){ toast('Title is required'); return; }
       if(!isNew) d.versions.unshift({version:d.version, date:new Date().toISOString(), note:($('#f-revnote',o).value.trim()||'Edited'), snap:this.snap(d)});
