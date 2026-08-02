@@ -2,353 +2,527 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AMAN — Administrative Hub</title>
+<title>AMAN Admin Hub</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Internal document index for Al-Madrasatu An-Nuriyyah — letters, flyers, checklists, and passes.">
+<link rel="icon" href="assets/aman-crest.png">
+<meta property="og:title" content="AMAN Admin Hub">
+<meta property="og:description" content="Internal document index for Al-Madrasatu An-Nuriyyah.">
+<meta property="og:image" content="assets/aman-crest.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#1a4a35;
     --green-dark:#123526;
+    --green-deep:#0b1f16;
     --gold:#b8872a;
     --gold-light:#d9ac54;
     --parchment:#f4ead6;
-    --parchment-dim:#ece0c8;
     --ink:#2a2a2a;
+    --muted:#6b6455;
   }
   *{box-sizing:border-box;}
+  html{-webkit-font-smoothing:antialiased;}
   body{
     margin:0;
-    background:var(--parchment);
+    background:radial-gradient(ellipse at 50% -10%, #16362590 0%, var(--green-deep) 60%);
+    background-color:var(--green-deep);
     color:var(--ink);
     font-family:'Crimson Pro', serif;
+    padding:0 0 60px;
+  }
+  a{ color:inherit; }
+  :focus-visible{ outline:2.5px solid var(--gold-light); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+  }
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap; border:0; padding:0; margin:-1px;
   }
 
-  /* ---------- Header ---------- */
-  header{
-    background:var(--green);
-    color:var(--parchment);
-    padding:56px 24px 44px;
-    text-align:center;
+  svg[hidden]{ position:absolute; width:0; height:0; overflow:hidden; }
+
+  /* ---------- The manuscript page ---------- */
+  .manuscript{
+    max-width:760px;
+    margin:52px auto 0;
+    background:var(--parchment);
+    border:3px solid var(--gold);
     position:relative;
-    overflow:hidden;
+    box-shadow:0 40px 90px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.35);
+    animation:pageIn .7s cubic-bezier(.2,.7,.2,1) both;
   }
-  header::before{
+  .manuscript::before{
     content:"";
-    position:absolute; inset:0;
-    background:
-      radial-gradient(ellipse at 20% 0%, rgba(217,172,84,.10), transparent 55%),
-      radial-gradient(ellipse at 80% 100%, rgba(217,172,84,.08), transparent 55%);
+    position:absolute; inset:6px;
+    border:1px solid var(--gold-light);
+    opacity:.65;
     pointer-events:none;
+  }
+  @keyframes pageIn{
+    from{ opacity:0; transform:translateY(18px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- Title plate ---------- */
+  .plate{
+    text-align:center;
+    padding:80px 40px 28px;
+    position:relative;
+  }
+  .plate .crest{
+    position:absolute;
+    top:-66px; left:50%;
+    transform:translateX(-50%);
+    width:148px; height:auto;
+    filter:drop-shadow(0 14px 22px rgba(0,0,0,.4));
+    z-index:5;
   }
   .eyebrow{
     font-family:'DM Mono', monospace;
-    font-size:11.5px;
+    font-size:10.5px;
     letter-spacing:.28em;
     text-transform:uppercase;
-    color:var(--gold-light);
-    margin-bottom:18px;
-    position:relative;
+    color:var(--gold);
+    font-weight:500;
   }
-  .mark{ width:44px; height:44px; margin:0 auto 18px; color:var(--gold-light); position:relative; }
-  h1{
+  .plate h1{
     font-family:'Playfair Display', serif;
     font-weight:800;
-    font-size:clamp(30px, 5vw, 46px);
-    letter-spacing:.01em;
-    margin:0 0 10px;
-    position:relative;
+    font-size:clamp(28px,5vw,38px);
+    color:var(--green);
+    margin:12px 0 12px;
+    letter-spacing:.005em;
   }
-  .sub{
+  .plate .sub{
+    font-style:italic;
+    font-size:15.5px;
+    color:var(--muted);
+    max-width:440px;
+    margin:0 auto;
+    line-height:1.55;
+  }
+  .plate .ornament{ width:104px; height:12px; color:var(--gold); opacity:.8; margin:22px auto 0; display:block; }
+
+  /* ---------- Search ---------- */
+  .search-wrap{
+    padding:0 34px 20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .search-field{
+    flex:1;
+    position:relative;
+    border-bottom:1.5px dashed var(--gold);
+  }
+  .search-field svg{
+    position:absolute; left:0; top:50%; transform:translateY(-50%);
+    width:14px; height:14px; color:var(--gold); opacity:.8; pointer-events:none;
+  }
+  .search-input{
+    width:100%;
+    border:none;
+    background:transparent;
     font-family:'Crimson Pro', serif;
     font-style:italic;
-    font-size:17px;
-    opacity:.82;
-    max-width:520px;
-    margin:0 auto;
-    position:relative;
-    line-height:1.5;
+    font-size:15px;
+    color:var(--ink);
+    padding:6px 4px 8px 22px;
+    outline:none;
   }
-  .updated{
-    margin-top:22px;
-    font-family:'DM Mono', monospace;
-    font-size:10.5px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    opacity:.55;
-    position:relative;
-  }
-
-  /* ---------- Ornament divider ---------- */
-  .ornament{ width:120px; height:14px; display:block; margin:0 auto; color:var(--gold-light); opacity:.8; }
-  .section .ornament{ color:var(--gold); opacity:.55; margin:0 0 10px; }
-
-  /* ---------- Main ---------- */
-  main{ max-width:980px; margin:0 auto; padding:52px 24px 80px; }
-
-  .section{ margin-bottom:52px; }
-  .section-head{ margin-bottom:22px; }
-  .section-label{
-    font-family:'DM Mono', monospace;
-    font-size:11px;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    color:var(--gold);
-    font-weight:500;
-  }
-  .section-title{
-    font-family:'Playfair Display', serif;
-    font-weight:700;
-    font-size:23px;
-    color:var(--green);
-    margin:6px 0 0;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
-    gap:18px;
-  }
-
-  .card{
-    background:#fffdf8;
-    border:1px solid #e2d5b4;
-    border-radius:6px;
-    padding:22px 22px 20px;
-    display:flex;
-    flex-direction:column;
-    text-decoration:none;
-    color:inherit;
-    position:relative;
-    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  }
-  .card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 10px 26px rgba(26,74,53,.14);
-    border-color:var(--gold);
-  }
-  .card::before{
-    content:"";
-    position:absolute; top:0; left:22px; right:22px; height:3px;
-    background:linear-gradient(90deg, var(--gold), var(--gold-light));
-    border-radius:0 0 3px 3px;
-    opacity:0;
-    transition:opacity .18s ease;
-  }
-  .card:hover::before{ opacity:1; }
-
-  .card-format{
+  .search-input::placeholder{ color:var(--muted); opacity:.75; }
+  .search-input::-webkit-search-cancel-button{ filter:sepia(1) saturate(3) hue-rotate(0deg); cursor:pointer; }
+  .search-count{
     font-family:'DM Mono', monospace;
     font-size:10px;
-    letter-spacing:.14em;
+    letter-spacing:.08em;
     text-transform:uppercase;
-    color:var(--gold);
-    margin-bottom:10px;
+    color:var(--muted);
+    white-space:nowrap;
   }
-  .card-title{
+  .updated{
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    opacity:.7;
+    text-align:center;
+    padding-bottom:8px;
+  }
+
+  /* ---------- Unwan section header ---------- */
+  .unwan-wrap{ padding:0 34px; margin-top:34px; }
+  .unwan{
+    position:relative;
+    background:
+      repeating-linear-gradient(45deg, rgba(217,172,84,.14) 0 2px, transparent 2px 11px),
+      var(--green-dark);
+    border-top:1.5px solid var(--gold);
+    border-bottom:1.5px solid var(--gold);
+    padding:13px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .unwan .finial{
+    position:absolute;
+    top:-21px; left:50%;
+    transform:translateX(-50%);
+    width:34px; height:auto;
+  }
+  .unwan .label{
+    font-family:'DM Mono', monospace;
+    font-size:12px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--parchment);
+    font-weight:500;
+  }
+  .unwan .count{
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--gold-light);
+    opacity:.85;
+    white-space:nowrap;
+  }
+
+  /* ---------- Document index rows ---------- */
+  .doc-list{
+    list-style:none;
+    margin:0;
+    padding:0 34px;
+  }
+  .doc-row{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:17px 4px;
+    border-bottom:1px solid rgba(184,135,42,.28);
+    text-decoration:none;
+    color:inherit;
+    overflow:hidden;
+  }
+  .doc-list > li:last-child .doc-row{ border-bottom:none; }
+  .doc-row::after{
+    content:"";
+    position:absolute; right:0; top:0; bottom:0;
+    width:4px;
+    background:var(--gold);
+    transform:scaleY(0);
+    transform-origin:center;
+    transition:transform .2s ease;
+  }
+  a.doc-row:hover, a.doc-row:focus-visible{ background:rgba(184,135,42,.06); }
+  a.doc-row:hover::after, a.doc-row:focus-visible::after{ transform:scaleY(1); }
+
+  .doc-num{
+    flex:0 0 auto;
+    width:36px; height:36px;
+    border-radius:50%;
+    border:1.5px solid var(--gold);
+    background:radial-gradient(circle, rgba(184,135,42,.10), transparent 70%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Amiri', serif;
+    font-size:15px;
+    color:var(--gold);
+  }
+  .doc-body{ flex:1; min-width:0; }
+  .doc-title{
     font-family:'Playfair Display', serif;
     font-weight:700;
-    font-size:18px;
+    font-size:16.5px;
     color:var(--green);
     line-height:1.3;
-    margin-bottom:8px;
   }
-  .card-desc{
-    font-size:14.5px;
-    line-height:1.55;
-    color:#4a4a42;
-    flex:1;
+  .doc-title mark{
+    background:rgba(184,135,42,.28);
+    color:inherit;
+    border-radius:2px;
+    padding:0 1px;
   }
-  .card-cta{
-    margin-top:16px;
+  .doc-desc{
+    font-size:13.5px;
+    font-style:italic;
+    color:var(--muted);
+    line-height:1.5;
+    margin-top:3px;
+  }
+  .doc-meta{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .doc-format{
     font-family:'DM Mono', monospace;
-    font-size:11.5px;
-    letter-spacing:.06em;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--gold);
+    text-align:right;
+    max-width:120px;
+    line-height:1.5;
+    display:none;
+  }
+  .doc-arrow{ width:13px; height:13px; color:var(--green); flex:0 0 auto; transition:transform .2s ease; }
+  a.doc-row:hover .doc-arrow{ transform:translateX(3px); }
+
+  @media (min-width:600px){
+    .doc-format{ display:block; }
+  }
+
+  .doc-row.pending{ border-bottom-style:dashed; cursor:default; }
+  .doc-row.pending .doc-num{ border-style:dashed; color:#a8976b; }
+  .doc-row.pending .doc-title{ color:#8a7c56; }
+  .doc-row.pending .doc-desc{ color:#a29676; }
+  .doc-row.pending .doc-format{ color:#a8976b; }
+
+  /* ---------- Empty state ---------- */
+  .empty-state{
+    padding:40px 34px;
+    text-align:center;
+    font-style:italic;
+    color:var(--muted);
+    font-size:14.5px;
+    display:none;
+  }
+  .empty-state button{
+    font-family:'DM Mono', monospace;
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    background:none;
+    border:1px solid var(--gold);
     color:var(--green);
-    font-weight:500;
-    display:flex; align-items:center; gap:6px;
+    border-radius:3px;
+    padding:6px 14px;
+    margin-top:12px;
+    cursor:pointer;
   }
-  .card-cta svg{ width:12px; height:12px; transition:transform .18s ease; }
-  .card:hover .card-cta svg{ transform:translateX(3px); }
+  .empty-state button:hover{ background:rgba(184,135,42,.1); }
 
-  /* placeholder / pending card */
-  .card.pending{
-    background:transparent;
-    border:1.5px dashed #c9b98c;
-    cursor:default;
-  }
-  .card.pending:hover{ transform:none; box-shadow:none; border-color:#c9b98c; }
-  .card.pending .card-title{ color:#8a7c56; }
-  .card.pending .card-desc{ color:#8a7c56; font-style:italic; }
-  .card.pending .card-format{ color:#a89568; }
-
-  /* ---------- Footer ---------- */
-  footer{
-    background:var(--green-dark);
-    color:var(--parchment);
-    padding:30px 24px;
+  /* ---------- Colophon ---------- */
+  .colophon{
+    margin:40px 34px 0;
+    padding:22px 0 44px;
+    border-top:1px solid rgba(184,135,42,.3);
     text-align:center;
   }
-  footer .school-name{
+  .colophon .seal{ width:30px; height:auto; margin:0 auto 10px; opacity:.85; }
+  .colophon .school{
     font-family:'Playfair Display', serif;
     font-weight:700;
-    font-size:15px;
-    color:var(--gold-light);
+    font-size:14px;
+    color:var(--green);
   }
-  footer .note{
+  .colophon .note{
     font-family:'DM Mono', monospace;
-    font-size:10.5px;
-    letter-spacing:.05em;
-    opacity:.6;
-    margin-top:10px;
-    line-height:1.7;
-    max-width:520px;
-    margin-left:auto; margin-right:auto;
+    font-size:10px;
+    letter-spacing:.03em;
+    color:var(--muted);
+    opacity:.85;
+    line-height:1.8;
+    max-width:460px;
+    margin:10px auto 0;
   }
 
   @media (max-width:480px){
-    header{ padding:44px 18px 34px; }
-    main{ padding:38px 16px 60px; }
+    .manuscript{ margin:28px 12px 0; }
+    .plate{ padding:62px 22px 24px; }
+    .plate .crest{ width:108px; top:-48px; }
+    .search-wrap, .unwan-wrap, .doc-list, .colophon, .empty-state{ padding-left:18px; padding-right:18px; }
+    .doc-row{ gap:12px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="eyebrow">Staff &amp; Volunteer Use Only</div>
-  <svg class="mark" viewBox="0 0 100 100" fill="none">
-    <path d="M18 88 L18 46 C18 16 34 6 50 6 C66 6 82 16 82 46 L82 88" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-    <path d="M32 62 C40 56 46 58 50 64 C54 58 60 56 68 62" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-    <line x1="50" y1="62" x2="50" y2="82" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
-  </svg>
-  <h1>Administrative Hub</h1>
-  <p class="sub">Al‑Madrasatu An‑Nūriyyah — every enrollment letter, flyer, checklist, and pass in one place.</p>
-  <svg class="ornament" viewBox="0 0 200 20" fill="none" style="margin-top:22px;">
-    <line x1="0" y1="10" x2="80" y2="10" stroke="currentColor" stroke-width="1.4"/>
-    <line x1="120" y1="10" x2="200" y2="10" stroke="currentColor" stroke-width="1.4"/>
-    <path d="M92 10 L100 3 L108 10 L100 17 Z" fill="currentColor"/>
-  </svg>
-  <div class="updated">Last updated August 2026</div>
-</header>
+<svg hidden>
+  <symbol id="finialShape" viewBox="-2 -2 44 38">
+    <line x1="20" y1="10" x2="20" y2="2" stroke="#b8872a" stroke-width="1.4"/>
+    <circle cx="20" cy="1.5" r="2.2" fill="#d9ac54" stroke="#123526" stroke-width=".6"/>
+    <path d="M4 34 C4 18 10 10 20 10 C30 10 36 18 36 34 Z" fill="#d9ac54" stroke="#123526" stroke-width=".8"/>
+    <path d="M9 32 C9 20 14 13 20 13 C26 13 31 20 31 32" fill="none" stroke="#123526" stroke-width=".6" opacity=".4"/>
+  </symbol>
+</svg>
 
-<main>
+<div class="manuscript">
 
-  <section class="section">
-    <div class="section-head">
-      <div class="section-label">Admissions &amp; Enrollment</div>
-      <div class="section-title">Bringing a family in</div>
+  <header class="plate">
+    <img class="crest" src="assets/aman-crest.png" alt="Al-Madrasatu An-Nūriyyah crest" fetchpriority="high">
+    <div class="eyebrow">Al-Madrasatu An-Nūriyyah</div>
+    <h1>AMAN Admin Hub</h1>
+    <p class="sub">Every letter, flyer, checklist, and pass the school runs on — indexed, in one bound page.</p>
+    <svg class="ornament" viewBox="0 0 200 20" fill="none">
+      <line x1="0" y1="10" x2="80" y2="10" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="120" y1="10" x2="200" y2="10" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M92 10 L100 3 L108 10 L100 17 Z" fill="currentColor"/>
+    </svg>
+  </header>
+
+  <div class="updated">Last updated · August 2026</div>
+
+  <div class="search-wrap">
+    <div class="search-field">
+      <svg viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.4"/><line x1="13" y1="13" x2="18" y2="18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <label for="hubSearch" class="visually-hidden">Search the document index</label>
+      <input type="search" id="hubSearch" class="search-input" placeholder="Search the index — “restroom,” “welcome,” “flyer”…" autocomplete="off">
     </div>
-    <div class="grid">
+    <div class="search-count" id="searchCount" aria-live="polite">10 documents</div>
+  </div>
 
-      <a class="card" href="acceptance-letter.html">
-        <div class="card-format">Interactive generator · Print-ready</div>
-        <div class="card-title">Acceptance Letter &amp; Welcome Packet</div>
-        <div class="card-desc">Offer letter and welcome packet for accepted families — message generator, automatic fee calculation, print export.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+  <main id="hubMain"></main>
 
-      <a class="card" href="parent-interview.html">
-        <div class="card-format">Presentation</div>
-        <div class="card-title">Parent Interview</div>
-        <div class="card-desc">Walkthrough for the mandatory in-person parent interview — step 4 of the admissions process.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+  <div class="empty-state" id="emptyState">
+    No documents match that search.
+    <br>
+    <button type="button" id="clearSearch">Clear search</button>
+  </div>
 
-      <a class="card" href="welcome-brochure.html">
-        <div class="card-format">Personalized landing page</div>
-        <div class="card-title">Welcome Brochure</div>
-        <div class="card-desc">Sent to a newly accepted family — "Dear ___ Family" personalization, the AMAN name explained, what their child will love. Links to the Welcome Packet.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+  <div class="colophon">
+    <img class="seal" src="assets/aman-crest.png" alt="" loading="lazy">
+    <div class="school">Al‑Madrasatu An‑Nūriyyah</div>
+    <div class="note">Unlisted and marked no-index — reachable only by direct link, not by search or the public site nav. That's obscurity, not a real login gate; say the word if you want an actual password screen in front of it.</div>
+  </div>
 
-      <a class="card" href="welcome-packet.html">
-        <div class="card-format">Reference page</div>
-        <div class="card-title">Welcome Packet</div>
-        <div class="card-desc">Schedule, supplies, tuition, and policies for newly enrolled families — the companion page linked from the Welcome Brochure.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+</div>
 
-    </div>
-  </section>
+<script>
+(function(){
+  "use strict";
 
-  <section class="section">
-    <div class="section-head">
-      <div class="section-label">Family Communication</div>
-      <div class="section-title">Letters home</div>
-    </div>
-    <div class="grid">
+  var CATEGORIES = [
+    {
+      label: "Admissions & Enrollment",
+      docs: [
+        { title: "Acceptance Letter & Welcome Packet", desc: "Offer letter for accepted families — message generator, automatic fee calculation, print export.", href: "acceptance-letter.html", format: "Generator\nPrint-ready" },
+        { title: "Parent Interview", desc: "Walkthrough for the mandatory in-person interview — step 4 of admissions.", href: "parent-interview.html", format: "Presentation" },
+        { title: "Welcome Brochure", desc: "Sent to a newly accepted family — personalized, links onward to the Welcome Packet.", href: "welcome-brochure.html", format: "Landing page" },
+        { title: "Welcome Packet", desc: "Schedule, supplies, tuition, and policies for newly enrolled families.", href: "welcome-packet.html", format: "Reference page" }
+      ]
+    },
+    {
+      label: "Family Communication",
+      docs: [
+        { title: "Field Trip Flyer", desc: "Builds a permission-slip flyer for a specific trip — date, location, cost, what to bring.", href: "field-trip-flyer.html", format: "Generator\nPrint-ready" },
+        { title: "Absence Notice", desc: "Escalating-severity absence notice. Send the file and it's wired in.", pending: true }
+      ]
+    },
+    {
+      label: "Classroom Operations",
+      docs: [
+        { title: "Classroom Supplies Checklist", desc: "Required supplies by level, for the start of term.", href: "classroom-supplies-checklist.html", format: "Checklist\nPrint-ready" },
+        { title: "Restroom Pass — Neck Badge", desc: "Double-sided lanyard badge, entering/leaving du'ā' and level markers. 3×4.5in.", href: "restroom-pass-badge.html", format: "Print studio" },
+        { title: "Restroom Pass — Card", desc: "Single-card version, same du'ā' reminders, no lanyard assembly. 4×6in.", href: "restroom-pass-card.html", format: "Print studio" }
+      ]
+    },
+    {
+      label: "Recognition",
+      docs: [
+        { title: "Student of the Month", desc: "Certificate and poster generator — all students, boys/girls toggle, shareable card.", href: "student-of-the-month.html", format: "Generator\nPrint-ready" }
+      ]
+    }
+  ];
 
-      <a class="card" href="field-trip-flyer.html">
-        <div class="card-format">Interactive generator · Print-ready</div>
-        <div class="card-title">Field Trip Flyer</div>
-        <div class="card-desc">Build a permission-slip flyer for a specific trip — date, location, cost, and what to bring.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+  var ARABIC_INDIC = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+  function toArabicIndic(n){
+    return String(n).split("").map(function(d){ return ARABIC_INDIC[+d]; }).join("");
+  }
 
-      <div class="card pending">
-        <div class="card-format">Pending upload</div>
-        <div class="card-title">Absence Notice</div>
-        <div class="card-desc">Escalating-severity absence notice. Send the file and it'll be wired into the hub.</div>
-      </div>
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
 
-    </div>
-  </section>
+  function highlight(text, query){
+    var safe = escapeHtml(text);
+    if(!query) return safe;
+    var i = safe.toLowerCase().indexOf(query.toLowerCase());
+    if(i === -1) return safe;
+    return safe.slice(0,i) + "<mark>" + safe.slice(i, i+query.length) + "</mark>" + safe.slice(i+query.length);
+  }
 
-  <section class="section">
-    <div class="section-head">
-      <div class="section-label">Classroom Operations</div>
-      <div class="section-title">Day to day</div>
-    </div>
-    <div class="grid">
+  var totalDocs = CATEGORIES.reduce(function(sum, c){ return sum + c.docs.length; }, 0);
+  var main = document.getElementById("hubMain");
+  var countEl = document.getElementById("searchCount");
+  var emptyState = document.getElementById("emptyState");
+  var searchInput = document.getElementById("hubSearch");
 
-      <a class="card" href="classroom-supplies-checklist.html">
-        <div class="card-format">Checklist · Print-ready</div>
-        <div class="card-title">Classroom Supplies Checklist</div>
-        <div class="card-desc">Required supplies by level for the start of term.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+  function render(query){
+    query = (query || "").trim();
+    var counter = 0;
+    var visibleTotal = 0;
+    var html = "";
 
-      <a class="card" href="restroom-pass-badge.html">
-        <div class="card-format">Print studio · Neck badge, 3×4.5in</div>
-        <div class="card-title">Restroom Pass — Neck Badge</div>
-        <div class="card-desc">Double-sided lanyard badge with the entering / leaving du'ā' and level markers.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+    CATEGORIES.forEach(function(cat){
+      var matches = cat.docs.filter(function(d){
+        if(!query) return true;
+        var hay = (d.title + " " + d.desc).toLowerCase();
+        return hay.indexOf(query.toLowerCase()) !== -1;
+      });
+      if(matches.length === 0) return;
 
-      <a class="card" href="restroom-pass-card.html">
-        <div class="card-format">Print studio · Card, 4×6in</div>
-        <div class="card-title">Restroom Pass — Card</div>
-        <div class="card-desc">Single-card version of the restroom pass, same du'ā' reminders, no lanyard assembly needed.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+      visibleTotal += matches.length;
 
-    </div>
-  </section>
+      html += '<section class="unwan-wrap" aria-labelledby="cat-' + counter + '">' +
+        '<div class="unwan"><svg class="finial"><use href="#finialShape"/></svg>' +
+        '<span class="label" id="cat-' + (counter) + '">' + escapeHtml(cat.label) + '</span>' +
+        '<span class="count">' + matches.length + (matches.length === 1 ? ' document' : ' documents') + '</span>' +
+        '</div></section>';
 
-  <section class="section">
-    <div class="section-head">
-      <div class="section-label">Recognition</div>
-      <div class="section-title">Celebrating students</div>
-    </div>
-    <div class="grid">
+      html += '<ol class="doc-list">';
+      matches.forEach(function(d){
+        counter++;
+        var num = '<span class="doc-num" aria-hidden="true">' + toArabicIndic(counter) + '</span>';
+        var titleHtml = highlight(d.title, query);
+        var descHtml = highlight(d.desc, query);
+        var formatHtml = d.format ? d.format.split("\n").map(escapeHtml).join("<br>") : "";
 
-      <a class="card" href="student-of-the-month.html">
-        <div class="card-format">Interactive generator · Print-ready</div>
-        <div class="card-title">Student of the Month</div>
-        <div class="card-desc">Certificate and poster generator — all students, boys/girls toggle, shareable card panel.</div>
-        <div class="card-cta">Open document <svg viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      </a>
+        if(d.pending){
+          html += '<li><div class="doc-row pending">' + num +
+            '<div class="doc-body"><div class="doc-title">' + titleHtml + '</div>' +
+            '<div class="doc-desc">' + descHtml + '</div></div>' +
+            '<div class="doc-meta"><div class="doc-format">Pending upload</div></div>' +
+            '</div></li>';
+        } else {
+          html += '<li><a class="doc-row" href="' + d.href + '">' + num +
+            '<div class="doc-body"><div class="doc-title">' + titleHtml + '</div>' +
+            '<div class="doc-desc">' + descHtml + '</div></div>' +
+            '<div class="doc-meta"><div class="doc-format">' + formatHtml + '</div>' +
+            '<svg class="doc-arrow" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '</div></a></li>';
+        }
+      });
+      html += '</ol>';
+    });
 
-    </div>
-  </section>
+    main.innerHTML = html;
+    emptyState.style.display = visibleTotal === 0 ? "block" : "none";
+    countEl.textContent = query
+      ? (visibleTotal + (visibleTotal === 1 ? " match" : " matches"))
+      : (totalDocs + " documents");
+  }
 
-</main>
+  searchInput.addEventListener("input", function(){ render(searchInput.value); });
+  document.getElementById("clearSearch").addEventListener("click", function(){
+    searchInput.value = "";
+    render("");
+    searchInput.focus();
+  });
 
-<footer>
-  <div class="school-name">Al‑Madrasatu An‑Nūriyyah</div>
-  <div class="note">This page is marked no-index and isn't linked from the public site — it's reachable only by direct link. That's a light privacy measure, not a login gate. Say the word if you'd rather have an actual password screen in front of it.</div>
-</footer>
+  render("");
+})();
+</script>
 
 </body>
 </html>
