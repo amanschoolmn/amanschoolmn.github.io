@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+
+<meta charset="UTF-8">
+<title>AMAN Restroom Pass</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#1a4a35;
+    --green-dark:#123526;
+    --gold:#b8872a;
+    --gold-light:#d9ac54;
+    --parchment:#f4ead6;
+    --card-w:4in;
+    --card-h:6in;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:#dcd5c8;
+    font-family:'Crimson Pro', serif;
+    color:#2a2a2a;
+  }
+
+  /* ---------- Toolbar (screen only) ---------- */
+  .toolbar{
+    position:sticky; top:0; z-index:10;
+    background:var(--green-dark);
+    color:var(--parchment);
+    padding:14px 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px 22px;
+    align-items:center;
+    font-family:'DM Mono', monospace;
+    font-size:12.5px;
+    box-shadow:0 2px 10px rgba(0,0,0,.25);
+  }
+  .toolbar h1{
+    font-family:'Playfair Display', serif;
+    font-size:16px;
+    margin:0 12px 0 0;
+    color:var(--gold-light);
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .toolbar label{display:flex; align-items:center; gap:6px;}
+  .toolbar select, .toolbar input[type=number]{
+    font-family:'DM Mono', monospace;
+    background:#0f2a1e;
+    color:var(--parchment);
+    border:1px solid var(--gold);
+    border-radius:4px;
+    padding:5px 8px;
+    font-size:12.5px;
+  }
+  .toolbar input[type=number]{width:60px;}
+  .toolbar button{
+    font-family:'DM Mono', monospace;
+    background:var(--gold);
+    color:#1c1200;
+    border:none;
+    border-radius:4px;
+    padding:7px 16px;
+    font-weight:600;
+    cursor:pointer;
+    letter-spacing:.03em;
+  }
+  .toolbar button:hover{background:var(--gold-light);}
+  .toolbar .check{gap:6px;}
+  .note{
+    width:100%;
+    font-size:11px;
+    opacity:.75;
+    line-height:1.5;
+  }
+
+  /* ---------- Layout ---------- */
+  .sheet{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.35in;
+    justify-content:center;
+    padding:.5in .4in;
+  }
+
+  .card-wrap{
+    padding:0;
+    break-inside:avoid;
+  }
+  body.show-crop .card-wrap{
+    padding:.16in;
+    border:1px dashed #888;
+    position:relative;
+  }
+  body.show-crop .card-wrap::before,
+  body.show-crop .card-wrap::after{
+    content:"";
+    position:absolute;
+    width:10px; height:10px;
+    border-top:1px solid #888;
+    border-left:1px solid #888;
+  }
+  body.show-crop .card-wrap::before{top:-1px; left:-1px;}
+  body.show-crop .card-wrap::after{bottom:-1px; right:-1px; transform:rotate(180deg);}
+
+  /* ---------- The Card ---------- */
+  .card{
+    width:var(--card-w);
+    height:var(--card-h);
+    border-radius:calc(min(var(--card-w),var(--card-h)) * 0.045);
+    position:relative;
+    overflow:hidden;
+    font-size:calc(min(var(--card-w),var(--card-h)) * 4.6%);
+    box-shadow:0 6px 22px rgba(0,0,0,.28);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+
+  .card .frame{
+    position:absolute;
+    inset:0.09em;
+    border:2px solid var(--gold);
+    border-radius:calc(min(var(--card-w),var(--card-h)) * 0.038);
+    pointer-events:none;
+  }
+  .card .frame::after{
+    content:"";
+    position:absolute;
+    inset:5px;
+    border:1px solid var(--gold);
+    opacity:.55;
+    border-radius:calc(min(var(--card-w),var(--card-h)) * 0.032);
+  }
+
+  .card.men{ background:var(--green); color:var(--parchment); --bg:#1a4a35; }
+  .card.women{ background:var(--parchment); color:var(--green); --bg:#f4ead6; }
+  .card.women .frame{border-color:var(--green);}
+  .card.women .frame::after{border-color:var(--green); opacity:.45;}
+
+  .content{
+    position:relative;
+    z-index:1;
+    width:100%;
+    height:100%;
+    padding:0.55em 0.6em 0.45em;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .mark{
+    width:2.1em; height:2.1em;
+    margin-top:.15em;
+  }
+  .card.men .mark{color:var(--gold-light);}
+  .card.women .mark{color:var(--gold);}
+
+  .ar-label{
+    font-family:'Amiri', serif;
+    font-size:1.7em;
+    line-height:1.1;
+    margin:.35em 0 .15em;
+    padding:.08em .5em;
+    border-radius:.2em;
+  }
+  .card.men .ar-label{background:rgba(0,0,0,.18); color:var(--gold-light);}
+  .card.women .ar-label{background:rgba(26,74,53,.08); color:var(--green);}
+
+  .figure{
+    width:3.1em; height:3.7em;
+    margin:.1em 0 .05em;
+  }
+  .card.men .figure{color:var(--gold-light);}
+  .card.women .figure{color:var(--gold);}
+
+  .title{
+    font-family:'Playfair Display', serif;
+    font-weight:800;
+    font-size:1.5em;
+    letter-spacing:.03em;
+    line-height:1.15;
+    margin-top:.1em;
+  }
+  .subtitle{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size:1.5em;
+    letter-spacing:.06em;
+    margin-bottom:.1em;
+  }
+
+  .ornament{
+    width:60%;
+    height:.7em;
+    margin:.25em 0 .15em;
+    opacity:.85;
+  }
+  .card.men .ornament{color:var(--gold-light);}
+  .card.women .ornament{color:var(--gold);}
+
+  .reminder-tag{
+    font-family:'DM Mono', monospace;
+    font-size:.62em;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    opacity:.85;
+    margin-bottom:.5em;
+  }
+
+  .duas{
+    width:100%;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:.5em;
+    padding:0 .1em;
+  }
+  .dua-box{
+    border-radius:.35em;
+    padding:.4em .55em .45em;
+    text-align:center;
+  }
+  .card.men .dua-box{background:rgba(244,234,214,.09); border:1px solid rgba(216,172,84,.4);}
+  .card.women .dua-box{background:rgba(26,74,53,.05); border:1px solid rgba(184,135,42,.5);}
+
+  .dua-head{
+    font-family:'DM Mono', monospace;
+    font-size:.55em;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    margin-bottom:.35em;
+    opacity:.8;
+  }
+  .card.men .dua-head{color:var(--gold-light);}
+  .card.women .dua-head{color:var(--green);}
+
+  .dua-ar{
+    font-family:'Amiri', serif;
+    font-size:1.28em;
+    line-height:1.6;
+    direction:rtl;
+  }
+  .dua-translit{
+    font-style:italic;
+    font-size:.72em;
+    opacity:.9;
+    margin-top:.28em;
+  }
+  .dua-en{
+    font-size:.66em;
+    opacity:.75;
+    margin-top:.12em;
+  }
+
+  .footer{
+    margin-top:.5em;
+    padding-top:.4em;
+    width:100%;
+    border-top:1px solid;
+  }
+  .card.men .footer{border-color:rgba(216,172,84,.4);}
+  .card.women .footer{border-color:rgba(184,135,42,.5);}
+
+  .school-name{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size:.72em;
+    letter-spacing:.03em;
+  }
+  .school-sub{
+    font-family:'DM Mono', monospace;
+    font-size:.46em;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.7;
+    margin-top:.18em;
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    .toolbar{display:none;}
+    body{background:#fff;}
+    .sheet{padding:0; gap:.3in;}
+    .card{box-shadow:none;}
+    .card-wrap{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<style>@media print{#amanHubNav{display:none !important;}}</style>
+<div id="amanHubNav" style="position:sticky;top:0;z-index:99999;background:#123526;color:#f4ead6;padding:8px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12.5px;letter-spacing:.02em;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25);">
+  <a href="index.html" style="color:#d9ac54;text-decoration:none;font-weight:600;">&larr; AMAN Admin Hub</a>
+  <span style="opacity:.5;">/</span>
+  <span style="opacity:.85;">Restroom Pass — Card</span>
+</div>
+
+
+<div class="toolbar no-print">
+  <h1>AMAN Restroom Pass — Print Studio</h1>
+
+  <label>Size
+    <select id="preset">
+      <option value="2.5,4">Small badge — 2.5×4in</option>
+      <option value="4,6" selected>Standard — 4×6in</option>
+      <option value="5,7">Large — 5×7in</option>
+      <option value="custom">Custom…</option>
+    </select>
+  </label>
+
+  <label>W <input type="number" id="wIn" value="4" step="0.25" min="1.5" max="8.5"> in</label>
+  <label>H <input type="number" id="hIn" value="6" step="0.25" min="2" max="14"> in</label>
+
+  <label>Copies of each <input type="number" id="copies" value="1" step="1" min="1" max="12"></label>
+
+  <label class="check"><input type="checkbox" id="cropToggle"> cut guides</label>
+
+  <button onclick="window.print()">Print</button>
+
+  <div class="note">Tip: in the print dialog, set Margins to <b>None</b>, Scale to <b>100%</b>, and turn off headers/footers for a clean, edge‑accurate result. Laminate or use cardstock for durability.</div>
+</div>
+
+<div class="sheet" id="sheet"></div>
+
+<template id="cardTemplate">
+  <div class="card-wrap">
+    <div class="card VARIANT">
+      <div class="frame"></div>
+      <div class="content">
+
+        <svg class="mark" viewBox="0 0 100 100" fill="none">
+          <path d="M18 88 L18 46 C18 16 34 6 50 6 C66 6 82 16 82 46 L82 88" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M32 62 C40 56 46 58 50 64 C54 58 60 56 68 62" stroke="currentColor" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+          <line x1="50" y1="62" x2="50" y2="82" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+          <g stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+            <line x1="50" y1="46" x2="50" y2="34"/>
+            <line x1="42" y1="49" x2="36" y2="40"/>
+            <line x1="58" y1="49" x2="64" y2="40"/>
+          </g>
+        </svg>
+
+        <div class="ar-label" dir="rtl" lang="ar">دَوْرَةُ الْمِيَاهِ</div>
+
+        <svg class="figure figMEN" viewBox="0 0 100 130" fill="none">
+          <path d="M33 22 Q50 4 67 22 L67 30 L33 30 Z" fill="currentColor"/>
+          <circle cx="50" cy="44" r="17" fill="currentColor"/>
+          <path d="M25 120 C25 76 36 60 50 60 C64 60 75 76 75 120 Z" fill="currentColor"/>
+        </svg>
+
+        <svg class="figure figWOMEN" viewBox="0 0 100 130" fill="none">
+          <path d="M50 8 C24 8 13 34 13 58 C13 92 26 118 26 118 L37 118 C37 118 24 92 24 58 C24 35 34 15 50 15 C66 15 76 35 76 58 C76 92 63 118 63 118 L74 118 C74 118 87 92 87 58 C87 34 76 8 50 8 Z" fill="currentColor"/>
+          <ellipse cx="50" cy="47" rx="15.5" ry="18.5" fill="var(--bg)"/>
+          <path d="M31 118 C31 96 39 85 50 85 C61 85 69 96 69 118 Z" fill="currentColor"/>
+        </svg>
+
+        <div class="subtitle">GENDER_LABEL</div>
+        <div class="title">BATHROOM PASS</div>
+
+        <svg class="ornament" viewBox="0 0 200 20" fill="none">
+          <line x1="0" y1="10" x2="80" y2="10" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="120" y1="10" x2="200" y2="10" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M92 10 L100 3 L108 10 L100 17 Z" fill="currentColor"/>
+          <circle cx="100" cy="10" r="2" fill="currentColor" opacity="0"/>
+        </svg>
+
+        <div class="reminder-tag">Du'ā' Reminder</div>
+
+        <div class="duas">
+          <div class="dua-box">
+            <div class="dua-head">Before Entering</div>
+            <div class="dua-ar" lang="ar">بِسْمِ اللَّهِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ</div>
+            <div class="dua-translit">Bismillāh, Allāhumma innī a'ūdhu bika minal-khubthi wal-khabā'ith</div>
+            <div class="dua-en">"In the name of Allah. O Allah, I seek refuge in You from male and female devils."</div>
+          </div>
+          <div class="dua-box">
+            <div class="dua-head">After Leaving</div>
+            <div class="dua-ar" lang="ar">غُفْرَانَكَ</div>
+            <div class="dua-translit">Ghufrānak</div>
+            <div class="dua-en">"I seek Your forgiveness."</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="school-name">Al‑Madrasatu An‑Nūriyyah</div>
+          <div class="school-sub">AMAN &middot; Coon Rapids, MN</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  const root = document.documentElement;
+  const sheet = document.getElementById('sheet');
+  const tpl = document.getElementById('cardTemplate').innerHTML;
+
+  const presetSel = document.getElementById('preset');
+  const wIn = document.getElementById('wIn');
+  const hIn = document.getElementById('hIn');
+  const copiesIn = document.getElementById('copies');
+  const cropToggle = document.getElementById('cropToggle');
+
+  function setSize(w,h){
+    root.style.setProperty('--card-w', w+'in');
+    root.style.setProperty('--card-h', h+'in');
+  }
+
+  function buildCard(variant){
+    let html = tpl.replaceAll('VARIANT', variant);
+    if(variant === 'men'){
+      html = html.replace('GENDER_LABEL', "MEN'S");
+      html = html.replace(/<svg class="figure figMEN"[\s\S]*?<\/svg>\s*<svg class="figure figWOMEN"[\s\S]*?<\/svg>/,
+        html.match(/<svg class="figure figMEN"[\s\S]*?<\/svg>/)[0]);
+    } else {
+      html = html.replace('GENDER_LABEL', "WOMEN'S");
+      html = html.replace(/<svg class="figure figMEN"[\s\S]*?<\/svg>\s*<svg class="figure figWOMEN"[\s\S]*?<\/svg>/,
+        html.match(/<svg class="figure figWOMEN"[\s\S]*?<\/svg>/)[0]);
+    }
+    return html;
+  }
+
+  function render(){
+    const n = Math.max(1, parseInt(copiesIn.value) || 1);
+    let out = '';
+    for(let i=0;i<n;i++){
+      out += buildCard('men');
+      out += buildCard('women');
+    }
+    sheet.innerHTML = out;
+  }
+
+  presetSel.addEventListener('change', () => {
+    if(presetSel.value === 'custom') return;
+    const [w,h] = presetSel.value.split(',').map(Number);
+    wIn.value = w; hIn.value = h;
+    setSize(w,h);
+  });
+
+  function customChange(){
+    presetSel.value = 'custom';
+    setSize(wIn.value, hIn.value);
+  }
+  wIn.addEventListener('input', customChange);
+  hIn.addEventListener('input', customChange);
+  copiesIn.addEventListener('input', render);
+  cropToggle.addEventListener('change', () => {
+    document.body.classList.toggle('show-crop', cropToggle.checked);
+  });
+
+  setSize(4,6);
+  render();
+</script>
+</body>
+</html>

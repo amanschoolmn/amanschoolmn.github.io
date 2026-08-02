@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c2518">
+<title>Welcome to AMAN — Al-Madrasatu An-Nuriyyah</title>
+<meta name="description" content="Welcome to the AMAN family. A note for newly accepted families at Al-Madrasatu An-Nuriyyah.">
+
+<style>
+  :root{
+    --forest:#0c2518;
+    --forest-deep:#081b11;
+    --green:#1c5e45;
+    --gold:#e8b923;
+    --gold-soft:#f2d479;
+    --cream:#f7f4ec;
+    --ink:#1a2b23;
+    --muted:#5c6b63;
+    --border:#e3ded0;
+    --font-display:"Georgia","Iowan Old Style","Times New Roman",serif;
+    --font-body:"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    font-family:var(--font-body);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+
+  /* ---- Top bar (matches site + agreement page convention) ---- */
+  .topbar{
+    background:var(--forest);
+    border-bottom:1px solid rgba(232,185,35,0.25);
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-display);
+    color:var(--gold-soft);
+    font-size:15px;
+    font-weight:700;
+    text-decoration:none;
+    min-width:0;
+    flex-shrink:1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .topbar .brand img{ width:30px; height:30px; object-fit:contain; flex-shrink:0; }
+  .topbar .brand .brand-text{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .topbar .back-link{
+    color:#c9d6cf;
+    font-size:13.5px;
+    text-decoration:none;
+    border-bottom:1px solid rgba(201,214,207,0.4);
+    padding-bottom:1px;
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  .topbar .back-link:hover{ color:var(--gold-soft); border-color:var(--gold-soft); }
+  .topbar .back-link .short-label{ display:none; }
+  @media (max-width:480px){
+    .topbar{ padding:10px 14px; }
+    .topbar .brand{ font-size:13px; gap:7px; }
+    .topbar .brand img{ width:26px; height:26px; }
+    .topbar .back-link{ font-size:12.5px; }
+    .topbar .back-link .full-label{ display:none; }
+    .topbar .back-link .short-label{ display:inline; }
+  }
+
+  /* ============================================================
+     HERO — the emotional opening. Dark, crest-forward, quiet.
+     ============================================================ */
+  .hero{
+    background:radial-gradient(ellipse at 50% -10%, #15361f 0%, var(--forest) 55%, var(--forest-deep) 100%);
+    color:#fff;
+    text-align:center;
+    padding:76px 20px 90px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before, .hero::after{
+    content:"";
+    position:absolute;
+    width:340px;height:340px;
+    border:1px solid rgba(232,185,35,0.14);
+    border-radius:50%;
+  }
+  .hero::before{ top:-140px; left:-120px; }
+  .hero::after{ bottom:-160px; right:-100px; }
+  .hero-crest{
+    width:104px;height:104px;object-fit:contain;
+    margin:0 auto 22px;
+    animation:crestIn 900ms ease-out both;
+  }
+  @keyframes crestIn{
+    from{ opacity:0; transform:translateY(-10px) scale(0.96); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .hero-eyebrow{
+    font-size:12.5px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    margin-bottom:16px;
+  }
+  .hero h1{
+    font-family:var(--font-display);
+    font-size:clamp(32px,5.4vw,54px);
+    font-weight:700;
+    margin:0 0 14px;
+    line-height:1.12;
+  }
+  .hero h1 em{
+    color:var(--gold-soft);
+    font-style:italic;
+  }
+  .hero-sub{
+    font-family:var(--font-display);
+    font-size:clamp(16px,2.2vw,20px);
+    color:#dce6e0;
+    font-style:italic;
+    max-width:560px;
+    margin:0 auto 34px;
+  }
+
+  /* Personalized "Dear ___ Family" field */
+  .dear-family{
+    max-width:420px;
+    margin:0 auto;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(232,185,35,0.35);
+    border-radius:12px;
+    padding:18px 22px;
+    text-align:left;
+  }
+  .dear-family label{
+    display:block;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  .dear-family-row{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family:var(--font-display);
+    font-size:19px;
+    color:#fff;
+  }
+  .dear-family-row input{
+    flex:1;
+    background:transparent;
+    border:none;
+    border-bottom:1.5px dashed rgba(242,212,121,0.55);
+    color:var(--gold-soft);
+    font-family:var(--font-display);
+    font-size:19px;
+    font-style:italic;
+    padding:2px 4px;
+    min-width:80px;
+  }
+  .dear-family-row input::placeholder{ color:rgba(242,212,121,0.4); }
+  .dear-family-row input:focus{ outline:none; border-bottom-color:var(--gold); }
+  .dear-family-hint{
+    font-size:11.5px;
+    color:#9fb3a8;
+    margin-top:10px;
+    font-style:italic;
+  }
+
+  /* ============================================================
+     SECTION SCAFFOLDING
+     ============================================================ */
+  section{ padding:64px 20px; }
+  .section-inner{ max-width:880px; margin:0 auto; }
+  .section-inner.wide{ max-width:1080px; }
+  .eyebrow{
+    font-size:12.5px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    color:var(--green);
+    font-weight:700;
+    margin-bottom:10px;
+    text-align:center;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-size:clamp(26px,4vw,36px);
+    color:var(--forest);
+    text-align:center;
+    margin:0 0 14px;
+    font-weight:700;
+  }
+  h2 em{ font-style:italic; color:var(--green); }
+  .section-lede{
+    text-align:center;
+    color:var(--muted);
+    font-size:16px;
+    max-width:600px;
+    margin:0 auto 44px;
+  }
+  .light{ background:var(--cream); }
+  .dark{ background:var(--forest); color:#fff; }
+  .dark h2{ color:#fff; }
+  .dark .eyebrow{ color:var(--gold); }
+  .dark .section-lede{ color:#c9d6cf; }
+
+  /* ============================================================
+     ACCEPTED BANNER
+     ============================================================ */
+  .accepted-banner{
+    background:var(--green);
+    color:#fff;
+    text-align:center;
+    padding:14px 20px;
+    font-size:14.5px;
+    font-weight:600;
+  }
+  .accepted-banner strong{ color:var(--gold-soft); }
+
+  /* ============================================================
+     NAME MEANING — reused signature content, 4 cards
+     ============================================================ */
+  .name-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+  @media (max-width:760px){ .name-grid{ grid-template-columns:repeat(2,1fr); } }
+  .name-card{
+    border-radius:12px;
+    padding:26px 18px;
+    text-align:center;
+  }
+  .name-card:nth-child(odd){ background:#fff; border:1px solid var(--border); }
+  .name-card:nth-child(even){ background:var(--forest); border:1px solid var(--gold); }
+  .name-card .ar{ font-family:Arial,sans-serif; font-size:26px; margin-bottom:10px; }
+  .name-card:nth-child(odd) .ar{ color:var(--forest); }
+  .name-card:nth-child(even) .ar{ color:var(--gold); }
+  .name-card .translit{ font-family:var(--font-display); font-size:17px; font-weight:700; margin-bottom:2px; }
+  .name-card:nth-child(odd) .translit{ color:var(--forest); }
+  .name-card:nth-child(even) .translit{ color:#fff; }
+  .name-card .meaning{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; font-weight:700; margin-bottom:10px; }
+  .name-card:nth-child(odd) .meaning{ color:#a07d17; }
+  .name-card:nth-child(even) .meaning{ color:var(--gold-soft); }
+  .name-card p{ font-size:12.5px; margin:0; }
+  .name-card:nth-child(odd) p{ color:var(--ink); }
+  .name-card:nth-child(even) p{ color:#dce6e0; }
+  .name-quote{
+    text-align:center;
+    font-family:var(--font-display);
+    font-style:italic;
+    color:var(--forest);
+    font-size:15px;
+    margin-top:30px;
+  }
+
+  /* ============================================================
+     3 PILLARS
+     ============================================================ */
+  .pillars-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  @media (max-width:700px){ .pillars-grid{ grid-template-columns:1fr; } }
+  .pillar-card{
+    border-radius:12px;
+    padding:28px 22px;
+    text-align:center;
+  }
+  .pillar-card.mid{ background:var(--forest); border:1px solid var(--gold); }
+  .pillar-card:not(.mid){ background:#fff; border:1px solid var(--border); }
+  .pillar-icon{
+    width:56px;height:56px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px;
+    margin:0 auto 14px;
+  }
+  .pillar-card.mid .pillar-icon{ background:var(--green); }
+  .pillar-card:not(.mid) .pillar-icon{ background:var(--forest); }
+  .pillar-card h3{ font-family:var(--font-display); font-size:19px; margin:0 0 8px; }
+  .pillar-card.mid h3{ color:var(--gold-soft); }
+  .pillar-card:not(.mid) h3{ color:var(--forest); }
+  .pillar-card p{ font-size:13px; margin:0; }
+  .pillar-card.mid p{ color:#dce6e0; }
+  .pillar-card:not(.mid) p{ color:var(--ink); }
+
+  /* ============================================================
+     WHAT YOUR CHILD WILL LOVE — icon-based (photos not available)
+     ============================================================ */
+  .love-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+  @media (max-width:760px){ .love-grid{ grid-template-columns:repeat(2,1fr); } }
+  .love-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:22px 16px;
+    text-align:center;
+  }
+  .love-card .glyph{ font-size:30px; margin-bottom:10px; }
+  .love-card h4{ font-family:var(--font-display); font-size:14.5px; color:var(--forest); margin:0 0 6px; }
+  .love-card p{ font-size:11.5px; color:var(--muted); margin:0; }
+  .photo-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--muted);
+    font-style:italic;
+    margin-top:22px;
+  }
+
+  /* ============================================================
+     MEET THE TEACHER
+     ============================================================ */
+  .teacher-card{
+    display:grid;
+    grid-template-columns:180px 1fr;
+    gap:32px;
+    align-items:center;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:32px;
+  }
+  @media (max-width:640px){ .teacher-card{ grid-template-columns:1fr; text-align:center; } }
+  .teacher-photo-placeholder{
+    width:150px;height:150px;
+    border-radius:50%;
+    background:var(--forest);
+    border:3px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto;
+  }
+  .teacher-photo-placeholder img{ width:78px; height:78px; object-fit:contain; }
+  .teacher-name{ font-family:var(--font-display); font-size:22px; color:var(--forest); margin:0 0 2px; }
+  .teacher-title{ font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--green); font-weight:700; margin-bottom:14px; }
+  .teacher-card p{ font-size:14px; color:var(--ink); margin:0 0 14px; }
+  .teacher-qualities{ display:flex; flex-wrap:wrap; gap:8px; }
+  @media (max-width:640px){ .teacher-qualities{ justify-content:center; } }
+  .quality-chip{
+    background:var(--cream);
+    border:1px solid var(--gold);
+    color:var(--forest);
+    font-size:11px;
+    font-weight:700;
+    padding:5px 12px;
+    border-radius:20px;
+  }
+
+  /* ============================================================
+     LOOKING AHEAD — Amaanah brief mention
+     ============================================================ */
+  .ahead-card{
+    background:var(--green);
+    border-radius:14px;
+    padding:30px;
+    display:flex;
+    gap:20px;
+    align-items:center;
+  }
+  @media (max-width:600px){ .ahead-card{ flex-direction:column; text-align:center; } }
+  .ahead-icon{
+    width:60px;height:60px;
+    border-radius:50%;
+    background:var(--forest);
+    border:2px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px;
+    flex-shrink:0;
+  }
+  .ahead-card h3{ font-family:var(--font-display); color:var(--gold-soft); font-size:19px; margin:0 0 6px; }
+  .ahead-card p{ color:#e4ede8; font-size:13.5px; margin:0 0 10px; }
+  .ahead-card a{ color:var(--gold-soft); font-size:12.5px; font-weight:700; text-decoration:underline; }
+
+  /* ============================================================
+     NEXT STEPS CTA
+     ============================================================ */
+  .next-steps{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+    max-width:640px;
+    margin:0 auto;
+  }
+  @media (max-width:560px){ .next-steps{ grid-template-columns:1fr; } }
+  .step-btn{
+    display:block;
+    text-align:center;
+    padding:20px;
+    border-radius:12px;
+    text-decoration:none;
+    font-family:var(--font-display);
+    font-size:17px;
+    font-weight:700;
+  }
+  .step-btn.primary{ background:var(--gold); color:var(--forest-deep); }
+  .step-btn.secondary{ background:transparent; border:1.5px solid var(--gold); color:var(--gold-soft); }
+  .step-btn .sub{ display:block; font-family:var(--font-body); font-weight:400; font-size:11.5px; margin-top:4px; opacity:0.85; }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer{
+    background:var(--forest-deep);
+    color:#9fb3a8;
+    text-align:center;
+    padding:32px 20px;
+    font-size:12px;
+  }
+  footer .foot-motto{ font-family:var(--font-display); font-style:italic; color:var(--gold-soft); margin-bottom:8px; font-size:13px; }
+</style>
+</head>
+<body>
+<style>@media print{#amanHubNav{display:none !important;}}</style>
+<div id="amanHubNav" style="position:sticky;top:0;z-index:99999;background:#123526;color:#f4ead6;padding:8px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12.5px;letter-spacing:.02em;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25);">
+  <a href="index.html" style="color:#d9ac54;text-decoration:none;font-weight:600;">&larr; AMAN Admin Hub</a>
+  <span style="opacity:.5;">/</span>
+  <span style="opacity:.85;">Welcome Brochure</span>
+</div>
+
+
+<div class="topbar">
+  <a class="brand" href="https://amanschoolmn.org/">
+    <img src="/assets/img/logo-mark.png" alt="AMAN logo">
+    <span class="brand-text">Al-Madrasatu An-Nuriyyah</span>
+  </a>
+  <a class="back-link" href="https://amanschoolmn.org/admissions/">
+    <span class="full-label">← Admissions Process</span>
+    <span class="short-label">← Admissions</span>
+  </a>
+</div>
+
+<div class="accepted-banner">
+  🎉 <strong>Your family has been accepted to AMAN.</strong> This page welcomes you — for the full schedule, supplies, and policies, see the Welcome Packet below.
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <img class="hero-crest" src="/assets/img/full-crest.png" alt="AMAN crest">
+  <div class="hero-eyebrow">Welcome to the Family</div>
+  <h1>You Are Part of <em>AMAN</em> Now</h1>
+  <p class="hero-sub">"Youth Educated… Family Cultivated… World Illuminated."</p>
+
+  <div class="dear-family">
+    <label for="family-name-input">A note, personally for</label>
+    <div class="dear-family-row">
+      <span>Dear</span>
+      <input type="text" id="family-name-input" placeholder="the [Family Name] Family" aria-label="Family name">
+    </div>
+    <div class="dear-family-hint">Type your family name — this page is yours to keep.</div>
+  </div>
+</header>
+
+<!-- ============ INTRO NOTE ============ -->
+<section class="light">
+  <div class="section-inner">
+    <p class="eyebrow">A Message From AMAN</p>
+    <h2>We Have Been <em>Waiting</em> for You</h2>
+    <p style="text-align:center; font-size:16px; color:var(--ink); max-width:660px; margin:0 auto;">
+      Every step of our admissions process exists for one reason: to make sure your child is set up to thrive from
+      day one. That process is behind you now. What's ahead is simpler — showing up, learning, and growing together
+      as a family within a wider family. We are genuinely glad you're here, and we don't take the trust you've placed
+      in us lightly.
+    </p>
+  </div>
+</section>
+
+<!-- ============ WHAT'S IN OUR NAME ============ -->
+<section class="light" style="background:#fff;">
+  <div class="section-inner wide">
+    <p class="eyebrow">A Name, A Trust, A Light</p>
+    <h2>What You've <em>Joined</em></h2>
+    <p class="section-lede">Every part of who we are carries meaning — a promise to the children we serve, and to the One who entrusted them to us.</p>
+    <div class="name-grid">
+      <div class="name-card">
+        <div class="ar">المدرسة</div>
+        <div class="translit">Al-Madrasatu</div>
+        <div class="meaning">The School</div>
+        <p>A house of learning built on knowledge, discipline, and love for the deen.</p>
+      </div>
+      <div class="name-card">
+        <div class="ar">النورية</div>
+        <div class="translit">An-Nuriyyah</div>
+        <div class="meaning">The Light</div>
+        <p>From An-Nūr — a Name of Allah. Knowledge is a light each child carries within.</p>
+      </div>
+      <div class="name-card">
+        <div class="ar">أمان</div>
+        <div class="translit">AMAN</div>
+        <div class="meaning">Peace &amp; Safety</div>
+        <p>A place where children feel secure, welcomed, and free to grow in their faith.</p>
+      </div>
+      <div class="name-card">
+        <div class="ar">أمانة</div>
+        <div class="translit">Amaanah</div>
+        <div class="meaning">The Trust</div>
+        <p>Every child is an amaanah from Allah — a sacred trust we are responsible to protect.</p>
+      </div>
+    </div>
+    <p class="name-quote">"The School of Light" — where the light of revelation is nurtured, and carried by our students into the world.</p>
+  </div>
+</section>
+
+<!-- ============ 3 PILLARS ============ -->
+<section class="light">
+  <div class="section-inner wide">
+    <p class="eyebrow">The Foundation</p>
+    <h2>The 3 Pillars <em>Now Include You</em></h2>
+    <p class="section-lede">No side of this triangle succeeds without the others. As of today, your family is one of them.</p>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">👨‍🏫</div>
+        <h3>Teacher</h3>
+        <p>Provides structured, authentic Islamic education with consistency, care, and high expectations.</p>
+      </div>
+      <div class="pillar-card mid">
+        <div class="pillar-icon">👪</div>
+        <h3>Parent</h3>
+        <p>Reinforces learning at home, communicates openly, and supports the school's values and expectations.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🎓</div>
+        <h3>Student</h3>
+        <p>Shows up ready to learn, respects the environment, and grows with support from both sides.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHAT YOUR CHILD WILL LOVE ============ -->
+<section class="dark">
+  <div class="section-inner wide">
+    <p class="eyebrow">Beyond the Classroom</p>
+    <h2>What Your Child Will <em>Love</em></h2>
+    <p class="section-lede">A child who enjoys coming to school learns better and stays connected to their deen — that's why AMAN is more than lessons.</p>
+    <div class="love-grid">
+      <div class="love-card">
+        <div class="glyph">🏓</div>
+        <h4>The Game Room</h4>
+        <p>Air hockey, foosball, and table tennis during breaks.</p>
+      </div>
+      <div class="love-card">
+        <div class="glyph">🤝</div>
+        <h4>Real Friendships</h4>
+        <p>A community of peers growing in faith together.</p>
+      </div>
+      <div class="love-card">
+        <div class="glyph">🏆</div>
+        <h4>Milestones &amp; Certificates</h4>
+        <p>Progress is celebrated — every level earned matters.</p>
+      </div>
+      <div class="love-card">
+        <div class="glyph">🌙</div>
+        <h4>A Place That's Theirs</h4>
+        <p>Group leaders, familiar faces, and a weekend rhythm they'll look forward to.</p>
+      </div>
+    </div>
+    <p class="photo-note">Photos from our classrooms and game room are on the Student Life page of our website.</p>
+  </div>
+</section>
+
+<!-- ============ MEET THE TEACHER ============ -->
+<section class="light">
+  <div class="section-inner">
+    <p class="eyebrow">The People Behind AMAN</p>
+    <h2>Meet Your Child's <em>Teacher</em></h2>
+    <div class="teacher-card">
+      <div class="teacher-photo-placeholder">
+        <img src="/assets/img/emblem.png" alt="AMAN emblem">
+      </div>
+      <div>
+        <div class="teacher-name">Ustāth Nuradin Aliy</div>
+        <div class="teacher-title">Founder &amp; Teacher</div>
+        <p>Coming from a wide variety of backgrounds and experiences, Ust. Nuradin is the backbone of Al-Madrasatu An-Nuriyyah. His ideas help shape the direction and mission of AMAN as it continues to grow, insha'Allah.</p>
+        <div class="teacher-qualities">
+          <span class="quality-chip">Deliberative</span>
+          <span class="quality-chip">Relator</span>
+          <span class="quality-chip">Harmony</span>
+          <span class="quality-chip">Responsibility</span>
+          <span class="quality-chip">Consistency</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOOKING AHEAD: THE AMAANAH ============ -->
+<section class="light" style="padding-top:0;">
+  <div class="section-inner">
+    <div class="ahead-card">
+      <div class="ahead-icon">🛡️</div>
+      <div>
+        <h3>As They Grow: The Amaanah</h3>
+        <p>When your child turns 12, AMAN's journey with them continues through The Amaanah — our brotherhood and sisterhood mentorship program for teens. Nothing to do now — just good to know it's there.</p>
+        <a href="https://amanschoolmn.org/amaanah/">Learn about The Amaanah →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NEXT STEPS ============ -->
+<section class="dark">
+  <div class="section-inner">
+    <p class="eyebrow">What's Next</p>
+    <h2>Everything You Need, <em>In One Place</em></h2>
+    <p class="section-lede">Schedule, supplies, tuition, and policies — all in the AMAN Welcome Packet.</p>
+    <div class="next-steps">
+      <a class="step-btn primary" href="welcome-packet.html">
+        Open the Welcome Packet
+        <span class="sub">Schedule · Supplies · Tuition · Policies</span>
+      </a>
+      <a class="step-btn secondary" href="https://amanschoolmn.org/contact/">
+        Contact AMAN
+        <span class="sub">Questions before your first day</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-motto">"Youth Educated… Family Cultivated… World Illuminated."</div>
+  <div>Al-Madrasatu An-Nuriyyah (AMAN) · 2619 Coon Rapids Blvd #203, Coon Rapids, MN 55433</div>
+  <div>(612) 444-2609 · amanschool.mn@gmail.com</div>
+</footer>
+
+</body>
+</html>

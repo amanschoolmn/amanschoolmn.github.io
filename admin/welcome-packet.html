@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c2518">
+<title>Welcome Packet — Al-Madrasatu An-Nuriyyah (AMAN)</title>
+<meta name="description" content="Everything a newly enrolled AMAN family needs: schedule, curriculum, supplies, tuition, and policies, all in one place.">
+
+<style>
+  :root{
+    --forest:#0c2518;
+    --forest-deep:#081b11;
+    --green:#1c5e45;
+    --gold:#e8b923;
+    --gold-soft:#f2d479;
+    --cream:#f7f4ec;
+    --ink:#1a2b23;
+    --muted:#5c6b63;
+    --danger:#a5342a;
+    --border:#e3ded0;
+    --font-display:"Georgia","Iowan Old Style","Times New Roman",serif;
+    --font-body:"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    font-family:var(--font-body);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+  }
+
+  /* ---- Top bar ---- */
+  .topbar{
+    background:var(--forest);
+    border-bottom:1px solid rgba(232,185,35,0.25);
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .topbar .brand{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-display); color:var(--gold-soft);
+    font-size:15px; font-weight:700; text-decoration:none;
+    min-width:0; flex-shrink:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .topbar .brand img{ width:30px; height:30px; object-fit:contain; flex-shrink:0; }
+  .topbar .brand .brand-text{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .topbar .back-link{
+    color:#c9d6cf; font-size:13.5px; text-decoration:none;
+    border-bottom:1px solid rgba(201,214,207,0.4); padding-bottom:1px;
+    flex-shrink:0; white-space:nowrap;
+  }
+  .topbar .back-link:hover{ color:var(--gold-soft); border-color:var(--gold-soft); }
+  .topbar .back-link .short-label{ display:none; }
+  @media (max-width:480px){
+    .topbar{ padding:10px 14px; }
+    .topbar .brand{ font-size:13px; gap:7px; }
+    .topbar .brand img{ width:26px; height:26px; }
+    .topbar .back-link{ font-size:12.5px; }
+    .topbar .back-link .full-label{ display:none; }
+    .topbar .back-link .short-label{ display:inline; }
+  }
+
+  /* ---- Header ---- */
+  .packet-header{
+    background:var(--forest);
+    color:#fff;
+    text-align:center;
+    padding:44px 20px 30px;
+  }
+  .packet-header img{ width:64px; height:64px; object-fit:contain; margin:0 auto 14px; }
+  .packet-header .eyebrow{ font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:10px; }
+  .packet-header h1{ font-family:var(--font-display); font-size:clamp(26px,4.2vw,38px); margin:0 0 8px; }
+  .packet-header p{ font-family:var(--font-display); font-style:italic; color:#dce6e0; font-size:15px; margin:0; }
+
+  /* ---- Jump nav (sticky, reference-doc pattern) ---- */
+  .jumpnav{
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:54px;
+    z-index:40;
+    overflow-x:auto;
+    white-space:nowrap;
+    padding:10px 16px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .jumpnav::-webkit-scrollbar{ height:4px; }
+  .jumpnav a{
+    display:inline-block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--forest);
+    text-decoration:none;
+    padding:6px 12px;
+    border-radius:20px;
+    margin-right:6px;
+    border:1px solid var(--border);
+  }
+  .jumpnav a:hover{ border-color:var(--gold); background:var(--cream); }
+  @media (max-width:480px){
+    .jumpnav{ top:46px; padding:8px 12px; }
+    .jumpnav a{ font-size:11.5px; padding:5px 10px; }
+  }
+
+  /* ---- Sections ---- */
+  section{ padding:48px 20px; scroll-margin-top:110px; }
+  section:nth-of-type(even){ background:#fff; }
+  .section-inner{ max-width:920px; margin:0 auto; }
+  .eyebrow{ font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--green); font-weight:700; margin-bottom:8px; }
+  h2{ font-family:var(--font-display); font-size:clamp(24px,3.6vw,32px); color:var(--forest); margin:0 0 8px; }
+  .section-lede{ color:var(--muted); font-size:14.5px; margin:0 0 30px; max-width:640px; }
+
+  /* ---- Quick facts strip ---- */
+  .facts-strip{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+  }
+  @media (max-width:700px){ .facts-strip{ grid-template-columns:repeat(2,1fr); } }
+  .fact-tile{
+    background:var(--forest);
+    border-radius:12px;
+    padding:18px 14px;
+    text-align:center;
+  }
+  .fact-tile .num{ font-family:var(--font-display); font-size:24px; color:var(--gold); font-weight:700; }
+  .fact-tile .lbl{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:#c9d6cf; margin-top:4px; }
+
+  /* ---- Schedule table ---- */
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ background:var(--forest); color:var(--gold-soft); font-weight:700; text-align:left; padding:10px 12px; font-size:12px; }
+  td{ padding:10px 12px; border-bottom:1px solid var(--border); }
+  tr:nth-child(even) td{ background:#faf7ef; }
+  .table-wrap{ overflow-x:auto; border-radius:10px; border:1px solid var(--border); }
+  .table-note{ font-size:12px; color:var(--muted); font-style:italic; margin-top:10px; }
+
+  /* ---- Curriculum grid ---- */
+  .curric-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media (max-width:760px){ .curric-grid{ grid-template-columns:repeat(2,1fr); } }
+  .curric-card{ background:var(--forest); border-radius:10px; padding:14px; border-left:4px solid var(--gold); }
+  .curric-card .en{ font-family:var(--font-display); font-size:14px; color:var(--gold-soft); font-weight:700; }
+  .curric-card .ar{ font-family:Arial; font-size:11px; color:var(--gold); margin:3px 0 6px; }
+  .curric-card .desc{ font-size:10.5px; color:#dce6e0; line-height:1.35; }
+
+  /* ---- Levels ---- */
+  .levels-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:760px){ .levels-grid{ grid-template-columns:1fr; } }
+  .level-card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .level-card .glyph{ font-size:22px; }
+  .level-card h4{ font-family:var(--font-display); color:var(--forest); font-size:16px; margin:8px 0 2px; }
+  .level-card .book{ font-size:11px; color:var(--green); font-weight:700; margin-bottom:10px; }
+  .level-card ul{ margin:0; padding-left:18px; font-size:12px; color:var(--ink); }
+  .level-card li{ margin-bottom:4px; }
+
+  /* ---- Supplies ---- */
+  .supplies-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:700px){ .supplies-grid{ grid-template-columns:1fr; } }
+  .supply-card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px; text-align:center; }
+  .supply-cover{
+    width:100%; height:110px; border-radius:8px;
+    background:linear-gradient(135deg, var(--forest), var(--green));
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:12px;
+    border:1px solid var(--gold);
+  }
+  .supply-cover span{ font-size:30px; }
+  .supply-card h4{ font-family:var(--font-display); font-size:13.5px; color:var(--forest); margin:0 0 4px; }
+  .supply-card .ar{ font-size:10.5px; color:var(--muted); }
+  .supply-card .tier{ display:inline-block; margin-top:8px; font-size:9.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#a07d17; background:var(--cream); border:1px solid var(--gold); border-radius:12px; padding:3px 10px; }
+  .allstudents-strip{
+    margin-top:16px;
+    background:var(--cream);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 18px;
+    font-size:12.5px;
+  }
+  .allstudents-strip strong{ color:var(--forest); }
+
+  /* ---- Tuition ---- */
+  .tuition-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:700px){ .tuition-grid{ grid-template-columns:1fr; } }
+  .tuition-card{ background:var(--forest); border-radius:14px; padding:24px; }
+  .tuition-card .big{ font-family:var(--font-display); font-size:34px; color:var(--gold); font-weight:700; }
+  .tuition-card .big-lbl{ font-size:11.5px; color:#dce6e0; }
+  .pay-row{ display:flex; align-items:center; gap:10px; margin-top:12px; font-size:13px; color:#e4ede8; }
+  .pay-row .dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+  .pay-note{ font-size:11px; color:var(--gold-soft); font-style:italic; margin-top:14px; }
+  .checklist-card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:24px; }
+  .checklist-card h4{ font-family:var(--font-display); color:var(--forest); font-size:15px; margin:0 0 12px; }
+  .checklist-card ul{ margin:0; padding-left:18px; font-size:12.5px; color:var(--ink); }
+  .checklist-card li{ margin-bottom:6px; }
+
+  /* ---- Policies ---- */
+  .policy-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  @media (max-width:700px){ .policy-grid{ grid-template-columns:1fr; } }
+  .policy-card{ background:#fff; border:1px solid var(--border); border-radius:10px; padding:16px 18px; }
+  .policy-card.strict{ border-color:var(--danger); background:#fdf3f1; }
+  .policy-card h4{ font-family:var(--font-display); font-size:14px; color:var(--forest); margin:0 0 8px; display:flex; align-items:center; gap:6px; }
+  .policy-card.strict h4{ color:var(--danger); }
+  .policy-card ul{ margin:0; padding-left:18px; font-size:12px; color:var(--ink); }
+  .policy-card li{ margin-bottom:5px; }
+
+  /* ---- Contacts ---- */
+  .contact-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:760px){ .contact-grid{ grid-template-columns:1fr; } }
+  .contact-card{ background:var(--forest); border-radius:12px; padding:18px; }
+  .contact-card .role{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:6px; }
+  .contact-card .who{ font-family:var(--font-display); color:#fff; font-size:15px; margin-bottom:4px; }
+  .contact-card .detail{ font-size:12px; color:#c9d6cf; }
+
+  /* ---- Print button ---- */
+  .print-bar{ text-align:center; margin-top:36px; }
+  .print-btn{
+    background:var(--gold); color:var(--forest-deep); border:none;
+    font-family:var(--font-display); font-weight:700; font-size:14px;
+    padding:12px 28px; border-radius:10px; cursor:pointer;
+  }
+  .print-btn:hover{ background:var(--gold-soft); }
+
+  footer{ background:var(--forest-deep); color:#9fb3a8; text-align:center; padding:30px 20px; font-size:12px; }
+  footer .foot-motto{ font-family:var(--font-display); font-style:italic; color:var(--gold-soft); margin-bottom:8px; font-size:13px; }
+
+  /* Ensures the final section (#contacts) can still scroll up to clear the
+     sticky header + jump-nav — without this, the last section on the page
+     hits the scroll ceiling before reaching its scroll-margin-top offset. */
+  #contacts{ min-height:calc(100vh - 110px); }
+
+  @media print{
+    .topbar, .jumpnav, .print-bar{ display:none; }
+    section{ padding:20px; }
+    .dark, section{ background:#fff !important; color:#000 !important; }
+  }
+</style>
+</head>
+<body>
+<style>@media print{#amanHubNav{display:none !important;}}</style>
+<div id="amanHubNav" style="position:sticky;top:0;z-index:99999;background:#123526;color:#f4ead6;padding:8px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12.5px;letter-spacing:.02em;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25);">
+  <a href="index.html" style="color:#d9ac54;text-decoration:none;font-weight:600;">&larr; AMAN Admin Hub</a>
+  <span style="opacity:.5;">/</span>
+  <span style="opacity:.85;">Welcome Packet</span>
+</div>
+
+
+<div class="topbar">
+  <a class="brand" href="https://amanschoolmn.org/">
+    <img src="/assets/img/logo-mark.png" alt="AMAN logo">
+    <span class="brand-text">Al-Madrasatu An-Nuriyyah</span>
+  </a>
+  <a class="back-link" href="welcome-brochure.html">
+    <span class="full-label">← Welcome Brochure</span>
+    <span class="short-label">← Welcome</span>
+  </a>
+</div>
+
+<header class="packet-header">
+  <img src="/assets/img/emblem.png" alt="AMAN emblem">
+  <div class="eyebrow">Everything In One Place</div>
+  <h1>The AMAN Welcome Packet</h1>
+  <p>Schedule · Curriculum · Supplies · Tuition · Policies · Contacts</p>
+</header>
+
+<nav class="jumpnav" aria-label="Jump to section">
+  <a href="#schedule">Schedule</a>
+  <a href="#curriculum">Curriculum</a>
+  <a href="#levels">Levels</a>
+  <a href="#supplies">Supplies</a>
+  <a href="#tuition">Tuition</a>
+  <a href="#policies">Policies</a>
+  <a href="#contacts">Contacts</a>
+</nav>
+
+<!-- ============ QUICK FACTS ============ -->
+<section>
+  <div class="section-inner">
+    <div class="facts-strip">
+      <div class="fact-tile"><div class="num">Sat &amp; Sun</div><div class="lbl">Class Days</div></div>
+      <div class="fact-tile"><div class="num">9–2</div><div class="lbl">Class Hours</div></div>
+      <div class="fact-tile"><div class="num">6+</div><div class="lbl">Min. Age</div></div>
+      <div class="fact-tile"><div class="num">2020</div><div class="lbl">Founded</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section id="schedule">
+  <div class="section-inner">
+    <p class="eyebrow">Class Hours</p>
+    <h2>A Day at AMAN</h2>
+    <p class="section-lede">Saturday &amp; Sunday · 9:00 AM – 2:00 PM</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Period</th><th>Activity</th><th>Format</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Opening</td><td>Morning Adhkār</td><td>All Students</td><td>Together as one group</td></tr>
+          <tr><td>Block 1</td><td>Qur'an</td><td>Rotation Groups</td><td>With Ustāth — groups rotate each session</td></tr>
+          <tr><td>Block 2</td><td>Arabic Writing</td><td>Rotation Groups</td><td>While other group is with Ustāth</td></tr>
+          <tr><td>Block 3</td><td>Islamic Studies</td><td>Split by Level</td><td>Teacher-led by group level</td></tr>
+          <tr><td>Break</td><td>Lunch / Break</td><td>All Students</td><td>—</td></tr>
+          <tr><td>Block 4</td><td>Islamic Studies</td><td>Continue</td><td>Teacher-led continuation</td></tr>
+          <tr><td>Closing</td><td>Dhuhr Ṣalāh &amp; Clean-Up</td><td>All Students</td><td>Ṣalāh together, then students clean up</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">Schedule structure may vary between summer and winter sessions.</p>
+  </div>
+</section>
+
+<!-- ============ CURRICULUM ============ -->
+<section id="curriculum">
+  <div class="section-inner">
+    <p class="eyebrow">AMAN Islamic Studies</p>
+    <h2>What We Teach</h2>
+    <p class="section-lede">Eight subjects, taught to build knowledge, conviction, and character.</p>
+    <div class="curric-grid">
+      <div class="curric-card"><div class="en">Ḥifẓ</div><div class="ar">حِفْظُ الْقُرْآن</div><div class="desc">Systematic Qur'an memorization with repetition and accountability.</div></div>
+      <div class="curric-card"><div class="en">Tajwīd</div><div class="ar">تَجْوِيدُ الْقُرْآن</div><div class="desc">Mastering the rules of Qur'anic recitation.</div></div>
+      <div class="curric-card"><div class="en">Arabic</div><div class="ar">اللُّغَةُ الْعَرَبِيَّة</div><div class="desc">Letters, reading, writing, and vocabulary.</div></div>
+      <div class="curric-card"><div class="en">Tawḥīd &amp; Aqeedah</div><div class="ar">التَّوْحِيدُ وَالْعَقِيدَة</div><div class="desc">The Names of Allah, core beliefs, and creed.</div></div>
+      <div class="curric-card"><div class="en">Hadith &amp; Fiqh</div><div class="ar">الْحَدِيثُ وَالْفِقْه</div><div class="desc">Prophetic traditions and practical rulings.</div></div>
+      <div class="curric-card"><div class="en">Seerah &amp; Companions</div><div class="ar">السِّيرَةُ وَالصَّحَابَة</div><div class="desc">The life of the Prophet ﷺ and his noble Companions.</div></div>
+      <div class="curric-card"><div class="en">Adhkār &amp; Du'ās</div><div class="ar">الأَذْكَارُ وَالأَدْعِيَة</div><div class="desc">Morning, evening, and daily remembrance.</div></div>
+      <div class="curric-card"><div class="en">Akhlāq &amp; Manners</div><div class="ar">الأَخْلَاقُ وَالآدَاب</div><div class="desc">Islamic character, respect, and identity.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LEVELS ============ -->
+<section id="levels">
+  <div class="section-inner">
+    <p class="eyebrow">Structured for Every Child's Growth</p>
+    <h2>Skill-Based Levels — Not Age</h2>
+    <p class="section-lede">Every child is assessed and placed in the right environment. Students are evaluated weekly and advance when ready.</p>
+    <div class="levels-grid">
+      <div class="level-card">
+        <div class="glyph">🌱</div>
+        <h4>Beginner <span style="font-family:Arial;font-size:12px;color:var(--green)">مُبْتَدِئ</span></h4>
+        <div class="book">Foundation Level · Green Book</div>
+        <ul>
+          <li>Arabic alphabet recognition and writing</li>
+          <li>Introductory Qur'an reading</li>
+          <li>Basic daily supplications and adhkār</li>
+          <li>Islamic manners and identity</li>
+        </ul>
+      </div>
+      <div class="level-card">
+        <div class="glyph">📖</div>
+        <h4>Reading <span style="font-family:Arial;font-size:12px;color:var(--green)">مُتَوَسِّط</span></h4>
+        <div class="book">Qur'an Reading Level</div>
+        <ul>
+          <li>Reading directly from the Muṣḥaf</li>
+          <li>Strengthening fluency and accuracy</li>
+          <li>Mastering Juz ʻAmma, Tabārak, Qad Samiʻ</li>
+        </ul>
+      </div>
+      <div class="level-card">
+        <div class="glyph">⭐</div>
+        <h4>Ḥifẓ <span style="font-family:Arial;font-size:12px;color:var(--green)">مُتَقَدِّم</span></h4>
+        <div class="book">Memorization Level</div>
+        <ul>
+          <li>Full Qur'an memorization program</li>
+          <li>Fluent recitation with complete tajwīd</li>
+          <li>Leadership &amp; mentoring responsibilities</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUPPLIES ============ -->
+<section id="supplies">
+  <div class="section-inner">
+    <p class="eyebrow">Bring on the First Day</p>
+    <h2>Required Books &amp; Supplies</h2>
+    <div class="supplies-grid">
+      <div class="supply-card">
+        <div class="supply-cover"><span>📗</span></div>
+        <h4>Tajweed Muṣḥaf</h4>
+        <div class="ar">مُصْحَفُ التَّجْوِيد</div>
+        <div class="tier">Upper Level</div>
+      </div>
+      <div class="supply-card">
+        <div class="supply-cover"><span>📘</span></div>
+        <h4>Arabic Reading Textbook</h4>
+        <div class="ar">مُعَلِّمُ الْقِرَاءَةِ الْعَرَبِيَّة</div>
+        <div class="tier">Lower Level</div>
+      </div>
+      <div class="supply-card">
+        <div class="supply-cover"><span>📙</span></div>
+        <h4>Arabic Writing Workbook</h4>
+        <div class="ar">كِتَابُ تَمَارِينِ الْكِتَابَة</div>
+        <div class="tier">Lower Level</div>
+      </div>
+    </div>
+    <div class="allstudents-strip"><strong>All students:</strong> Large backpack · 1 pack pencils · 1 pack erasers · 5 composition notebooks</div>
+  </div>
+</section>
+
+<!-- ============ TUITION ============ -->
+<section id="tuition">
+  <div class="section-inner">
+    <p class="eyebrow">Fees &amp; Payment</p>
+    <h2>Tuition &amp; Ways to Pay</h2>
+    <div class="tuition-grid">
+      <div class="tuition-card">
+        <div class="big">$90</div><div class="big-lbl">per student, per month</div>
+        <div style="height:12px"></div>
+        <div class="big" style="font-size:26px;">$50</div><div class="big-lbl">registration, due upon enrollment — no exceptions</div>
+        <div class="pay-row"><span class="dot"></span> Cash — in person, on payment day</div>
+        <div class="pay-row"><span class="dot"></span> Zelle — amanschool.mn@gmail.com</div>
+        <div class="pay-row"><span class="dot"></span> CashApp — (952) 217-3629</div>
+        <div class="pay-note">No sibling discount at this time.</div>
+      </div>
+      <div class="checklist-card">
+        <h4>Good to Know</h4>
+        <ul>
+          <li>Tuition is due at the beginning of every month</li>
+          <li>Registration fee is one-time, due at enrollment</li>
+          <li>Each student is enrolled at the standard rate</li>
+          <li>Contact Br. Abdallah for billing questions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ POLICIES ============ -->
+<section id="policies">
+  <div class="section-inner">
+    <p class="eyebrow">What We Ask</p>
+    <h2>Standards &amp; Expectations</h2>
+    <p class="section-lede">Clear expectations protect a serious learning environment for every child.</p>
+    <div class="policy-grid">
+      <div class="policy-card strict">
+        <h4>⏰ Attendance &amp; Tardiness</h4>
+        <ul>
+          <li>15+ minutes late = student sent home, no exceptions</li>
+          <li>Max 3 unexcused absences — beyond leads to dismissal</li>
+          <li>Notify staff by Friday of any upcoming absence</li>
+        </ul>
+      </div>
+      <div class="policy-card">
+        <h4>👕 Dress Code</h4>
+        <ul>
+          <li>Islamic dress mandatory every session</li>
+          <li>Proper hijab for sisters; thobe or appropriate dress for brothers</li>
+          <li>Boys and girls remain in separate areas</li>
+        </ul>
+      </div>
+      <div class="policy-card">
+        <h4>📚 Student Expectations</h4>
+        <ul>
+          <li>Respect teachers, classmates, and the environment</li>
+          <li>Complete and submit homework on time</li>
+          <li>Bring Qur'an, notebook, and pencil every week</li>
+        </ul>
+      </div>
+      <div class="policy-card">
+        <h4>👪 Parent Expectations</h4>
+        <ul>
+          <li>Review lessons and homework at home weekly</li>
+          <li>Practice Qur'an with your child daily</li>
+          <li>Ensure on-time pickup at end of each session</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACTS ============ -->
+<section id="contacts">
+  <div class="section-inner">
+    <p class="eyebrow">Stay Connected</p>
+    <h2>Contacts &amp; Location</h2>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="role">Founder &amp; Teacher</div>
+        <div class="who">Ustāth Nuradin Aliy</div>
+        <div class="detail">(952) 217-3629</div>
+      </div>
+      <div class="contact-card">
+        <div class="role">Enrollment &amp; Billing</div>
+        <div class="who">Br. Abdallah bin Abdirahman</div>
+        <div class="detail">(612) 444-2609</div>
+      </div>
+      <div class="contact-card">
+        <div class="role">General &amp; Absences</div>
+        <div class="who">School Email</div>
+        <div class="detail">amanschool.mn@gmail.com</div>
+      </div>
+    </div>
+    <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:18px;">
+      📍 2619 Coon Rapids Blvd #203, Coon Rapids, MN 55433 · 🕗 Sat &amp; Sun · 9:00 AM – 2:00 PM
+    </p>
+    <div class="print-bar">
+      <button class="print-btn" onclick="window.print()">🖨 Print This Packet</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-motto">"Youth Educated… Family Cultivated… World Illuminated."</div>
+  <div>Al-Madrasatu An-Nuriyyah (AMAN) · Welcome Packet</div>
+  <div>Questions? (612) 444-2609 · amanschool.mn@gmail.com</div>
+</footer>
+
+</body>
+</html>
