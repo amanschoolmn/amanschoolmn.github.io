@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <title>AMAN Admin Hub</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Internal document index for Al-Madrasatu An-Nuriyyah — letters, flyers, checklists, and passes.">
+<meta name="theme-color" content="#0b1f16">
 <link rel="icon" href="assets/aman-crest.png">
 <meta property="og:title" content="AMAN Admin Hub">
 <meta property="og:description" content="Internal document index for Al-Madrasatu An-Nuriyyah.">
 <meta property="og:image" content="assets/aman-crest.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -19,6 +21,7 @@
     --green-deep:#0b1f16;
     --gold:#b8872a;
     --gold-light:#d9ac54;
+    --gold-text:#856016;   /* darkened for AA text contrast on parchment (4.78:1) — --gold itself is 2.69:1 and only used for borders/decoration */
     --parchment:#f4ead6;
     --ink:#2a2a2a;
     --muted:#6b6455;
@@ -27,11 +30,11 @@
   html{-webkit-font-smoothing:antialiased;}
   body{
     margin:0;
+    padding:max(0px, env(safe-area-inset-top)) 0 60px;
     background:radial-gradient(ellipse at 50% -10%, #16362590 0%, var(--green-deep) 60%);
     background-color:var(--green-deep);
     color:var(--ink);
     font-family:'Crimson Pro', serif;
-    padding:0 0 60px;
   }
   a{ color:inherit; }
   :focus-visible{ outline:2.5px solid var(--gold-light); outline-offset:2px; }
@@ -48,7 +51,7 @@
   /* ---------- The manuscript page ---------- */
   .manuscript{
     max-width:760px;
-    margin:52px auto 0;
+    margin:56px auto 0;
     background:var(--parchment);
     border:3px solid var(--gold);
     position:relative;
@@ -70,23 +73,27 @@
   /* ---------- Title plate ---------- */
   .plate{
     text-align:center;
-    padding:80px 40px 28px;
+    padding:118px 40px 28px;
     position:relative;
   }
-  .plate .crest{
+  .plate .crest-wrap{
     position:absolute;
-    top:-66px; left:50%;
+    top:-26px; left:50%;
     transform:translateX(-50%);
-    width:148px; height:auto;
-    filter:drop-shadow(0 14px 22px rgba(0,0,0,.4));
+    width:148px;
     z-index:5;
+  }
+  .plate .crest{
+    display:block;
+    width:100%; height:auto;
+    filter:drop-shadow(0 14px 22px rgba(0,0,0,.4));
   }
   .eyebrow{
     font-family:'DM Mono', monospace;
     font-size:10.5px;
     letter-spacing:.28em;
     text-transform:uppercase;
-    color:var(--gold);
+    color:var(--gold-text);
     font-weight:500;
   }
   .plate h1{
@@ -121,7 +128,7 @@
   }
   .search-field svg{
     position:absolute; left:0; top:50%; transform:translateY(-50%);
-    width:14px; height:14px; color:var(--gold); opacity:.8; pointer-events:none;
+    width:14px; height:14px; color:var(--gold-text); opacity:.9; pointer-events:none;
   }
   .search-input{
     width:100%;
@@ -133,9 +140,10 @@
     color:var(--ink);
     padding:6px 4px 8px 22px;
     outline:none;
+    -webkit-appearance:none;
+    appearance:none;
   }
-  .search-input::placeholder{ color:var(--muted); opacity:.75; }
-  .search-input::-webkit-search-cancel-button{ filter:sepia(1) saturate(3) hue-rotate(0deg); cursor:pointer; }
+  .search-input::placeholder{ color:var(--muted); opacity:.8; }
   .search-count{
     font-family:'DM Mono', monospace;
     font-size:10px;
@@ -150,7 +158,7 @@
     letter-spacing:.08em;
     text-transform:uppercase;
     color:var(--muted);
-    opacity:.7;
+    opacity:.8;
     text-align:center;
     padding-bottom:8px;
   }
@@ -190,7 +198,7 @@
     letter-spacing:.1em;
     text-transform:uppercase;
     color:var(--gold-light);
-    opacity:.85;
+    opacity:.9;
     white-space:nowrap;
   }
 
@@ -233,7 +241,7 @@
     display:flex; align-items:center; justify-content:center;
     font-family:'Amiri', serif;
     font-size:15px;
-    color:var(--gold);
+    color:var(--gold-text);
   }
   .doc-body{ flex:1; min-width:0; }
   .doc-title{
@@ -243,8 +251,8 @@
     color:var(--green);
     line-height:1.3;
   }
-  .doc-title mark{
-    background:rgba(184,135,42,.28);
+  .doc-title mark, .doc-desc mark{
+    background:rgba(184,135,42,.32);
     color:inherit;
     border-radius:2px;
     padding:0 1px;
@@ -267,7 +275,7 @@
     font-size:10px;
     letter-spacing:.08em;
     text-transform:uppercase;
-    color:var(--gold);
+    color:var(--gold-text);
     text-align:right;
     max-width:120px;
     line-height:1.5;
@@ -281,10 +289,10 @@
   }
 
   .doc-row.pending{ border-bottom-style:dashed; cursor:default; }
-  .doc-row.pending .doc-num{ border-style:dashed; color:#a8976b; }
-  .doc-row.pending .doc-title{ color:#8a7c56; }
-  .doc-row.pending .doc-desc{ color:#a29676; }
-  .doc-row.pending .doc-format{ color:#a8976b; }
+  .doc-row.pending .doc-num{ border-style:dashed; color:#8a7c56; }
+  .doc-row.pending .doc-title{ color:#7d6f4c; }
+  .doc-row.pending .doc-desc{ color:#867a5c; }
+  .doc-row.pending .doc-format{ color:#8a7c56; }
 
   /* ---------- Empty state ---------- */
   .empty-state{
@@ -300,6 +308,7 @@
     font-size:11px;
     letter-spacing:.05em;
     text-transform:uppercase;
+    font-style:normal;
     background:none;
     border:1px solid var(--gold);
     color:var(--green);
@@ -329,18 +338,30 @@
     font-size:10px;
     letter-spacing:.03em;
     color:var(--muted);
-    opacity:.85;
+    opacity:.9;
     line-height:1.8;
     max-width:460px;
     margin:10px auto 0;
   }
 
   @media (max-width:480px){
-    .manuscript{ margin:28px 12px 0; }
-    .plate{ padding:62px 22px 24px; }
-    .plate .crest{ width:108px; top:-48px; }
+    .manuscript{ margin:40px 12px 0; }
+    .plate{ padding:88px 22px 24px; }
+    .plate .crest-wrap{ width:108px; top:-18px; }
     .search-wrap, .unwan-wrap, .doc-list, .colophon, .empty-state{ padding-left:18px; padding-right:18px; }
     .doc-row{ gap:12px; }
+  }
+  @media (max-width:360px){
+    .manuscript{ margin:32px 8px 0; }
+    .plate{ padding:76px 16px 20px; }
+    .plate .crest-wrap{ width:92px; top:-14px; }
+    .plate h1{ font-size:26px; }
+    .doc-num{ width:32px; height:32px; font-size:13px; }
+  }
+  @media print{
+    body{ background:#fff; padding:0; }
+    .manuscript{ box-shadow:none; margin:0; max-width:none; }
+    .search-wrap{ display:none; }
   }
 </style>
 </head>
@@ -358,11 +379,13 @@
 <div class="manuscript">
 
   <header class="plate">
-    <img class="crest" src="assets/aman-crest.png" alt="Al-Madrasatu An-Nūriyyah crest" fetchpriority="high">
+    <div class="crest-wrap">
+      <img class="crest" src="assets/aman-crest.png" alt="Al-Madrasatu An-Nūriyyah crest" fetchpriority="high" width="450" height="388" onerror="this.parentElement.style.display='none'">
+    </div>
     <div class="eyebrow">Al-Madrasatu An-Nūriyyah</div>
     <h1>AMAN Admin Hub</h1>
     <p class="sub">Every letter, flyer, checklist, and pass the school runs on — indexed, in one bound page.</p>
-    <svg class="ornament" viewBox="0 0 200 20" fill="none">
+    <svg class="ornament" viewBox="0 0 200 20" fill="none" aria-hidden="true">
       <line x1="0" y1="10" x2="80" y2="10" stroke="currentColor" stroke-width="1.4"/>
       <line x1="120" y1="10" x2="200" y2="10" stroke="currentColor" stroke-width="1.4"/>
       <path d="M92 10 L100 3 L108 10 L100 17 Z" fill="currentColor"/>
@@ -371,9 +394,9 @@
 
   <div class="updated">Last updated · August 2026</div>
 
-  <div class="search-wrap">
+  <div class="search-wrap" role="search">
     <div class="search-field">
-      <svg viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.4"/><line x1="13" y1="13" x2="18" y2="18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.4"/><line x1="13" y1="13" x2="18" y2="18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
       <label for="hubSearch" class="visually-hidden">Search the document index</label>
       <input type="search" id="hubSearch" class="search-input" placeholder="Search the index — “restroom,” “welcome,” “flyer”…" autocomplete="off">
     </div>
@@ -382,17 +405,17 @@
 
   <main id="hubMain"></main>
 
-  <div class="empty-state" id="emptyState">
+  <div class="empty-state" id="emptyState" aria-live="polite">
     No documents match that search.
     <br>
     <button type="button" id="clearSearch">Clear search</button>
   </div>
 
-  <div class="colophon">
-    <img class="seal" src="assets/aman-crest.png" alt="" loading="lazy">
+  <footer class="colophon">
+    <img class="seal" src="assets/aman-crest.png" alt="" loading="lazy" width="450" height="388" onerror="this.style.display='none'">
     <div class="school">Al‑Madrasatu An‑Nūriyyah</div>
     <div class="note">Unlisted and marked no-index — reachable only by direct link, not by search or the public site nav. That's obscurity, not a real login gate; say the word if you want an actual password screen in front of it.</div>
-  </div>
+  </footer>
 
 </div>
 
@@ -439,17 +462,21 @@
   }
 
   function escapeHtml(s){
-    return s.replace(/[&<>"']/g, function(c){
+    return String(s).replace(/[&<>"']/g, function(c){
       return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
     });
   }
 
+  // Finds the match in the RAW string first, then escapes each piece separately —
+  // avoids mismatches if title/desc text ever contains &, <, >, quotes, etc.
   function highlight(text, query){
-    var safe = escapeHtml(text);
-    if(!query) return safe;
-    var i = safe.toLowerCase().indexOf(query.toLowerCase());
-    if(i === -1) return safe;
-    return safe.slice(0,i) + "<mark>" + safe.slice(i, i+query.length) + "</mark>" + safe.slice(i+query.length);
+    if(!query) return escapeHtml(text);
+    var idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if(idx === -1) return escapeHtml(text);
+    var before = text.slice(0, idx);
+    var match = text.slice(idx, idx + query.length);
+    var after = text.slice(idx + query.length);
+    return escapeHtml(before) + "<mark>" + escapeHtml(match) + "</mark>" + escapeHtml(after);
   }
 
   var totalDocs = CATEGORIES.reduce(function(sum, c){ return sum + c.docs.length; }, 0);
@@ -457,6 +484,7 @@
   var countEl = document.getElementById("searchCount");
   var emptyState = document.getElementById("emptyState");
   var searchInput = document.getElementById("hubSearch");
+  var clearBtn = document.getElementById("clearSearch");
 
   function render(query){
     query = (query || "").trim();
@@ -473,10 +501,11 @@
       if(matches.length === 0) return;
 
       visibleTotal += matches.length;
+      var labelId = "cat-" + counter;
 
-      html += '<section class="unwan-wrap" aria-labelledby="cat-' + counter + '">' +
-        '<div class="unwan"><svg class="finial"><use href="#finialShape"/></svg>' +
-        '<span class="label" id="cat-' + (counter) + '">' + escapeHtml(cat.label) + '</span>' +
+      html += '<section class="unwan-wrap" aria-labelledby="' + labelId + '">' +
+        '<div class="unwan"><svg class="finial" aria-hidden="true"><use href="#finialShape"/></svg>' +
+        '<span class="label" id="' + labelId + '">' + escapeHtml(cat.label) + '</span>' +
         '<span class="count">' + matches.length + (matches.length === 1 ? ' document' : ' documents') + '</span>' +
         '</div></section>';
 
@@ -495,11 +524,11 @@
             '<div class="doc-meta"><div class="doc-format">Pending upload</div></div>' +
             '</div></li>';
         } else {
-          html += '<li><a class="doc-row" href="' + d.href + '">' + num +
+          html += '<li><a class="doc-row" href="' + escapeHtml(d.href) + '">' + num +
             '<div class="doc-body"><div class="doc-title">' + titleHtml + '</div>' +
             '<div class="doc-desc">' + descHtml + '</div></div>' +
             '<div class="doc-meta"><div class="doc-format">' + formatHtml + '</div>' +
-            '<svg class="doc-arrow" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '<svg class="doc-arrow" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
             '</div></a></li>';
         }
       });
@@ -514,7 +543,8 @@
   }
 
   searchInput.addEventListener("input", function(){ render(searchInput.value); });
-  document.getElementById("clearSearch").addEventListener("click", function(){
+  searchInput.addEventListener("search", function(){ render(searchInput.value); });
+  clearBtn.addEventListener("click", function(){
     searchInput.value = "";
     render("");
     searchInput.focus();
