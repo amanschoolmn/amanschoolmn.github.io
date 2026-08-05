@@ -2705,13 +2705,25 @@ function openLetterPreview(html){
 // button inside the iframe's own document) is the reliable way to scope
 // printing to just that iframe's content on iOS Safari, with no popup and
 // no document.write() involved.
+//
+// PRINT BUG #3 (fixed): the iframe above was hidden with `visibility:hidden`
+// and 0×0 sizing. Both of those mean the browser never actually renders the
+// element at all — not on screen, and not for print either, since printing
+// paints the same render tree. The iframe's document was there, but nothing
+// about it ever got laid out or painted, so the printed page came out blank
+// (the only thing in the screenshot was the browser's own auto-added print
+// header/footer, which doesn't depend on the page's content rendering).
+// Fix: give the iframe real dimensions and normal visibility, and instead
+// keep it off the user's screen by moving it far outside the viewport —
+// still fully rendered (so it prints correctly), just physically nowhere
+// the user can see it.
 function printHTMLDocument(html){
   let frame = document.getElementById('print-frame');
   if(!frame){
     frame = document.createElement('iframe');
     frame.id = 'print-frame';
     frame.setAttribute('aria-hidden', 'true');
-    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    frame.style.cssText = 'position:fixed;top:0;left:-10000px;width:8.5in;height:11in;border:0';
     document.body.appendChild(frame);
   }
   let fired = false;
