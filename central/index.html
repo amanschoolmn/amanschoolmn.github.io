@@ -396,7 +396,7 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .pill-att.L{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn);border-color:var(--warn)}
 .pill-att.E{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
 /* Progress Tracker — tap-to-cycle cells for Qur'an/HW/CW (attendance reuses .pill-att above) */
-.pill-cyc{min-width:44px;height:34px;padding:0 6px;border-radius:9px;border:1px solid var(--line2);font-weight:700;font-size:10.5px;color:var(--ink3);transition:all .1s;font-family:var(--f-mono);background:var(--surface)}
+.pill-cyc{min-width:44px;height:44px;padding:0 6px;border-radius:10px;border:1px solid var(--line2);font-weight:700;font-size:10.5px;color:var(--ink3);transition:all .1s;font-family:var(--f-mono);background:var(--surface)}
 .pill-cyc.PASS,.pill-cyc.DONE{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
 .pill-cyc.FAIL,.pill-cyc.INC{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
 .pill-cyc.EXC{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
@@ -986,6 +986,12 @@ const SOTM_PHOTO_MAP = {
   'محسن بن نصرالدين': 'https://amanschoolmn.org/central/files/students/student_34.jpg',
   'أوبسا بن برو': 'https://amanschoolmn.org/central/files/students/student_35.jpg',
   'عمران بن محي الدين': 'https://amanschoolmn.org/central/files/students/student_36.jpg',
+  // Added for the 4 new students starting Aug 1 — hosted as .jpeg, matching
+  // the actual files uploaded (student_01–36 are .jpg; these 4 are .jpeg).
+  'كفاية بنت أفركان': 'https://amanschoolmn.org/central/files/students/student_37.jpeg',
+  'يوسف بن أفركان': 'https://amanschoolmn.org/central/files/students/student_38.jpeg',
+  'حنيفة بنت خالد': 'https://amanschoolmn.org/central/files/students/student_39.jpeg',
+  'نعمان بن خالد': 'https://amanschoolmn.org/central/files/students/student_40.jpeg',
 };
 function sotmLinkPhotos(d){
   (d.students||[]).forEach(s=>{
@@ -2331,7 +2337,7 @@ function renderSOTMShareCard(students, monthDisplay){
   const studentsHtml = students.map(s=>{
     const initial = (s.name||'?').trim().charAt(0).toUpperCase() || '?';
     const photoHtml = s.photo
-      ? `<img src="${s.photo}">`
+      ? `<img src="${s.photo}" alt="${esc(s.name)}">`
       : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a3a28;color:#c9a227;font-family:'Cinzel',serif;font-weight:700;font-size:22px">${esc(initial)}</div>`;
     return `<div class="spp-student">
       <div class="spp-photo-ring">${photoHtml}</div>
@@ -2648,26 +2654,12 @@ function syncErrorMessage(err){
   return '⚠ Sync failed: ' + (msg || 'unknown error') + '. Check the CSV link in Sync Settings.';
 }
 function openLetterPreview(html){
-  // Rendered as an in-page overlay (not window.open): a new browser tab/window
-  // can be silently blocked by sandboxed preview panes or popup blockers, with
-  // no visible error. An <iframe srcdoc> gives the same visual/CSS isolation
-  // from the app's own styling without ever requesting a new window — this
-  // part is only for the on-screen preview and is unaffected by the fix below.
-  // PRINT BUG (fixed again): the previous fix routed printing through
-  // window.open('','_blank') + document.write(html). That's fragile in two
-  // specific ways that both produce exactly the symptom reported — a blank
-  // "Page 1 of 1" — with the print header still showing the app's own URL:
-  // (1) installed/home-screen iOS PWAs ("standalone" display mode) don't
-  // reliably support opening a second window — window.open() can silently
-  // reuse the current window instead of creating a new one; (2) document.write()
-  // called on a window whose document has already finished loading forces an
-  // implicit document.open() that tears down the current render tree, which
-  // Safari can leave in a blank/half-painted state. Either way you can end up
-  // printing a broken version of the SAME window rather than the letter.
-  // Fix: never open a second window. Inject the letter's HTML into a hidden
-  // #print-root in THIS document, scope a print stylesheet to show only that
-  // root, and call window.print() in place. Same window throughout, so none
-  // of the above can happen — this is what printHTMLDocument() below does.
+  // Rendered as an in-page overlay with an <iframe srcdoc> for the on-screen
+  // preview — real CSS/DOM isolation from the app's own styling, no popup.
+  // Printing (the print button below) goes through printHTMLDocument(),
+  // which uses a second, hidden iframe of its own — see the comment on that
+  // function for why printing needs a completely separate iframe from the
+  // one used for on-screen preview here.
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,20,15,.72);display:flex;flex-direction:column;padding:18px;padding-top:calc(18px + env(safe-area-inset-top));box-sizing:border-box';
   overlay.className = 'letter-overlay';
@@ -2694,41 +2686,50 @@ function openLetterPreview(html){
 // Prints a full HTML document string (as produced by renderSOTMShareCard,
 // renderSOTMCertificate, letter/checklist builders, etc.) reliably on every
 // platform this app runs on, including installed iOS home-screen PWAs.
-// See the print-bug comment above openLetterPreview for why this replaced
-// the old window.open()+document.write() approach.
+//
+// PRINT BUG #2 (fixed): the previous version of this function extracted the
+// letter's own <style> tag and injected it into #print-root inside THIS
+// document. That's broken — a <style> tag's rules are never scoped to where
+// it physically sits in the DOM; injecting the letter's stylesheet (written
+// assuming it owns the whole page, e.g. a `body{background:#000}` rule for
+// a dark share-card design) applied those rules to the ENTIRE live app, not
+// just the print root. That's exactly what caused the black print preview
+// and the app staying dark after closing it — the injected rule never got
+// removed. Fix: never inject the letter's CSS into this document at all.
+// Give it a real isolated document instead — a hidden same-page <iframe>
+// with the full html string set via srcdoc, printed by calling
+// frame.contentWindow.print() from THIS script after the iframe loads.
+// An iframe's srcdoc document is fully separate from the parent's DOM/CSS,
+// so nothing the letter's stylesheet does can ever leak out here, and
+// calling .print() on its contentWindow from the parent (rather than via a
+// button inside the iframe's own document) is the reliable way to scope
+// printing to just that iframe's content on iOS Safari, with no popup and
+// no document.write() involved.
 function printHTMLDocument(html){
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const styleHTML = [...doc.querySelectorAll('style')].map(s=>s.outerHTML).join('');
-  const bodyHTML = doc.body ? doc.body.innerHTML : html;
-
-  let root = document.getElementById('print-root');
-  if(!root){
-    root = document.createElement('div');
-    root.id = 'print-root';
-    document.body.appendChild(root);
+  let frame = document.getElementById('print-frame');
+  if(!frame){
+    frame = document.createElement('iframe');
+    frame.id = 'print-frame';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(frame);
   }
-  root.innerHTML = styleHTML + bodyHTML;
-
-  if(!document.getElementById('print-root-style')){
-    const st = document.createElement('style');
-    st.id = 'print-root-style';
-    // #print-root stays out of normal layout at all times; on print, it's
-    // the ONLY thing shown — everything else in the app is hidden here
-    // rather than relying on the app's own .no-print bookkeeping, so this
-    // works no matter what page/overlay happens to be open underneath.
-    st.textContent = `#print-root{display:none}
-      @media print{
-        body>*:not(#print-root){display:none!important}
-        #print-root{display:block!important;position:static}
-      }`;
-    document.head.appendChild(st);
-  }
-
-  // Let images/fonts inside #print-root finish laying out before printing.
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    window.print();
-  }));
+  let fired = false;
+  const go = () => {
+    if(fired) return; fired = true;
+    try { frame.contentWindow.focus(); frame.contentWindow.print(); }
+    catch(e){ toast('Could not open the print dialog — try again'); }
+  };
+  frame.onload = () => { frame.onload = null; setTimeout(go, 120); };
+  frame.srcdoc = html;
+  // Belt-and-suspenders: some embedded webviews don't reliably fire an
+  // iframe's load event for srcdoc content. If that happens here, print
+  // anyway once there's been time to parse, rather than leave the tap
+  // silently doing nothing — that's the failure mode that's easy to miss
+  // testing on a normal browser tab but shows up on-device.
+  setTimeout(go, 700);
 }
+
 function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, interviewDate, interviewTime){
   const subject = 'AMAN \u2014 '+students+' Conditionally Accepted (One Step Left)';
   const lines = [
@@ -5002,7 +5003,7 @@ const Students = {
       ul{padding-left:18px;font-size:14px}li{margin-bottom:4px}
       .foot{margin-top:32px;padding-top:14px;border-top:1px solid #e2d7bd;font-size:12px;color:#8a6520;font-style:italic;text-align:center}`,
       `<div class="head">
-        ${s.photo?`<img src="${esc(s.photo)}">`:`<div class="ph-fallback">${esc(initials(s.name))}</div>`}
+        ${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.preferredName||s.name)}">`:`<div class="ph-fallback">${esc(initials(s.name))}</div>`}
         <div><div class="tag">Al-Madrasatu An-Nuriyyah</div>
         <h1>${esc(s.preferredName||s.name)}</h1>
         <div class="meta">${esc(s.level)} — ${esc(LEVEL_SUB[s.level])} · ${esc(sidFmt)}${age!=null?' · '+age+' years old':''}</div></div>
@@ -5579,6 +5580,57 @@ const PT_GRADE_SCALE = [[95,'A+'],[90,'A'],[87,'A-'],[83,'B+'],[80,'B'],[77,'B-'
 const ptGrade = pct => (PT_GRADE_SCALE.find(([m])=>pct>=m) || PT_GRADE_SCALE[PT_GRADE_SCALE.length-1])[1];
 const ptLevelTag = L => L==='Level 1'?'tag-green':L==='Level 2'?'tag-blue':'tag-purple';
 
+// Self-contained report-card document — same convention as
+// renderSOTMShareCard/certificates: a full standalone HTML string with its
+// own inline styles, printed via printHTMLDocument()'s isolated iframe (see
+// that function's comment for why this can never be a live DOM clone or a
+// window.open()+document.write() page).
+function ptReportCardHTML(s, monthlyRows, yearStats, comment){
+  const pct=ptSom(yearStats), grade=ptGrade(pct);
+  const rows = monthlyRows.map(r=>`<tr><td>${esc(r.month)}</td>
+    <td style="text-align:right">${r.quranPct!=null?r.quranPct.toFixed(0):'—'}</td>
+    <td style="text-align:right">${r.hwPct!=null?r.hwPct.toFixed(0):'—'}</td>
+    <td style="text-align:right">${r.cwPct!=null?r.cwPct.toFixed(0):'—'}</td>
+    <td style="text-align:right">${r.ua}</td><td style="text-align:right">${r.late}</td></tr>`).join('');
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Report Card \u2014 ${esc(s.name)}</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f6efe0;color:#20261f;margin:0;padding:28px}
+  .toolbar-actions{position:sticky;top:0;background:#123626;padding:10px 16px;display:flex;gap:10px;justify-content:center;margin:-28px -28px 20px;z-index:100}
+  .toolbar-actions button{padding:9px 18px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:13.5px;background:#b8872a;color:#20261f}
+  @media print{.toolbar-actions{display:none}body{padding:0;background:#fff}}
+  .card{max-width:640px;margin:0 auto;background:#fffdf6;border:1px solid #e2d7bd;border-radius:14px;padding:24px}
+  .hd{text-align:center;margin-bottom:8px}
+  .hd .school{font-size:11.5px;font-weight:700;color:#686e5f;letter-spacing:.03em}
+  .hd .name{font-size:19px;font-weight:800;margin-top:5px;direction:rtl}
+  .hd .level{font-size:12.5px;color:#5c665a;margin-top:2px}
+  .scores{display:flex;justify-content:center;gap:40px;margin:18px 0}
+  .scores .v{font-size:32px;font-weight:800}
+  .scores .l{font-size:10px;font-weight:700;color:#686e5f}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#686e5f;padding:8px 6px;border-bottom:1px solid #d3c6a6}
+  td{padding:8px 6px;border-bottom:1px solid #e2d7bd}
+  .comment{margin-top:16px;padding:12px;background:#faf5e8;border-radius:9px;font-size:12.5px}
+</style></head>
+<body>
+<div class="toolbar-actions"><button onclick="window.print()">\uD83D\uDDA8\uFE0F Print / Save as PDF</button></div>
+<div class="card">
+  <div class="hd">
+    <div class="school">Al-Madrasatu An-Nuriyyah (AMAN) \u2014 Report Card</div>
+    <div class="name">${esc(s.name)}</div>
+    <div class="level">${esc(s.level)} \u2014 ${esc(LEVEL_SUB[s.level]||'')}</div>
+  </div>
+  <div class="scores">
+    <div style="text-align:center"><div class="v" style="color:#1a4a35">${pct.toFixed(1)}%</div><div class="l">OVERALL</div></div>
+    <div style="text-align:center"><div class="v" style="color:#8a6520">${grade}</div><div class="l">LETTER GRADE</div></div>
+  </div>
+  <table><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">UA</th><th style="text-align:right">Late</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  ${comment?`<div class="comment"><b>Teacher comments:</b> ${esc(comment)}</div>`:''}
+</div>
+</body></html>`;
+}
+
 function ptEntry(dateKey, sid){
   const d = DB.data;
   const att = (d.attendance[dateKey]||{})[sid];
@@ -5631,24 +5683,6 @@ function ptDefaultMonthSession(){
     return {month, session: PT_fullDate(cand.length ? cand[cand.length-1] : chips[0])};
   }
   return {month:'June', session: PT_fullDate(PT_SESSION_DATES.June[0])};
-}
-
-// Reliable in-place printing for the Report Card — same technique used to
-// fix the Share Card print bug (no window.open/document.write: those are
-// unreliable inside an installed iOS home-screen app and can print a blank
-// page). Prints a clone of a live DOM node from THIS document instead.
-function ptPrintNode(node){
-  if(!node) return;
-  let root = document.getElementById('pt-print-root');
-  if(!root){ root=document.createElement('div'); root.id='pt-print-root'; document.body.appendChild(root); }
-  root.innerHTML=''; root.appendChild(node.cloneNode(true));
-  if(!document.getElementById('pt-print-style')){
-    const st=document.createElement('style'); st.id='pt-print-style';
-    st.textContent = `#pt-print-root{display:none}
-      @media print{ body>*:not(#pt-print-root){display:none!important} #pt-print-root{display:block!important;position:static} }`;
-    document.head.appendChild(st);
-  }
-  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
 }
 
 const Progress = {
@@ -5818,7 +5852,7 @@ const Progress = {
       const ta=$('#ptComment',v);
       if(ta) ta.onblur=()=>{ DB.data.progressComments[sid]=ta.value.trim(); DB.save(); };
       const pb=$('#ptPrint',v);
-      if(pb) pb.onclick=()=>ptPrintNode($('#ptCard',v));
+      if(pb) pb.onclick=()=>printHTMLDocument(ptReportCardHTML(s, monthlyRows, yearStats, DB.data.progressComments[sid]||''));
     }
   },
 
