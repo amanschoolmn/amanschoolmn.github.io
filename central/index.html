@@ -2867,7 +2867,7 @@ function amaanahFromRow(row){
 }
 
 const DB = {
-  KEY:'aman_central_v1', SCHEMA:11, data:null, _t:null,
+  KEY:'aman_central_v1', SCHEMA:13, data:null, _t:null,
   defaults(){
     return {
       schema:this.SCHEMA,
@@ -2879,7 +2879,7 @@ const DB = {
       // in the existing d.attendance/d.attendanceReasons above — the tracker
       // reads/writes those directly so the rest of the app (dashboard, Class
       // Day cockpit, Prep radar, etc.) sees the same numbers automatically.
-      progress:{}, progressComments:{}, cleaning:{pairsByMonth:{}},
+      progress:{}, progressComments:{}, cleaning:{pairsByMonth:{}}, closures:[],
       admissions:[], amaanahApplications:[],
       lessons:[], planner:{}, quizzes:[], homework:[], reflections:[],
       tasks:[
@@ -3003,6 +3003,26 @@ const DB = {
       // regenerate and correctly include both now that gender is set.
       if(sibs.length && d.cleaning) d.cleaning.pairsByMonth = {};
       d.schema=11;
+    }
+    if(d.schema<12){
+      // Progress Tracker / Cleaning Schedule are no longer pinned to 2026 —
+      // the calendar now computes for whatever year is selected. Cleaning's
+      // pairing cache used to key by bare month name ("August"); that would
+      // collide across different years, so it's now "year-Month". Anything
+      // already generated under the old key was for the 2026 season (the
+      // only year this app has ever run), so rename rather than discard it.
+      if(d.cleaning && d.cleaning.pairsByMonth){
+        const migrated = {};
+        Object.entries(d.cleaning.pairsByMonth).forEach(([k,val])=>{
+          migrated[PT_MONTHS.includes(k) ? '2026-'+k : k] = val;
+        });
+        d.cleaning.pairsByMonth = migrated;
+      }
+      d.schema=12;
+    }
+    if(d.schema<13){
+      d.closures = d.closures || [];
+      d.schema=13;
     }
     const def = this.defaults();
     for(const k of Object.keys(def)) if(!(k in d)) d[k] = def[k];
@@ -5612,28 +5632,41 @@ function avatarHTML(s, style){ return `<div class="avatar" style="${style||''}">
    reading check pass", "did the 3 HW pages come back") aren't the same as the
    existing d.quran ḥifẓ-portion log or d.homework assignment sheets — both of
    those stay untouched and keep meaning what they already mean. */
-const PT_YEAR = 2026;
 const PT_MONTHS = ['June','July','August','September','October','November','December'];
-// Every actual Saturday+Sunday, June–Dec 2026, grouped by calendar month
-// (a weekend that spans a month boundary — Oct 31/Nov 1 — is split into
-// each date's own month, so October ends on its Sat and November opens on
-// its Sun). Recomputed from the real calendar on 2026-08-05: the original
-// list here was correct for June only — every other month was off by one
-// day (e.g. "07/05 Sat" is actually a Sunday), which this replaces.
-const PT_SESSION_DATES = {
-  June: ['06-06','06-07','06-13','06-14','06-20','06-21','06-27','06-28'],
-  July: ['07-04','07-05','07-11','07-12','07-18','07-19','07-25','07-26'],
-  August: ['08-01','08-02','08-08','08-09','08-15','08-16','08-22','08-23','08-29','08-30'],
-  September: ['09-05','09-06','09-12','09-13','09-19','09-20','09-26','09-27'],
-  October: ['10-03','10-04','10-10','10-11','10-17','10-18','10-24','10-25','10-31'],
-  November: ['11-01','11-07','11-08','11-14','11-15','11-21','11-22','11-28','11-29'],
-  December: ['12-05','12-06','12-12','12-13','12-19','12-20','12-26','12-27'],
-};
-const PT_fullDate = md => PT_YEAR+'-'+md;
+// Every real Saturday+Sunday, June–Dec, for ANY given year — computed live
+// rather than hardcoded, so the app keeps working correctly every future
+// season without ever needing another manual date fix like the one applied
+// on 2026-08-05 (the original hardcoded 2026 list was wrong from July on).
+// A weekend spanning a month boundary (e.g. Oct 31/Nov 1) is split into
+// each date's own calendar month.
+function ptWeekendDates(year){
+  const out = {};
+  PT_MONTHS.forEach((name, i) => {
+    const m = i + 6; // June=6 ... December=12
+    const lastDay = new Date(year, m, 0).getDate();
+    const days = [];
+    for (let d = 1; d <= lastDay; d++) {
+      const dow = new Date(year, m - 1, d).getDay();
+      if (dow === 6 || dow === 0) days.push(String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'));
+    }
+    out[name] = days;
+  });
+  return out;
+}
 const PT_isSat = dateKey => new Date(dateKey+'T00:00:00').getDay()===6;
-const PT_chip = md => md+' '+(PT_isSat(PT_fullDate(md))?'Sat':'Sun');
-const PT_monthKeys = m => (PT_SESSION_DATES[m]||[]).map(PT_fullDate);
-const PT_yearKeys = () => PT_MONTHS.flatMap(PT_monthKeys);
+const ptFullDate = (year, md) => year+'-'+md;
+const ptChip = (year, md) => md+' '+(PT_isSat(ptFullDate(year,md))?'Sat':'Sun');
+// School closures — field trips, weather, illness, and (since these shift
+// every year on the Gregorian calendar and can't be reliably computed) the
+// two Eids and the last ten nights of Ramadan, added manually once known.
+const CLOSURE_REASONS = ['Field Trip','Weather/Storm','Teacher Unavailable','Illness','Eid al-Fitr','Eid al-Adha','Ramadan (Last 10 Nights)','Other'];
+const closureFor = dateKey => (DB.data.closures||[]).find(c=>c.date===dateKey) || null;
+// Excludes closed dates — a closure isn't a session, so it never counts
+// toward attendance/Qur'an/HW/CW totals or rates. Session-chip/schedule
+// DISPLAY still uses ptWeekendDates() directly so closed days are still
+// visible, just marked closed rather than hidden.
+const ptMonthKeys = (year, m) => (ptWeekendDates(year)[m]||[]).map(md=>ptFullDate(year,md)).filter(dk=>!closureFor(dk));
+const ptYearKeys = (year) => PT_MONTHS.flatMap(m=>ptMonthKeys(year,m));
 
 // Attendance cycle writes the SAME codes attSummary()/cockpit already read
 // (P/A/L/E); UA and EXC are just this module's friendlier on-screen labels
@@ -5742,29 +5775,38 @@ function ptStats(sid, dateKeys){
 // Student of the Month: 60% Qur'an pass rate + 25% HW + 15% CW.
 function ptSom(st){ return (st.quranPct||0)*0.6 + (st.hwPct||0)*0.25 + (st.cwPct||0)*0.15; }
 
+// Picks a sensible default year/month/session for "today", whatever year
+// that actually is — never pinned to one season, so this keeps working
+// correctly every future year without needing another manual fix.
 function ptDefaultMonthSession(){
   const t=new Date(), y=t.getFullYear(), m=t.getMonth()+1, day=t.getDate();
-  if(y===PT_YEAR && m>=6 && m<=12){
+  const weekends = ptWeekendDates(y);
+  if(m>=6 && m<=12){
     const month = PT_MONTHS[m-6];
     const md = String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-    const chips = PT_SESSION_DATES[month];
+    const chips = weekends[month];
     const cand = chips.filter(c=>c<=md);
-    return {month, session: PT_fullDate(cand.length ? cand[cand.length-1] : chips[0])};
+    const openCand = cand.filter(c=>!closureFor(ptFullDate(y,c)));
+    const pick = openCand.length ? openCand[openCand.length-1] : (cand.length ? cand[cand.length-1] : chips[0]);
+    return {year:y, month, session: ptFullDate(y, pick)};
   }
-  return {month:'June', session: PT_fullDate(PT_SESSION_DATES.June[0])};
+  // Outside the June–Dec season (e.g. checking in January) — default to the
+  // upcoming June of the current calendar year rather than showing nothing.
+  return {year:y, month:'June', session: ptFullDate(y, weekends.June[0])};
 }
 
 const Progress = {
   render(v){ this._openId ? this.detail(v, this._openId) : this.roster(v); },
 
   roster(v){
-    if(!this._month){ const dm=ptDefaultMonthSession(); this._month=dm.month; this._session=dm.session; }
+    if(!this._month){ const dm=ptDefaultMonthSession(); this._year=dm.year; this._month=dm.month; this._session=dm.session; }
     if(this._somOpen===undefined) this._somOpen=true;
-    const month=this._month, session=this._session, sat=PT_isSat(session);
-    const monthKeys = PT_monthKeys(month);
+    const year=this._year, month=this._month, session=this._session, sat=PT_isSat(session);
+    const monthKeys = ptMonthKeys(year, month);
     const all = DB.data.students.filter(s=>s.active!==false);
     const lvl = this._levelFilter||'', find=(this._find||'').trim();
     const shown = all.filter(s => (!lvl||s.level===lvl) && (!find||s.name.includes(find)));
+    const closed = closureFor(session);
 
     let present=0,late=0,ua=0,qP=0,qT=0,hD=0,hT=0,cD=0,cT=0;
     all.forEach(s=>{ const e=ptEntry(session,s.id);
@@ -5784,14 +5826,25 @@ const Progress = {
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div class="eyebrow" style="margin-top:12px">Student Progress</div><h2 class="page-title">Progress Tracker</h2>
      <p class="page-sub">Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly.</p>
+     <div class="filters no-print"><button class="btn btn-o btn-sm" id="ptClosures">📅 Manage closures</button></div>
 
+     <div class="filters no-print" style="align-items:center;gap:10px">
+       <button class="btn btn-ghost btn-sm" id="ptYearPrev" aria-label="Previous year">←</button>
+       <b style="font-family:var(--f-mono);font-size:15px;min-width:52px;text-align:center">${year}</b>
+       <button class="btn btn-ghost btn-sm" id="ptYearNext" aria-label="Next year">→</button>
+     </div>
      <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap">
        ${PT_MONTHS.map(m=>`<button class="chip ${m===month?'on':''}" data-ptmonth="${m}">${m}</button>`).join('')}
      </div>
      <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap;margin-top:-6px">
-       ${PT_SESSION_DATES[month].map(md=>`<button class="chip ${PT_fullDate(md)===session?'on':''}" data-ptsession="${md}">${PT_chip(md)}</button>`).join('')}
+       ${ptWeekendDates(year)[month].map(md=>{ const dk=ptFullDate(year,md); const c=closureFor(dk);
+         return `<button class="chip ${dk===session?'on':''}" style="${c?'opacity:.6;text-decoration:line-through':''}" data-ptsession="${md}">${c?'⛔ ':''}${ptChip(year,md)}</button>`; }).join('')}
      </div>
 
+     ${closed ? `
+     <div class="notice warn" style="margin-bottom:14px">
+       <span>⛔</span><span><b>School closed — ${esc(closed.reason)}</b>${closed.note?` · ${esc(closed.note)}`:''}<br><span style="font-size:12px;color:var(--ink2)">${fmtDate(session)} isn't counted as a session. Pick a different date above to take attendance.</span></span>
+     </div>` : `
      <div class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">
        <b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
        <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
@@ -5839,9 +5892,10 @@ const Progress = {
           </div>`;
         }).join('')}</div>`;
      }).join('') : '<div class="empty"><p>No students match.</p></div>'}
+     `}
 
      <details class="card" style="margin-top:6px" ${this._somOpen?'open':''} id="ptSom">
-       <summary style="cursor:pointer;font-weight:700;color:var(--green)">🌟 Student of the Month — ${month}</summary>
+       <summary style="cursor:pointer;font-weight:700;color:var(--green)">🌟 Student of the Month — ${month} ${year}</summary>
        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
          ${LEVELS.map(L=>{ const top=somByLevel[L];
            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface2)">
@@ -5862,8 +5916,10 @@ const Progress = {
     // for something as small as one tap-to-cycle button meant every single
     // attendance/Qur'an/HW/CW tap threw the whole page back to the top —
     // exactly the "jumps to the top every tap" bug reported.
-    $$('[data-ptmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.ptmonth; this._session=PT_fullDate(PT_SESSION_DATES[this._month][0]); this._repaint(v); });
-    $$('[data-ptsession]',v).forEach(b=>b.onclick=()=>{ this._session=PT_fullDate(b.dataset.ptsession); this._repaint(v); });
+    $('#ptYearPrev',v).onclick=()=>{ this._year--; this._month='June'; this._session=ptFullDate(this._year, ptWeekendDates(this._year).June[0]); this._repaint(v); };
+    $('#ptYearNext',v).onclick=()=>{ this._year++; this._month='June'; this._session=ptFullDate(this._year, ptWeekendDates(this._year).June[0]); this._repaint(v); };
+    $$('[data-ptmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.ptmonth; this._session=ptFullDate(year, ptWeekendDates(year)[this._month][0]); this._repaint(v); });
+    $$('[data-ptsession]',v).forEach(b=>b.onclick=()=>{ this._session=ptFullDate(year, b.dataset.ptsession); this._repaint(v); });
     $$('[data-ptlvl]',v).forEach(b=>b.onclick=()=>{ this._levelFilter=b.dataset.ptlvl; this._repaint(v); });
     const f=$('#ptFind',v);
     if(f) f.oninput=()=>{ this._find=f.value; clearTimeout(this._ft); this._ft=setTimeout(()=>{ this._repaint(v); const nf=$('#ptFind'); if(nf){ nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length); } },250); };
@@ -5876,6 +5932,50 @@ const Progress = {
       const [sid,field]=b.dataset.cyc.split('_');
       this.cycle(session, sid, field); this._repaint(v);
     }; });
+    $('#ptClosures',v).onclick=()=>this.closuresModal(v);
+  },
+
+  // Add/remove school closures (field trips, weather, illness, Eid, the
+  // last ten nights of Ramadan, etc.). Shared by Progress Tracker and the
+  // Cleaning Schedule — both read DB.data.closures directly.
+  closuresModal(v, onChange){
+    const repaint = onChange || (()=>this._repaint(v));
+    const list = (DB.data.closures||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+    const o = overlay(`<div class="modal" style="max-width:480px">
+      <h3>📅 School closures</h3>
+      <p style="font-size:12.5px;color:var(--ink2);margin-top:-6px">A closed date isn't counted as a session — it won't affect attendance or Qur'an/HW/CW rates, and the Cleaning Schedule skips it.</p>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin:12px 0">
+        ${list.length ? list.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface2);border-radius:8px">
+          <div><b style="font-family:var(--f-mono);font-size:12.5px">${fmtDate(c.date)}</b> <span style="font-size:12.5px">— ${esc(c.reason)}</span>${c.note?`<div style="font-size:11.5px;color:var(--ink3)">${esc(c.note)}</div>`:''}</div>
+          <button class="btn btn-ghost btn-sm" data-delclosure="${c.id}">✕</button>
+        </div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No closures added yet.</p>'}
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div class="field"><label>Date</label><input type="date" id="cl-d1"></div>
+        <div class="field"><label>Through (optional — for a range like Ramadan's last 10 nights)</label><input type="date" id="cl-d2"></div>
+      </div>
+      <div class="field"><label>Reason</label><select id="cl-r">${CLOSURE_REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>
+      <div class="field"><label>Note (optional)</label><input id="cl-n" placeholder="e.g. Six Flags trip, or which masjid confirmed Eid"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" id="cl-add">＋ Add</button></div>
+    </div>`, true);
+    $('[data-x=c]',o).onclick=()=>{ o.remove(); repaint(); };
+    $$('[data-delclosure]',o).forEach(b=>b.onclick=()=>{
+      DB.data.closures = (DB.data.closures||[]).filter(c=>c.id!==b.dataset.delclosure);
+      DB.save(); o.remove(); this.closuresModal(v, onChange);
+    });
+    $('#cl-add',o).onclick=()=>{
+      const d1=$('#cl-d1',o).value, d2=$('#cl-d2',o).value, reason=$('#cl-r',o).value, note=$('#cl-n',o).value.trim();
+      if(!d1){ toast('Pick a date'); return; }
+      const start=new Date(d1+'T00:00:00'), end=d2? new Date(d2+'T00:00:00') : start;
+      if(end<start){ toast('"Through" date is before the start date'); return; }
+      DB.data.closures = DB.data.closures || [];
+      for(let dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)){
+        const dk = dt.toISOString().slice(0,10);
+        if(!DB.data.closures.some(c=>c.date===dk)) DB.data.closures.push({id:uid(), date:dk, reason, note});
+      }
+      DB.save(); DB.log('School closure added — '+reason+' ('+d1+(d2&&d2!==d1?' through '+d2:'')+')');
+      o.remove(); toast('Closure added'); this.closuresModal(v, onChange);
+    };
   },
 
   // Redraws just the roster in place. Deliberately not Router.render(): no
@@ -5903,9 +6003,10 @@ const Progress = {
     const s=DB.data.students.find(x=>x.id===sid);
     if(!s){ this._openId=null; return this.roster(v); }
     const tab=this._tab||'overview';
-    const yearKeys=PT_yearKeys();
+    const year=this._year||new Date().getFullYear();
+    const yearKeys=ptYearKeys(year);
     const yearStats=ptStats(sid, yearKeys);
-    const monthlyRows=PT_MONTHS.map(m=>({month:m, ...ptStats(sid, PT_monthKeys(m))}));
+    const monthlyRows=PT_MONTHS.map(m=>({month:m, ...ptStats(sid, ptMonthKeys(year,m))}));
     const age = s.dob ? Math.floor((Date.now()-new Date(s.dob+'T00:00:00'))/3.15576e10) : null;
     const T={overview:'Overview', quran:'Qur\u2019an', attendance:'Attendance', report:'Report Card'};
 
@@ -5917,6 +6018,7 @@ const Progress = {
          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
            <span class="tag ${ptLevelTag(s.level)}">${s.level}</span>
            <span style="font-size:12px;color:var(--ink2)">${LEVEL_SUB[s.level]}</span>
+           <span class="tag tag-dim">${year}</span>
          </div>
          <div style="font-size:12px;color:var(--ink3);font-family:var(--f-mono);margin-top:3px">${s.dob?('DOB '+s.dob+(age!=null?' · '+age+'y':'')):''}</div>
        </div>
@@ -5929,7 +6031,7 @@ const Progress = {
 
     const body=$('#ptTabBody',v);
     if(tab==='overview') body.innerHTML=this._tplOverview(monthlyRows);
-    else if(tab==='quran') body.innerHTML=this._tplQuran(sid, yearKeys, yearStats);
+    else if(tab==='quran') body.innerHTML=this._tplQuran(sid, yearKeys, yearStats, year);
     else if(tab==='attendance') body.innerHTML=this._tplAttendance(sid, yearKeys, yearStats);
     else body.innerHTML=this._tplReport(s, monthlyRows, yearStats);
 
@@ -5971,8 +6073,8 @@ const Progress = {
     <div class="notice info"><span>📖</span><span>Memorization tracking (current sūrah, progress, ayāt done) lives in AMAN Central's separate ḥifẓ module — not shown here.</span></div>`;
   },
 
-  _tplQuran(sid, yearKeys, yearStats){
-    const monthly = PT_MONTHS.map(m=>({month:m, pct: ptStats(sid, PT_monthKeys(m)).quranPct}));
+  _tplQuran(sid, yearKeys, yearStats, year){
+    const monthly = PT_MONTHS.map(m=>({month:m, pct: ptStats(sid, ptMonthKeys(year,m)).quranPct}));
     const timeline = yearKeys.map(dk=>({dk, e:ptEntry(dk,sid)})).filter(x=>x.e.quran);
     return `<div class="grid g2" style="margin-bottom:14px">
       <div class="card" style="text-align:center">
@@ -6067,8 +6169,9 @@ const Progress = {
    Pairs reshuffle once a month (kept stable within the month so posted
    schedules don't shift underfoot); Saturday and Sunday draw a different
    pair from that month's list rather than sharing one. Reuses the same
-   session calendar (PT_SESSION_DATES/PT_MONTHS/PT_YEAR) as the Progress
-   Tracker so both modules agree on which dates are actual class days. */
+   session calendar (ptWeekendDates/PT_MONTHS) as the Progress Tracker so
+   both modules agree on which dates are actual class days, and — like that
+   calendar — is never pinned to one year. */
 function clnMakePairs(ids){
   const arr=[...ids];
   for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
@@ -6089,16 +6192,23 @@ function clnGenerate(){
     generatedAt: new Date().toISOString(),
   };
 }
-function clnEnsureMonth(month){
+// Cache key includes the year (e.g. "2026-August") so different years' pairs
+// never collide with or overwrite one another.
+const clnKey = (year,month) => year+'-'+month;
+function clnEnsureMonth(year,month){
   DB.data.cleaning = DB.data.cleaning || {pairsByMonth:{}};
-  if(!DB.data.cleaning.pairsByMonth[month]){ DB.data.cleaning.pairsByMonth[month]=clnGenerate(); DB.save(); }
-  return DB.data.cleaning.pairsByMonth[month];
+  const k = clnKey(year,month);
+  if(!DB.data.cleaning.pairsByMonth[k]){ DB.data.cleaning.pairsByMonth[k]=clnGenerate(); DB.save(); }
+  return DB.data.cleaning.pairsByMonth[k];
 }
-function clnReshuffleMonth(month){ DB.data.cleaning.pairsByMonth[month]=clnGenerate(); DB.save(); }
+function clnReshuffleMonth(year,month){ DB.data.cleaning.pairsByMonth[clnKey(year,month)]=clnGenerate(); DB.save(); }
 function clnGroupNames(ids){ return ids.map(id=>{ const s=DB.data.students.find(x=>x.id===id); return s?s.name:'—'; }); }
-function clnScheduleHTML(month, rows){
-  const rowsHTML = rows.map(r=>`<tr><td>${fmtDate(r.dk)}</td><td>${PT_isSat(r.dk)?'Sat':'Sun'}</td><td dir="rtl">${esc(clnGroupNames(r.bGroup).join(' + ')||'—')}</td><td dir="rtl">${esc(clnGroupNames(r.sGroup).join(' + ')||'—')}</td></tr>`).join('');
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Cleaning Schedule \u2014 ${esc(month)}</title>
+function clnScheduleHTML(year, month, rows){
+  const rowsHTML = rows.map(r=>r.closed
+    ? `<tr style="opacity:.6"><td>${fmtDate(r.dk)}</td><td>${PT_isSat(r.dk)?'Sat':'Sun'}</td><td colspan="2">⛔ Closed — ${esc(r.closed.reason)}</td></tr>`
+    : `<tr><td>${fmtDate(r.dk)}</td><td>${PT_isSat(r.dk)?'Sat':'Sun'}</td><td dir="rtl">${esc(clnGroupNames(r.bGroup).join(' + ')||'—')}</td><td dir="rtl">${esc(clnGroupNames(r.sGroup).join(' + ')||'—')}</td></tr>`
+  ).join('');
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Cleaning Schedule \u2014 ${esc(month)} ${year}</title>
 <style>
   *{box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fff;color:#20261f;margin:0;padding:28px}
@@ -6111,7 +6221,7 @@ function clnScheduleHTML(month, rows){
 </style></head>
 <body>
   <h1>Al-Madrasatu An-Nuriyyah \u2014 Cleaning Schedule</h1>
-  <div class="sub">${esc(month)} ${PT_YEAR} \u00b7 new pairs each month, separate pair Saturday and Sunday</div>
+  <div class="sub">${esc(month)} ${year} \u00b7 new pairs each month, separate pair Saturday and Sunday</div>
   <table><thead><tr><th>Date</th><th>Day</th><th>Brothers on duty</th><th>Sisters on duty</th></tr></thead>
   <tbody>${rowsHTML}</tbody></table>
 </body></html>`;
@@ -6119,25 +6229,38 @@ function clnScheduleHTML(month, rows){
 
 const Cleaning = {
   render(v){
-    if(!this._month){ this._month = ptDefaultMonthSession().month; }
-    const month=this._month;
-    const entry = clnEnsureMonth(month);
+    if(!this._month){ const dm=ptDefaultMonthSession(); this._year=dm.year; this._month=dm.month; }
+    const year=this._year, month=this._month;
+    const entry = clnEnsureMonth(year, month);
     const noGender = DB.data.students.filter(s=>s.active!==false && !s.gender);
-    const rows = PT_SESSION_DATES[month].map((md,i)=>{
-      const dk = PT_fullDate(md);
+    // Closed dates are skipped from the rotation counter entirely (not just
+    // hidden), so the pair sequence stays fair across only the real class
+    // days rather than "wasting" a turn on a day nobody attended.
+    let openIdx = 0;
+    const rows = ptWeekendDates(year)[month].map(md=>{
+      const dk = ptFullDate(year, md);
+      const c = closureFor(dk);
+      if(c) return {dk, md, closed:c, bGroup:[], sGroup:[]};
+      const idx = openIdx++;
       return {
-        dk, md,
-        bGroup: entry.brothers.length ? entry.brothers[i % entry.brothers.length] : [],
-        sGroup: entry.sisters.length ? entry.sisters[i % entry.sisters.length] : [],
+        dk, md, closed:null,
+        bGroup: entry.brothers.length ? entry.brothers[idx % entry.brothers.length] : [],
+        sGroup: entry.sisters.length ? entry.sisters[idx % entry.sisters.length] : [],
       };
     });
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div class="eyebrow" style="margin-top:12px">Student Duties</div><h2 class="page-title">Cleaning Schedule</h2>
      <p class="page-sub">Brothers and sisters paired separately. New pairs each month; Saturday and Sunday each get a different pair.</p>
+     <div class="filters no-print"><button class="btn btn-o btn-sm" id="clnClosures">📅 Manage closures</button></div>
 
      ${noGender.length? `<div class="notice warn no-print" style="margin-bottom:14px"><span>\u26a0\ufe0f</span><span>${noGender.length} active student${noGender.length>1?'s':''} ${noGender.length>1?'have':'has'} no gender on file, so ${noGender.length>1?'they are':'they are'} left out of pairing: ${noGender.map(s=>esc(s.name)).join(', ')}. Set it on their profile to include ${noGender.length>1?'them':'them'}.</span></div>` : ''}
 
+     <div class="filters no-print" style="align-items:center;gap:10px">
+       <button class="btn btn-ghost btn-sm" id="clnYearPrev" aria-label="Previous year">←</button>
+       <b style="font-family:var(--f-mono);font-size:15px;min-width:52px;text-align:center">${year}</b>
+       <button class="btn btn-ghost btn-sm" id="clnYearNext" aria-label="Next year">→</button>
+     </div>
      <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap">
        ${PT_MONTHS.map(m=>`<button class="chip ${m===month?'on':''}" data-clnmonth="${m}">${m}</button>`).join('')}
      </div>
@@ -6145,7 +6268,7 @@ const Cleaning = {
      <div class="grid g2" style="margin-bottom:16px">
        <div class="card">
          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-           <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc66 Brothers pairs \u2014 ${month}</h3>
+           <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc66 Brothers pairs \u2014 ${month} ${year}</h3>
            <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.brothers.length} group${entry.brothers.length!==1?'s':''}</span>
          </div>
          <div style="display:flex;flex-direction:column;gap:6px">
@@ -6154,7 +6277,7 @@ const Cleaning = {
        </div>
        <div class="card">
          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-           <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc67 Sisters pairs \u2014 ${month}</h3>
+           <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc67 Sisters pairs \u2014 ${month} ${year}</h3>
            <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.sisters.length} group${entry.sisters.length!==1?'s':''}</span>
          </div>
          <div style="display:flex;flex-direction:column;gap:6px">
@@ -6165,11 +6288,15 @@ const Cleaning = {
 
      <div class="card" style="margin-bottom:14px;overflow-x:auto">
        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap">
-         <h3 style="font-family:var(--f-display);font-size:16px">${month} Schedule</h3>
+         <h3 style="font-family:var(--f-display);font-size:16px">${month} ${year} Schedule</h3>
          <span style="font-size:11px;color:var(--ink3)">Generated ${fmtDate(entry.generatedAt.slice(0,10))}</span>
        </div>
        <table class="tbl"><thead><tr><th>Date</th><th>Day</th><th>Brothers on duty</th><th>Sisters on duty</th></tr></thead>
-       <tbody>${rows.map(r=>`<tr>
+       <tbody>${rows.map(r=>r.closed ? `<tr style="opacity:.6">
+         <td>${fmtDate(r.dk)}</td>
+         <td>${PT_isSat(r.dk)?'Sat':'Sun'}</td>
+         <td colspan="2">⛔ Closed — ${esc(r.closed.reason)}</td>
+       </tr>` : `<tr>
          <td>${fmtDate(r.dk)}</td>
          <td>${PT_isSat(r.dk)?'Sat':'Sun'}</td>
          <td dir="rtl">${esc(clnGroupNames(r.bGroup).join(' + ')||'—')}</td>
@@ -6183,14 +6310,20 @@ const Cleaning = {
      </div>`;
 
     wireCommon(v);
-    // Month switch and reshuffle both repaint in place via this.render(v)
+    // Month/year switch and reshuffle all repaint in place via this.render(v)
     // directly — never Router.render(), for the same reason the Progress
     // Tracker fix mattered: Router.render() always scrolls to the top,
     // which is right for a real navigation but not for staying on this
-    // same page and just picking a different month.
+    // same page and just picking a different month or year.
+    $('#clnYearPrev',v).onclick=()=>{ this._year--; this.render(v); };
+    $('#clnYearNext',v).onclick=()=>{ this._year++; this.render(v); };
     $$('[data-clnmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.clnmonth; this.render(v); });
-    $('#clnReshuffle',v).onclick=()=>confirmBox(`Reshuffle ${month}'s cleaning pairs? This replaces the current pairing for the month.`, ()=>{ clnReshuffleMonth(month); this.render(v); toast('Reshuffled'); });
-    $('#clnPrint',v).onclick=()=>printHTMLDocument(clnScheduleHTML(month, rows));
+    $('#clnReshuffle',v).onclick=()=>confirmBox(`Reshuffle ${month} ${year}'s cleaning pairs? This replaces the current pairing for the month.`, ()=>{ clnReshuffleMonth(year,month); this.render(v); toast('Reshuffled'); });
+    $('#clnPrint',v).onclick=()=>printHTMLDocument(clnScheduleHTML(year, month, rows));
+    // Closures are shared with the Progress Tracker — same modal, same
+    // underlying DB.data.closures list, so a closure added from either
+    // module is respected by both.
+    $('#clnClosures',v).onclick=()=>Progress.closuresModal(v, ()=>this.render(v));
   },
 };
 
