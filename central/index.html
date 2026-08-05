@@ -3562,8 +3562,11 @@ render(v){
   wireCommon(v);
   $('#tuitionBannerDraft',v) && ($('#tuitionBannerDraft',v).onclick=()=>{ d.settings.lastTuitionCheckMonth=nowYM; DB.save(); Tuition.draftAllReminders(); Router.render(); });
   $('#tuitionBannerDismiss',v) && ($('#tuitionBannerDismiss',v).onclick=()=>{ d.settings.lastTuitionCheckMonth=nowYM; DB.save(); toast('Dismissed — will check again next month'); Router.render(); });
-  // live clock
+  // live clock — clearInterval before creating a new one so rapid
+  // dashboard revisits (within the 15s tick window) can't orphan a
+  // previous interval that keeps firing in the background indefinitely
   const tick=()=>{ const el=$('#dClock'); if(!el){clearInterval(Dashboard._clk);return;} el.textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); };
+  clearInterval(Dashboard._clk);
   tick(); Dashboard._clk=setInterval(tick, 15000);
   // AI hand-off
   const go=q=>{ if(!q.trim())return; sessionStorage.setItem('ai_q', q); Router.go('#/ai'); };
@@ -7871,9 +7874,6 @@ function anaRange(){ // resolve current range → {a,b,pa,pb} ISO dates (b inclu
   return {a,b,pa,pb,len};
 }
 const inR=(d,a,b)=> d>=a && d<=b;
-function delta(cur, prev, unit){ if(prev==null||!isFinite(prev)) return '';
-  const df=Math.round((cur-prev)*10)/10; if(!df) return '<span class="tag tag-dim">= prior</span>';
-  return `<span class="tag ${df>0?'tag-green':'tag-red'}">${df>0?'▲':'▼'} ${Math.abs(df)}${unit||''} vs prior</span>`; }
 // compact version for embedding directly on a KPI card, next to the number —
 // only used where "prior period" is a real, cleanly computable comparison
 // (a dated, period-summed metric); point-in-time states like "active students
