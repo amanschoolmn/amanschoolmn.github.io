@@ -5340,7 +5340,8 @@ const Students = {
       DB.log('Removed student: '+s.name); DB.save(); Router.go('#/students'); });
     $('#sReport',v).onclick=()=>Students.printJourney(s,{tot,P,qlog,ach,age,sidFmt});
     const absBtn=$('#sAbsence',v); if(absBtn) absBtn.onclick=()=>Students.printAbsenceNotice(s);
-    $('#sFav',v).onclick=()=>{ s.favorite=!s.favorite; DB.save(); Router.render(); };
+    $('#sFav',v).onclick=()=>{ s.favorite=!s.favorite; DB.save();
+      const b=$('#sFav',v); b.textContent=s.favorite?'★':'☆'; b.title=s.favorite?'Remove from favorites':'Add to favorites'; };
     $('#sAI',v).onclick=()=>{ sessionStorage.setItem('ai_q', 'Give me a progress summary and 3 concrete recommendations for this student: '+aiCtx()); Router.go('#/ai'); };
     $('#sToggleActive',v).onclick=()=>{
       const willBeActive = s.active===false;
@@ -5576,6 +5577,15 @@ const Students = {
     a.download = 'aman-students-'+today()+'.csv';
     document.body.appendChild(a); a.click(); a.remove();
   },
+  // Shared by attendance() and the data-att tap handler below, so toggling
+  // one student's pill only ever touches that student's row — see the
+  // comment on the click handler for why (avatar green-flash on every tap).
+  _attRowHTML(s, date, rec, reasons){
+    return `<td style="width:44px">${avatarHTML(s)}</td><td>${esc(s.name)}${rec[s.id]==='E'&&reasons[s.id]?`<div style="font-size:11px;color:var(--info);font-style:italic;margin-top:2px">${esc(reasons[s.id])}</div>`:''}</td>
+          <td style="text-align:right;white-space:nowrap">
+           ${rec[s.id]==='E'?`<button class="btn btn-ghost btn-sm" data-reason="${s.id}" title="Add/edit reason" style="padding:5px 8px">📝</button>`:''}
+           ${['P','A','L','E'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',A:'Absent — unexcused',L:'Late',E:'Absent — excused'}[k]}">${k}</button>`).join(' ')}</td>`;
+  },
   attendance(v){
     const d=DB.data;
     const date = Students._attDate||today();
@@ -5592,33 +5602,43 @@ const Students = {
       <span style="font-size:12.5px;color:var(--ink2)">P present · A absent (unexcused) · L late · E excused absence — saves instantly</span></div>
      ${stu.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span></div>
-        <div class="card" style="padding:8px 14px"><table class="tbl"><tbody>${g.map(s=>`
-         <tr><td style="width:44px">${avatarHTML(s)}</td><td>${esc(s.name)}${rec[s.id]==='E'&&reasons[s.id]?`<div style="font-size:11px;color:var(--info);font-style:italic;margin-top:2px">${esc(reasons[s.id])}</div>`:''}</td>
-          <td style="text-align:right;white-space:nowrap">
-           ${rec[s.id]==='E'?`<button class="btn btn-ghost btn-sm" data-reason="${s.id}" title="Add/edit reason" style="padding:5px 8px">📝</button>`:''}
-           ${['P','A','L','E'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',A:'Absent — unexcused',L:'Late',E:'Absent — excused'}[k]}">${k}</button>`).join(' ')}</td></tr>`).join('')}
+        <div class="card" style="padding:8px 14px"><table class="tbl"><tbody>${g.map(s=>
+         `<tr data-row="${s.id}">${Students._attRowHTML(s,date,rec,reasons)}</tr>`).join('')}
         </tbody></table></div>`; }).join('')
       : `<div class="empty"><h3>No students to mark</h3><p>Import or add students first.</p><button class="btn btn-p" data-go="#/students">Go to Students</button></div>`}`;
     wireCommon(v);
     $('#attDate',v).onchange=e=>{ Students._attDate=e.target.value; Router.render(); };
     const ap=$('#allP',v); if(ap) ap.onclick=()=>{ stu.forEach(s=>rec[s.id]='P'); DB.log('Attendance: all present · '+date); DB.save(); Router.render(); };
-    $$('button[data-att]',v).forEach(b=>b.onclick=()=>{
-      const [sid,k]=b.dataset.att.split('_');
-      rec[sid] = rec[sid]===k? undefined : k; if(rec[sid]===undefined) delete rec[sid];
-      if(rec[sid]!=='E') delete reasons[sid];
-      DB.save(); Router.render();
-    });
-    $$('button[data-reason]',v).forEach(b=>b.onclick=()=>{
-      const sid=b.dataset.reason; const s=stu.find(x=>x.id===sid);
-      const o=overlay(`<div class="modal" style="max-width:420px"><h3>Excused absence — reason</h3>
-        <p style="font-size:13px;color:var(--ink2);margin-bottom:10px">${esc(s.name)} · ${fmtDate(date)}. Optional — helps if this ever needs a paper trail.</p>
-        <div class="field"><label>Reason</label><textarea id="rz-t" placeholder="e.g., called in sick, family emergency, doctor's appointment…">${esc(reasons[sid]||'')}</textarea></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
-      $('[data-x=c]',o).onclick=()=>o.remove();
-      $('[data-x=s]',o).onclick=()=>{ const t=$('#rz-t',o).value.trim();
-        if(t) reasons[sid]=t; else delete reasons[sid];
-        DB.save(); o.remove(); Router.render(); };
-    });
+    // A single pill only ever changes its own student's attendance record —
+    // patching just that <tr> (instead of the old Router.render(), which
+    // rebuilt the WHOLE table, including every avatar <img> in it) means no
+    // other student's photo is ever touched, so nothing else can flash.
+    const wireRow = (s) => {
+      const tr = v.querySelector(`tr[data-row="${s.id}"]`);
+      if(!tr) return;
+      $$('button[data-att]',tr).forEach(b=>b.onclick=()=>{
+        const [sid,k]=b.dataset.att.split('_');
+        rec[sid] = rec[sid]===k? undefined : k; if(rec[sid]===undefined) delete rec[sid];
+        if(rec[sid]!=='E') delete reasons[sid];
+        DB.save();
+        tr.innerHTML = Students._attRowHTML(s,date,rec,reasons);
+        wireRow(s);
+      });
+      $$('button[data-reason]',tr).forEach(b=>b.onclick=()=>{
+        const o=overlay(`<div class="modal" style="max-width:420px"><h3>Excused absence — reason</h3>
+          <p style="font-size:13px;color:var(--ink2);margin-bottom:10px">${esc(s.name)} · ${fmtDate(date)}. Optional — helps if this ever needs a paper trail.</p>
+          <div class="field"><label>Reason</label><textarea id="rz-t" placeholder="e.g., called in sick, family emergency, doctor's appointment…">${esc(reasons[s.id]||'')}</textarea></div>
+          <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+        $('[data-x=c]',o).onclick=()=>o.remove();
+        $('[data-x=s]',o).onclick=()=>{ const t=$('#rz-t',o).value.trim();
+          if(t) reasons[s.id]=t; else delete reasons[s.id];
+          DB.save(); o.remove();
+          tr.innerHTML = Students._attRowHTML(s,date,rec,reasons);
+          wireRow(s);
+        };
+      });
+    };
+    stu.forEach(wireRow);
   },
 };
 function initials(n){ return n.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase(); }
@@ -5632,17 +5652,18 @@ function avatarHTML(s, style){ return `<div class="avatar" style="${style||''}">
    reading check pass", "did the 3 HW pages come back") aren't the same as the
    existing d.quran ḥifẓ-portion log or d.homework assignment sheets — both of
    those stay untouched and keep meaning what they already mean. */
-const PT_MONTHS = ['June','July','August','September','October','November','December'];
-// Every real Saturday+Sunday, June–Dec, for ANY given year — computed live
-// rather than hardcoded, so the app keeps working correctly every future
-// season without ever needing another manual date fix like the one applied
-// on 2026-08-05 (the original hardcoded 2026 list was wrong from July on).
-// A weekend spanning a month boundary (e.g. Oct 31/Nov 1) is split into
-// each date's own calendar month.
+const PT_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+// Every real Saturday+Sunday for ANY given year — computed live rather than
+// hardcoded, so the app keeps working correctly every future season without
+// ever needing another manual date fix like the one applied on 2026-08-05
+// (the original hardcoded 2026 list was wrong from July on). All 12 months
+// are available — not just June–Dec — since some terms run outside that
+// window too. A weekend spanning a month boundary (e.g. Oct 31/Nov 1) is
+// split into each date's own calendar month.
 function ptWeekendDates(year){
   const out = {};
   PT_MONTHS.forEach((name, i) => {
-    const m = i + 6; // June=6 ... December=12
+    const m = i + 1; // January=1 ... December=12
     const lastDay = new Date(year, m, 0).getDate();
     const days = [];
     for (let d = 1; d <= lastDay; d++) {
@@ -5776,27 +5797,119 @@ function ptStats(sid, dateKeys){
 function ptSom(st){ return (st.quranPct||0)*0.6 + (st.hwPct||0)*0.25 + (st.cwPct||0)*0.15; }
 
 // Picks a sensible default year/month/session for "today", whatever year
-// that actually is — never pinned to one season, so this keeps working
-// correctly every future year without needing another manual fix.
+// (and month — all 12 are valid now) that actually is.
 function ptDefaultMonthSession(){
   const t=new Date(), y=t.getFullYear(), m=t.getMonth()+1, day=t.getDate();
   const weekends = ptWeekendDates(y);
-  if(m>=6 && m<=12){
-    const month = PT_MONTHS[m-6];
-    const md = String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-    const chips = weekends[month];
-    const cand = chips.filter(c=>c<=md);
-    const openCand = cand.filter(c=>!closureFor(ptFullDate(y,c)));
-    const pick = openCand.length ? openCand[openCand.length-1] : (cand.length ? cand[cand.length-1] : chips[0]);
-    return {year:y, month, session: ptFullDate(y, pick)};
-  }
-  // Outside the June–Dec season (e.g. checking in January) — default to the
-  // upcoming June of the current calendar year rather than showing nothing.
-  return {year:y, month:'June', session: ptFullDate(y, weekends.June[0])};
+  const month = PT_MONTHS[m-1];
+  const md = String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  const chips = weekends[month];
+  const cand = chips.filter(c=>c<=md);
+  const openCand = cand.filter(c=>!closureFor(ptFullDate(y,c)));
+  const pick = openCand.length ? openCand[openCand.length-1] : (cand.length ? cand[cand.length-1] : chips[0]);
+  return {year:y, month, session: ptFullDate(y, pick)};
 }
 
 const Progress = {
   render(v){ this._openId ? this.detail(v, this._openId) : this.roster(v); },
+
+  // Shared by the full roster() render and _patchAfterCycle() below, so a
+  // single tap-to-cycle never has to redraw more than the one row that
+  // actually changed — see the comment on _patchAfterCycle for why that
+  // matters (rebuilding avatar <img> markup on every tap was causing a
+  // visible green flash on every student photo, every single tap).
+  _rowHTML(s, L, session, monthKeys, sat){
+    const e = ptEntry(session, s.id);
+    const st = ptStats(s.id, monthKeys);
+    const uaTone = st.ua>=3 ? 'color:var(--bad);font-weight:800' : st.ua===2 ? 'color:var(--warn);font-weight:800' : '';
+    return `<div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
+        ${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="rtl">${esc(s.name)}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
+            <span class="tag ${ptLevelTag(L)}">${L}</span>
+            ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)">🔥${st.streak}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="pill-cyc ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'':''}" data-cyc="${s.id}_att" title="🕌 Attendance">${PT_ATT_LABEL[e.att]||'—'}</button>
+        <button class="pill-cyc ${e.quran||''}" data-cyc="${s.id}_quran" title="📖 Qur'an">${e.quran||'—'}</button>
+        <button class="pill-cyc ${e.hw||''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="📝 Homework">${sat?(e.hw||'—'):'—'}</button>
+        <button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="✏️ Classwork">${e.cw||'—'}</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
+        <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
+        <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
+        <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
+        <span style="${uaTone}">🚫 ${st.ua}</span>
+        <span>⏱️ ${st.late}</span>
+      </div>`;
+  },
+  _liveCounterHTML(all, session, sat){
+    let present=0,late=0,ua=0,qP=0,qT=0,hD=0,hT=0,cD=0,cT=0;
+    all.forEach(s=>{ const e=ptEntry(session,s.id);
+      if(e.att==='P') present++; else if(e.att==='L'){ present++; late++; } else if(e.att==='A') ua++;
+      if(e.quran && e.quran!=='EXC'){ qT++; if(e.quran==='PASS') qP++; }
+      if(sat && e.hw && e.hw!=='EXC'){ hT++; if(e.hw==='DONE') hD++; }
+      if(e.cw && e.cw!=='EXC'){ cT++; if(e.cw==='DONE') cD++; }
+    });
+    return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
+       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
+       <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
+       <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
+       <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
+  },
+  _somBodyHTML(all, monthKeys){
+    const somByLevel={};
+    LEVELS.forEach(L=>{
+      const scored = all.filter(s=>s.level===L).map(s=>({s, st:ptStats(s.id,monthKeys)})).filter(x=>x.st.total>0)
+        .map(x=>({...x, score:ptSom(x.st)})).sort((a,b)=>b.score-a.score);
+      somByLevel[L] = scored[0]||null;
+    });
+    return LEVELS.map(L=>{ const top=somByLevel[L];
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="tag ${ptLevelTag(L)}">${L}</span>
+          ${top ? `<b dir="rtl">${esc(top.s.name)}</b>` : `<span style="color:var(--ink3);font-size:12.5px">No students currently enrolled</span>`}
+        </div>
+        ${top?`<b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>`:''}
+      </div>`; }).join('');
+  },
+  // A tap-to-cycle only ever changes ONE cell's underlying data — patching
+  // just that row (plus the live counter and SoM panel, which are the only
+  // other things a single tap can affect) instead of calling _repaint()
+  // (which redraws the entire roster via v.innerHTML) means every other
+  // student's avatar is never touched, so it can't flash. Previously every
+  // tap rebuilt all ~40 <img> tags at once; the brief moment before each one
+  // repaints is when .avatar's green gradient fallback background shows
+  // through — that's what was flashing.
+  _patchAfterCycle(v, sid){
+    const year=this._year, month=this._month, session=this._session, sat=PT_isSat(session);
+    const monthKeys = ptMonthKeys(year, month);
+    const all = DB.data.students.filter(s=>s.active!==false);
+    const s = all.find(x=>x.id===sid);
+    if(s){
+      const row = v.querySelector(`[data-row="${sid}"]`);
+      if(row) row.innerHTML = this._rowHTML(s, s.level, session, monthKeys, sat);
+    }
+    const lc = $('#ptLiveCounter',v);
+    if(lc) lc.innerHTML = this._liveCounterHTML(all, session, sat);
+    const somBody = $('#ptSomBody',v);
+    if(somBody) somBody.innerHTML = this._somBodyHTML(all, monthKeys);
+    // Re-wire only the patched row's own cells — everything else's
+    // listeners are untouched since their DOM nodes were never replaced.
+    if(s){
+      const row = v.querySelector(`[data-row="${sid}"]`);
+      if(row){
+        $$('[data-cyc]',row).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
+          const [rsid,field]=b.dataset.cyc.split('_');
+          this.cycle(session, rsid, field); this._patchAfterCycle(v, rsid);
+        }; });
+        $$('[data-ptopen]',row).forEach(b=>b.onclick=()=>{ this._openId=b.dataset.ptopen; this._tab='overview'; Router.render(); });
+      }
+    }
+  },
 
   roster(v){
     if(!this._month){ const dm=ptDefaultMonthSession(); this._year=dm.year; this._month=dm.month; this._session=dm.session; }
@@ -5807,21 +5920,6 @@ const Progress = {
     const lvl = this._levelFilter||'', find=(this._find||'').trim();
     const shown = all.filter(s => (!lvl||s.level===lvl) && (!find||s.name.includes(find)));
     const closed = closureFor(session);
-
-    let present=0,late=0,ua=0,qP=0,qT=0,hD=0,hT=0,cD=0,cT=0;
-    all.forEach(s=>{ const e=ptEntry(session,s.id);
-      if(e.att==='P') present++; else if(e.att==='L'){ present++; late++; } else if(e.att==='A') ua++;
-      if(e.quran && e.quran!=='EXC'){ qT++; if(e.quran==='PASS') qP++; }
-      if(sat && e.hw && e.hw!=='EXC'){ hT++; if(e.hw==='DONE') hD++; }
-      if(e.cw && e.cw!=='EXC'){ cT++; if(e.cw==='DONE') cD++; }
-    });
-
-    const somByLevel={};
-    LEVELS.forEach(L=>{
-      const scored = all.filter(s=>s.level===L).map(s=>({s, st:ptStats(s.id,monthKeys)})).filter(x=>x.st.total>0)
-        .map(x=>({...x, score:ptSom(x.st)})).sort((a,b)=>b.score-a.score);
-      somByLevel[L] = scored[0]||null;
-    });
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div class="eyebrow" style="margin-top:12px">Student Progress</div><h2 class="page-title">Progress Tracker</h2>
@@ -5845,13 +5943,7 @@ const Progress = {
      <div class="notice warn" style="margin-bottom:14px">
        <span>⛔</span><span><b>School closed — ${esc(closed.reason)}</b>${closed.note?` · ${esc(closed.note)}`:''}<br><span style="font-size:12px;color:var(--ink2)">${fmtDate(session)} isn't counted as a session. Pick a different date above to take attendance.</span></span>
      </div>` : `
-     <div class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">
-       <b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
-       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
-       <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
-       <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
-       <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>
-     </div>
+     <div id="ptLiveCounter" class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">${this._liveCounterHTML(all, session, sat)}</div>
 
      <div class="filters no-print">
        <button class="chip ${!lvl?'on':''}" data-ptlvl="">All</button>
@@ -5861,51 +5953,13 @@ const Progress = {
 
      ${shown.length ? LEVELS.map(L=>{ const g=shown.filter(s=>s.level===L); if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
-        <div class="grid g2">${g.map(s=>{
-          const e = ptEntry(session, s.id);
-          const st = ptStats(s.id, monthKeys);
-          const uaTone = st.ua>=3 ? 'color:var(--bad);font-weight:800' : st.ua===2 ? 'color:var(--warn);font-weight:800' : '';
-          return `<div class="card" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">
-            <div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
-              ${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}
-              <div style="min-width:0;flex:1">
-                <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="rtl">${esc(s.name)}</div>
-                <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
-                  <span class="tag ${ptLevelTag(L)}">${L}</span>
-                  ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)">🔥${st.streak}</span>`:''}
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="pill-cyc ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'':''}" data-cyc="${s.id}_att" title="🕌 Attendance">${PT_ATT_LABEL[e.att]||'—'}</button>
-              <button class="pill-cyc ${e.quran||''}" data-cyc="${s.id}_quran" title="📖 Qur'an">${e.quran||'—'}</button>
-              <button class="pill-cyc ${e.hw||''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="📝 Homework">${sat?(e.hw||'—'):'—'}</button>
-              <button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="✏️ Classwork">${e.cw||'—'}</button>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
-              <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
-              <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
-              <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
-              <span style="${uaTone}">🚫 ${st.ua}</span>
-              <span>⏱️ ${st.late}</span>
-            </div>
-          </div>`;
-        }).join('')}</div>`;
+        <div class="grid g2">${g.map(s=>`<div class="card" data-row="${s.id}" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">${this._rowHTML(s, L, session, monthKeys, sat)}</div>`).join('')}</div>`;
      }).join('') : '<div class="empty"><p>No students match.</p></div>'}
      `}
 
      <details class="card" style="margin-top:6px" ${this._somOpen?'open':''} id="ptSom">
        <summary style="cursor:pointer;font-weight:700;color:var(--green)">🌟 Student of the Month — ${month} ${year}</summary>
-       <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-         ${LEVELS.map(L=>{ const top=somByLevel[L];
-           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface2)">
-             <div style="display:flex;align-items:center;gap:8px">
-               <span class="tag ${ptLevelTag(L)}">${L}</span>
-               ${top ? `<b dir="rtl">${esc(top.s.name)}</b>` : `<span style="color:var(--ink3);font-size:12.5px">No students currently enrolled</span>`}
-             </div>
-             ${top?`<b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>`:''}
-           </div>`; }).join('')}
-       </div>
+       <div id="ptSomBody" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${this._somBodyHTML(all, monthKeys)}</div>
      </details>`;
 
     wireCommon(v);
@@ -5930,7 +5984,7 @@ const Progress = {
     $$('[data-ptopen]',v).forEach(b=>b.onclick=()=>{ this._openId=b.dataset.ptopen; this._tab='overview'; Router.render(); });
     $$('[data-cyc]',v).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
       const [sid,field]=b.dataset.cyc.split('_');
-      this.cycle(session, sid, field); this._repaint(v);
+      this.cycle(session, sid, field); this._patchAfterCycle(v, sid);
     }; });
     $('#ptClosures',v).onclick=()=>this.closuresModal(v);
   },
