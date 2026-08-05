@@ -395,6 +395,13 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .pill-att.A{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
 .pill-att.L{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn);border-color:var(--warn)}
 .pill-att.E{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
+/* Progress Tracker — tap-to-cycle cells for Qur'an/HW/CW (attendance reuses .pill-att above) */
+.pill-cyc{min-width:44px;height:34px;padding:0 6px;border-radius:9px;border:1px solid var(--line2);font-weight:700;font-size:10.5px;color:var(--ink3);transition:all .1s;font-family:var(--f-mono);background:var(--surface)}
+.pill-cyc.PASS,.pill-cyc.DONE{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
+.pill-cyc.FAIL,.pill-cyc.INC{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
+.pill-cyc.EXC{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
+.pill-cyc:disabled{opacity:.4;cursor:not-allowed}
+.tag-purple{background:color-mix(in srgb,#7B4FA0 15%,transparent);color:#7B4FA0}
 .notice{display:flex;gap:11px;padding:13px 15px;border-radius:var(--r-sm);font-size:13.5px;border:1px solid;align-items:flex-start}
 .notice.warn{background:color-mix(in srgb,var(--warn) 9%,transparent);border-color:color-mix(in srgb,var(--warn) 35%,transparent);color:var(--ink)}
 .notice.info{background:color-mix(in srgb,var(--info) 8%,transparent);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
@@ -879,8 +886,8 @@ const ROSTER=[
 {num:34,name:'محسن بن نصرالدين',level:'Level 3',dob:'2020-07-25',gender:'Brother',ph:'data:image/jpeg;base64,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'},
 {num:35,name:'أوبسا بن برو',level:'Level 1',dob:'2021-12-20',gender:'Brother',ph:'data:image/jpeg;base64,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'},
 {num:36,name:'عمران بن محي الدين',level:'Level 1',dob:'2022-03-24',gender:'Brother',ph:'data:image/jpeg;base64,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'},
-{num:37,name:'كفاية',level:'Level 3',dob:'2012-03-29',gender:'Sister',start:'2026-08-01'},
-{num:38,name:'يوسف',level:'Level 3',dob:'2013-11-27',gender:'Brother',start:'2026-08-01'},
+{num:37,name:'كفاية بنت أفركان',level:'Level 3',dob:'2012-03-29',gender:'Sister',start:'2026-08-01'},
+{num:38,name:'يوسف بن أفركان',level:'Level 3',dob:'2013-11-27',gender:'Brother',start:'2026-08-01'},
 {num:39,name:'حنيفة بنت خالد',level:'Level 3',dob:'2011-10-01',gender:'Sister',start:'2026-08-01'},
 {num:40,name:'نعمان بن خالد',level:'Level 3',dob:'2014-12-05',gender:'Brother',start:'2026-08-01'}
 ];
@@ -2644,17 +2651,23 @@ function openLetterPreview(html){
   // Rendered as an in-page overlay (not window.open): a new browser tab/window
   // can be silently blocked by sandboxed preview panes or popup blockers, with
   // no visible error. An <iframe srcdoc> gives the same visual/CSS isolation
-  // from the app's own styling without ever requesting a new window.
-  // PRINT BUG (fixed): this overlay used to carry the app-wide "no-print" class,
-  // which the global @media print rule hides — that hid the letter itself
-  // (inside the iframe) during printing, leaving only the underlying app page
-  // visible, which is what actually printed. On top of that, iOS Safari does
-  // not reliably scope window.print() to an iframe's own document — it can
-  // print the parent page instead. Fix: the overlay itself is never no-print
-  // (only its button bar is, so those buttons don't show up on paper), and
-  // printing goes through a real new window with the letter's own HTML —
-  // the same reliable pattern used by every other print flow in this app —
-  // rather than depending on iframe-scoped printing.
+  // from the app's own styling without ever requesting a new window — this
+  // part is only for the on-screen preview and is unaffected by the fix below.
+  // PRINT BUG (fixed again): the previous fix routed printing through
+  // window.open('','_blank') + document.write(html). That's fragile in two
+  // specific ways that both produce exactly the symptom reported — a blank
+  // "Page 1 of 1" — with the print header still showing the app's own URL:
+  // (1) installed/home-screen iOS PWAs ("standalone" display mode) don't
+  // reliably support opening a second window — window.open() can silently
+  // reuse the current window instead of creating a new one; (2) document.write()
+  // called on a window whose document has already finished loading forces an
+  // implicit document.open() that tears down the current render tree, which
+  // Safari can leave in a blank/half-painted state. Either way you can end up
+  // printing a broken version of the SAME window rather than the letter.
+  // Fix: never open a second window. Inject the letter's HTML into a hidden
+  // #print-root in THIS document, scope a print stylesheet to show only that
+  // root, and call window.print() in place. Same window throughout, so none
+  // of the above can happen — this is what printHTMLDocument() below does.
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,20,15,.72);display:flex;flex-direction:column;padding:18px;padding-top:calc(18px + env(safe-area-inset-top));box-sizing:border-box';
   overlay.className = 'letter-overlay';
@@ -2664,11 +2677,7 @@ function openLetterPreview(html){
   const printBtn = document.createElement('button');
   printBtn.textContent = '🖨️ Print / Save as PDF';
   printBtn.style.cssText = 'background:#1a4a35;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)';
-  printBtn.onclick = () => {
-    const w = window.open('', '_blank');
-    if(w){ w.document.write(html); w.document.close(); }
-    else toast('Pop-up blocked — allow pop-ups for this site, or use the Print button inside the preview below.');
-  };
+  printBtn.onclick = () => printHTMLDocument(html);
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '\u2715 Close preview';
   closeBtn.style.cssText = 'background:#fff;color:#1a4a35;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)';
@@ -2681,6 +2690,44 @@ function openLetterPreview(html){
   overlay.appendChild(bar);
   overlay.appendChild(frame);
   document.body.appendChild(overlay);
+}
+// Prints a full HTML document string (as produced by renderSOTMShareCard,
+// renderSOTMCertificate, letter/checklist builders, etc.) reliably on every
+// platform this app runs on, including installed iOS home-screen PWAs.
+// See the print-bug comment above openLetterPreview for why this replaced
+// the old window.open()+document.write() approach.
+function printHTMLDocument(html){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleHTML = [...doc.querySelectorAll('style')].map(s=>s.outerHTML).join('');
+  const bodyHTML = doc.body ? doc.body.innerHTML : html;
+
+  let root = document.getElementById('print-root');
+  if(!root){
+    root = document.createElement('div');
+    root.id = 'print-root';
+    document.body.appendChild(root);
+  }
+  root.innerHTML = styleHTML + bodyHTML;
+
+  if(!document.getElementById('print-root-style')){
+    const st = document.createElement('style');
+    st.id = 'print-root-style';
+    // #print-root stays out of normal layout at all times; on print, it's
+    // the ONLY thing shown — everything else in the app is hidden here
+    // rather than relying on the app's own .no-print bookkeeping, so this
+    // works no matter what page/overlay happens to be open underneath.
+    st.textContent = `#print-root{display:none}
+      @media print{
+        body>*:not(#print-root){display:none!important}
+        #print-root{display:block!important;position:static}
+      }`;
+    document.head.appendChild(st);
+  }
+
+  // Let images/fonts inside #print-root finish laying out before printing.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    window.print();
+  }));
 }
 function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, interviewDate, interviewTime){
   const subject = 'AMAN \u2014 '+students+' Conditionally Accepted (One Step Left)';
@@ -2806,13 +2853,19 @@ function amaanahFromRow(row){
 }
 
 const DB = {
-  KEY:'aman_central_v1', SCHEMA:5, data:null, _t:null,
+  KEY:'aman_central_v1', SCHEMA:7, data:null, _t:null,
   defaults(){
     return {
       schema:this.SCHEMA,
       resources:SEED_RESOURCES.map(r=>JSON.parse(JSON.stringify(r))),
       collections:[...SEED_COLLECTIONS],
       students: ROSTER.map(rosterStudent), attendance:{}, attendanceReasons:{}, quran:[], behavior:[], achievements:[],
+      // Progress Tracker module: per-session Qur'an/HW/CW results, keyed
+      // progress[date][studentId] = {quran, hw, cw}. Attendance itself stays
+      // in the existing d.attendance/d.attendanceReasons above — the tracker
+      // reads/writes those directly so the rest of the app (dashboard, Class
+      // Day cockpit, Prep radar, etc.) sees the same numbers automatically.
+      progress:{}, progressComments:{},
       admissions:[], amaanahApplications:[],
       lessons:[], planner:{}, quizzes:[], homework:[], reflections:[],
       tasks:[
@@ -2889,6 +2942,11 @@ const DB = {
       Object.values(d.finance && d.finance.plans || {}).forEach(p=>{ if(!p.start){ p.start=nowM; activated++; } });
       if(activated && Array.isArray(d.activity)){ d.activity.unshift({t:new Date().toISOString(), text:'Tuition tracking activated for '+activated+' famil'+(activated===1?'y':'ies')+' with no start date on file'}); d.activity=d.activity.slice(0,80); }
       d.schema=6;
+    }
+    if(d.schema<7){
+      if(!d.progress || typeof d.progress!=='object') d.progress={};
+      if(!d.progressComments || typeof d.progressComments!=='object') d.progressComments={};
+      d.schema=7;
     }
     const def = this.defaults();
     for(const k of Object.keys(def)) if(!(k in d)) d[k] = def[k];
@@ -4624,6 +4682,7 @@ function renderGoalCard(eta, unitLabel, shortLabelFn, longLabelFn){
 Registry.register({ id:'students', name:'Students', icon:'cap', group:'Workspaces',
 render(v,param){
   if(param==='attendance') return Students.attendance(v);
+  if(param==='progress') return Progress.render(v);
   if(param && DB.data.students.find(s=>s.id===param)) return Students.profile(v,param);
   Students.list(v);
 }});
@@ -4686,6 +4745,7 @@ const Students = {
        <button class="btn btn-o btn-sm" id="stImport">⇪ Import</button>
        <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
        <button class="btn btn-o btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
+       <button class="btn btn-o btn-sm" data-go="#/students/progress">📊 Progress Tracker</button>
        <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
        <button class="btn btn-o btn-sm" data-go="#/admissions">📥 Admissions</button>
        <button class="btn btn-o btn-sm" id="stShare">🌟 Create Share Card</button>
@@ -5479,6 +5539,410 @@ const Students = {
 };
 function initials(n){ return n.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase(); }
 function avatarHTML(s, style){ return `<div class="avatar" style="${style||''}">${s.photo?`<img src="${s.photo}" alt="" loading="lazy">`:esc(initials(s.name))}</div>`; }
+/* ================= MODULE: PROGRESS TRACKER (attendance/Qur'an/HW/CW) =================
+   Session-by-session tracker layered on top of the existing roster.
+   Attendance reuses DB.data.attendance/attendanceReasons as-is (same P/A/L/E
+   codes attSummary(), the Class Day cockpit, and Prep radar already read) so
+   nothing else in the app needs to change. Qur'an-reading-check/HW/CW are new
+   per-session fields in DB.data.progress, since those questions ("did today's
+   reading check pass", "did the 3 HW pages come back") aren't the same as the
+   existing d.quran ḥifẓ-portion log or d.homework assignment sheets — both of
+   those stay untouched and keep meaning what they already mean. */
+const PT_YEAR = 2026;
+const PT_MONTHS = ['June','July','August','September','October','November','December'];
+const PT_SESSION_DATES = {
+  June: ['06-06','06-07','06-13','06-14','06-20','06-21','06-27','06-28'],
+  July: ['07-05','07-06','07-12','07-13','07-19','07-20','07-26','07-27'],
+  August: ['08-02','08-03','08-09','08-10','08-16','08-17','08-23','08-24','08-30','08-31'],
+  September: ['09-06','09-07','09-13','09-14','09-20','09-21','09-27','09-28'],
+  October: ['10-04','10-05','10-11','10-12','10-18','10-19','10-25','10-26'],
+  November: ['11-01','11-02','11-08','11-09','11-15','11-16','11-22','11-23'],
+  December: ['12-06','12-07','12-13','12-14','12-20','12-21','12-27','12-28'],
+};
+const PT_fullDate = md => PT_YEAR+'-'+md;
+const PT_isSat = dateKey => new Date(dateKey+'T00:00:00').getDay()===6;
+const PT_chip = md => md+' '+(PT_isSat(PT_fullDate(md))?'Sat':'Sun');
+const PT_monthKeys = m => (PT_SESSION_DATES[m]||[]).map(PT_fullDate);
+const PT_yearKeys = () => PT_MONTHS.flatMap(PT_monthKeys);
+
+// Attendance cycle writes the SAME codes attSummary()/cockpit already read
+// (P/A/L/E); UA and EXC are just this module's friendlier on-screen labels
+// for the existing 'A' (unexcused) and 'E' (excused) codes.
+const PT_ATT_CYCLE = [undefined,'P','L','A','E'];
+const PT_ATT_LABEL = {P:'P', L:'L', A:'UA', E:'EXC'};
+const PT_Q_CYCLE = [null,'PASS','FAIL','EXC'];
+const PT_HW_CYCLE = [null,'DONE','INC','EXC'];
+const PT_CW_CYCLE = [null,'DONE','INC','EXC'];
+const ptNext = (cycle,cur) => cycle[(cycle.indexOf(cur)+1)%cycle.length];
+
+const PT_GRADE_SCALE = [[95,'A+'],[90,'A'],[87,'A-'],[83,'B+'],[80,'B'],[77,'B-'],[73,'C+'],[70,'C'],[67,'C-'],[63,'D+'],[60,'D'],[0,'F']];
+const ptGrade = pct => (PT_GRADE_SCALE.find(([m])=>pct>=m) || PT_GRADE_SCALE[PT_GRADE_SCALE.length-1])[1];
+const ptLevelTag = L => L==='Level 1'?'tag-green':L==='Level 2'?'tag-blue':'tag-purple';
+
+function ptEntry(dateKey, sid){
+  const d = DB.data;
+  const att = (d.attendance[dateKey]||{})[sid];
+  const p = (d.progress[dateKey]||{})[sid] || {};
+  return {att, quran:p.quran||null, hw:p.hw||null, cw:p.cw||null};
+}
+
+function ptStats(sid, dateKeys){
+  let present=0,late=0,ua=0,exc=0,total=0;
+  let qPass=0,qTotal=0,hwDone=0,hwTotal=0,cwDone=0,cwTotal=0;
+  let streak=0, broke=false;
+  for(let i=dateKeys.length-1;i>=0;i--){
+    const e = ptEntry(dateKeys[i], sid);
+    if(e.quran==='PASS'){ if(!broke) streak++; }
+    else if(e.quran==='FAIL'){ broke=true; }
+  }
+  dateKeys.forEach(dk=>{
+    const e = ptEntry(dk, sid);
+    if(e.att){
+      total++;
+      if(e.att==='P') present++;
+      else if(e.att==='L'){ present++; late++; }
+      else if(e.att==='A') ua++;
+      else if(e.att==='E') exc++;
+    }
+    if(e.quran && e.quran!=='EXC'){ qTotal++; if(e.quran==='PASS') qPass++; }
+    if(PT_isSat(dk) && e.hw && e.hw!=='EXC'){ hwTotal++; if(e.hw==='DONE') hwDone++; }
+    if(e.cw && e.cw!=='EXC'){ cwTotal++; if(e.cw==='DONE') cwDone++; }
+  });
+  const nonExc = total-exc;
+  return {
+    total, present, late, ua, exc,
+    attPct: nonExc>0 ? (present/nonExc)*100 : null,
+    quranPct: qTotal>0 ? (qPass/qTotal)*100 : null,
+    hwPct: hwTotal>0 ? (hwDone/hwTotal)*100 : null,
+    cwPct: cwTotal>0 ? (cwDone/cwTotal)*100 : null,
+    streak,
+  };
+}
+// Student of the Month: 60% Qur'an pass rate + 25% HW + 15% CW.
+function ptSom(st){ return (st.quranPct||0)*0.6 + (st.hwPct||0)*0.25 + (st.cwPct||0)*0.15; }
+
+function ptDefaultMonthSession(){
+  const t=new Date(), y=t.getFullYear(), m=t.getMonth()+1, day=t.getDate();
+  if(y===PT_YEAR && m>=6 && m<=12){
+    const month = PT_MONTHS[m-6];
+    const md = String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    const chips = PT_SESSION_DATES[month];
+    const cand = chips.filter(c=>c<=md);
+    return {month, session: PT_fullDate(cand.length ? cand[cand.length-1] : chips[0])};
+  }
+  return {month:'June', session: PT_fullDate(PT_SESSION_DATES.June[0])};
+}
+
+// Reliable in-place printing for the Report Card — same technique used to
+// fix the Share Card print bug (no window.open/document.write: those are
+// unreliable inside an installed iOS home-screen app and can print a blank
+// page). Prints a clone of a live DOM node from THIS document instead.
+function ptPrintNode(node){
+  if(!node) return;
+  let root = document.getElementById('pt-print-root');
+  if(!root){ root=document.createElement('div'); root.id='pt-print-root'; document.body.appendChild(root); }
+  root.innerHTML=''; root.appendChild(node.cloneNode(true));
+  if(!document.getElementById('pt-print-style')){
+    const st=document.createElement('style'); st.id='pt-print-style';
+    st.textContent = `#pt-print-root{display:none}
+      @media print{ body>*:not(#pt-print-root){display:none!important} #pt-print-root{display:block!important;position:static} }`;
+    document.head.appendChild(st);
+  }
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+}
+
+const Progress = {
+  render(v){ this._openId ? this.detail(v, this._openId) : this.roster(v); },
+
+  roster(v){
+    if(!this._month){ const dm=ptDefaultMonthSession(); this._month=dm.month; this._session=dm.session; }
+    if(this._somOpen===undefined) this._somOpen=true;
+    const month=this._month, session=this._session, sat=PT_isSat(session);
+    const monthKeys = PT_monthKeys(month);
+    const all = DB.data.students.filter(s=>s.active!==false);
+    const lvl = this._levelFilter||'', find=(this._find||'').trim();
+    const shown = all.filter(s => (!lvl||s.level===lvl) && (!find||s.name.includes(find)));
+
+    let present=0,late=0,ua=0,qP=0,qT=0,hD=0,hT=0,cD=0,cT=0;
+    all.forEach(s=>{ const e=ptEntry(session,s.id);
+      if(e.att==='P') present++; else if(e.att==='L'){ present++; late++; } else if(e.att==='A') ua++;
+      if(e.quran && e.quran!=='EXC'){ qT++; if(e.quran==='PASS') qP++; }
+      if(sat && e.hw && e.hw!=='EXC'){ hT++; if(e.hw==='DONE') hD++; }
+      if(e.cw && e.cw!=='EXC'){ cT++; if(e.cw==='DONE') cD++; }
+    });
+
+    const somByLevel={};
+    LEVELS.forEach(L=>{
+      const scored = all.filter(s=>s.level===L).map(s=>({s, st:ptStats(s.id,monthKeys)})).filter(x=>x.st.total>0)
+        .map(x=>({...x, score:ptSom(x.st)})).sort((a,b)=>b.score-a.score);
+      somByLevel[L] = scored[0]||null;
+    });
+
+    v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
+     <div class="eyebrow" style="margin-top:12px">Student Progress</div><h2 class="page-title">Progress Tracker</h2>
+     <p class="page-sub">Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly.</p>
+
+     <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap">
+       ${PT_MONTHS.map(m=>`<button class="chip ${m===month?'on':''}" data-ptmonth="${m}">${m}</button>`).join('')}
+     </div>
+     <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap;margin-top:-6px">
+       ${PT_SESSION_DATES[month].map(md=>`<button class="chip ${PT_fullDate(md)===session?'on':''}" data-ptsession="${md}">${PT_chip(md)}</button>`).join('')}
+     </div>
+
+     <div class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">
+       <b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
+       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
+       <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
+       <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
+       <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>
+     </div>
+
+     <div class="filters no-print">
+       <button class="chip ${!lvl?'on':''}" data-ptlvl="">All</button>
+       ${LEVELS.map(L=>`<button class="chip ${lvl===L?'on':''}" data-ptlvl="${L}">${L}</button>`).join('')}
+       <input type="search" id="ptFind" placeholder="Find student…" value="${esc(find)}" dir="rtl" style="max-width:190px">
+     </div>
+
+     ${shown.length ? LEVELS.map(L=>{ const g=shown.filter(s=>s.level===L); if(!g.length) return '';
+       return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
+        <div class="grid g2">${g.map(s=>{
+          const e = ptEntry(session, s.id);
+          const st = ptStats(s.id, monthKeys);
+          const uaTone = st.ua>=3 ? 'color:var(--bad);font-weight:800' : st.ua===2 ? 'color:var(--warn);font-weight:800' : '';
+          return `<div class="card" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
+              ${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}
+              <div style="min-width:0;flex:1">
+                <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="rtl">${esc(s.name)}</div>
+                <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
+                  <span class="tag ${ptLevelTag(L)}">${L}</span>
+                  ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)">🔥${st.streak}</span>`:''}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="pill-cyc ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'':''}" data-cyc="${s.id}_att" title="🕌 Attendance">${PT_ATT_LABEL[e.att]||'—'}</button>
+              <button class="pill-cyc ${e.quran||''}" data-cyc="${s.id}_quran" title="📖 Qur'an">${e.quran||'—'}</button>
+              <button class="pill-cyc ${e.hw||''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="📝 Homework">${sat?(e.hw||'—'):'—'}</button>
+              <button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="✏️ Classwork">${e.cw||'—'}</button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
+              <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
+              <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
+              <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
+              <span style="${uaTone}">🚫 ${st.ua}</span>
+              <span>⏱️ ${st.late}</span>
+            </div>
+          </div>`;
+        }).join('')}</div>`;
+     }).join('') : '<div class="empty"><p>No students match.</p></div>'}
+
+     <details class="card" style="margin-top:6px" ${this._somOpen?'open':''} id="ptSom">
+       <summary style="cursor:pointer;font-weight:700;color:var(--green)">🌟 Student of the Month — ${month}</summary>
+       <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+         ${LEVELS.map(L=>{ const top=somByLevel[L];
+           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface2)">
+             <div style="display:flex;align-items:center;gap:8px">
+               <span class="tag ${ptLevelTag(L)}">${L}</span>
+               ${top ? `<b dir="rtl">${esc(top.s.name)}</b>` : `<span style="color:var(--ink3);font-size:12.5px">No students currently enrolled</span>`}
+             </div>
+             ${top?`<b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>`:''}
+           </div>`; }).join('')}
+       </div>
+     </details>`;
+
+    wireCommon(v);
+    $$('[data-ptmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.ptmonth; this._session=PT_fullDate(PT_SESSION_DATES[this._month][0]); Router.render(); });
+    $$('[data-ptsession]',v).forEach(b=>b.onclick=()=>{ this._session=PT_fullDate(b.dataset.ptsession); Router.render(); });
+    $$('[data-ptlvl]',v).forEach(b=>b.onclick=()=>{ this._levelFilter=b.dataset.ptlvl; Router.render(); });
+    const f=$('#ptFind',v);
+    if(f) f.oninput=()=>{ this._find=f.value; clearTimeout(this._ft); this._ft=setTimeout(()=>{ Router.render(); const nf=$('#ptFind'); if(nf){ nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length); } },250); };
+    const somEl=$('#ptSom',v); if(somEl) somEl.ontoggle=()=>{ this._somOpen=somEl.open; };
+    $$('[data-ptopen]',v).forEach(b=>b.onclick=()=>{ this._openId=b.dataset.ptopen; this._tab='overview'; Router.render(); });
+    $$('[data-cyc]',v).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
+      const [sid,field]=b.dataset.cyc.split('_');
+      this.cycle(session, sid, field); Router.render();
+    }; });
+  },
+
+  cycle(dateKey, sid, field){
+    const d=DB.data;
+    if(field==='att'){
+      d.attendance[dateKey]=d.attendance[dateKey]||{};
+      const nv=ptNext(PT_ATT_CYCLE, d.attendance[dateKey][sid]);
+      if(nv===undefined) delete d.attendance[dateKey][sid]; else d.attendance[dateKey][sid]=nv;
+    } else {
+      d.progress[dateKey]=d.progress[dateKey]||{};
+      d.progress[dateKey][sid]=d.progress[dateKey][sid]||{quran:null,hw:null,cw:null};
+      const cycle = field==='quran'?PT_Q_CYCLE:field==='hw'?PT_HW_CYCLE:PT_CW_CYCLE;
+      d.progress[dateKey][sid][field]=ptNext(cycle, d.progress[dateKey][sid][field]);
+    }
+    DB.save();
+  },
+
+  detail(v, sid){
+    const s=DB.data.students.find(x=>x.id===sid);
+    if(!s){ this._openId=null; return this.roster(v); }
+    const tab=this._tab||'overview';
+    const yearKeys=PT_yearKeys();
+    const yearStats=ptStats(sid, yearKeys);
+    const monthlyRows=PT_MONTHS.map(m=>({month:m, ...ptStats(sid, PT_monthKeys(m))}));
+    const age = s.dob ? Math.floor((Date.now()-new Date(s.dob+'T00:00:00'))/3.15576e10) : null;
+    const T={overview:'Overview', quran:'Qur\u2019an', attendance:'Attendance', report:'Report Card'};
+
+    v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" id="ptBack">← Back to Progress Tracker</button>
+     <div class="card" style="display:flex;gap:14px;align-items:center;margin:12px 0 16px">
+       ${avatarHTML(s,'width:64px;height:64px;border-radius:50%;font-size:20px')}
+       <div style="min-width:0">
+         <div style="font-size:19px;font-weight:700" dir="rtl">${esc(s.name)}</div>
+         <div style="display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap">
+           <span class="tag ${ptLevelTag(s.level)}">${s.level}</span>
+           <span style="font-size:12px;color:var(--ink2)">${LEVEL_SUB[s.level]}</span>
+         </div>
+         <div style="font-size:12px;color:var(--ink3);font-family:var(--f-mono);margin-top:3px">${s.dob?('DOB '+s.dob+(age!=null?' · '+age+'y':'')):''}</div>
+       </div>
+     </div>
+     <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-pttab="${k}">${n}</button>`).join('')}</div>
+     <div id="ptTabBody" style="margin-top:14px"></div>`;
+    wireCommon(v);
+    $('#ptBack',v).onclick=()=>{ this._openId=null; Router.render(); };
+    $$('[data-pttab]',v).forEach(b=>b.onclick=()=>{ this._tab=b.dataset.pttab; Router.render(); });
+
+    const body=$('#ptTabBody',v);
+    if(tab==='overview') body.innerHTML=this._tplOverview(monthlyRows);
+    else if(tab==='quran') body.innerHTML=this._tplQuran(sid, yearKeys, yearStats);
+    else if(tab==='attendance') body.innerHTML=this._tplAttendance(sid, yearKeys, yearStats);
+    else body.innerHTML=this._tplReport(s, monthlyRows, yearStats);
+
+    if(tab==='report'){
+      const ta=$('#ptComment',v);
+      if(ta) ta.onblur=()=>{ DB.data.progressComments[sid]=ta.value.trim(); DB.save(); };
+      const pb=$('#ptPrint',v);
+      if(pb) pb.onclick=()=>ptPrintNode($('#ptCard',v));
+    }
+  },
+
+  _tplOverview(monthlyRows){
+    const avg = k => { const vals=monthlyRows.map(r=>r[k]).filter(v=>v!=null); return vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : null; };
+    const cur = ptDefaultMonthSession().month;
+    const curRow = monthlyRows.find(r=>r.month===cur) || monthlyRows[0];
+    const som = ptSom(curRow);
+    return `<div class="card" style="margin-bottom:14px;overflow-x:auto">
+      <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">UA</th><th style="text-align:right">Late</th></tr></thead>
+      <tbody>${monthlyRows.map(r=>`<tr><td><b>${r.month}</b></td>
+        <td style="text-align:right">${r.quranPct!=null?r.quranPct.toFixed(0):'—'}</td>
+        <td style="text-align:right">${r.hwPct!=null?r.hwPct.toFixed(0):'—'}</td>
+        <td style="text-align:right">${r.cwPct!=null?r.cwPct.toFixed(0):'—'}</td>
+        <td style="text-align:right">${r.ua}</td><td style="text-align:right">${r.late}</td></tr>`).join('')}
+        <tr style="border-top:2px solid var(--line2)"><td><b>Year avg</b></td>
+        <td style="text-align:right"><b>${avg('quranPct')!=null?avg('quranPct').toFixed(0):'—'}</b></td>
+        <td style="text-align:right"><b>${avg('hwPct')!=null?avg('hwPct').toFixed(0):'—'}</b></td>
+        <td style="text-align:right"><b>${avg('cwPct')!=null?avg('cwPct').toFixed(0):'—'}</b></td>
+        <td style="text-align:right"><b>${monthlyRows.reduce((a,r)=>a+r.ua,0)}</b></td>
+        <td style="text-align:right"><b>${monthlyRows.reduce((a,r)=>a+r.late,0)}</b></td></tr>
+      </tbody></table>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:8px">${cur.toUpperCase()} — STUDENT OF THE MONTH SCORE</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="bar" style="flex:1"><i style="width:${Math.min(100,som)}%"></i></div>
+        <b style="font-family:var(--f-mono);font-size:18px;min-width:44px;text-align:right">${som.toFixed(1)}</b>
+      </div>
+    </div>
+    <div class="notice info"><span>📖</span><span>Memorization tracking (current sūrah, progress, ayāt done) lives in AMAN Central's separate ḥifẓ module — not shown here.</span></div>`;
+  },
+
+  _tplQuran(sid, yearKeys, yearStats){
+    const monthly = PT_MONTHS.map(m=>({month:m, pct: ptStats(sid, PT_monthKeys(m)).quranPct}));
+    const timeline = yearKeys.map(dk=>({dk, e:ptEntry(dk,sid)})).filter(x=>x.e.quran);
+    return `<div class="grid g2" style="margin-bottom:14px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:26px;font-weight:800;color:var(--gold-text)">🔥 ${yearStats.streak}</div>
+        <div style="font-size:11.5px;color:var(--ink2);font-weight:600">Current streak</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:26px;font-weight:800;color:var(--green)">${yearStats.quranPct!=null?yearStats.quranPct.toFixed(0)+'%':'—'}</div>
+        <div style="font-size:11.5px;color:var(--ink2);font-weight:600">Year pass rate</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:10px">PASS RATE BY MONTH</div>
+      <div style="display:flex;gap:8px;align-items:flex-end;height:74px">
+        ${monthly.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">
+          <div style="width:100%;flex:1;background:var(--surface2);border-radius:4px;display:flex;align-items:flex-end;overflow:hidden">
+            ${m.pct!=null?`<div style="width:100%;height:${Math.max(4,m.pct)}%;background:linear-gradient(180deg,var(--gold),var(--green))"></div>`:''}
+          </div>
+          <span style="font-size:9.5px;color:var(--ink3);font-family:var(--f-mono)">${m.month.slice(0,3)}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:10px">SESSION-BY-SESSION TIMELINE</div>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto">
+        ${timeline.length? timeline.map(({dk,e})=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;background:var(--surface2)">
+          <span style="font-size:12px;font-family:var(--f-mono)">${dk}</span>
+          <span class="pill-cyc ${e.quran}" style="pointer-events:none">${e.quran}</span>
+        </div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No Qur\u2019an results recorded yet.</p>'}
+      </div>
+    </div>`;
+  },
+
+  _tplAttendance(sid, yearKeys, yearStats){
+    const list = yearKeys.map(dk=>({dk, e:ptEntry(dk,sid)})).filter(x=>x.e.att||x.e.hw||x.e.cw);
+    const warn = yearStats.ua>=3 ? `<div class="notice warn"><span>⚠️</span><span>3 unexcused absences — removal warning threshold reached.</span></div>`
+      : yearStats.ua===2 ? `<div class="notice warn"><span>⚠️</span><span>2 unexcused absences — one more triggers a removal warning.</span></div>` : '';
+    return `${warn}
+    <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:8px;margin:${warn?'12px':'0'} 0 14px">
+      ${[['Total',yearStats.total],['Present',yearStats.present],['Late',yearStats.late],['Excused',yearStats.exc],['Unexcused',yearStats.ua]].map(([l,val])=>`
+      <div class="card" style="padding:10px;text-align:center">
+        <div style="font-size:17px;font-weight:800;color:var(--green)">${val}</div>
+        <div style="font-size:9.5px;font-weight:700;color:var(--ink3)">${l}</div>
+      </div>`).join('')}
+    </div>
+    <p style="text-align:center;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:14px">Attendance % (P+L / non-EXC) = ${yearStats.attPct!=null?yearStats.attPct.toFixed(0)+'%':'—'}</p>
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:10px">SESSION LIST</div>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto">
+        ${list.length? list.map(({dk,e})=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px">
+          <span style="font-size:12px;font-family:var(--f-mono)">${dk}</span>
+          <div style="display:flex;gap:5px">
+            <span class="pill-att ${e.att==='A'?'A':e.att||''}" style="width:auto;padding:0 7px;pointer-events:none;font-size:10px">${PT_ATT_LABEL[e.att]||'—'}</span>
+            <span class="pill-cyc ${e.hw||''}" style="pointer-events:none;min-width:auto;padding:0 7px;height:26px;font-size:10px">${e.hw||'—'}</span>
+            <span class="pill-cyc ${e.cw||''}" style="pointer-events:none;min-width:auto;padding:0 7px;height:26px;font-size:10px">${e.cw||'—'}</span>
+          </div>
+        </div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No sessions recorded yet.</p>'}
+      </div>
+    </div>`;
+  },
+
+  _tplReport(s, monthlyRows, yearStats){
+    const pct=ptSom(yearStats), grade=ptGrade(pct);
+    const comment=DB.data.progressComments[s.id]||'';
+    return `<div class="card" id="ptCard" style="margin-bottom:14px">
+      <div style="text-align:center;margin-bottom:10px">
+        <div style="font-size:11.5px;font-weight:700;color:var(--ink3)">Al-Madrasatu An-Nuriyyah (AMAN) — Report Card</div>
+        <div style="font-size:17px;font-weight:800;margin-top:4px" dir="rtl">${esc(s.name)}</div>
+        <div style="font-size:12px;color:var(--ink2);margin-top:2px">${s.level} — ${LEVEL_SUB[s.level]}</div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:36px;margin:14px 0">
+        <div style="text-align:center"><div style="font-size:30px;font-weight:800;color:var(--green)">${pct.toFixed(1)}%</div><div style="font-size:10px;font-weight:700;color:var(--ink3)">OVERALL</div></div>
+        <div style="text-align:center"><div style="font-size:30px;font-weight:800;color:var(--gold-text)">${grade}</div><div style="font-size:10px;font-weight:700;color:var(--ink3)">LETTER GRADE</div></div>
+      </div>
+      <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">UA</th><th style="text-align:right">Late</th></tr></thead>
+      <tbody>${monthlyRows.map(r=>`<tr><td><b>${r.month}</b></td>
+        <td style="text-align:right">${r.quranPct!=null?r.quranPct.toFixed(0):'—'}</td>
+        <td style="text-align:right">${r.hwPct!=null?r.hwPct.toFixed(0):'—'}</td>
+        <td style="text-align:right">${r.cwPct!=null?r.cwPct.toFixed(0):'—'}</td>
+        <td style="text-align:right">${r.ua}</td><td style="text-align:right">${r.late}</td></tr>`).join('')}</tbody></table>
+      ${comment?`<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:9px;font-size:12.5px"><b>Teacher comments: </b>${esc(comment)}</div>`:''}
+    </div>
+    <div class="field" style="margin-bottom:14px"><label>Teacher comments</label>
+      <textarea id="ptComment" rows="4" placeholder="Notes for this student's report card…">${esc(comment)}</textarea>
+    </div>
+    <button class="btn btn-p" id="ptPrint" style="width:100%;justify-content:center">🖨️ Print / Export Report Card</button>`;
+  },
+};
+
 /* ================= MODULE: ADMINISTRATION — OPERATIONAL CONTROL CENTER ================= */
 function famKey(s){ if(s.family) return s.family;
   const m=s.name.match(/(?: بن | بنت )(.+)$/); return m? m[1].trim() : ''; }
