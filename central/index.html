@@ -5824,18 +5824,34 @@ const Progress = {
      </details>`;
 
     wireCommon(v);
-    $$('[data-ptmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.ptmonth; this._session=PT_fullDate(PT_SESSION_DATES[this._month][0]); Router.render(); });
-    $$('[data-ptsession]',v).forEach(b=>b.onclick=()=>{ this._session=PT_fullDate(b.dataset.ptsession); Router.render(); });
-    $$('[data-ptlvl]',v).forEach(b=>b.onclick=()=>{ this._levelFilter=b.dataset.ptlvl; Router.render(); });
+    // These five all edit state on the roster you're already looking at —
+    // they repaint in place via _repaint(), never through Router.render().
+    // Router.render() always does window.scrollTo(0,0) (correct for an
+    // actual page navigation, e.g. opening a student below), but calling it
+    // for something as small as one tap-to-cycle button meant every single
+    // attendance/Qur'an/HW/CW tap threw the whole page back to the top —
+    // exactly the "jumps to the top every tap" bug reported.
+    $$('[data-ptmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.ptmonth; this._session=PT_fullDate(PT_SESSION_DATES[this._month][0]); this._repaint(v); });
+    $$('[data-ptsession]',v).forEach(b=>b.onclick=()=>{ this._session=PT_fullDate(b.dataset.ptsession); this._repaint(v); });
+    $$('[data-ptlvl]',v).forEach(b=>b.onclick=()=>{ this._levelFilter=b.dataset.ptlvl; this._repaint(v); });
     const f=$('#ptFind',v);
-    if(f) f.oninput=()=>{ this._find=f.value; clearTimeout(this._ft); this._ft=setTimeout(()=>{ Router.render(); const nf=$('#ptFind'); if(nf){ nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length); } },250); };
+    if(f) f.oninput=()=>{ this._find=f.value; clearTimeout(this._ft); this._ft=setTimeout(()=>{ this._repaint(v); const nf=$('#ptFind'); if(nf){ nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length); } },250); };
     const somEl=$('#ptSom',v); if(somEl) somEl.ontoggle=()=>{ this._somOpen=somEl.open; };
+    // Opening a student IS a real navigation to a new screen, so this one
+    // keeps Router.render() — scrolling to the top of the detail view on
+    // open is the behavior you'd actually want here.
     $$('[data-ptopen]',v).forEach(b=>b.onclick=()=>{ this._openId=b.dataset.ptopen; this._tab='overview'; Router.render(); });
     $$('[data-cyc]',v).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
       const [sid,field]=b.dataset.cyc.split('_');
-      this.cycle(session, sid, field); Router.render();
+      this.cycle(session, sid, field); this._repaint(v);
     }; });
   },
+
+  // Redraws just the roster in place. Deliberately not Router.render(): no
+  // scroll reset, no focus change, no sidebar/nav-highlight side effects —
+  // those all make sense for a real navigation, not for a one-tap edit to
+  // the list already on screen.
+  _repaint(v){ this.roster(v); },
 
   cycle(dateKey, sid, field){
     const d=DB.data;
