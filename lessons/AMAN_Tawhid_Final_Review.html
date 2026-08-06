@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Final Review — Comprehensive Cumulative Review (Units 1–14)</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{ position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.78rem; margin-right:10px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.9rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.3rem; line-height:1.95; color:var(--green-dark); margin:8px 0 4px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:10px; font-size:.9rem; }
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+.station{ background:#fff; border:2px solid var(--gold); border-radius:8px; padding:12px 16px; margin:10px 0; }
+.station .stationhead{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.station .num{ background:var(--green); color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--Fd); font-weight:700; flex-shrink:0; font-size:.85rem; }
+.station h3{ margin:0; color:var(--green); font-family:var(--Fd); font-size:1rem; }
+.station p{ margin:0; font-size:.9rem; }
+.studyguide{ background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:8px; padding:12px 16px; margin-bottom:8px; }
+.studyguide h3{ margin:0 0 4px; color:var(--green); font-family:var(--Fd); font-size:.98rem; }
+.studyguide p{ margin:0; font-size:.86rem; }
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+table.scoring td.opt{ text-align:center; width:15%; }
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+.sectionband{ background:var(--green); color:#fff; padding:6px 14px; border-radius:5px; font-family:var(--Fd); font-weight:700; font-size:.95rem; display:inline-block; margin:18px 0 12px; }
+.jeopardy{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin:14px 0 20px; font-size:.7rem; text-align:center; }
+.jeopardy div{ background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:4px; padding:6px 2px; }
+.jeopardy .hd{ background:var(--green); color:#fff; font-weight:700; }
+@media print{
+  body{ background:#fff; } .toolbar{ display:none; } .page-shell{ max-width:none; }
+  .cover{ break-after:page; } .section{ break-inside:avoid; } tr{ break-inside:avoid; } .station{ break-inside:avoid; } .studyguide{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; } .print-break{ break-before:page; } .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } .jeopardy{ grid-template-columns:repeat(3,1fr); } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Final Review</span>
+  <span class="jump"><a href="#s53">53</a><a href="#s54">54</a><a href="#s55">55</a><a href="#s56">56</a><a href="#packet">Packet</a><a href="#key">Key</a></span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Final Review · Weekend 27–28 · Sessions 53–56</div>
+  <h1>Comprehensive Cumulative Review</h1>
+  <div style="color:#e8dcc0; font-size:.95rem;">The Entire Book — All 14 Units</div>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weekend / Sessions</td><td>Weekend 27–28 · Sessions 53–56 of the year</td></tr>
+<tr><td>Content Reviewed</td><td>The ENTIRE book — all 14 units, from the Basmalah to the closing du'ā</td></tr>
+<tr><td>Structure</td><td>2 station-review sessions (53–54), a full Comprehensive Review Packet session (55), and a review-games session (56)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session</td></tr>
+<tr><td>Materials</td><td>Printed packet, ALL prior unit packets available for reference, pencils</td></tr>
+</table>
+<div class="note-box"><strong class="label">This is the big one</strong>
+Students have covered an enormous amount of material this year. Don't rush this review — the Final Exam (Weekend 29–30) draws from all 14 units, and this is the last dedicated review time before it.</div>
+</div>
+
+<div class="section print-break" id="s53">
+<h1 class="sec">Weekend 27 · Session 53 (Saturday) — Stations: Units 1–7</h1>
+<p>7 stations, rotate every 5 minutes.</p>
+<div class="station"><div class="stationhead"><div class="num">1</div><h3>Unit 1 — Opening &amp; Fiṭrah</h3></div><p>Recite the opening. The book's two goals. The Fiṭrah ḥadīth.</p></div>
+<div class="station"><div class="stationhead"><div class="num">2</div><h3>Unit 2 — Q1 &amp; Q2</h3></div><p>"Man rabbuka?" / "Mā maʿnā ar-Rabb?" Meaning of the Name Allah.</p></div>
+<div class="station"><div class="stationhead"><div class="num">3</div><h3>Unit 3 — Q3</h3></div><p>Signs vs. creation. Al-Aʿrāf 7:54.</p></div>
+<div class="station"><div class="stationhead"><div class="num">4</div><h3>Unit 4 — Q4 &amp; ʿIbādah</h3></div><p>"Limā khalaqak?" The three categories of worship.</p></div>
+<div class="station"><div class="stationhead"><div class="num">5</div><h3>Unit 5 — Shirk</h3></div><p>Definition, Al-Māʾidah 5:72, the five forms.</p></div>
+<div class="station"><div class="stationhead"><div class="num">6</div><h3>Unit 6 — Duʿā</h3></div><p>Ghāfir 40:60. The five acts of the heart.</p></div>
+<div class="station"><div class="stationhead"><div class="num">7</div><h3>Unit 7 — Ṭāghūt</h3></div><p>First obligation. An-Naḥl 16:36. Ibn al-Qayyim's definition.</p></div>
+</div>
+
+<div class="section print-break" id="s54">
+<h1 class="sec">Weekend 27 · Session 54 (Sunday) — Stations: Units 8–14</h1>
+<div class="station"><div class="stationhead"><div class="num">8</div><h3>Unit 8 — Q5 &amp; Islam</h3></div><p>Four parts of Islam's meaning. Lā ilāha illā Allāh.</p></div>
+<div class="station"><div class="stationhead"><div class="num">9</div><h3>Unit 9 — Five Pillars</h3></div><p>Ḥadīth of Jibrīl, in order. Ṭahārah — Al-Baqarah 2:222.</p></div>
+<div class="station"><div class="stationhead"><div class="num">10</div><h3>Unit 10 — Q6</h3></div><p>Full lineage. Chosen from Quraysh. "Red and black."</p></div>
+<div class="station"><div class="stationhead"><div class="num">11</div><h3>Unit 11 — Prophet's ﷺ Life</h3></div><p>Six stages, in order. Al-Anfāl 8:39.</p></div>
+<div class="station"><div class="stationhead"><div class="num">12</div><h3>Unit 12 — Messengers &amp; Companions</h3></div><p>First/last messenger. Four Companions in order. Best generations.</p></div>
+<div class="station"><div class="stationhead"><div class="num">13</div><h3>Unit 13 — Six Pillars of Īmān</h3></div><p>In order. Foundations that save from kufr. Jannah/Fire are ḥaqq.</p></div>
+<div class="station"><div class="stationhead"><div class="num">14</div><h3>Unit 14 — Closing</h3></div><p>ʿĪsā and the Dajjāl. The book's closing words.</p></div>
+</div>
+
+<div class="section print-break" id="s55">
+<h1 class="sec">Weekend 28 · Session 55 (Saturday) — Study Guide &amp; the Comprehensive Review Packet</h1>
+<p>Hand out the Comprehensive Review Packet below. Give 15 minutes of silent self-review, then 15 minutes of partner quizzing, then work through it together as a class — this is meant to be a genuine take-home study tool, not just an in-class worksheet.</p>
+
+<h2 class="sec">One-Line Study Guide — All 14 Units</h2>
+<div class="studyguide"><h3>1 — Opening</h3><p>Two goals: complete Muslim + good Muwaḥḥid. Q&amp;A method. Fiṭrah ḥadīth.</p></div>
+<div class="studyguide"><h3>2 — Q1 &amp; Q2</h3><p>Rabbī Allāh · Al-Mālik al-Maʿbūd · meaning of the Name Allah.</p></div>
+<div class="studyguide"><h3>3 — Q3</h3><p>Āyātihi wa makhlūqātihi · signs vs. creation · Al-Aʿrāf 7:54.</p></div>
+<div class="studyguide"><h3>4 — Q4 &amp; ʿIbādah</h3><p>Liʿibādatihi waḥdahu lā sharīka lah · 3 categories: aqwāl, aʿmāl ẓāhirah, aʿmāl bāṭinah.</p></div>
+<div class="studyguide"><h3>5 — Shirk</h3><p>Setting up a rival · Al-Māʾidah 5:72 · 5 forms: duʿāʾ, rajāʾ, khawf, tawakkul, raghbah.</p></div>
+<div class="studyguide"><h3>6 — Duʿā</h3><p>Al-Jinn 72:18 · Ghāfir 40:60 · 5 acts of the heart, same list as Shirk, reversed.</p></div>
+<div class="studyguide"><h3>7 — Ṭāghūt</h3><p>First obligation · An-Naḥl 16:36 · Ibn al-Qayyim: worshipped/followed/obeyed beyond the limit.</p></div>
+<div class="studyguide"><h3>8 — Q5 &amp; Islam</h3><p>Dīniya al-Islām · 4 parts: Istislām, Inqiyād, Muwālāh, Muʿādāh · Lā ilāha illā Allāh.</p></div>
+<div class="studyguide"><h3>9 — Five Pillars</h3><p>Shahādatān, Ṣalāh, Zakāh, Ṣawm, Ḥajj · Al-Baqarah 2:222 (Ṭahārah).</p></div>
+<div class="studyguide"><h3>10 — Q6</h3><p>Muḥammad bin ʿAbdullāh bin ʿAbd al-Muṭṭalib bin Hāshim bin ʿAbd Manāf · chosen from Quraysh.</p></div>
+<div class="studyguide"><h3>11 — Prophet's ﷺ Life</h3><p>Age 40 → ~10 yrs Tawḥīd → Miʿrāj → Hijrah → ~10 yrs jihād → Age 63.</p></div>
+<div class="studyguide"><h3>12 — Messengers &amp; Companions</h3><p>Nūḥ (first) → Muḥammad ﷺ (last, Seal) · Abū Bakr, ʿUmar, ʿUthmān, ʿAlī · best 3 generations.</p></div>
+<div class="studyguide"><h3>13 — Six Pillars of Īmān</h3><p>Allah, Angels, Books, Messengers, Last Day, Qadar · Jannah/Fire are ḥaqq.</p></div>
+<div class="studyguide"><h3>14 — Closing</h3><p>ʿĪsā kills the Dajjāl · Al-Ḥamdu lillāhi Rabbi al-ʿĀlamīn (same as the opening).</p></div>
+</div>
+
+<!-- ===================== COMPREHENSIVE REVIEW PACKET ===================== -->
+<div class="print-break" id="packet">
+<div class="quiz-header">
+<h1>COMPREHENSIVE REVIEW PACKET</h1>
+<div class="sub">Practice for the Final Exam — Units 1 Through 14</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>This is practice — not graded for a final score</label></div>
+</div>
+<div style="height:16px;"></div>
+
+<span class="sectionband">Part 1 — Recite Every Grave-Question Answer</span>
+<p>Write the Arabic answer to each question, from memory:</p>
+<p class="qline"><b>Q1</b> — مَنْ رَبُّكَ؟</p><div class="ans-line short"></div>
+<p class="qline"><b>Q2</b> — مَا مَعْنَى الرَّبِّ؟</p><div class="ans-line short"></div>
+<p class="qline"><b>Q3</b> — بِمَ تَعْرِفُ رَبَّكَ؟</p><div class="ans-line short"></div>
+<p class="qline"><b>Q4</b> — لِأَيِّ شَيْءٍ خَلَقَكَ؟</p><div class="ans-line short"></div>
+<p class="qline"><b>Q5</b> — مَا دِينُكَ؟</p><div class="ans-line short"></div>
+<p class="qline"><b>Q6</b> — مَنْ نَبِيُّكَ؟</p><div class="ans-line"></div>
+
+<span class="sectionband">Part 2 — Fill in the Blank (all 14 units)</span>
+<p class="qline"><b>1.</b> Every child is born upon the ______________.</p><div class="ans-line short"></div>
+<p class="qline"><b>2.</b> ʿIbādah has ______________ categories: statements, outward actions, and inward actions.</p><div class="ans-line short"></div>
+<p class="qline"><b>3.</b> Shirk is: أَنْ يَجْعَلَ لِلَّهِ ______________.</p><div class="ans-line short"></div>
+<p class="qline"><b>4.</b> The first obligation is disbelief in ______________ and belief in Allah.</p><div class="ans-line short"></div>
+<p class="qline"><b>5.</b> The four parts of Islam: Istislām, Inqiyād, ______________, Muʿādāh.</p><div class="ans-line short"></div>
+<p class="qline"><b>6.</b> List the five pillars in order: ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>7.</b> The Prophet ﷺ was sent at age ______________ and passed away at age ______________.</p><div class="ans-line short"></div>
+<p class="qline"><b>8.</b> The four best Companions in order: ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>9.</b> List the six pillars of Īmān: ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>10.</b> The book's closing words: ______________.</p><div class="ans-line short"></div>
+</div>
+
+<div class="print-break">
+<span class="sectionband">Part 3 — Matching (Vocabulary from across the year)</span>
+<table>
+<tr><td style="width:50%"><b>1.</b> <span class="ar-inline">الْفِطْرَة</span></td><td>A. The Owner</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">الْمَالِك</span></td><td>B. Natural belief in Allah we're born with</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">نِدّ</span></td><td>C. Purification</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">الطَّهَارَة</span></td><td>D. Rival / equal</td></tr>
+<tr><td><b>5.</b> <span class="ar-inline">الطَّاغُوت</span></td><td>E. The Seal of the Prophets</td></tr>
+<tr><td><b>6.</b> <span class="ar-inline">خَاتَم النَّبِيِّين</span></td><td>F. Whatever is worshipped/followed/obeyed beyond the limit</td></tr>
+</table>
+
+<span class="sectionband">Part 4 — Short Answer</span>
+<p class="qline"><b>1.</b> Why does the Imam teach Tawḥīd before the Qurʾān?</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Why is Shirk called the greatest sin?</p><div class="ans-line"></div>
+<p class="qline"><b>3.</b> What's the difference between the Five Pillars of Islam and the Six Pillars of Īmān?</p><div class="ans-line"></div>
+<p class="qline"><b>4.</b> Why do you think the book closes the same way it opens?</p><div class="ans-line"></div>
+
+<span class="sectionband">Part 5 — Reflection</span>
+<p class="qline"><b>1.</b> Looking back at the whole year, what is the ONE idea that ties the entire book together? Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<div class="section print-break" id="s56">
+<h1 class="sec">Weekend 28 · Session 56 (Sunday) — Final Review Games</h1>
+<h2 class="sec">Tawḥīd Jeopardy — Full Book Edition <span class="timing">25 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p>Draw a 14-column grid on the board (one column per unit), 2–3 point values per column. Teams pick a square; read a question worth that many points from that unit. This is the last chance to make sure every unit gets equal attention before the Final Exam.</p></div>
+<div class="jeopardy">
+<div class="hd">U1</div><div class="hd">U2</div><div class="hd">U3</div><div class="hd">U4</div><div class="hd">U5</div><div class="hd">U6</div><div class="hd">U7</div>
+<div>10</div><div>10</div><div>10</div><div>10</div><div>10</div><div>10</div><div>10</div>
+<div>20</div><div>20</div><div>20</div><div>20</div><div>20</div><div>20</div><div>20</div>
+<div class="hd">U8</div><div class="hd">U9</div><div class="hd">U10</div><div class="hd">U11</div><div class="hd">U12</div><div class="hd">U13</div><div class="hd">U14</div>
+<div>10</div><div>10</div><div>10</div><div>10</div><div>10</div><div>10</div><div>10</div>
+<div>20</div><div>20</div><div>20</div><div>20</div><div>20</div><div>20</div><div>20</div>
+</div>
+
+<h2 class="sec">Final Q&amp;A Speed Round <span class="timing">15 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p style="margin:0;">Cold-call rapid-fire through all six grave-questions, back to back, with no pause between students — Q1 to one student, Q2 to the next, and so on, cycling through the whole class multiple times. This builds the exact fluency needed for the Final Exam's recitation section.</p></div>
+
+<h2 class="sec">Before Next Weekend</h2>
+<div class="note-box"><strong class="label">Reminder for students:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Bring home ALL unit packets and the Comprehensive Review Packet.</li>
+<li>The Final Exam is next weekend (Weekend 29–30) — review a little every day rather than all at once.</li>
+</ul></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="section answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Comprehensive Review Packet</h1>
+<h2 class="sec">Part 1 — Grave Questions</h2>
+<p>Q1: <span class="ar-inline">رَبِّي اللَّهُ</span> &nbsp; Q2: <span class="ar-inline">الْمَالِكُ الْمَعْبُودُ</span> &nbsp; Q3: <span class="ar-inline">أَعْرِفُهُ بِآيَاتِهِ وَمَخْلُوقَاتِهِ</span></p>
+<p>Q4: <span class="ar-inline">لِعِبَادَتِهِ وَحْدَهُ لَا شَرِيكَ لَهُ</span> &nbsp; Q5: <span class="ar-inline">دِينِيَ الإِسْلَامُ</span></p>
+<p>Q6: <span class="ar-inline">نَبِيُّنَا مُحَمَّدُ بْنُ عَبْدِ اللهِ بْنِ عَبْدِ الْمُطَّلِبِ بْنِ هَاشِمِ بْنِ عَبْدِ مَنَافٍ</span></p>
+<h2 class="sec">Part 2 — Fill in the Blank</h2>
+<p>1. Fiṭrah &nbsp; 2. three &nbsp; 3. نِدًّا &nbsp; 4. Ṭāghūt &nbsp; 5. Muwālāh &nbsp; 6. Shahādatān, Ṣalāh, Zakāh, Ṣiyām, Ḥajj</p>
+<p>7. 40 / 63 &nbsp; 8. Abū Bakr, ʿUmar, ʿUthmān, ʿAlī &nbsp; 9. Allah, Angels, Books, Messengers, Last Day, al-Qadar &nbsp; 10. الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</p>
+<h2 class="sec">Part 3 — Matching</h2>
+<p>1→B &nbsp; 2→A &nbsp; 3→D &nbsp; 4→C &nbsp; 5→F &nbsp; 6→E</p>
+<h2 class="sec">Part 4 — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> So a child fully understands Allah first, helping them understand the Qurʾān and become a complete Muslim and good Muwaḥḥid.</p>
+<p><b>2.</b> Because the Qurʾān specifically warns Paradise is forbidden and the Fire is the home of whoever commits it.</p>
+<p><b>3.</b> Islam's pillars are mostly actions (praying, fasting); Īmān's pillars are things believed (in Allah, angels, the Last Day).</p>
+<p><b>4.</b> To show the whole book — and really all of life — begins and ends with praise for Allah, framing it as an act of worship itself.</p>
+<h2 class="sec">Part 5 — Reflection (sample full-credit answer)</h2>
+<p>Every part of the book comes back to worshipping Allah alone, with nothing shared with Him — knowing Him through signs, understanding why we were created, avoiding Shirk, following the Prophet ﷺ, and believing correctly about the Last Day are all the same idea worked out in different directions: Tawḥīd.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note: this packet is for practice — use the Written Assignment Rubric informally to give students a sense of readiness, not a permanent grade.</p>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Final Exam Readiness Checklist (for teacher tracking)</h1>
+<table class="scoring">
+<tr><th>Unit</th><th class="opt">✓ Ready</th><th class="opt">● Needs Review</th><th class="opt">— Reteach</th></tr>
+<tr><td>Units 1–3 (Opening, Q1–Q3)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Units 4–6 (Q4, ʿIbādah, Shirk, Duʿā)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Units 7–9 (Ṭāghūt, Q5, Five Pillars)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Units 10–12 (Q6, Prophet's ﷺ Life, Companions)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Units 13–14 (Six Pillars of Īmān, Closing)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+<p style="font-size:.85rem; color:#7a7060; font-style:italic;">Use this alongside individual student scoring sheets from each unit to decide where to spend any remaining review time before the Final Exam.</p>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Final Review — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>

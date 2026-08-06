@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Unit 11: The Prophet's ﷺ Life, Stage by Stage</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{ position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.82rem; margin-right:14px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.92rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.script-box{ background:#fff; border:1px solid #ddd0ae; border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.script-box strong.label{ display:block; color:var(--gold); margin-bottom:6px; font-weight:700; font-family:var(--Fm); font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.4rem; line-height:2.1; color:var(--green-dark); margin:14px 0 8px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:16px; }
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+.timeline{ margin:14px 0 20px; border-left:3px solid var(--gold); padding-left:0; }
+.timeline .tl-item{ position:relative; padding:0 0 18px 24px; }
+.timeline .tl-item:last-child{ padding-bottom:0; }
+.timeline .tl-dot{ position:absolute; left:-9px; top:2px; width:16px; height:16px; border-radius:50%; background:var(--green); color:#fff; font-family:var(--Fd); font-size:.65rem; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.timeline .tl-content{ background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:8px; padding:10px 16px; }
+.timeline .tl-content strong{ color:var(--green-dark); display:block; margin-bottom:4px; }
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+table.scoring td.opt{ text-align:center; width:15%; }
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+@media print{
+  body{ background:#fff; } .toolbar{ display:none; } .page-shell{ max-width:none; }
+  .cover{ break-after:page; } .section{ break-inside:avoid; } tr{ break-inside:avoid; } .timeline .tl-item{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; } .print-break{ break-before:page; } .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Unit 11 Packet</span>
+  <span class="jump"><a href="#s43">Sess. 43</a><a href="#s44">Sess. 44</a><a href="#quiz">Quiz</a><a href="#key">Answer Key</a></span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Unit 11 · Weekend 22 · Sessions 43–44</div>
+  <h1>The Prophet's ﷺ Life, Stage by Stage</h1>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weekend / Sessions</td><td>Weekend 22 · Sessions 43–44 of the year</td></tr>
+<tr><td>Book Pages Covered</td><td>pp. 23–24 (Age 40, Makkah period, Al-Miʿrāj, the Hijrah, jihad, Age 63, Al-Anfāl 8:39)</td></tr>
+<tr><td>Slide Reference</td><td>Deck A: Slide 26 (Prophet's Life Timeline) · Deck B: Lesson 5 (Timeline slides)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session</td></tr>
+<tr><td>Materials</td><td>Printed packet, pencils, board/whiteboard, a simple timeline drawn on the board</td></tr>
+</table>
+
+<h2 class="sec">Learning Objectives</h2>
+<p>By the end of Unit 11, students will be able to:</p>
+<ul class="clean">
+<li>Recite the stages of the Prophet's ﷺ life in the book's exact order. <em>(Recall)</em></li>
+<li>State the age at which he ﷺ was sent as a Prophet, and the age at which he passed away. <em>(Recall)</em></li>
+<li>Explain what happened at Al-Miʿrāj and why it was unique. <em>(Comprehension)</em></li>
+<li>Recite Al-Anfāl 8:39 and explain what it commands. <em>(Recall + Comprehension)</em></li>
+<li>Put the six stages in correct chronological order given a shuffled list. <em>(Application)</em></li>
+</ul>
+
+<h2 class="sec" id="vocab">Vocabulary Introduced This Unit</h2>
+<table class="info">
+<tr><td><span class="ar-inline">الْمِعْرَاج</span> al-Miʿrāj</td><td>The Night Ascension — when the Prophet ﷺ was raised to the heavens</td></tr>
+<tr><td><span class="ar-inline">الْهِجْرَة</span> al-Hijrah</td><td>The Migration — from Makkah to Madīnah</td></tr>
+<tr><td><span class="ar-inline">الْجِهَاد</span> al-Jihād</td><td>Striving in Allah's cause</td></tr>
+<tr><td><span class="ar-inline">أَفْوَاجًا</span> afwājan</td><td>In multitudes / crowds</td></tr>
+</table>
+</div>
+
+<div class="section print-break" id="s43">
+<h1 class="sec">Weekend 22 · Session 43 (Saturday) — Age 40 Through Al-Miʿrāj</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board:</strong>
+"How old do you think the Prophet ﷺ was when he first received revelation? Take a guess."</div>
+
+<h2 class="sec">Spiral Review <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Cold-call:</strong> Recite Q6's full lineage together as a class.</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">25 min</span></h2>
+<div class="ar-block">وَقَدْ بَعَثَهُ اللهُ تَعَالَى عَلَى رَأْسِ أَرْبَعِينَ سَنَةً</div>
+<div class="translation">"Allah, the Most High, sent him as a Prophet at the head of forty years [of age]."</div>
+<div class="ar-block">فَدَعَا النَّاسَ إِلَى إِخْلَاصِ الْعِبَادَةِ نَحْوًا مِنْ عَشْرِ سِنِينَ</div>
+<div class="translation">"So he called people to sincerity of worship for about ten years" (in Makkah).</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Ask: "For those first ten years, was he commanding prayer, fasting, or ḥajj yet?" (No — only calling people to Tawḥīd and leaving Shirk.) Point out: even the Prophet ﷺ himself taught Tawḥīd FIRST, for a full decade, before any other command — exactly matching what Unit 1 taught about why this book starts with Tawḥīd.</p>
+</div>
+<div class="ar-block">ثُمَّ عُرِجَ بِهِ إِلَى السَّمَاءِ وَفُرِضَتْ عَلَيْهِ الصَّلَوَاتُ الْخَمْسُ مِنْ غَيْرِ وَاسِطَةٍ بَيْنَهُ وَبَيْنَ اللهِ تَعَالَى فِي ذَلِكَ</div>
+<div class="translation">"Then he was ascended to the heavens, and the five prayers were made obligatory upon him with no intermediary between him and Allah in that."</div>
+<p>Teacher script: Explain that every other command in Islam came to the Prophet ﷺ through the angel Jibrīl — but the command for the five prayers came DIRECTLY, with no messenger in between. Ask: "What does that tell us about how special Ṣalāh is compared to other acts of worship?"</p>
+
+<h2 class="sec">Exit Ticket <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">On scrap paper:</strong>
+<p style="margin-bottom:0;">At what age was the Prophet ﷺ sent, and what happened at Al-Miʿrāj?</p></div>
+</div>
+
+<div class="section print-break" id="s44">
+<h1 class="sec">Weekend 22 · Session 44 (Sunday) — Hijrah Through Age 63</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Quick recall:</strong> "What was made obligatory at Al-Miʿrāj, and how was it different from other commands?"</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<div class="ar-block">ثُمَّ أُمِرَ بَعْدَ ذَلِكَ بِالْهِجْرَةِ، فَهَاجَرُوا إِلَى الْمَدِينَةِ، وَأُمِرَ بِالْجِهَادِ</div>
+<div class="translation">"Then he was commanded after that with the Hijrah — so they migrated to Madīnah — and he was commanded with jihād."</div>
+<div class="ar-block">فَجَاهَدَ فِي اللهِ حَقَّ جِهَادِهِ نَحْوًا مِنْ عَشْرِ سِنِينَ، حَتَّى دَخَلَ النَّاسُ فِي دِينِ اللهِ أَفْوَاجًا</div>
+<div class="translation">"So he strove for Allah's sake with true striving, for about ten more years, until people entered the religion of Allah in multitudes."</div>
+<div class="ar-block">وَقَاتِلُوهُمْ حَتَّى لَا تَكُونَ فِتْنَةٌ وَيَكُونَ الدِّينُ كُلُّهُ لِلَّهِ</div>
+<div class="translation">"And fight them until there is no more Fitnah, and the religion, all of it, is for Allah." — Sūrat al-Anfāl 8:39</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Point out the pattern: ~10 years calling to Tawḥīd peacefully in Makkah, THEN ~10 more years of jihād after the Hijrah — until, by the end, whole tribes were entering Islam at once ("afwājan" — in multitudes), not just individuals like at the very start.</p>
+</div>
+<div class="ar-block">فَلَمَّا تَمَّتْ ثَلَاثٌ وَسِتُّونَ سَنَةً تُوُفِّيَ، وَقَدْ أَكْمَلَ اللهُ تَعَالَى بِهِ الدِّينَ</div>
+<div class="translation">"When 63 years were complete, he passed away — and Allah, the Most High, had completed the religion through him."</div>
+
+<h2 class="sec">Independent Practice <span class="timing">10 min</span></h2>
+<p>Put the six stages in order (1–6):</p>
+<p class="qline">____ The Hijrah to Madīnah &nbsp;&nbsp; ____ Sent as a Prophet at age 40 &nbsp;&nbsp; ____ Passed away at age 63</p>
+<p class="qline">____ ~10 years of jihād &nbsp;&nbsp; ____ Al-Miʿrāj, five prayers made obligatory &nbsp;&nbsp; ____ ~10 years calling to Tawḥīd in Makkah</p>
+
+<h2 class="sec">Group Activity — Human Timeline <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p style="margin:0;">Give 6 students cards, one per stage (shuffled). The class must physically arrange them in a line in the correct chronological order, then recite the corresponding Arabic phrase for each stage as the line is confirmed correct.</p></div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Memorize the six stages in order and Al-Anfāl 8:39.</li>
+</ul></div>
+<p>Parent signature: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+
+<h2 class="sec">Reference Timeline</h2>
+<div class="timeline">
+<div class="tl-item"><div class="tl-dot">1</div><div class="tl-content"><strong>Age 40 — Prophethood Begins</strong>Called people to Tawḥīd for ~10 years in Makkah</div></div>
+<div class="tl-item"><div class="tl-dot">2</div><div class="tl-content"><strong>Al-Miʿrāj</strong>The five prayers made obligatory directly, with no intermediary</div></div>
+<div class="tl-item"><div class="tl-dot">3</div><div class="tl-content"><strong>The Hijrah</strong>Migration to Madīnah</div></div>
+<div class="tl-item"><div class="tl-dot">4</div><div class="tl-content"><strong>~10 Years of Jihād</strong>Until people entered Islam in multitudes</div></div>
+<div class="tl-item"><div class="tl-dot">5</div><div class="tl-content"><strong>Age 63 — Passed Away</strong>Allah completed the religion through him</div></div>
+</div>
+</div>
+
+<div class="section print-break" id="quiz">
+<div class="quiz-header">
+<h1>UNIT 11 QUIZ</h1>
+<div class="sub">The Prophet's ﷺ Life, Stage by Stage</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>Score</label>_______ / 38</div>
+</div>
+<div style="height:20px;"></div>
+
+<h2 class="sec">Section A — Multiple Choice (1 pt each)</h2>
+<p class="qline"><b>1.</b> The Prophet ﷺ was sent at age:</p>
+<p class="mc-opts">a) 25 &nbsp;&nbsp; b) 33 &nbsp;&nbsp; c) 40 &nbsp;&nbsp; d) 63</p>
+<p class="qline"><b>2.</b> The Prophet ﷺ passed away at age:</p>
+<p class="mc-opts">a) 40 &nbsp;&nbsp; b) 53 &nbsp;&nbsp; c) 60 &nbsp;&nbsp; d) 63</p>
+<p class="qline"><b>3.</b> What was made obligatory at Al-Miʿrāj?</p>
+<p class="mc-opts">a) Fasting &nbsp;&nbsp; b) The five prayers &nbsp;&nbsp; c) Zakāh &nbsp;&nbsp; d) Ḥajj</p>
+<p class="qline"><b>4.</b> The Hijrah was a migration to:</p>
+<p class="mc-opts">a) Makkah &nbsp;&nbsp; b) Madīnah &nbsp;&nbsp; c) Ṭāʾif &nbsp;&nbsp; d) Yemen</p>
+<p class="qline"><b>5.</b> "Fight them until there is no more Fitnah" is from:</p>
+<p class="mc-opts">a) Al-Anfāl 8:39 &nbsp;&nbsp; b) Al-Māʾidah 5:72 &nbsp;&nbsp; c) An-Naḥl 16:36 &nbsp;&nbsp; d) Al-Baqarah 2:222</p>
+
+<h2 class="sec">Section B — True / False (1 pt each)</h2>
+<p class="qline"><b>1.</b> The Prophet ﷺ called people to Tawḥīd for about 10 years before the Hijrah. _____</p>
+<p class="qline"><b>2.</b> The command for the five prayers came through the angel Jibrīl, like all other commands. _____</p>
+<p class="qline"><b>3.</b> By the end of his life, people entered Islam individually, one at a time, never in groups. _____</p>
+<p class="qline"><b>4.</b> Allah completed the religion through the Prophet ﷺ. _____</p>
+<p class="qline"><b>5.</b> The period of jihād after the Hijrah lasted about 10 years. _____</p>
+
+<h2 class="sec">Section C — Fill in the Blank (2 pts each)</h2>
+<p class="qline"><b>1.</b> He was sent as a Prophet at the head of ______________ years.</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> "وَقَاتِلُوهُمْ حَتَّى لَا تَكُونَ ______________ وَيَكُونَ الدِّينُ كُلُّهُ لِلَّهِ."</p><div class="ans-line"></div>
+</div>
+
+<div class="print-break">
+<h2 class="sec">Section D — Put in Order (1 pt each, 6 pts)</h2>
+<p>Number these stages 1–6 in the correct order:</p>
+<table>
+<tr><td style="width:10%">____</td><td>Passed away at age 63</td></tr>
+<tr><td>____</td><td>Sent as a Prophet at age 40</td></tr>
+<tr><td>____</td><td>The Hijrah to Madīnah</td></tr>
+<tr><td>____</td><td>~10 years calling to Tawḥīd in Makkah</td></tr>
+<tr><td>____</td><td>Al-Miʿrāj — five prayers made obligatory</td></tr>
+<tr><td>____</td><td>~10 years of jihād after the Hijrah</td></tr>
+</table>
+
+<h2 class="sec">Section E — Short Answer (3 pts each)</h2>
+<p class="qline"><b>1.</b> Why do you think the five prayers were given directly, with no intermediary, unlike other commands? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Why did the Prophet ﷺ spend ~10 years just calling people to Tawḥīd before anything else?</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section F — Recite From Memory (5 pts)</h2>
+<p>Write as many of the six stages as you can, in Arabic, from memory:</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section G — Qurʾān Comprehension (4 pts)</h2>
+<p class="qline"><b>1.</b> Al-Anfāl 8:39 says to fight "until there is no more Fitnah, and the religion, all of it, is for Allah." What does "the religion, all of it, is for Allah" mean, connecting back to what you learned about Shirk in Unit 5? Explain in 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section H — Scenario / Critical Thinking (4 pts)</h2>
+<p class="qline"><b>1.</b> A younger student asks: "Why didn't the Prophet ﷺ just tell everyone to pray and fast right away, instead of waiting 10 years?" Using what you've learned across this whole book, how would you answer? Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Unit 11 Quiz</h1>
+<h2 class="sec">Section A — Multiple Choice</h2>
+<p>1. c &nbsp; 2. d &nbsp; 3. b &nbsp; 4. b &nbsp; 5. a</p>
+<h2 class="sec">Section B — True / False</h2>
+<p>1. True &nbsp; 2. False (it came directly, no intermediary) &nbsp; 3. False (they entered in multitudes by the end) &nbsp; 4. True &nbsp; 5. True</p>
+<h2 class="sec">Section C — Fill in the Blank</h2>
+<p>1. أَرْبَعِينَ (forty) &nbsp; 2. فِتْنَةٌ (Fitnah)</p>
+<h2 class="sec">Section D — Put in Order</h2>
+<p>In the order listed on the quiz: <strong>6</strong> (Passed away at 63), <strong>1</strong> (Sent at age 40), <strong>4</strong> (The Hijrah), <strong>2</strong> (~10 years calling to Tawḥīd), <strong>3</strong> (Al-Miʿrāj), <strong>5</strong> (~10 years of jihād).</p>
+<p>Correct chronological order: 1) Sent at 40 → 2) ~10 yrs calling to Tawḥīd → 3) Al-Miʿrāj → 4) Hijrah → 5) ~10 yrs of jihād → 6) Passed away at 63.</p>
+<h2 class="sec">Section E — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> To show how important and special Ṣalāh is — it's the one act of worship Allah chose to command directly, without sending it through an angel like everything else.</p>
+<p><b>2.</b> Because Tawḥīd is the foundation everything else is built on — just like the book itself teaches Tawḥīd before anything else, the Prophet ﷺ made sure people's belief was firmly rooted before adding other commands.</p>
+<h2 class="sec">Section F — Recite From Memory</h2>
+<div class="ar-block" style="font-size:1.05rem;">بُعِثَ عَلَى رَأْسِ أَرْبَعِينَ سَنَةً … عُرِجَ بِهِ إِلَى السَّمَاءِ … أُمِرَ بِالْهِجْرَةِ … أُمِرَ بِالْجِهَادِ … تُوُفِّيَ وَلَهُ ثَلَاثٌ وَسِتُّونَ سَنَةً</div>
+<h2 class="sec">Section G — Qurʾān Comprehension (sample full-credit answer)</h2>
+<p>It means worship should belong ENTIRELY to Allah, with no Shirk mixed in anywhere — connecting directly to Unit 5's lesson that giving even a small part of worship to something else corrupts it. "All of it for Allah" leaves no room for divided worship.</p>
+<h2 class="sec">Section H — Scenario (sample full-credit answer)</h2>
+<p>This whole book teaches that Tawḥīd has to come first — the Imam wrote it that way, and the Prophet ﷺ actually lived it that way too, spending years making sure people truly believed in and understood Allah before adding other commands. Rushing straight to actions without that foundation wouldn't have been real, lasting worship.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note for Sections E, G, H: use the Written Assignment Rubric — award full credit for the same idea in the student's own words.</p>
+</div>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Unit 11 Grading Rubric (Sections E, G, H)</h1>
+<table>
+<tr><td style="width:22%; font-weight:700; color:var(--green-dark);">4/4 or 3/3 pts</td><td>Fully correct idea, in the student's own words, with a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">2/3 or 3/4 pts</td><td>Correct idea but missing a small detail, OR not a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">1/3 or 1–2/4 pts</td><td>Partially correct — shows some understanding but misses the main point</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">0 pts</td><td>Blank, unrelated, or shows no understanding of the concept</td></tr>
+</table>
+
+<h1 class="sec">Student Scoring Sheet (for younger / Level 1 students)</h1>
+<table class="scoring">
+<tr><th>Skill</th><th class="opt">✓ Mastered</th><th class="opt">● Practicing</th><th class="opt">— Not Yet</th></tr>
+<tr><td>Recites the six stages in order</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>States his age at prophethood and at passing</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Explains what happened at Al-Miʿrāj</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Recites Al-Anfāl 8:39</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Unit 11 — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>
