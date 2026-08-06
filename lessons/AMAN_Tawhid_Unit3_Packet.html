@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Unit 3: Q3 — How Do You Know Your Lord?</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{ position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.82rem; margin-right:14px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.92rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.script-box{ background:#fff; border:1px solid #ddd0ae; border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.script-box strong.label{ display:block; color:var(--gold); margin-bottom:6px; font-weight:700; font-family:var(--Fm); font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.55rem; line-height:2.1; color:var(--green-dark); margin:14px 0 8px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:16px; }
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+.twocol{ display:flex; gap:20px; margin:14px 0 20px; }
+.twocol > div{ flex:1; background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:8px; padding:16px 18px; }
+.twocol h3{ margin:0 0 10px; color:var(--green); font-family:var(--Fd); font-size:1.05rem; }
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+table.scoring td.opt{ text-align:center; width:15%; }
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+@media print{
+  body{ background:#fff; } .toolbar{ display:none; } .page-shell{ max-width:none; }
+  .cover{ break-after:page; } .section{ break-inside:avoid; } tr{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; } .print-break{ break-before:page; } .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } .twocol{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Unit 3 Packet</span>
+  <span class="jump"><a href="#s9">Sess. 9</a><a href="#s10">Sess. 10</a><a href="#quiz">Quiz</a><a href="#key">Answer Key</a></span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Unit 3 · Weekend 5 · Sessions 9–10</div>
+  <h1>Q3 — How Do You Know Your Lord?</h1>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weekend / Sessions</td><td>Weekend 5 · Sessions 9–10 of the year</td></tr>
+<tr><td>Book Pages Covered</td><td>p. 9 (Q3 بم تعرف ربك, the signs, the creation, the proof-verse)</td></tr>
+<tr><td>Slide Reference</td><td>Deck A: Slide 10 (Q3) · Deck B: Lesson 2 (Q3 slides)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session</td></tr>
+<tr><td>Materials</td><td>Printed packet, pencils, board/whiteboard, a flashlight and a small ball or globe (sun/moon demo, optional)</td></tr>
+</table>
+
+<h2 class="sec">Learning Objectives</h2>
+<p>By the end of Unit 3, students will be able to:</p>
+<ul class="clean">
+<li>Recite Q3 (بِمَ تَعْرِفُ رَبَّكَ) and its answer from memory. <em>(Recall)</em></li>
+<li>Sort examples correctly into "signs" (āyāt) vs. "creation" (makhlūqāt). <em>(Comprehension)</em></li>
+<li>Recite the proof-verse (Al-A'rāf 7:54) and identify which sūrah and āyah it comes from. <em>(Recall)</em></li>
+<li>Explain, in their own words, the difference between a "sign" and a piece of "creation." <em>(Comprehension)</em></li>
+<li>Give a new example of a sign or a piece of creation not already listed in the book. <em>(Application)</em></li>
+</ul>
+
+<h2 class="sec" id="vocab">Vocabulary Introduced This Unit</h2>
+<table class="info">
+<tr><td><span class="ar-inline">آيَة / آيَات</span> āyah / āyāt</td><td>Sign(s) — proof(s) that point to Allah</td></tr>
+<tr><td><span class="ar-inline">مَخْلُوق / مَخْلُوقَات</span> makhlūq / makhlūqāt</td><td>Creation — things Allah made</td></tr>
+<tr><td><span class="ar-inline">دَلِيل</span> dalīl</td><td>Proof / evidence (here: a verse from the Qurʾān)</td></tr>
+<tr><td><span class="ar-inline">الْعَرْش</span> al-ʿArsh</td><td>The Throne — mentioned in the proof-verse</td></tr>
+</table>
+</div>
+
+<div class="section print-break" id="s9">
+<h1 class="sec">Weekend 5 · Session 9 (Saturday) — Signs &amp; Creation</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board:</strong>
+"Look around the room. Name one thing you can see that reminds you Allah exists. Why does it remind you of Him?"</div>
+
+<h2 class="sec">Spiral Review <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Cold-call 3–4 students (mixing Units 1–2):</strong> "Man rabbuka?" / "Mā maʿnā ar-Rabb?" — expect instant, full answers.</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<div class="ar-block">[س٣]: فَإِذَا قِيلَ لَكَ: بِمَ تَعْرِفُ رَبَّكَ؟</div>
+<div class="translation">Question 3: "So if it is said to you: How do you know your Lord?"</div>
+<div class="ar-block">[جـ]: فَقُلْ: أَعْرِفُهُ بِآيَاتِهِ وَمَخْلُوقَاتِهِ</div>
+<div class="translation">Answer: "Then say: I know Him by His signs and His creation."</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Explain the difference simply: a <strong>sign</strong> (āyah) is something that HAPPENS or CHANGES and points to a Planner behind it (like night turning into day). A piece of <strong>creation</strong> (makhlūq) is a THING that exists because Someone made it (like the sky itself).</p>
+<p style="margin:0;">Ask: "Could the sun just appear and disappear by accident, every single day, forever, with no one controlling it?" Guide toward: order and repetition this precise point to a Planner, not chance.</p>
+</div>
+
+<div class="twocol">
+<div><h3>مِنْ آيَاتِهِ — His Signs</h3>
+<div class="ar-block" style="font-size:1.3rem;">اللَّيْلُ وَالنَّهَارُ وَالشَّمْسُ وَالْقَمَرُ</div>
+<p style="margin:0;">The night and the day, the sun and the moon</p></div>
+<div><h3>مِنْ مَخْلُوقَاتِهِ — His Creation</h3>
+<div class="ar-block" style="font-size:1.3rem;">السَّمَاوَاتُ وَالْأَرْضُ وَمَا فِيهِمَا</div>
+<p style="margin:0;">The heavens and the earth and all that is in them</p></div>
+</div>
+
+<h2 class="sec">Exit Ticket <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Have students answer on scrap paper:</strong>
+<p class="qline">1. Is the sun a "sign" or "creation"?</p>
+<p class="qline" style="margin-bottom:0;">2. Is the sky itself a "sign" or "creation"?</p></div>
+</div>
+
+<div class="section print-break" id="s10">
+<h1 class="sec">Weekend 5 · Session 10 (Sunday) — The Proof-Verse</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Quick recall:</strong> "What are the two ways we know our Lord?" (His signs and His creation)</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<p>Teacher instructions: Every claim in this book is backed by a dalīl (proof) from the Qurʾān or Sunnah — this is the FIRST proof-verse students encounter. Read it slowly, phrase by phrase.</p>
+<div class="ar-block">إِنَّ رَبَّكُمُ اللَّهُ الَّذِي خَلَقَ السَّمَاوَاتِ وَالْأَرْضَ فِي سِتَّةِ أَيَّامٍ ثُمَّ اسْتَوَى عَلَى الْعَرْشِ يُغْشِي اللَّيْلَ النَّهَارَ يَطْلُبُهُ حَثِيثًا … تَبَارَكَ اللَّهُ رَبُّ الْعَالَمِينَ</div>
+<div class="translation">"Indeed, your Lord is Allah, who created the heavens and the earth in six days, then rose above the Throne. He covers the night with the day, seeking it rapidly … Blessed is Allah, Lord of all the worlds." — Sūrat al-Aʿrāf, 7:54</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Point out the "…" — the book itself skips the middle of this āyah and jumps to the ending, marking it with "إِلَى قَوْلِهِ" ("up to His saying…"). Explain: this is a normal, honest way scholars quote part of a longer verse — always show students the full āyah exists even when only part is memorized here.</p>
+<p style="margin:0;">Ask: "What does 'covers the night with the day' remind you of from earlier — a sign, or creation?" (A sign — it's something that HAPPENS, on repeat, in order.)</p>
+</div>
+
+<h2 class="sec">Independent Practice <span class="timing">10 min</span></h2>
+<p>Sort each item — write "S" for Sign or "C" for Creation:</p>
+<p class="qline"><b>1.</b> The moon _____&nbsp;&nbsp;&nbsp; <b>2.</b> The earth _____&nbsp;&nbsp;&nbsp; <b>3.</b> Daytime turning to night _____&nbsp;&nbsp;&nbsp; <b>4.</b> The heavens _____</p>
+<p class="qline"><b>5.</b> What sūrah and āyah number is the proof-verse from?</p><div class="ans-line short"></div>
+
+<h2 class="sec">Partner Activity — Sign or Creation? <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">Teacher instructions</strong>
+<p>Partner A names something from nature (rain, a mountain, sunrise, a river, stars). Partner B must say whether it's a "sign" (something that happens/changes) or "creation" (a thing that exists) and explain why. Switch roles after 5 rounds.</p></div>
+
+<h2 class="sec">Group Activity — Sign Hunt <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p style="margin:0;">In small groups, students brainstorm 3 signs and 3 pieces of creation NOT already mentioned in the book (e.g., rain, thunder, a rainbow = signs; mountains, oceans, animals = creation). Each group shares one of each with the class.</p></div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Memorize Q3 with its full answer, in Arabic.</li>
+<li>Tonight, look at the sky. Write down one sign and one piece of creation you noticed.</li>
+</ul></div>
+<p>Parent signature confirming recitation practice: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div class="section print-break" id="quiz">
+<div class="quiz-header">
+<h1>UNIT 3 QUIZ</h1>
+<div class="sub">Q3 — How Do You Know Your Lord?</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>Score</label>_______ / 38</div>
+</div>
+<div style="height:20px;"></div>
+
+<h2 class="sec">Section A — Multiple Choice (1 pt each)</h2>
+<p class="qline"><b>1.</b> Q3 asks:</p>
+<p class="mc-opts">a) What is your religion? &nbsp;&nbsp; b) How do you know your Lord? &nbsp;&nbsp; c) Who is your Prophet? &nbsp;&nbsp; d) Who is your Lord?</p>
+<p class="qline"><b>2.</b> Which of these is a "sign" (āyah)?</p>
+<p class="mc-opts">a) The earth &nbsp;&nbsp; b) The heavens &nbsp;&nbsp; c) The sun and moon &nbsp;&nbsp; d) The mountains</p>
+<p class="qline"><b>3.</b> Which of these is "creation" (makhlūq)?</p>
+<p class="mc-opts">a) Night turning to day &nbsp;&nbsp; b) The heavens and earth &nbsp;&nbsp; c) The moon appearing &nbsp;&nbsp; d) The sun rising</p>
+<p class="qline"><b>4.</b> The proof-verse for Q3 comes from:</p>
+<p class="mc-opts">a) Sūrat al-Baqarah &nbsp;&nbsp; b) Sūrat al-Aʿrāf &nbsp;&nbsp; c) Sūrat an-Nisā &nbsp;&nbsp; d) Sūrat al-Ikhlāṣ</p>
+<p class="qline"><b>5.</b> In how many days does the āyah say Allah created the heavens and the earth?</p>
+<p class="mc-opts">a) Four &nbsp;&nbsp; b) Five &nbsp;&nbsp; c) Six &nbsp;&nbsp; d) Seven</p>
+
+<h2 class="sec">Section B — True / False (1 pt each)</h2>
+<p class="qline"><b>1.</b> A "sign" is something that happens or changes, while "creation" is a thing that exists. _____</p>
+<p class="qline"><b>2.</b> The book quotes the ENTIRE proof-verse, word for word, with nothing skipped. _____</p>
+<p class="qline"><b>3.</b> The sun and moon are examples of Allah's signs. _____</p>
+<p class="qline"><b>4.</b> The heavens and the earth are examples of Allah's signs, not His creation. _____</p>
+<p class="qline"><b>5.</b> Al-Aʿrāf 7:54 is the proof-verse used for Q3. _____</p>
+
+<h2 class="sec">Section C — Fill in the Blank (2 pts each)</h2>
+<p class="qline"><b>1.</b> Q3: بِمَ تَعْرِفُ رَبَّكَ؟ → أَعْرِفُهُ بِـ______________ وَ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Two examples of His signs: the ______________ and ______________, and the ______________ and ______________.</p><div class="ans-line"></div>
+</div>
+
+<div class="print-break">
+<h2 class="sec">Section D — Matching (1 pt each)</h2>
+<table>
+<tr><td style="width:50%"><b>1.</b> <span class="ar-inline">آيَة</span> (āyah)</td><td>A. Proof / evidence</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">مَخْلُوق</span> (makhlūq)</td><td>B. Sign</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">دَلِيل</span> (dalīl)</td><td>C. The Throne</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">الْعَرْش</span> (al-ʿArsh)</td><td>D. A piece of creation</td></tr>
+</table>
+
+<h2 class="sec">Section E — Short Answer (3 pts each)</h2>
+<p class="qline"><b>1.</b> In your own words, what's the difference between a "sign" and a piece of "creation"? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Give ONE example of a sign and ONE example of creation that are NOT already mentioned in the book.</p>
+<div class="ans-line"></div>
+
+<h2 class="sec">Section F — Recite From Memory (5 pts)</h2>
+<p>Write Q3 with its full answer, in Arabic, from memory:</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section G — Qurʾān Comprehension (4 pts)</h2>
+<p class="qline"><b>1.</b> The proof-verse says Allah "covers the night with the day, seeking it rapidly." What is this describing, and why is it good evidence that Allah exists? Explain in 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section H — Scenario / Critical Thinking (4 pts)</h2>
+<p class="qline"><b>1.</b> Your friend says: "The sun rising every day is just science — it has nothing to do with Allah." Using what you learned about signs (āyāt), how would you respond? Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="section answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Unit 3 Quiz</h1>
+<h2 class="sec">Section A — Multiple Choice</h2>
+<p>1. b &nbsp; 2. c &nbsp; 3. b &nbsp; 4. b &nbsp; 5. c</p>
+<h2 class="sec">Section B — True / False</h2>
+<p>1. True &nbsp; 2. False (it skips the middle, marked with "up to His saying…") &nbsp; 3. True &nbsp; 4. False (they are creation, not signs) &nbsp; 5. True</p>
+<h2 class="sec">Section C — Fill in the Blank</h2>
+<p>1. آيَاتِهِ / مَخْلُوقَاتِهِ (his signs / his creation) &nbsp; 2. night / day, sun / moon</p>
+<h2 class="sec">Section D — Matching</h2>
+<p>1 → B &nbsp; 2 → D &nbsp; 3 → A &nbsp; 4 → C</p>
+<h2 class="sec">Section E — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> A sign is something that happens or changes over and over in a precise pattern (like night becoming day), while creation is a thing that simply exists because Allah made it (like the sky).</p>
+<p><b>2.</b> Any reasonable example accepted — e.g., rain or a rainbow (sign); a mountain or an animal (creation).</p>
+<h2 class="sec">Section F — Recite From Memory</h2>
+<div class="ar-block" style="font-size:1.2rem;">بِمَ تَعْرِفُ رَبَّكَ؟ أَعْرِفُهُ بِآيَاتِهِ وَمَخْلُوقَاتِهِ</div>
+<h2 class="sec">Section G — Qurʾān Comprehension (sample full-credit answer)</h2>
+<p>This describes the daily cycle of night and day happening with perfect, unbroken order, over and over, forever. Something that precise and continuous can't happen by pure accident — it points to a Planner and Controller behind it, which is exactly what a "sign" (āyah) is meant to show us.</p>
+<h2 class="sec">Section H — Scenario (sample full-credit answer)</h2>
+<p>I'd tell my friend that understanding HOW something works (the science) doesn't answer WHO set up the system in the first place and keeps it running perfectly every single day. The book teaches that the sun rising precisely on schedule is exactly the kind of order that points to Allah as the Planner behind it — science describes the pattern, but the pattern itself is a sign pointing to Him.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note for Sections E, G, H: use the Written Assignment Rubric — award full credit for the same idea in the student's own words.</p>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Unit 3 Grading Rubric (Sections E, G, H)</h1>
+<table>
+<tr><td style="width:22%; font-weight:700; color:var(--green-dark);">4/4 or 3/3 pts</td><td>Fully correct idea, in the student's own words, with a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">2/3 or 3/4 pts</td><td>Correct idea but missing a small detail, OR not a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">1/3 or 1–2/4 pts</td><td>Partially correct — shows some understanding but misses the main point</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">0 pts</td><td>Blank, unrelated, or shows no understanding of the concept</td></tr>
+</table>
+
+<h1 class="sec">Student Scoring Sheet (for younger / Level 1 students)</h1>
+<table class="scoring">
+<tr><th>Skill</th><th class="opt">✓ Mastered</th><th class="opt">● Practicing</th><th class="opt">— Not Yet</th></tr>
+<tr><td>Recites Q3 with its answer from memory</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Sorts examples into signs vs. creation correctly</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Recites the proof-verse (Al-Aʿrāf 7:54)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Gives a new example of a sign or creation</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Unit 3 — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>

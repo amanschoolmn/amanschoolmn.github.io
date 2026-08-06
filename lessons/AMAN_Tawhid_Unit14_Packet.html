@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Unit 14: The Return of ʿĪsā &amp; the Book's Conclusion</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{ position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.82rem; margin-right:14px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.92rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.script-box{ background:#fff; border:1px solid #ddd0ae; border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.script-box strong.label{ display:block; color:var(--gold); margin-bottom:6px; font-weight:700; font-family:var(--Fm); font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.5rem; line-height:2.1; color:var(--green-dark); margin:14px 0 8px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:16px; }
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+.closing-box{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; border-radius:10px; padding:28px 32px; margin:16px 0 20px; text-align:center; }
+.closing-box .ar-inline{ font-size:2rem; color:var(--gold-light); display:block; margin-bottom:10px; }
+.closing-box p{ color:#e8dcc0; margin:0; }
+.journey{ margin:14px 0 20px; } .journey .item{ display:flex; gap:12px; align-items:center; background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:8px; padding:8px 14px; margin-bottom:6px; font-size:.9rem; }
+.journey .num{ background:var(--gold); color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--Fd); font-weight:700; flex-shrink:0; font-size:.75rem; }
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+table.scoring td.opt{ text-align:center; width:15%; }
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+@media print{
+  body{ background:#fff; } .toolbar{ display:none; } .page-shell{ max-width:none; }
+  .cover{ break-after:page; } .section{ break-inside:avoid; } tr{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; } .print-break{ break-before:page; } .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Unit 14 Packet</span>
+  <span class="jump"><a href="#s51">Sess. 51</a><a href="#s52">Sess. 52</a><a href="#quiz">Quiz</a><a href="#key">Answer Key</a></span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Unit 14 · Weekend 26 · Sessions 51–52</div>
+  <h1>The Return of ʿĪsā &amp; the Book's Conclusion</h1>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weekend / Sessions</td><td>Weekend 26 · Sessions 51–52 of the year</td></tr>
+<tr><td>Book Pages Covered</td><td>p. 26 (ʿĪsā's descent, the Dajjāl, the book's closing words)</td></tr>
+<tr><td>Slide Reference</td><td>Deck A: Slide 28 (closing) · Deck B: Lesson 5 (closing slides)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session</td></tr>
+<tr><td>Materials</td><td>Printed packet, pencils, board/whiteboard</td></tr>
+</table>
+<div class="note-box"><strong class="label">A milestone session</strong>
+<p style="margin:0;">This is the LAST new-content unit of the book. Session 52 includes a full-book journey review — treat it as a genuine milestone, not just another lesson. The Final Review begins next weekend.</p></div>
+
+<h2 class="sec">Learning Objectives</h2>
+<p>By the end of Unit 14, students will be able to:</p>
+<ul class="clean">
+<li>State what will happen when ʿĪsā (peace be upon him) descends. <em>(Recall)</em></li>
+<li>Recite the book's closing words. <em>(Recall)</em></li>
+<li>Summarize the book's overall journey, from the opening to the close, in their own words. <em>(Comprehension)</em></li>
+<li>Identify which unit covered a given topic, across the whole year so far. <em>(Application)</em></li>
+</ul>
+
+<h2 class="sec" id="vocab">Vocabulary Introduced This Unit</h2>
+<table class="info">
+<tr><td><span class="ar-inline">الدَّجَّال</span> ad-Dajjāl</td><td>The False Messiah — a major sign before the Last Day</td></tr>
+<tr><td><span class="ar-inline">يَنْزِل</span> yanzil</td><td>He will descend</td></tr>
+</table>
+</div>
+
+<div class="section print-break" id="s51">
+<h1 class="sec">Weekend 26 · Session 51 (Saturday) — The Return of ʿĪsā</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board:</strong>
+"Have you heard of the Dajjāl before? What do you already know?"</div>
+
+<h2 class="sec">Spiral Review <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Cold-call:</strong> "List the six pillars of Īmān" — from Unit 13.</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">25 min</span></h2>
+<div class="ar-block">وَيَنْزِلُ عِيسَى ابْنُ مَرْيَمَ عَلَيْهِ السَّلَامُ فَيَقْتُلُ الدَّجَّالَ</div>
+<div class="translation">"And ʿĪsā, son of Maryam, peace be upon him, will descend and kill the Dajjāl." — Ṣaḥīḥ Muslim 7560</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Explain simply: near the end of time, a false figure called the Dajjāl will appear, causing great trials for people. Allah will send ʿĪsā (peace be upon him) back down to defeat him. This is one of the major signs of the approaching Last Day, connecting directly to Unit 13's belief in the Last Day.</p>
+<p style="margin:0;">Ask: "Why do you think this belongs in a book about Tawḥīd?" Guide toward: believing correctly in what will happen at the end of time is itself part of true Īmān — it's not a separate topic, it's part of believing rightly in Allah's plan.</p>
+</div>
+
+<h2 class="sec">Exit Ticket <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">On scrap paper:</strong>
+<p style="margin-bottom:0;">Who will descend and kill the Dajjāl?</p></div>
+</div>
+
+<div class="section print-break" id="s52">
+<h1 class="sec">Weekend 26 · Session 52 (Sunday) — The Book's Conclusion &amp; Our Journey</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Quick recall:</strong> "What will happen when ʿĪsā descends?"</div>
+
+<h2 class="sec">The Closing Words</h2>
+<div class="closing-box">
+<span class="ar-inline">وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</span>
+<p>"And all praise is for Allah, Lord of all the worlds."</p>
+</div>
+<p>Teacher script: Point out that the book ends exactly the way it began — with praise for Allah (recall the Ḥamdalah from Unit 1's opening). Ask: "Why do you think the Imam chose to close the book the same way he opened it?"</p>
+
+<h2 class="sec">Our Journey Through the Book <span class="timing">20 min</span></h2>
+<p>As a class, walk back through the whole book, unit by unit. For each one, cold-call a student to recall the main idea in one sentence:</p>
+<div class="journey">
+<div class="item"><div class="num">1</div>The book's opening, its two goals, and the Fiṭrah</div>
+<div class="item"><div class="num">2</div>Q1 &amp; Q2 — who your Lord is, and what "Rabb" means</div>
+<div class="item"><div class="num">3</div>Q3 — knowing Allah through His signs and creation</div>
+<div class="item"><div class="num">4</div>Q4 — why you were created, and the meaning of ʿIbādah</div>
+<div class="item"><div class="num">5</div>Shirk — the greatest sin, and its five forms</div>
+<div class="item"><div class="num">6</div>Duʿā — the greatest worship, and the five acts of the heart</div>
+<div class="item"><div class="num">7</div>Ṭāghūt — the first obligation</div>
+<div class="item"><div class="num">8</div>Q5 — what Islam means, and Lā ilāha illā Allāh</div>
+<div class="item"><div class="num">9</div>The Five Pillars of Islam, and Ṭahārah</div>
+<div class="item"><div class="num">10</div>Q6 — who your Prophet ﷺ is</div>
+<div class="item"><div class="num">11</div>The Prophet's ﷺ life, stage by stage</div>
+<div class="item"><div class="num">12</div>Messengers &amp; Companions</div>
+<div class="item"><div class="num">13</div>The Six Pillars of Īmān</div>
+<div class="item"><div class="num">14</div>ʿĪsā's return, and the book's closing</div>
+</div>
+
+<h2 class="sec">Group Activity — "Name That Unit" <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p style="margin:0;">Read a fact from anywhere in the book (e.g., "The Owner, the One Worshipped") — teams race to name which unit it's from. This doubles as excellent Final Review prep.</p></div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Memorize the ʿĪsā/Dajjāl ḥadīth and the book's closing words.</li>
+<li>Look back through ALL your unit packets from the whole year — the Final Review starts next weekend.</li>
+</ul></div>
+<p>Parent signature: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+
+<div id="quiz">
+<div class="quiz-header">
+<h1>UNIT 14 QUIZ</h1>
+<div class="sub">The Return of ʿĪsā &amp; the Book's Conclusion</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>Score</label>_______ / 34</div>
+</div>
+<div style="height:20px;"></div>
+
+<h2 class="sec">Section A — Multiple Choice (1 pt each)</h2>
+<p class="qline"><b>1.</b> Who will descend and kill the Dajjāl?</p>
+<p class="mc-opts">a) Ibrāhīm &nbsp;&nbsp; b) ʿĪsā &nbsp;&nbsp; c) Nūḥ &nbsp;&nbsp; d) Mūsā</p>
+<p class="qline"><b>2.</b> The ʿĪsā/Dajjāl ḥadīth is collected in:</p>
+<p class="mc-opts">a) Ṣaḥīḥ al-Bukhārī &nbsp;&nbsp; b) At-Tirmidhī &nbsp;&nbsp; c) Ṣaḥīḥ Muslim &nbsp;&nbsp; d) None of these</p>
+<p class="qline"><b>3.</b> The book's closing words are:</p>
+<p class="mc-opts">a) Bismillāh ir-Raḥmān ir-Raḥīm &nbsp;&nbsp; b) Al-Ḥamdu lillāhi Rabbi al-ʿĀlamīn &nbsp;&nbsp; c) Allāhu Akbar &nbsp;&nbsp; d) Lā ilāha illā Allāh</p>
+<p class="qline"><b>4.</b> The book closes the same way it:</p>
+<p class="mc-opts">a) Ends every chapter &nbsp;&nbsp; b) Opened &nbsp;&nbsp; c) Never repeats phrases &nbsp;&nbsp; d) Was translated</p>
+
+<h2 class="sec">Section B — True / False (1 pt each)</h2>
+<p class="qline"><b>1.</b> The Dajjāl is a major sign connected to belief in the Last Day. _____</p>
+<p class="qline"><b>2.</b> The book's closing words are different from its opening words. _____</p>
+<p class="qline"><b>3.</b> Believing correctly in end-time events is considered part of true Īmān. _____</p>
+
+<h2 class="sec">Section C — Fill in the Blank (2 pts each)</h2>
+<p class="qline"><b>1.</b> وَيَنْزِلُ ______________ ابْنُ مَرْيَمَ فَيَقْتُلُ ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> وَالْحَمْدُ لِلَّهِ ______________ ______________.</p><div class="ans-line"></div>
+</div>
+
+<div class="print-break">
+<h2 class="sec">Section D — Match the Unit (1 pt each)</h2>
+<table>
+<tr><td style="width:60%"><b>1.</b> "The Owner, the One Worshipped"</td><td>A. Unit 5</td></tr>
+<tr><td><b>2.</b> The five forms of Shirk</td><td>B. Unit 9</td></tr>
+<tr><td><b>3.</b> The Ḥadīth of Jibrīl</td><td>C. Unit 2</td></tr>
+<tr><td><b>4.</b> The best-generations ḥadīth</td><td>D. Unit 12</td></tr>
+</table>
+
+<h2 class="sec">Section E — Short Answer (3 pts each)</h2>
+<p class="qline"><b>1.</b> Why do you think the Imam closes the book the same way he opened it? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Why does belief about the Dajjāl and ʿĪsā's return belong in a book about Tawḥīd?</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section F — Recite From Memory (5 pts)</h2>
+<p>Write the ʿĪsā/Dajjāl ḥadīth and the book's closing words, in Arabic, from memory:</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section G — Reflection (4 pts)</h2>
+<p class="qline"><b>1.</b> Looking back at the whole book, from the Fiṭrah in Unit 1 to the closing here in Unit 14 — what is the ONE idea that ties everything together? Explain in 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section H — Scenario / Critical Thinking (4 pts)</h2>
+<p class="qline"><b>1.</b> A younger student who's just starting this book asks you: "What's the most important thing I'll learn?" Based on your whole year of study, what would you tell them? Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Unit 14 Quiz</h1>
+<h2 class="sec">Section A — Multiple Choice</h2>
+<p>1. b &nbsp; 2. c &nbsp; 3. b &nbsp; 4. b</p>
+<h2 class="sec">Section B — True / False</h2>
+<p>1. True &nbsp; 2. False (they're the same — praise for Allah) &nbsp; 3. True</p>
+<h2 class="sec">Section C — Fill in the Blank</h2>
+<p>1. عِيسَى / الدَّجَّالَ &nbsp; 2. رَبِّ / الْعَالَمِينَ</p>
+<h2 class="sec">Section D — Match the Unit</h2>
+<p>1 → C &nbsp; 2 → A &nbsp; 3 → B &nbsp; 4 → D</p>
+<h2 class="sec">Section E — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> To show that everything — the whole book, and really all of life — begins and ends with praise for Allah; it frames the entire work as an act of worship itself.</p>
+<p><b>2.</b> Because correctly believing in what Allah has told us about the future — including the Last Day and its signs — is part of true Īmān, not separate from Tawḥīd.</p>
+<h2 class="sec">Section F — Recite From Memory</h2>
+<div class="ar-block" style="font-size:1.1rem;">وَيَنْزِلُ عِيسَى ابْنُ مَرْيَمَ عَلَيْهِ السَّلَامُ فَيَقْتُلُ الدَّجَّالَ … وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</div>
+<h2 class="sec">Section G — Reflection (sample full-credit answer)</h2>
+<p>Everything in the book comes back to worshipping Allah alone, with nothing shared with Him — whether it's knowing Him through His signs, understanding why we were created, avoiding Shirk, following the Prophet ﷺ, or believing correctly about the Last Day. It's all one single idea worked out in every direction: Tawḥīd.</p>
+<h2 class="sec">Section H — Scenario (sample full-credit answer)</h2>
+<p>I'd tell them the most important thing is learning who Allah truly is and making sure every part of worship — belief, actions, and love — belongs to Him alone. Everything else in the book, from the Five Pillars to the Prophet's ﷺ life, builds on that one foundation.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note for Sections E, G, H: use the Written Assignment Rubric — award full credit for the same idea in the student's own words.</p>
+</div>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Unit 14 Grading Rubric (Sections E, G, H)</h1>
+<table>
+<tr><td style="width:22%; font-weight:700; color:var(--green-dark);">4/4 or 3/3 pts</td><td>Fully correct idea, in the student's own words, with a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">2/3 or 3/4 pts</td><td>Correct idea but missing a small detail, OR not a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">1/3 or 1–2/4 pts</td><td>Partially correct — shows some understanding but misses the main point</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">0 pts</td><td>Blank, unrelated, or shows no understanding of the concept</td></tr>
+</table>
+
+<h1 class="sec">Student Scoring Sheet (for younger / Level 1 students)</h1>
+<table class="scoring">
+<tr><th>Skill</th><th class="opt">✓ Mastered</th><th class="opt">● Practicing</th><th class="opt">— Not Yet</th></tr>
+<tr><td>States what happens when ʿĪsā descends</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Recites the book's closing words</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Summarizes the book's overall message</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Recalls content from earlier units (spiral check)</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Unit 14 — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>

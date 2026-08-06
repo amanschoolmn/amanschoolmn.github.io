@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Unit 1: The Book's Opening &amp; Why Tawḥīd Comes First</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{
+  position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.82rem; margin-right:14px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.92rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.script-box{ background:#fff; border:1px solid #ddd0ae; border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.script-box strong.label{ display:block; color:var(--gold); margin-bottom:6px; font-weight:700; font-family:var(--Fm); font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.55rem; line-height:2.1; color:var(--green-dark); margin:14px 0 8px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:16px; }
+
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+
+table.scoring th{ background:var(--green); }
+table.scoring td.opt{ text-align:center; width:15%; }
+
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+
+@media print{
+  body{ background:#fff; }
+  .toolbar{ display:none; }
+  .page-shell{ max-width:none; }
+  .cover{ break-after:page; }
+  .section{ break-inside:avoid; }
+  tr{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; }
+  .print-break{ break-before:page; }
+  .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Unit 1 Packet</span>
+  <span class="jump">
+    <a href="#day1">Day 1</a><a href="#day2">Day 2</a><a href="#vocab">Vocabulary</a><a href="#quiz">Quiz</a><a href="#key">Answer Key</a>
+  </span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Unit 1</div>
+  <h1>The Book's Opening &amp; Why Tawḥīd Comes First</h1>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weeks</td><td>1–2 (Sessions 1–2 of the year)</td></tr>
+<tr><td>Book Pages Covered</td><td>pp. 7–8 (Introduction, Basmalah, Purpose Statement, Fiṭrah)</td></tr>
+<tr><td>Slide Reference</td><td>Deck A: Cover, Slide 2 (Book's Opening), Slide 3 (Why Tawḥīd First) · Deck B: Slides 1–5, 12</td></tr>
+<tr><td>Weekend / Sessions</td><td>Weekend 1–2 · Sessions 1–4 of the year (AMAN meets Sat + Sun each weekend)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session (see session-by-session breakdown below)</td></tr>
+<tr><td>Materials</td><td>Printed packet, pencils, board/whiteboard, scissors + glue (Day 2 cut-paste), crayons (coloring page)</td></tr>
+</table>
+
+<h2 class="sec">Learning Objectives</h2>
+<p>By the end of Unit 1, students will be able to:</p>
+<ul class="clean">
+<li>Recite the opening of the book (Istiʿādhah, Basmalah, Ḥamdalah, Ṣalawāt, Ammā baʿd) from memory. <em>(Recall)</em></li>
+<li>State, in their own words, why the author teaches Tawḥīd before the Qurʾān. <em>(Comprehension)</em></li>
+<li>Name the book's two goals — a complete Muslim and a good Muwaḥḥid — and explain what "good" adds to the second goal. <em>(Comprehension)</em></li>
+<li>Explain the Question-and-Answer method the book uses and why the author chose it. <em>(Comprehension)</em></li>
+<li>Recite the Fiṭrah ḥadīth and explain what it means for how they were born. <em>(Recall + Comprehension)</em></li>
+<li>Apply the Fiṭrah concept to a simple real-life scenario. <em>(Application)</em></li>
+</ul>
+
+<h2 class="sec" id="vocab">Vocabulary Introduced This Unit</h2>
+<table class="info">
+<tr><td><span class="ar-inline">التوحيد</span> at-Tawḥīd</td><td>The Oneness of Allah — worshipping Him alone</td></tr>
+<tr><td><span class="ar-inline">الفطرة</span> al-Fiṭrah</td><td>The natural belief in Allah every person is born with</td></tr>
+<tr><td><span class="ar-inline">موحّد</span> Muwaḥḥid</td><td>A person who practices Tawḥīd</td></tr>
+<tr><td><span class="ar-inline">سؤال وجواب</span> Suʾāl wa-Jawāb</td><td>Question and Answer — the book's teaching method</td></tr>
+<tr><td>al-Basmalah</td><td>Saying "Bismillāh ir-Raḥmān ir-Raḥīm"</td></tr>
+<tr><td>al-Ḥamdalah</td><td>Saying "Al-ḥamdu lillāh"</td></tr>
+</table>
+</div>
+
+<div class="section print-break" id="day1">
+<h1 class="sec">Weekend 1 · Session 1 (Saturday) — Meeting the Book</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board as students enter:</strong>
+"If you could only teach a child ONE thing about Islam before anything else, what would you teach them first? Write 1–2 sentences."
+<p style="margin-top:8px;">Give students 3 minutes to write, then take 2–3 quick answers. Do not correct — this is to surface prior thinking. Come back to this at the end of Day 1.</p></div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<p>Teacher instructions: Read each Arabic line aloud first, have students repeat it (choral response), then give the meaning.</p>
+<div class="ar-block">أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ</div>
+<div class="translation">"I seek refuge in Allah from the accursed Shaytan."</div>
+<div class="ar-block">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+<div class="translation">"In the name of Allah, the Most Merciful, the Most Compassionate."</div>
+<div class="ar-block">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ، وَالصَّلَاةُ وَالسَّلَامُ عَلَى سَيِّدِ الْمُرْسَلِينَ، وَعَلَى آلِهِ وَأَصْحَابِهِ أَجْمَعِينَ</div>
+<div class="translation">"All praise is for Allah, Lord of all the worlds, and blessings and peace be upon the leader of the Messengers, and upon his family and companions, all of them."</div>
+<div class="ar-block">أَمَّا بَعْدُ</div>
+<div class="translation">"As for what follows" — a classical phrase (the Prophet ﷺ used it too) that signals: the opening praise is done, now the real content begins.</div>
+<p><strong>Discussion prompts:</strong></p>
+<ul class="clean">
+<li>Why do you think the author starts by praising Allah before saying anything about his book?</li>
+<li>The author calls the Prophet ﷺ "leader of the Messengers." What does a leader do?</li>
+</ul>
+
+<h2 class="sec">The Purpose Statement</h2>
+<div class="ar-block">فَهَذِهِ رِسَالَةٌ نَافِعَةٌ فِيمَا يَجِبُ عَلَى الإِنْسَانِ أَنْ يُعَلِّمَ الصِّبْيَانَ قَبْلَ تَعْلِيمِهِمُ الْقُرْآنَ، حَتَّى يَصِيرَ مُسْلِمًا كَامِلًا عَلَى فِطْرَةِ الإِسْلَامِ، وَمُوَحِّدًا جَيِّدًا عَلَى طَرِيقَةِ الإِيمَانِ</div>
+<div class="translation">"This is a beneficial treatise on what a person must teach children before teaching them the Qurʾān — so they become a complete Muslim upon the fiṭrah of Islam, and a GOOD Muwaḥḥid upon the path of true faith."</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Ask: "Which comes first in this book — Qurʾān or Tawḥīd?" (Tawḥīd). "Why do you think the author put it in that order?" Guide students toward: you need to know WHO you're worshipping and WHY before you can fully understand what you're reading.</p>
+<p style="margin:0;">Point out the word جَيِّدًا ("good"). Ask: "Why didn't the author just say 'a Muwaḥḥid'? What does adding the word 'good' tell us he wants?" (Not just saying the words — truly understanding and living it.)</p>
+</div>
+
+<h2 class="sec">Exit Ticket <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Hand out or have students answer on scrap paper:</strong>
+<p class="qline">1. What are the book's two goals for you? (write both in English)</p>
+<p class="qline" style="margin-bottom:0;">2. In your own words: why does the Imam teach Tawḥīd before the Qurʾān?</p>
+</div>
+</div>
+
+<div class="section print-break" id="day2">
+<h1 class="sec">Weekend 1 · Session 2 (Sunday) — The Fiṭrah &amp; the Book's Method</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Quick recall (cold-call 3–4 students):</strong>
+"What are the book's two goals, from yesterday?" "What word did the author add before Muwaḥḥid, and why does it matter?"</div>
+
+<h2 class="sec">Guided Mini-Lesson: The Question &amp; Answer Method <span class="timing">10 min</span></h2>
+<div class="ar-block">وَرَتَّبْتُهُ عَلَى طَرِيقَةِ سُؤَالٍ وَجَوَابٍ</div>
+<div class="translation">"And I arranged it upon the method of question and answer."</div>
+<p>Teacher script: "This whole book is built as questions and answers, like the ones the angels ask in the grave, and like how the angel Jibrīl once questioned the Prophet ﷺ directly. I will ask — you answer, from memory, every single lesson from now on. That's how this book was designed to be taught."</p>
+
+<h2 class="sec">Guided Mini-Lesson: The Fiṭrah Ḥadīth <span class="timing">15 min</span></h2>
+<div class="ar-block">كُلُّ مَوْلُودٍ يُولَدُ عَلَى الْفِطْرَةِ، فَأَبَوَاهُ يُهَوِّدَانِهِ أَوْ يُنَصِّرَانِهِ أَوْ يُمَجِّسَانِهِ</div>
+<div class="translation">"Every child is born upon the Fiṭrah. Then his parents make him a Jew, a Christian, or a Magian." — Ṣaḥīḥ al-Bukhārī, narrated by Abū Hurayrah رضي الله عنه</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Explain simply: every single baby — everywhere in the world — is born already knowing, deep inside, that Allah is real. That feeling is called the Fiṭrah. Nobody has to convince a baby that a Creator exists.</p>
+<p style="margin:0;">Ask: "So if we're all born already believing in Allah, why does the book need to TEACH Tawḥīd at all?" Guide toward: the world around us can pull that natural feeling away if nobody nurtures it — this book protects and rebuilds the Fiṭrah on purpose.</p>
+</div>
+
+<h2 class="sec">Independent Practice <span class="timing">10 min</span></h2>
+<p>Students complete individually, then review as a class:</p>
+<p class="qline"><b>1.</b> Fill in the blank: Every child is born upon the ______________ (English word).</p><div class="ans-line short"></div>
+<p class="qline"><b>2.</b> True or False: The book teaches the Qurʾān before Tawḥīd.</p><div class="ans-line short"></div>
+<p class="qline"><b>3.</b> Write, in your own words, what "a good Muwaḥḥid" means:</p><div class="ans-line"></div>
+
+<h2 class="sec">Partner Activity — Basmalah Relay <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">Teacher instructions</strong>
+<p>Pair students up. Partner A recites the Istiʿādhah + Basmalah from memory while Partner B checks against the printed text (point out any missed word). Switch roles for the Ḥamdalah + Ṣalawāt + Ammā baʿd.</p>
+<p style="margin:0;">Then Partner A asks Partner B: "What are the book's two goals?" Partner B answers fully in English, then switches: Partner B asks Partner A to explain the Fiṭrah ḥadīth in their own words.</p>
+</div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Practice reciting the full opening (Istiʿādhah → Ammā baʿd) three times out loud at home.</li>
+<li>Ask a parent or older sibling: "What do you think it means that I was born on the Fiṭrah?" Write their answer in 1–2 sentences.</li>
+<li>Memorize the Fiṭrah ḥadīth in Arabic for a cold-call check next session.</li>
+</ul></div>
+<p>Parent signature confirming recitation practice: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Weekend 2 · Session 3 (Saturday) — Games &amp; Vocabulary Practice</h1>
+<h2 class="sec">Group Activity — "Complete the Chain" Game</h2>
+<p>Time: 15 minutes · Group size: 4–6 students</p>
+<div class="note-box"><strong class="label">How to play</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Write each phrase of the opening (Istiʿādhah, Basmalah, Ḥamdalah, Ṣalawāt, Ammā baʿd) on separate cards, one phrase per card, shuffled out of order.</li>
+<li>Give each group a shuffled set. First group to correctly reorder the whole chain AND recite it aloud together wins.</li>
+<li>Round 2: swap in cards for the purpose statement's key phrases and repeat.</li>
+</ul></div>
+
+<h2 class="sec">Vocabulary Practice</h2>
+<h2 class="sec">Matching (draw a line or write the letter)</h2>
+<table>
+<tr><td style="width:50%"><b>1.</b> <span class="ar-inline">الفطرة</span> (al-Fiṭrah)</td><td>A. Question and Answer</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">موحّد</span> (Muwaḥḥid)</td><td>B. The natural belief in Allah we're born with</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">سؤال وجواب</span> (Suʾāl wa-Jawāb)</td><td>C. A person who practices Tawḥīd</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">التوحيد</span> (at-Tawḥīd)</td><td>D. The Oneness of Allah</td></tr>
+</table>
+
+<h2 class="sec">Fill-in-the-Blank</h2>
+<p class="qline"><b>1.</b> The Imam arranged his book on the method of ______________ and ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> "Every child is born upon the ______________."</p><div class="ans-line"></div>
+<p class="qline"><b>3.</b> A person who practices Tawḥīd is called a ______________.</p><div class="ans-line"></div>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Weekend 2 · Session 4 (Sunday) — Review Activities &amp; Unit 1 Quiz</h1>
+<h2 class="sec">Coloring &amp; Cut-Paste Activity (Level 1 / Younger Students)</h2>
+<h2 class="sec">Coloring Page</h2>
+<p>Print the word بِسْمِ اللَّهِ in large bubble letters for students to color. Underneath, write: "I say Bismillah before I begin anything good!"</p>
+<div style="border:3px dashed var(--gold); border-radius:10px; padding:40px; text-align:center; margin:16px 0;">
+<div style="font-family:var(--Fa); font-size:4rem; direction:rtl; color:transparent; -webkit-text-stroke:2px var(--green);">بِسْمِ اللَّهِ</div>
+<p style="margin-top:14px; font-style:italic; color:#8a7f68;">I say Bismillah before I begin anything good!</p>
+</div>
+<h2 class="sec">Cut-and-Paste: Match the Meaning</h2>
+<div class="note-box"><strong class="label">Teacher instructions</strong>
+<p>Print two rows of cards: Row 1 has the Arabic words (اللَّه, رَبّ, مُسْلِم) in large font; Row 2 has simple picture/English labels (Allah, Lord, Muslim). Students cut out Row 2 and glue each label under the matching Arabic word in Row 1.</p>
+<p style="margin:0;">For non-readers: use a picture of a heart for "Fiṭrah" ("the feeling in your heart") to glue next to the word الفطرة.</p>
+</div>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div class="section print-break" id="quiz">
+<div class="quiz-header">
+<h1>UNIT 1 QUIZ</h1>
+<div class="sub">The Book's Opening &amp; Why Tawḥīd Comes First</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>Score</label>_______ / 40</div>
+</div>
+<div style="height:20px;"></div>
+
+<h2 class="sec">Section A — Multiple Choice (1 pt each)</h2>
+<p class="qline"><b>1.</b> Which comes first in this book?</p>
+<p class="mc-opts">a) The Qurʾān&nbsp;&nbsp;&nbsp; b) Tawḥīd&nbsp;&nbsp;&nbsp; c) Prayer&nbsp;&nbsp;&nbsp; d) Fasting</p>
+<p class="qline"><b>2.</b> What does "Ammā baʿd" mean?</p>
+<p class="mc-opts">a) In the name of Allah&nbsp;&nbsp;&nbsp; b) As for what follows&nbsp;&nbsp;&nbsp; c) All praise is for Allah&nbsp;&nbsp;&nbsp; d) The end</p>
+<p class="qline"><b>3.</b> What is the Fiṭrah?</p>
+<p class="mc-opts">a) A prayer&nbsp;&nbsp;&nbsp; b) A book&nbsp;&nbsp;&nbsp; c) The natural belief in Allah we're born with&nbsp;&nbsp;&nbsp; d) A type of Shirk</p>
+<p class="qline"><b>4.</b> According to the Fiṭrah ḥadīth, who can change a child's religion?</p>
+<p class="mc-opts">a) Teachers&nbsp;&nbsp;&nbsp; b) The child itself&nbsp;&nbsp;&nbsp; c) Parents&nbsp;&nbsp;&nbsp; d) Friends</p>
+<p class="qline"><b>5.</b> What method does the book use to teach?</p>
+<p class="mc-opts">a) Storytelling&nbsp;&nbsp;&nbsp; b) Question and Answer&nbsp;&nbsp;&nbsp; c) Songs&nbsp;&nbsp;&nbsp; d) Debate</p>
+
+<h2 class="sec">Section B — True / False (1 pt each)</h2>
+<p class="qline"><b>1.</b> The book's two goals are to become a complete Muslim and a good Muwaḥḥid. _____</p>
+<p class="qline"><b>2.</b> The word "good" (جَيِّدًا) was added because it's possible to say the words of Tawḥīd without truly understanding them. _____</p>
+<p class="qline"><b>3.</b> The Fiṭrah ḥadīth was collected in Ṣaḥīḥ al-Bukhārī. _____</p>
+<p class="qline"><b>4.</b> Every child is born already believing in something other than Allah. _____</p>
+<p class="qline"><b>5.</b> The Prophet ﷺ never used the phrase "Ammā baʿd." _____</p>
+
+<h2 class="sec">Section C — Fill in the Blank (1 pt each, 2 pts on #5)</h2>
+<p class="qline"><b>1.</b> "Every child is born upon the ______________."</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> The two goals of the book are to become a complete ______________ and a good ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>3.</b> The book is arranged using the method of ______________ and ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>4.</b> A person who practices Tawḥīd is called a ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>5.</b> Write the Arabic phrase for "As for what follows":</p><div class="ans-line"></div>
+</div>
+
+<div class="section print-break">
+<h2 class="sec">Section D — Matching (1 pt each)</h2>
+<table>
+<tr><td style="width:55%"><b>1.</b> <span class="ar-inline">أَعُوذُ بِاللَّهِ</span></td><td>A. All praise is for Allah, Lord of all the worlds</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span></td><td>B. I seek refuge in Allah from the accursed Shayṭān</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</span></td><td>C. As for what follows</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">أَمَّا بَعْدُ</span></td><td>D. In the name of Allah, the Most Merciful, the Most Compassionate</td></tr>
+</table>
+
+<h2 class="sec">Section E — Short Answer (3 pts each)</h2>
+<p class="qline"><b>1.</b> In your own words, why does the Imam teach Tawḥīd before the Qurʾān? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Why did the author add the word "good" (جَيِّدًا) before Muwaḥḥid instead of just saying "a Muwaḥḥid"? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section F — Recite From Memory (5 pts)</h2>
+<p>Write the Fiṭrah ḥadīth in Arabic, from memory, as completely as you can:</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section G — Ḥadīth Comprehension (4 pts)</h2>
+<p class="qline"><b>1.</b> The Fiṭrah ḥadīth says parents can make a child "a Jew, a Christian, or a Magian." What is the ḥadīth teaching us about the INFLUENCE parents and environment have on a child's belief? Explain in 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section H — Scenario / Critical Thinking (4 pts)</h2>
+<p class="qline"><b>1.</b> Your friend says: "Learning duʿās is more important than learning who Allah is — I already know Allah exists." Using what you learned in this unit, what would you say back to your friend? Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="section answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Unit 1 Quiz</h1>
+<h2 class="sec">Section A — Multiple Choice</h2>
+<p>1. b &nbsp; 2. b &nbsp; 3. c &nbsp; 4. c &nbsp; 5. b</p>
+<h2 class="sec">Section B — True / False</h2>
+<p>1. True &nbsp; 2. True &nbsp; 3. True &nbsp; 4. False (they are born believing IN Allah) &nbsp; 5. False (he did use it)</p>
+<h2 class="sec">Section C — Fill in the Blank</h2>
+<p>1. Fiṭrah &nbsp; 2. Muslim / Muwaḥḥid &nbsp; 3. Question / Answer (Suʾāl / Jawāb) &nbsp; 4. Muwaḥḥid &nbsp; 5. <span class="ar-inline">أَمَّا بَعْدُ</span></p>
+<h2 class="sec">Section D — Matching</h2>
+<p>1 → B &nbsp; 2 → D &nbsp; 3 → A &nbsp; 4 → C</p>
+<h2 class="sec">Section E — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> So a child fully understands and believes in Allah first, which helps them understand the Qurʾān better and become a complete Muslim on the natural fiṭrah of Islam.</p>
+<p><b>2.</b> Because it's possible to say the words of Tawḥīd without truly, deeply believing and understanding them — "good" means genuine, well-rooted Tawḥīd, not just repeating words.</p>
+<h2 class="sec">Section F — Recite From Memory</h2>
+<div class="ar-block" style="font-size:1.3rem;">كُلُّ مَوْلُودٍ يُولَدُ عَلَى الْفِطْرَةِ، فَأَبَوَاهُ يُهَوِّدَانِهِ أَوْ يُنَصِّرَانِهِ أَوْ يُمَجِّسَانِهِ</div>
+<p>Grading note: award partial credit (3/5) for the first clause alone (كُلُّ مَوْلُودٍ يُولَدُ عَلَى الْفِطْرَةِ) if the second clause is missing or has errors.</p>
+<h2 class="sec">Section G — Ḥadīth Comprehension (sample full-credit answer)</h2>
+<p>The ḥadīth teaches that parents and environment have a powerful effect on a child — even though every child starts out believing in Allah, what they're taught and raised around can move them away from that natural belief. That's exactly why this book exists: to protect and strengthen the Fiṭrah on purpose, instead of leaving it to chance.</p>
+<h2 class="sec">Section H — Scenario (sample full-credit answer)</h2>
+<p>I'd tell my friend that the Imam specifically wrote this book to teach Tawḥīd BEFORE anything else — even before the Qurʾān — because truly knowing who Allah is comes first. Duʿā is important, but the book says its whole purpose is to help you become a complete Muslim and a GOOD Muwaḥḥid — which means real understanding, not just knowing words. Knowing Allah deeply is the foundation everything else, including duʿā, is built on.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note for Sections E, G, H: use the Written Assignment Rubric in the Master Plan — award full credit for any answer that captures the same idea in the student's own words, not just this exact wording.</p>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Unit 1 Grading Rubric (Sections E, G, H)</h1>
+<p>Apply the Master Plan's Written Assignment Rubric, scaled as follows for this quiz:</p>
+<table>
+<tr><td style="width:22%; font-weight:700; color:var(--green-dark);">4/4 or 3/3 pts</td><td>Fully correct idea, in the student's own words, with a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">2/3 or 3/4 pts</td><td>Correct idea but missing a small detail, OR not a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">1/3 or 1–2/4 pts</td><td>Partially correct — shows some understanding but misses the main point</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">0 pts</td><td>Blank, unrelated, or shows no understanding of the concept</td></tr>
+</table>
+
+<h1 class="sec">Student Scoring Sheet (for younger / Level 1 students)</h1>
+<p>Use in place of a numeric grade — check the box that matches the student's demonstrated mastery for each skill:</p>
+<table class="scoring">
+<tr><th>Skill</th><th class="opt">✓ Mastered</th><th class="opt">● Practicing</th><th class="opt">— Not Yet</th></tr>
+<tr><td>Recites the book's opening from memory</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>States the book's two goals</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Explains why Tawḥīd comes before Qurʾān</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Recites the Fiṭrah ḥadīth</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Explains the Fiṭrah in own words</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Names the book's Q&amp;A method</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Unit 1 — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>

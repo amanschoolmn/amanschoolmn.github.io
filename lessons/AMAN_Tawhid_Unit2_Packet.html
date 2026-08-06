@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Unit 2: Q1 &amp; Q2 — Who Is Your Lord? Meaning of Rabb</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{ position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.82rem; margin-right:14px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.92rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.script-box{ background:#fff; border:1px solid #ddd0ae; border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.script-box strong.label{ display:block; color:var(--gold); margin-bottom:6px; font-weight:700; font-family:var(--Fm); font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+.caution-box{ background:#fdf6ea; border:1px solid #e8cf94; border-left:4px solid var(--red); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.caution-box strong.label{ display:block; color:var(--red); margin-bottom:6px; font-weight:700; }
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.55rem; line-height:2.1; color:var(--green-dark); margin:14px 0 8px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:16px; }
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+table.scoring td.opt{ text-align:center; width:15%; }
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+@media print{
+  body{ background:#fff; } .toolbar{ display:none; } .page-shell{ max-width:none; }
+  .cover{ break-after:page; } .section{ break-inside:avoid; } tr{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; } .print-break{ break-before:page; } .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Unit 2 Packet</span>
+  <span class="jump"><a href="#s5">Sess. 5</a><a href="#s6">Sess. 6</a><a href="#s7">Sess. 7</a><a href="#s8">Sess. 8</a><a href="#quiz">Quiz</a><a href="#key">Answer Key</a></span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Unit 2 · Weekend 3–4 · Sessions 5–8</div>
+  <h1>Q1 &amp; Q2 — Who Is Your Lord? Meaning of Rabb</h1>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weekend / Sessions</td><td>Weekend 3–4 · Sessions 5–8 of the year</td></tr>
+<tr><td>Book Pages Covered</td><td>pp. 7–8 (Q1 من ربك، Q2 ما معنى الرب، meaning of the Name Allah)</td></tr>
+<tr><td>Slide Reference</td><td>Deck A: Slides 4–9 (Q1&amp;2, Rabb Deep-Dive) · Deck B: Lesson 1 (Q1/Q2 slides)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session</td></tr>
+<tr><td>Materials</td><td>Printed packet, pencils, board/whiteboard, index cards (flashcard drill)</td></tr>
+</table>
+
+<h2 class="sec">Learning Objectives</h2>
+<p>By the end of Unit 2, students will be able to:</p>
+<ul class="clean">
+<li>Recite Q1 (مَنْ رَبُّكَ) and its answer (رَبِّي اللَّهُ) instantly, from memory. <em>(Recall)</em></li>
+<li>Recite Q2 (مَا مَعْنَى الرَّبِّ) and its answer (الْمَالِكُ الْمَعْبُودُ) from memory. <em>(Recall)</em></li>
+<li>Explain in their own words what "al-Mālik" (The Owner) and "al-Maʿbūd" (The One Worshipped) mean. <em>(Comprehension)</em></li>
+<li>State the meaning of the Name "Allah" — ذُو الْأُلُوهِيَّةِ وَالْعُبُودِيَّةِ عَلَى خَلْقِهِ أَجْمَعِينَ. <em>(Recall)</em></li>
+<li>Distinguish Q1 (identifying WHO your Lord is) from Q2 (explaining WHAT that title means). <em>(Comprehension)</em></li>
+<li>Apply the meaning of Rabb to explain why only Allah deserves worship. <em>(Application)</em></li>
+</ul>
+
+<h2 class="sec" id="vocab">Vocabulary Introduced This Unit</h2>
+<table class="info">
+<tr><td><span class="ar-inline">الرَّبّ</span> ar-Rabb</td><td>The Lord — Owner, Sustainer, and Controller of all affairs</td></tr>
+<tr><td><span class="ar-inline">الْمَالِك</span> al-Mālik</td><td>The Owner — the one who truly possesses everything</td></tr>
+<tr><td><span class="ar-inline">الْمَعْبُود</span> al-Maʿbūd</td><td>The One Worshipped — the only one deserving worship</td></tr>
+<tr><td><span class="ar-inline">الأُلُوهِيَّة</span> al-Ulūhiyyah</td><td>The right to be worshipped (from the Name "Allah")</td></tr>
+<tr><td><span class="ar-inline">الْعُبُودِيَّة</span> al-ʿUbūdiyyah</td><td>Servitude — everything in creation submits to Allah</td></tr>
+</table>
+</div>
+
+<div class="section print-break" id="s5">
+<h1 class="sec">Weekend 3 · Session 5 (Saturday) — Q1: Who Is Your Lord?</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board:</strong>
+"If someone stopped you on the street and asked 'who is in charge of you?' — what would you say? Who is REALLY in charge of everything?"</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">25 min</span></h2>
+<p>Teacher instructions: This is the FIRST of the book's six grave-questions. From today on, drill it exactly like a real Q&amp;A — ask the question, students answer as a class, then individually.</p>
+<div class="ar-block">[س١]: إِذَا قِيلَ لَكَ: مَنْ رَبُّكَ؟</div>
+<div class="translation">Question 1: "If it is said to you: Who is your Lord?"</div>
+<div class="ar-block">[جـ]: فَقُلْ: رَبِّي اللَّهُ</div>
+<div class="translation">Answer: "Then say: My Lord is Allah."</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Ask 3–4 students cold-call style: "Man rabbuka?" — expect the full answer "Rabbī Allāh," not just "Allah." Point out: we don't just name Allah, we say "MY Lord" — it's personal, not just a fact we know about the world.</p>
+<p style="margin:0;">Explain: this exact question will be asked to every person in the grave. This is why the book starts here — this is the single most important question a person will ever answer.</p>
+</div>
+<p><strong>Discussion prompt:</strong> Why do you think the answer starts with "My" (رَبِّي) instead of just saying "Allah is the Lord"?</p>
+
+<h2 class="sec">Exit Ticket <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Have students answer on scrap paper:</strong>
+<p class="qline" style="margin-bottom:0;">Write Q1 and its answer, in Arabic if you can, or in English if not yet.</p></div>
+</div>
+
+<div class="section print-break" id="s6">
+<h1 class="sec">Weekend 3 · Session 6 (Sunday) — Q2: The Meaning of Rabb</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Cold-call 3–4 students:</strong> "Man rabbuka?" — expect instant "Rabbī Allāh" with no hesitation.</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<div class="ar-block">[س٢]: وَمَا مَعْنَى «الرَّبِّ»؟</div>
+<div class="translation">Question 2: "And what is the meaning of ar-Rabb?"</div>
+<div class="ar-block">[جـ]: فَقُلْ: الْمَالِكُ الْمَعْبُودُ</div>
+<div class="translation">Answer: "Then say: The Owner, the One Worshipped."</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p><strong>Al-Mālik</strong> (المالك) — the Owner. Ask: "If I own something, what can I do with it that you can't?" (decide what happens to it). Allah truly owns everything that exists — not just controls it, OWNS it.</p>
+<p style="margin:0;"><strong>Al-Maʿbūd</strong> (المعبود) — the One Worshipped. This means Allah is the ONLY one who deserves worship, because He is the Mālik. Ownership comes first, worship follows — you worship Him BECAUSE He is truly your Owner and Sustainer.</p>
+</div>
+
+<h2 class="sec">The Meaning of the Name "Allah"</h2>
+<div class="ar-block">وَمَعْنَى «اللهُ»: ذُو الْأُلُوهِيَّةِ وَالْعُبُودِيَّةِ عَلَى خَلْقِهِ أَجْمَعِينَ</div>
+<div class="translation">"And the meaning of 'Allah': the Possessor of the right to be worshipped, and of servitude, over all of His creation."</div>
+<p>Teacher script: Point out this is a SEPARATE statement from Q2's answer — it explains the Name "Allah" itself, not the word "Rabb." Every single created thing — even a leaf falling, even a rock — is in a state of ʿubūdiyyah (servitude) to Allah, whether it "chooses" to or not. Humans are the only creation that can CHOOSE to worship Him or refuse.</p>
+
+<div class="caution-box"><strong class="label">A note for you, the teacher</strong>
+<p style="margin:0;">Some English translations of this book give a longer answer to Q2 — six terms instead of two (adding "the One who aids and supports, the Creator and Sustainer"). Both are legitimate; this packet uses the book's shorter two-term Arabic answer (المالك المعبود) as the word-for-word memorization line, and covers the fuller list separately below as enrichment. Pick whichever your madrasah has standardized on.</p></div>
+
+<h2 class="sec">Independent Practice <span class="timing">10 min</span></h2>
+<p class="qline"><b>1.</b> Fill in the blank: The meaning of ar-Rabb is: al-Mālik al-______________.</p><div class="ans-line short"></div>
+<p class="qline"><b>2.</b> True or False: Al-Mālik means "The Owner."</p><div class="ans-line short"></div>
+<p class="qline"><b>3.</b> In your own words, why does being the "Owner" mean Allah deserves to be worshipped?</p><div class="ans-line"></div>
+
+<h2 class="sec">Partner Activity — Q&amp;A Flashcard Drill <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">Teacher instructions</strong>
+<p>Each pair gets 2 index cards: one with "س١" written on it, one with "س٢". Partner A holds up a card; Partner B must answer instantly in Arabic, then explain the meaning in English. Switch after each round. Repeat 3 rounds per pair for fluency.</p></div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Memorize Q1 and Q2 with their answers, in Arabic, cold — no notes.</li>
+<li>Ask a parent: "Can you think of something you own? What can you do with it that a stranger can't?" Write their answer, then explain how that connects to Allah being al-Mālik.</li>
+</ul></div>
+<p>Parent signature confirming recitation practice: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+</div>
+
+<div class="section print-break" id="s7">
+<h1 class="sec">Weekend 4 · Session 7 (Saturday) — Deep Dive &amp; Practice</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Rapid recall (whole class, choral):</strong> Teacher calls "Q1!" — class answers together. Teacher calls "Q2!" — class answers together. Repeat 3x, increasing speed.</div>
+
+<h2 class="sec">Enrichment: The Fuller Description of Rabb <span class="timing">15 min</span></h2>
+<div class="ar-block" style="font-size:1.3rem;">الْمَالِكُ الْمَعْبُودُ، الْمُعِينُ وَالنَّاصِرُ، الْخَالِقُ وَالرَّازِقُ</div>
+<div class="translation">"The Owner, the One Worshipped, the Helper and the Giver of Victory, the Creator and the Provider."</div>
+<p>Teacher script: These six descriptions all describe the same Rabb from Q2 — they're not a different answer, just a fuller picture. Go through each briefly with an example students can relate to: <strong>al-Muʿīn</strong> (helps you when you're stuck), <strong>an-Nāṣir</strong> (gives victory/support), <strong>al-Khāliq</strong> (created everything from nothing), <strong>ar-Rāziq</strong> (provides your food, family, everything you have).</p>
+
+<h2 class="sec">Group Activity — "Who Am I?" Riddle Game <span class="timing">15 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p>Split into small groups. Read a riddle; the first group to shout the correct Arabic term wins the round:</p>
+<ul class="clean" style="margin-bottom:0;">
+<li>"I am the one who truly owns everything that exists — who am I?" → <span class="ar-inline">الْمَالِك</span></li>
+<li>"I am the only one worthy of worship — who am I?" → <span class="ar-inline">الْمَعْبُود</span></li>
+<li>"Every creature bows to me, whether it wants to or not — what is this called?" → <span class="ar-inline">الْعُبُودِيَّة</span></li>
+</ul></div>
+
+<h2 class="sec">Vocabulary Practice <span class="timing">10 min</span></h2>
+<table>
+<tr><td style="width:50%"><b>1.</b> <span class="ar-inline">الرَّبّ</span> (ar-Rabb)</td><td>A. The Owner</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">الْمَالِك</span> (al-Mālik)</td><td>B. Servitude to Allah</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">الْمَعْبُود</span> (al-Maʿbūd)</td><td>C. The Lord — Owner, Sustainer, Controller</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">الْعُبُودِيَّة</span> (al-ʿUbūdiyyah)</td><td>D. The One Worshipped</td></tr>
+</table>
+<p class="qline"><b>Fill in the blank:</b> The meaning of the Name Allah is: the possessor of ______________ and ______________ over all His creation.</p>
+<div class="ans-line"></div>
+</div>
+
+<div class="section print-break" id="s8">
+<h1 class="sec">Weekend 4 · Session 8 (Sunday) — Review &amp; Unit 2 Quiz</h1>
+<h2 class="sec">Warm-Up Review <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">Spiral review (mix in Unit 1 content too):</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>"What are the book's two goals?" (Unit 1 spiral)</li>
+<li>"Man rabbuka?" / "Mā maʿnā ar-Rabb?" (Unit 2, cold-call)</li>
+<li>"What does al-Mālik mean? What does al-Maʿbūd mean?"</li>
+</ul></div>
+<p>Give students 5 quiet minutes with their packet to review Q1/Q2 and vocabulary before the quiz.</p>
+
+<!-- ===================== QUIZ ===================== -->
+<div id="quiz">
+<div class="quiz-header">
+<h1>UNIT 2 QUIZ</h1>
+<div class="sub">Q1 &amp; Q2 — Who Is Your Lord? Meaning of Rabb</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>Score</label>_______ / 42</div>
+</div>
+<div style="height:20px;"></div>
+
+<h2 class="sec">Section A — Multiple Choice (1 pt each)</h2>
+<p class="qline"><b>1.</b> What is the answer to "Man rabbuka?"</p>
+<p class="mc-opts">a) Muḥammadun rasūl Allāh &nbsp;&nbsp; b) Rabbī Allāh &nbsp;&nbsp; c) Al-Islām &nbsp;&nbsp; d) Lā ilāha illā Allāh</p>
+<p class="qline"><b>2.</b> "Al-Mālik" means:</p>
+<p class="mc-opts">a) The Creator &nbsp;&nbsp; b) The Provider &nbsp;&nbsp; c) The Owner &nbsp;&nbsp; d) The Helper</p>
+<p class="qline"><b>3.</b> "Al-Maʿbūd" means:</p>
+<p class="mc-opts">a) The One Worshipped &nbsp;&nbsp; b) The Owner &nbsp;&nbsp; c) The Sustainer &nbsp;&nbsp; d) The Giver of Victory</p>
+<p class="qline"><b>4.</b> Q1 asks:</p>
+<p class="mc-opts">a) What is your religion? &nbsp;&nbsp; b) Who is your Lord? &nbsp;&nbsp; c) Who is your Prophet? &nbsp;&nbsp; d) Why were you created?</p>
+<p class="qline"><b>5.</b> Every creature's forced submission to Allah — even a leaf falling — is called:</p>
+<p class="mc-opts">a) Al-Ulūhiyyah &nbsp;&nbsp; b) Al-ʿUbūdiyyah &nbsp;&nbsp; c) At-Tawḥīd &nbsp;&nbsp; d) Al-Fiṭrah</p>
+
+<h2 class="sec">Section B — True / False (1 pt each)</h2>
+<p class="qline"><b>1.</b> The answer to Q1 is simply "Allah," with no other words. _____</p>
+<p class="qline"><b>2.</b> Q2's answer explains what the WORD "Rabb" means. _____</p>
+<p class="qline"><b>3.</b> Al-Mālik and al-Maʿbūd describe two different, unrelated ideas. _____</p>
+<p class="qline"><b>4.</b> The meaning of the Name "Allah" is a separate statement from Q2's answer. _____</p>
+<p class="qline"><b>5.</b> Humans are the only creation that can choose whether to worship Allah or not. _____</p>
+
+<h2 class="sec">Section C — Fill in the Blank (2 pts each)</h2>
+<p class="qline"><b>1.</b> Q1: مَنْ رَبُّكَ؟ → ______________ (Arabic answer)</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> Q2: مَا مَعْنَى الرَّبِّ؟ → الْمَالِكُ ______________</p><div class="ans-line"></div>
+<p class="qline"><b>3.</b> The meaning of the Name Allah is: the possessor of ______________ and ______________ over all creation.</p><div class="ans-line"></div>
+</div>
+
+<div class="print-break">
+<h2 class="sec">Section D — Matching (1 pt each)</h2>
+<table>
+<tr><td style="width:50%"><b>1.</b> <span class="ar-inline">الْمَالِك</span></td><td>A. The One Worshipped</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">الْمَعْبُود</span></td><td>B. Servitude to Allah</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">الْعُبُودِيَّة</span></td><td>C. The right to be worshipped</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">الأُلُوهِيَّة</span></td><td>D. The Owner</td></tr>
+</table>
+
+<h2 class="sec">Section E — Short Answer (3 pts each)</h2>
+<p class="qline"><b>1.</b> Why does being al-Mālik (the Owner) mean Allah deserves to be worshipped? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+<p class="qline"><b>2.</b> What is the difference between what Q1 asks and what Q2 asks? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section F — Recite From Memory (5 pts)</h2>
+<p>Write Q1 and Q2 with their full answers, in Arabic, from memory:</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section G — Comprehension (4 pts)</h2>
+<p class="qline"><b>1.</b> The book says Allah's Name means He has "الْأُلُوهِيَّة وَالْعُبُودِيَّة عَلَى خَلْقِهِ أَجْمَعِينَ" — over ALL of His creation, not just some of it. Why do you think the author specifically added the word "all" (أَجْمَعِينَ)? Explain in 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section H — Scenario / Critical Thinking (4 pts)</h2>
+<p class="qline"><b>1.</b> Your friend says: "I believe Allah created the world, but I don't think I need to worship only Him." Using the meaning of al-Mālik and al-Maʿbūd, explain what's missing from your friend's belief. Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Unit 2 Quiz</h1>
+<h2 class="sec">Section A — Multiple Choice</h2>
+<p>1. b &nbsp; 2. c &nbsp; 3. a &nbsp; 4. b &nbsp; 5. b</p>
+<h2 class="sec">Section B — True / False</h2>
+<p>1. False (Rabbī Allāh, not just "Allah") &nbsp; 2. True &nbsp; 3. False (they're connected — owning leads to deserving worship) &nbsp; 4. True &nbsp; 5. True</p>
+<h2 class="sec">Section C — Fill in the Blank</h2>
+<p>1. <span class="ar-inline">رَبِّي اللَّهُ</span> &nbsp; 2. <span class="ar-inline">الْمَعْبُودُ</span> &nbsp; 3. al-Ulūhiyyah (right to be worshipped) / al-ʿUbūdiyyah (servitude)</p>
+<h2 class="sec">Section D — Matching</h2>
+<p>1 → D &nbsp; 2 → A &nbsp; 3 → B &nbsp; 4 → C</p>
+<h2 class="sec">Section E — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> Because Allah truly owns and sustains everything that exists, and only the true Owner and Sustainer of something deserves to be worshipped and obeyed by it.</p>
+<p><b>2.</b> Q1 asks WHO your Lord is (the identity — Allah), while Q2 asks WHAT that title "Rabb" actually means (the Owner, the One Worshipped).</p>
+<h2 class="sec">Section F — Recite From Memory</h2>
+<div class="ar-block" style="font-size:1.2rem;">مَنْ رَبُّكَ؟ رَبِّي اللَّهُ. مَا مَعْنَى الرَّبِّ؟ الْمَالِكُ الْمَعْبُودُ</div>
+<p>Grading note: award 3/5 if only one of the two Q&amp;A pairs is fully correct.</p>
+<h2 class="sec">Section G — Comprehension (sample full-credit answer)</h2>
+<p>The author added "all" to make clear that absolutely nothing is excluded — not one creature, not one atom is outside Allah's ownership and worship-worthiness. This rules out the idea that anything else could share in being worshipped, even partly.</p>
+<h2 class="sec">Section H — Scenario (sample full-credit answer)</h2>
+<p>Your friend is missing the connection between al-Mālik and al-Maʿbūd — believing Allah created the world means admitting He's the true Owner (al-Mālik), and the book teaches that whoever is the true Owner is also the only one who deserves worship (al-Maʿbūd). You can't fully accept one without the other.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note for Sections E, G, H: use the Written Assignment Rubric — award full credit for the same idea in the student's own words.</p>
+</div>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Unit 2 Grading Rubric (Sections E, G, H)</h1>
+<table>
+<tr><td style="width:22%; font-weight:700; color:var(--green-dark);">4/4 or 3/3 pts</td><td>Fully correct idea, in the student's own words, with a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">2/3 or 3/4 pts</td><td>Correct idea but missing a small detail, OR not a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">1/3 or 1–2/4 pts</td><td>Partially correct — shows some understanding but misses the main point</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">0 pts</td><td>Blank, unrelated, or shows no understanding of the concept</td></tr>
+</table>
+
+<h1 class="sec">Student Scoring Sheet (for younger / Level 1 students)</h1>
+<table class="scoring">
+<tr><th>Skill</th><th class="opt">✓ Mastered</th><th class="opt">● Practicing</th><th class="opt">— Not Yet</th></tr>
+<tr><td>Recites Q1 with its answer from memory</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Recites Q2 with its answer from memory</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Explains what al-Mālik means</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Explains what al-Maʿbūd means</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>States the meaning of the Name Allah</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Tells Q1 and Q2 apart correctly</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Unit 2 — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>

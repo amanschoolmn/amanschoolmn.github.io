@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMAN — Unit 10: Q6 — Who Is Your Prophet?</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@600;700;800&family=Crimson+Pro:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a4a35; --green-dark:#123425; --gold:#b8872a; --gold-light:#d4a843;
+  --parchment:#f4ead6; --parchment-light:#faf6ec; --ink:#2b2620; --red:#8a2e2e; --red-light:#fbeeee;
+  --Fd:'Playfair Display',serif; --Fb:'Crimson Pro',serif; --Fa:'Amiri',serif; --Fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;}
+body{ margin:0; background:#e9e2d0; font-family:var(--Fb); color:var(--ink); font-size:16px; line-height:1.55; }
+.page-shell{ max-width:900px; margin:0 auto; background:#fff; }
+.toolbar{ position:sticky; top:0; z-index:50; background:var(--green); color:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.toolbar .brand{ font-family:var(--Fd); font-weight:700; font-size:1.02rem; }
+.toolbar button{ background:var(--gold); color:var(--green-dark); border:none; padding:9px 18px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; font-family:var(--Fb); }
+.toolbar button:hover{ background:var(--gold-light); }
+.toolbar .jump a{ color:#f1e9d8; font-size:.8rem; margin-right:12px; text-decoration:none; font-family:var(--Fm); }
+.toolbar .jump a:hover{ text-decoration:underline; }
+.cover{ background:linear-gradient(160deg,var(--green) 0%, var(--green-dark) 100%); color:#fff; padding:56px 56px 44px; text-align:center; }
+.cover .school{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; }
+.cover .tagline{ font-family:var(--Fb); font-style:italic; color:var(--gold-light); margin-top:4px; font-size:.9rem; }
+.cover hr.rule{ width:70px; border:none; border-top:2px solid var(--gold); margin:20px auto; }
+.cover .kicker{ color:var(--gold-light); font-family:var(--Fm); letter-spacing:.12em; text-transform:uppercase; font-size:.75rem; margin-bottom:8px; }
+.cover h1{ font-family:var(--Fd); font-size:2.1rem; margin:0 0 8px; line-height:1.25; }
+.content{ padding:40px 56px 60px; }
+.section{ margin-bottom:34px; }
+h1.sec{ font-family:var(--Fd); color:var(--green); border-bottom:3px solid var(--gold); padding-bottom:8px; margin:0 0 16px; font-weight:700; font-size:1.5rem; }
+h2.sec{ font-family:var(--Fd); font-weight:700; font-size:1.15rem; margin:22px 0 12px; color:#8a5f1e; border-bottom:2px solid #e9dcb8; padding-bottom:6px; }
+p{ margin:0 0 12px; }
+ul.clean{ margin:0 0 14px; padding-left:22px; } ul.clean li{ margin-bottom:6px; }
+table{ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:.92rem; }
+th{ background:var(--green); color:#fff; text-align:left; padding:9px 12px; font-weight:600; }
+td{ padding:8px 12px; border-bottom:1px solid #e5ded0; vertical-align:top; }
+tr:nth-child(even) td{ background:var(--parchment-light); }
+table.info td:first-child{ background:var(--parchment); font-weight:700; width:24%; color:var(--green-dark); }
+table.info td{ background:#fff; }
+.note-box{ background:var(--parchment-light); border:1px solid #e5d6b8; border-left:4px solid var(--gold); border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.note-box strong.label{ display:block; color:var(--green); margin-bottom:6px; font-weight:700; }
+.script-box{ background:#fff; border:1px solid #ddd0ae; border-radius:6px; padding:16px 20px; margin:14px 0 20px; }
+.script-box strong.label{ display:block; color:var(--gold); margin-bottom:6px; font-weight:700; font-family:var(--Fm); font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; }
+.ar-block{ font-family:var(--Fa); direction:rtl; text-align:right; font-size:1.5rem; line-height:2.1; color:var(--green-dark); margin:14px 0 8px; }
+.ar-inline{ font-family:var(--Fa); direction:rtl; }
+.translation{ font-style:italic; color:#54493a; margin-bottom:16px; }
+.qline{ margin:14px 0 4px; } .qline b{ color:var(--green-dark); }
+.ans-line{ border-bottom:1px solid #999; height:26px; margin-bottom:10px; }
+.ans-line.short{ width:60%; display:inline-block; }
+.mc-opts{ margin:2px 0 14px 20px; color:#4a4136; }
+.timing{ display:inline-block; background:var(--gold); color:#fff; font-family:var(--Fm); font-size:.72rem; padding:3px 10px; border-radius:20px; margin-left:10px; vertical-align:middle; }
+.lineage{ background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:8px; padding:16px 20px; margin:14px 0 20px; text-align:center; }
+.lineage .chain{ font-family:var(--Fa); direction:rtl; font-size:1.1rem; line-height:2.4; color:var(--green-dark); }
+.lineage .chain span{ display:inline-block; margin:0 3px; }
+.mission-list{ margin:14px 0 20px; } .mission-list .item{ display:flex; gap:12px; align-items:flex-start; background:var(--parchment-light); border:1px solid #e5d6b8; border-radius:8px; padding:10px 16px; margin-bottom:8px; }
+.mission-list .num{ background:var(--green); color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--Fd); font-weight:700; flex-shrink:0; font-size:.85rem; margin-top:2px; }
+.quiz-header{ background:var(--green); color:#fff; padding:30px 40px; text-align:center; border-radius:8px 8px 0 0; margin-top:10px;}
+.quiz-header h1{ font-family:var(--Fd); font-size:1.8rem; margin:0 0 6px; }
+.quiz-header .sub{ font-style:italic; color:var(--gold-light); }
+.quiz-meta{ display:flex; gap:0; border:1px solid #ddd0ae; border-top:none; }
+.quiz-meta div{ flex:1; padding:12px 20px; border-right:1px solid #ddd0ae; }
+.quiz-meta div:last-child{ border-right:none; }
+.quiz-meta label{ display:block; font-family:var(--Fm); font-size:.7rem; text-transform:uppercase; color:#8a7f68; margin-bottom:6px; }
+.answer-key{ background:var(--red-light); border:1px solid #e3c4c4; border-radius:8px; padding:26px 34px; margin-top:10px; }
+.answer-key h1.sec{ color:var(--red); border-bottom-color:var(--red); }
+.answer-key h2.sec{ color:var(--red); border-bottom-color:#e3c4c4; }
+.key-label{ display:inline-block; background:var(--red); color:#fff; font-family:var(--Fm); font-size:.68rem; padding:3px 10px; border-radius:4px; letter-spacing:.05em; margin-bottom:16px; }
+table.scoring td.opt{ text-align:center; width:15%; }
+.footer-note{ text-align:center; color:#8a8072; font-size:.8rem; margin-top:40px; font-family:var(--Fm); }
+@media print{
+  body{ background:#fff; } .toolbar{ display:none; } .page-shell{ max-width:none; }
+  .cover{ break-after:page; } .section{ break-inside:avoid; } tr{ break-inside:avoid; }
+  h1.sec{ break-after:avoid; } .print-break{ break-before:page; } .answer-key{ break-before:page; }
+  @page{ size:letter; margin:0.6in; }
+}
+@media (max-width:640px){ .cover{ padding:36px 24px; } .content{ padding:24px 20px; } .quiz-meta{ flex-direction:column; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+<div class="toolbar">
+  <span class="brand">AMAN — Unit 10 Packet</span>
+  <span class="jump"><a href="#s39">Sess. 39</a><a href="#s40">Sess. 40</a><a href="#s41">Sess. 41</a><a href="#s42">Sess. 42</a><a href="#quiz">Quiz</a><a href="#key">Answer Key</a></span>
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="cover">
+  <div class="school">Al-Madrasatu An-Nuriyyah (AMAN)</div>
+  <div class="tagline">Taʿlīm al-Ṣibyān al-Tawḥīd — Year-Long Assessment System</div>
+  <hr class="rule">
+  <div class="kicker">Unit 10 · Weekend 20–21 · Sessions 39–42</div>
+  <h1>Q6 — Who Is Your Prophet?</h1>
+</div>
+
+<div class="content">
+
+<div class="section" id="overview">
+<h1 class="sec">Teacher Overview</h1>
+<table class="info">
+<tr><td>Weekend / Sessions</td><td>Weekend 20–21 · Sessions 39–42 of the year</td></tr>
+<tr><td>Book Pages Covered</td><td>pp. 22–23 (Q6, the full lineage, his selection from Quraysh, what the Arabs worshipped, his mission)</td></tr>
+<tr><td>Slide Reference</td><td>Deck A: Slide 25 (Q6) · Deck B: Lesson 5 (Q6 slides)</td></tr>
+<tr><td>Time Needed</td><td>~45 min per session</td></tr>
+<tr><td>Materials</td><td>Printed packet, pencils, board/whiteboard</td></tr>
+</table>
+<div class="note-box"><strong class="label">A note for you, the teacher</strong>
+<p style="margin:0;">This begins the book's final major section — from here through the end, everything builds out the answer to Q6 (the Prophet ﷺ, his life, his companions, and the pillars of faith). Treat Q6 as the "hub" the rest of the year hangs off of.</p></div>
+
+<h2 class="sec">Learning Objectives</h2>
+<p>By the end of Unit 10, students will be able to:</p>
+<ul class="clean">
+<li>Recite Q6 and its full answer, including the Prophet's ﷺ complete lineage, from memory. <em>(Recall)</em></li>
+<li>Explain why the Prophet ﷺ was chosen from Quraysh specifically. <em>(Comprehension)</em></li>
+<li>Name examples of what the Arabs worshipped besides Allah before Islam. <em>(Recall)</em></li>
+<li>Describe the Prophet's ﷺ three-part mission in their own words. <em>(Comprehension)</em></li>
+<li>Explain what "sent to the red and the black" means. <em>(Comprehension)</em></li>
+</ul>
+
+<h2 class="sec" id="vocab">Vocabulary Introduced This Unit</h2>
+<table class="info">
+<tr><td><span class="ar-inline">اصْطَفَى</span> iṣṭafā</td><td>He chose / selected (from all others)</td></tr>
+<tr><td><span class="ar-inline">صَفْوَة</span> ṣafwah</td><td>The best / choicest part of something</td></tr>
+<tr><td><span class="ar-inline">الْأَحْمَر وَالْأَسْوَد</span> al-Aḥmar wa'l-Aswad</td><td>"The red and the black" — an expression meaning all of mankind</td></tr>
+<tr><td><span class="ar-inline">أَصْنَام</span> aṣnām</td><td>Idols</td></tr>
+</table>
+</div>
+
+<div class="section print-break" id="s39">
+<h1 class="sec">Weekend 20 · Session 39 (Saturday) — Q6: The Full Lineage</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board:</strong>
+"Do you know your own family lineage — your grandfather's name, or great-grandfather's? Why do you think people used to memorize their family lines so carefully?"</div>
+
+<h2 class="sec">Spiral Review <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Cold-call:</strong> "List the five pillars in order" — from Unit 9.</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<div class="ar-block">[س٦]: وَإِذَا قِيلَ لَكَ: مَنْ نَبِيُّكَ؟</div>
+<div class="translation">Question 6: "And if it is said to you: Who is your Prophet?"</div>
+<div class="ar-block">[جـ]: فَقُلْ: نَبِيُّنَا مُحَمَّدُ بْنُ عَبْدِ اللهِ بْنِ عَبْدِ الْمُطَّلِبِ بْنِ هَاشِمِ بْنِ عَبْدِ مَنَافٍ</div>
+<div class="translation">Answer: "Then say: Our Prophet is Muḥammad, son of ʿAbdullāh, son of ʿAbd al-Muṭṭalib, son of Hāshim, son of ʿAbd Manāf."</div>
+<div class="lineage">
+<div class="chain">
+<span>مُحَمَّد</span> بْنُ <span>عَبْد اللهِ</span> بْنِ <span>عَبْد الْمُطَّلِب</span> بْنِ <span>هَاشِم</span> بْنِ <span>عَبْد مَنَاف</span>
+</div>
+</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Have students repeat the chain link by link, then all together, several times, until it flows smoothly. This is a genuinely long answer to memorize — go slowly and don't rush past this session.</p>
+</div>
+
+<h2 class="sec">Exit Ticket <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">On scrap paper:</strong>
+<p style="margin-bottom:0;">Write as much of the Prophet's ﷺ lineage as you can recall.</p></div>
+</div>
+
+<div class="section print-break" id="s40">
+<h1 class="sec">Weekend 20 · Session 40 (Sunday) — Chosen from Quraysh</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Quick recall:</strong> Recite Q6's full answer together as a class, chain and all.</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<div class="ar-block">اصْطَفَاهُ اللهُ تَعَالَى مِنْ قُرَيْشٍ، وَهُمْ صَفْوَةُ وَلَدِ إِسْمَاعِيلَ، وَبَعَثَهُ إِلَى الْأَحْمَرِ وَالْأَسْوَدِ</div>
+<div class="translation">"Allah, the Most High, chose him from Quraysh — who are the best of the descendants of Ismāʿīl — and sent him to the red and the black (all of mankind)."</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Explain "al-aḥmar wa'l-aswad" (the red and the black) simply: this is an old Arabic expression meaning EVERY people, of every description — the Prophet ﷺ wasn't sent to just one tribe or nation, but to all of humanity. Ask: "How is this different from earlier prophets, who were often sent to just their own people?"</p>
+</div>
+<p>Teacher note: also mention Hāshim was from Quraysh, Quraysh were Arabs, and the Arabs descend from Ismāʿīl, son of Ibrāhīm — connecting this unit back to Unit 8's mention of Ibrāhīm's declaration.</p>
+
+<h2 class="sec">Independent Practice <span class="timing">10 min</span></h2>
+<p class="qline"><b>1.</b> Who did Allah choose the Prophet ﷺ from?</p><div class="ans-line short"></div>
+<p class="qline"><b>2.</b> What does "sent to the red and the black" mean?</p><div class="ans-line"></div>
+
+<h2 class="sec">Partner Activity <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">Teacher instructions</strong>
+<p style="margin:0;">Partner A tests Partner B on the full lineage chain, link by link, correcting any errors. Switch. Then discuss: "Why do you think it mattered to the Companions that the Prophet's ﷺ lineage could be traced this precisely?"</p></div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Memorize the full Q6 answer (all five names in the chain) and "chosen from Quraysh... sent to the red and the black."</li>
+</ul></div>
+<p>Parent signature: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+</div>
+
+<div class="section print-break" id="s41">
+<h1 class="sec">Weekend 21 · Session 41 (Saturday) — His Mission</h1>
+<h2 class="sec">Bell Ringer <span class="timing">5 min</span></h2>
+<div class="note-box"><strong class="label">Write on the board:</strong> "What do you think people worshipped before Islam came? Guess a few things."</div>
+
+<h2 class="sec">Guided Classroom Activity <span class="timing">20 min</span></h2>
+<div class="ar-block">وَأَنْزَلَ عَلَيْهِ الْكِتَابَ وَالْحِكْمَةَ، فَدَعَا النَّاسَ إِلَى إِخْلَاصِ الْعِبَادَةِ لِلَّهِ، وَتَرْكِ مَا كَانُوا يَعْبُدُونَ مِنْ دُونِ اللهِ</div>
+<div class="translation">"And He revealed to him the Book and wisdom, so he called people to sincerity of worship for Allah, and to leave what they used to worship besides Allah."</div>
+<p>Before Islam, the Arabs worshipped many things besides Allah:</p>
+<div class="mission-list">
+<div class="item"><div class="num">1</div><div>Idols <span class="ar-inline">(الأَصْنَام)</span></div></div>
+<div class="item"><div class="num">2</div><div>Stones <span class="ar-inline">(الأَحْجَار)</span></div></div>
+<div class="item"><div class="num">3</div><div>Trees <span class="ar-inline">(الأَشْجَار)</span></div></div>
+<div class="item"><div class="num">4</div><div>Prophets and righteous people <span class="ar-inline">(الأَنْبِيَاء وَالصَّالِحِين)</span></div></div>
+<div class="item"><div class="num">5</div><div>Angels, and others <span class="ar-inline">(الْمَلَائِكَة وَغَيْرِهِم)</span></div></div>
+</div>
+<div class="script-box"><strong class="label">Teacher script</strong>
+<p>Point out something important: several of these — prophets, righteous people, angels — are themselves GOOD in origin. Ask: "How can worshipping something good still be Shirk?" Connect back to Unit 5: it's not about whether the thing itself is good or bad, it's about whether worship is given to it instead of Allah.</p>
+</div>
+
+<h2 class="sec">The Three-Part Mission</h2>
+<div class="ar-block">فَدَعَا النَّاسَ إِلَى تَرْكِ الشِّرْكِ، وَقَاتَلَهُمْ إِلَى تَرْكِهِ، وَأَنْ يُخْلِصُوا الْعِبَادَةَ لِلَّهِ</div>
+<div class="translation">"So he called people to leave Shirk, fought them until they left it, and called them to make worship sincerely for Allah."</div>
+
+<h2 class="sec">Independent Practice <span class="timing">10 min</span></h2>
+<p class="qline"><b>1.</b> Name two things the Arabs worshipped besides Allah before Islam.</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> List the three parts of the Prophet's ﷺ mission.</p><div class="ans-line"></div>
+
+<h2 class="sec">Group Activity — Lineage Chain Relay <span class="timing">10 min</span></h2>
+<div class="note-box"><strong class="label">How to play</strong>
+<p style="margin:0;">Teams line up; each student must add the next name in the chain before passing to the next teammate. Fastest correct team wins. Repeat with the three-part mission.</p></div>
+
+<h2 class="sec">Homework</h2>
+<div class="note-box"><strong class="label">Take home and return next session:</strong>
+<ul class="clean" style="margin-bottom:0;">
+<li>Memorize what the Arabs worshipped before Islam and the three-part mission.</li>
+</ul></div>
+<p>Parent signature: <span class="ans-line short" style="display:inline-block; width:250px;"></span></p>
+</div>
+
+<div class="section print-break" id="s42">
+<h1 class="sec">Weekend 21 · Session 42 (Sunday) — Review &amp; Unit 10 Quiz</h1>
+<p>Give students 10 quiet minutes to review the full Q6 answer, the Quraysh selection, what the Arabs worshipped, and the three-part mission before the quiz.</p>
+
+<div id="quiz">
+<div class="quiz-header">
+<h1>UNIT 10 QUIZ</h1>
+<div class="sub">Q6 — Who Is Your Prophet?</div>
+</div>
+<div class="quiz-meta">
+<div><label>Name</label>________________________________</div>
+<div><label>Date</label>______________</div>
+<div><label>Score</label>_______ / 42</div>
+</div>
+<div style="height:20px;"></div>
+
+<h2 class="sec">Section A — Multiple Choice (1 pt each)</h2>
+<p class="qline"><b>1.</b> The Prophet's ﷺ father's name was:</p>
+<p class="mc-opts">a) ʿAbd al-Muṭṭalib &nbsp;&nbsp; b) ʿAbdullāh &nbsp;&nbsp; c) Hāshim &nbsp;&nbsp; d) ʿAbd Manāf</p>
+<p class="qline"><b>2.</b> The Prophet ﷺ was chosen from:</p>
+<p class="mc-opts">a) Madīnah &nbsp;&nbsp; b) Quraysh &nbsp;&nbsp; c) Egypt &nbsp;&nbsp; d) Syria</p>
+<p class="qline"><b>3.</b> "Sent to the red and the black" means:</p>
+<p class="mc-opts">a) Sent to two specific tribes &nbsp;&nbsp; b) Sent to all of mankind &nbsp;&nbsp; c) Sent to Makkah only &nbsp;&nbsp; d) Sent to animals</p>
+<p class="qline"><b>4.</b> Which of these did the Arabs worship before Islam?</p>
+<p class="mc-opts">a) Only the sun &nbsp;&nbsp; b) Idols, stones, trees, and more &nbsp;&nbsp; c) Only money &nbsp;&nbsp; d) Nothing at all</p>
+<p class="qline"><b>5.</b> The Prophet's ﷺ mission included how many parts?</p>
+<p class="mc-opts">a) Two &nbsp;&nbsp; b) Three &nbsp;&nbsp; c) Four &nbsp;&nbsp; d) Five</p>
+
+<h2 class="sec">Section B — True / False (1 pt each)</h2>
+<p class="qline"><b>1.</b> Quraysh are described as the best of the descendants of Ismāʿīl. _____</p>
+<p class="qline"><b>2.</b> The Prophet ﷺ was sent only to the Arabs, not all mankind. _____</p>
+<p class="qline"><b>3.</b> Some of what the Arabs worshipped before Islam were things that are good in origin, like angels and righteous people. _____</p>
+<p class="qline"><b>4.</b> The Prophet's ﷺ mission included calling people to leave Shirk. _____</p>
+<p class="qline"><b>5.</b> Hāshim comes before ʿAbd Manāf in the lineage chain. _____</p>
+
+<h2 class="sec">Section C — Fill in the Blank (2 pts each)</h2>
+<p class="qline"><b>1.</b> Q6: مَنْ نَبِيُّكَ؟ → نَبِيُّنَا مُحَمَّدُ بْنُ ______________ بْنِ ______________.</p><div class="ans-line"></div>
+<p class="qline"><b>2.</b> The three parts of his mission: call to leave Shirk, ______________ them until they left it, and call them to ______________ worship for Allah.</p><div class="ans-line"></div>
+</div>
+
+<div class="print-break">
+<h2 class="sec">Section D — Matching (1 pt each)</h2>
+<table>
+<tr><td style="width:50%"><b>1.</b> <span class="ar-inline">اصْطَفَى</span> (iṣṭafā)</td><td>A. Idols</td></tr>
+<tr><td><b>2.</b> <span class="ar-inline">أَصْنَام</span> (aṣnām)</td><td>B. He chose</td></tr>
+<tr><td><b>3.</b> <span class="ar-inline">صَفْوَة</span> (ṣafwah)</td><td>C. The red and the black</td></tr>
+<tr><td><b>4.</b> <span class="ar-inline">الْأَحْمَر وَالْأَسْوَد</span></td><td>D. The best / choicest</td></tr>
+</table>
+
+<h2 class="sec">Section E — Short Answer (3 pts each)</h2>
+<p class="qline"><b>1.</b> Why do you think the book gives the Prophet's ﷺ FULL lineage instead of just his name? (1–2 sentences)</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+<p class="qline"><b>2.</b> How can worshipping something good, like an angel or a righteous person, still be Shirk?</p>
+<div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section F — Recite From Memory (5 pts)</h2>
+<p>Write Q6 with its full answer (the complete lineage), in Arabic, from memory:</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section G — Comprehension (4 pts)</h2>
+<p class="qline"><b>1.</b> The book says the Prophet ﷺ was "sent to the red and the black" — unlike some earlier prophets sent to just one people. What does this tell us about the nature of his message compared to those before him? Explain in 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+
+<h2 class="sec">Section H — Scenario / Critical Thinking (4 pts)</h2>
+<p class="qline"><b>1.</b> A younger student asks: "If angels are good, why was it wrong for some people to worship them?" Using what you learned this unit, how would you explain it? Write 2–3 sentences.</p>
+<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div>
+</div>
+
+<!-- ===================== ANSWER KEY ===================== -->
+<div class="answer-key" id="key">
+<span class="key-label">FOR TEACHER USE</span>
+<h1 class="sec">Answer Key — Unit 10 Quiz</h1>
+<h2 class="sec">Section A — Multiple Choice</h2>
+<p>1. b &nbsp; 2. b &nbsp; 3. b &nbsp; 4. b &nbsp; 5. b</p>
+<h2 class="sec">Section B — True / False</h2>
+<p>1. True &nbsp; 2. False (sent to all mankind) &nbsp; 3. True &nbsp; 4. True &nbsp; 5. True</p>
+<h2 class="sec">Section C — Fill in the Blank</h2>
+<p>1. عَبْدِ اللهِ / عَبْدِ الْمُطَّلِبِ (accept any correct continuation of the chain) &nbsp; 2. fought (qātala) / sincerely (yukhliṣū)</p>
+<h2 class="sec">Section D — Matching</h2>
+<p>1 → B &nbsp; 2 → A &nbsp; 3 → D &nbsp; 4 → C</p>
+<h2 class="sec">Section E — Short Answer (sample full-credit answers)</h2>
+<p><b>1.</b> To show his lineage was known and verifiable, connecting him clearly to Quraysh, Ismāʿīl, and Ibrāhīm — this wasn't a claim made in secret or without proof.</p>
+<p><b>2.</b> Because Shirk isn't about whether the thing itself is good or bad — it's about whether worship is directed to it instead of Allah. Even something good, like an angel, doesn't deserve worship, because only Allah does.</p>
+<h2 class="sec">Section F — Recite From Memory</h2>
+<div class="ar-block" style="font-size:1.1rem;">مَنْ نَبِيُّكَ؟ نَبِيُّنَا مُحَمَّدُ بْنُ عَبْدِ اللهِ بْنِ عَبْدِ الْمُطَّلِبِ بْنِ هَاشِمِ بْنِ عَبْدِ مَنَافٍ</div>
+<p>Grading note: award 1 pt per correctly-recalled name in the chain if the full answer isn't complete.</p>
+<h2 class="sec">Section G — Comprehension (sample full-credit answer)</h2>
+<p>It tells us his message was universal, not limited to one nation or tribe like some earlier prophets — he was the final messenger sent for all of humanity, everywhere, for all time, not just for the Arabs of his own era.</p>
+<h2 class="sec">Section H — Scenario (sample full-credit answer)</h2>
+<p>I'd explain that being good doesn't mean something deserves worship — angels are good and obedient to Allah, but worship belongs only to Allah Himself, the One who created the angels. Giving worship to anyone or anything else, even something good, takes something that only belongs to Allah.</p>
+<p style="font-style:italic; color:#7a4a4a;">Grading note for Sections E, G, H: use the Written Assignment Rubric — award full credit for the same idea in the student's own words.</p>
+</div>
+</div>
+
+<div class="section print-break">
+<h1 class="sec">Unit 10 Grading Rubric (Sections E, G, H)</h1>
+<table>
+<tr><td style="width:22%; font-weight:700; color:var(--green-dark);">4/4 or 3/3 pts</td><td>Fully correct idea, in the student's own words, with a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">2/3 or 3/4 pts</td><td>Correct idea but missing a small detail, OR not a complete sentence</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">1/3 or 1–2/4 pts</td><td>Partially correct — shows some understanding but misses the main point</td></tr>
+<tr><td style="font-weight:700; color:var(--green-dark);">0 pts</td><td>Blank, unrelated, or shows no understanding of the concept</td></tr>
+</table>
+
+<h1 class="sec">Student Scoring Sheet (for younger / Level 1 students)</h1>
+<table class="scoring">
+<tr><th>Skill</th><th class="opt">✓ Mastered</th><th class="opt">● Practicing</th><th class="opt">— Not Yet</th></tr>
+<tr><td>Recites Q6's full lineage from memory</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Explains why he was chosen from Quraysh</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Names what the Arabs worshipped before Islam</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+<tr><td>Lists the three-part mission</td><td class="opt"></td><td class="opt"></td><td class="opt"></td></tr>
+</table>
+</div>
+
+<div class="footer-note">Al-Madrasatu An-Nuriyyah · amanschoolmn.org · Unit 10 — Taʿlīm al-Ṣibyān al-Tawḥīd</div>
+</div>
+</div>
+</body>
+</html>
