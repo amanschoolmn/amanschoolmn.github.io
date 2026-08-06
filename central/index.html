@@ -2317,16 +2317,19 @@ html,body{
     page-break-inside:avoid!important;
   }
   #shareOverlay{display:none!important;}
-  #sharePrintOverlay{display:none!important;}
+  /* PRINT BUG #5: this rule used to default to display:none, only flipped
+     back on by a body.print-announcement class that nothing in the app
+     ever set — so the Share Card's own content was hidden on every print,
+     producing a blank page regardless of which print path triggered it
+     (the card's own window.print() button, or printHTMLDocument()'s
+     shadow-DOM route — both are just CSS at that point, and this rule
+     hid the content before either mechanism got a chance to matter).
+     renderSOTMShareCard() and renderSOTMCertificate() are always two
+     separate standalone documents — #sharePrintOverlay and .cert never
+     coexist on the same page — so there's nothing to disambiguate here.
+     #sharePrintOverlay can just always print when it's present. */
+  #sharePrintOverlay{display:block!important;position:static!important;}
   #_imgStore{display:none!important;}
-}
-/* When printing the announcement card */
-body.print-announcement .cert{display:none!important;}
-@media print{
-  body.print-announcement #sharePrintOverlay{
-    display:block!important;position:static!important;
-  }
-  body.print-announcement .spp-close-bar{display:none!important;}
 }
 `;
 const SOTM_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
