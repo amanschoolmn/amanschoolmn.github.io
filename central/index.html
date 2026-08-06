@@ -239,6 +239,13 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
 .tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tbl tr:hover td{background:var(--surface2)}
 .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* Tuition Matrix: freezes the Family column while the month columns scroll
+   horizontally underneath it, so it's always clear which family's row
+   you're tapping into. Needs an explicit background since the column is
+   layered above the scrolling cells, not just visually left of them —
+   var(--bg) already adapts for dark mode on its own, same as everywhere
+   else in the app that uses it. */
+.mtx-frozen{position:sticky;left:0;z-index:2;background:var(--bg);box-shadow:2px 0 4px -2px rgba(0,0,0,.15)}
 .bar{height:7px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
 .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green-soft),var(--gold));transition:width .5s ease}
 html[data-theme="dark"] .bar i{background:linear-gradient(90deg,var(--gold),var(--gold-bright))}
@@ -6787,12 +6794,12 @@ const Tuition = {
        <span style="font-size:12px;color:var(--ink3)">\u2713 paid \u00b7 ~ partial \u00b7 \u2715 unpaid \u00b7 E excused \u00b7 blank = not yet due or before enrollment \u00b7 tap a month to act on it</span>
      </div>
      <div class="scrollx"><table class="tbl" style="min-width:820px">
-      <thead><tr><th style="text-align:left">Family</th>${TUITION_MONTHS.map(m=>`<th style="text-align:center">${m}</th>`).join('')}<th style="text-align:right">Paid YTD</th><th style="text-align:right">Balance</th></tr></thead>
+      <thead><tr><th class="mtx-frozen" style="text-align:left">Family</th>${TUITION_MONTHS.map(m=>`<th style="text-align:center">${m}</th>`).join('')}<th style="text-align:right">Paid YTD</th><th style="text-align:right">Balance</th></tr></thead>
       <tbody>${fams.map(f=>{
         const months=famMonthMatrix(f.key, year);
         const fin=famFinance(f.key);
         return `<tr>
-          <td style="cursor:pointer" data-openfam="${esc(f.key)}"><b>\ud83d\udc6a ${esc(f.key)}</b></td>
+          <td class="mtx-frozen" style="cursor:pointer" data-openfam="${esc(f.key)}"><b>\ud83d\udc6a ${esc(f.key)}</b></td>
           ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'18%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>
           </td>`).join('')}
@@ -7148,15 +7155,45 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
         <option value="excused">Excused (no charge this month)</option>
       </select></div>
       <div id="py-amt-wrap" class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-       <div class="field"><label>Amount ($)</label><input id="py-a" type="number" min="0" step="1"></div>
+       <div class="field"><label>Amount ($)</label><input id="py-a" type="number" min="0" step="1"><span id="py-a-hint" style="font-size:11px;color:var(--ink3);display:block;margin-top:3px"></span></div>
        <div class="field"><label>Date</label><input id="py-d" type="date" value="${prefillYM?prefillYM+'-01':today()}"></div></div>
       <div id="py-method-wrap" class="field"><label>Method</label><select id="py-m"><option value="">\u2014</option><option>Zelle</option><option>CashApp</option><option>Cash</option><option>Check</option><option>Other</option></select></div>
       <div class="field"><label>Note (optional)</label><input id="py-n" placeholder="covers August \u00b7 reason if excused"></div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Record</button></div></div>`,true);
-    const kindSel=$('#py-k',o);
+    const kindSel=$('#py-k',o), amtInput=$('#py-a',o), dateInput=$('#py-d',o), hint=$('#py-a-hint',o);
+    let amtDirty=false;
+    amtInput.addEventListener('input', ()=>{ amtDirty=true; });
+    // Auto-calculates the amount so all that's usually left to do is pick a
+    // payment method — tuition defaults to whatever's still owed for that
+    // month (monthly rate minus anything already logged), not just the flat
+    // rate, so it's correct even for a family that's partway through paying.
+    // Still fully editable — typing over it just stops the auto-fill from
+    // overwriting what you typed until you switch type or hit Cancel/Record.
+    const autoAmount=()=>{
+      const kind=kindSel.value;
+      if(kind==='registration'){
+        const fee=famPlan(fam).regFee||0;
+        hint.textContent = fee>0 ? 'Registration fee on file' : '';
+        return fee>0 ? fee : '';
+      }
+      if(kind==='tuition'){
+        const ym=(dateInput.value||today()).slice(0,7);
+        const monthly=famEffectiveMonthly(fam);
+        const already=DB.data.finance.payments.filter(x=>x.fam===fam && x.date.slice(0,7)===ym && x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
+        const remaining=Math.max(0, monthly-already);
+        if(monthly<=0){ hint.textContent='No tuition rate set for this family — check Overview.'; return ''; }
+        hint.textContent = already>0 ? `$${monthly} monthly \u2212 $${already} already logged for ${ym}` : `$${monthly}/month for this family`;
+        return remaining>0 ? remaining : monthly;
+      }
+      hint.textContent='';
+      return '';
+    };
     const syncMode=()=>{ const ex=kindSel.value==='excused';
-      $('#py-amt-wrap',o).style.display=ex?'none':'grid'; $('#py-method-wrap',o).style.display=ex?'none':'block'; };
-    kindSel.onchange=syncMode; syncMode();
+      $('#py-amt-wrap',o).style.display=ex?'none':'grid'; $('#py-method-wrap',o).style.display=ex?'none':'block';
+      if(!ex){ amtDirty=false; amtInput.value=autoAmount(); } };
+    kindSel.onchange=syncMode;
+    dateInput.onchange=()=>{ if(!amtDirty && kindSel.value==='tuition') amtInput.value=autoAmount(); };
+    syncMode();
     $('[data-x=c]',o).onclick=()=>o.remove();
     $('[data-x=s]',o).onclick=()=>{
       const kind=kindSel.value;
