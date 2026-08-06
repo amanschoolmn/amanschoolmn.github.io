@@ -401,8 +401,22 @@ html,body{
   @page{size:Letter portrait;margin:0;}
   html,body{background:#060f0a!important;padding:0;}
   .toolbar{display:none!important;}
+
+  /* Default: print the main certificate, hide both overlays */
   .cert{margin:0!important;box-shadow:none!important;width:100vw;min-height:100vh;}
-  #shareOverlay,#sharePrintOverlay{display:none!important;}
+  #shareOverlay{display:none!important;}
+  #sharePrintOverlay{display:none!important;}
+
+  /* But if the Share poster is what's open, print THAT instead — not the
+     empty certificate sitting behind it. Root cause of the missing-photo
+     bug: this rule used to hide #sharePrintOverlay unconditionally, so its
+     own print button printed the blank .cert underneath it every time. */
+  body.printing-share .cert{display:none!important;}
+  body.printing-share #sharePrintOverlay{
+    display:block!important;position:static!important;
+  }
+  body.printing-share #sharePrintOverlay .spp-close-bar{display:none!important;}
+  .spp-student{page-break-inside:avoid;}
 }
 </style>
 </head>
@@ -627,7 +641,7 @@ html,body{
       <div class="spp-footer">
         Al-Madrasatu An-Nuriyyah (AMAN) &nbsp;·&nbsp;
         Youth Educated &nbsp;·&nbsp; Family Cultivated &nbsp;·&nbsp; World Illuminated<br>
-        amanschool.mn@gmail.com &nbsp;·&nbsp; amanschoolmn.github.io
+        amanschool.mn@gmail.com &nbsp;·&nbsp; amanschoolmn.org
       </div>
     </div>
   </div>
@@ -751,7 +765,10 @@ function openShare(){
   renderShareGrid();
 }
 function closeShare(){document.getElementById("shareOverlay").classList.remove("open");}
-function closeSharePrint(){document.getElementById("sharePrintOverlay").classList.remove("open");}
+function closeSharePrint(){
+  document.getElementById("sharePrintOverlay").classList.remove("open");
+  document.body.classList.remove("printing-share");
+}
 function clearSharePicks(){
   sharePicks=[];
   renderShareGrid();
@@ -803,6 +820,7 @@ function generateSharePage(){
   });
   closeShare();
   document.getElementById("sharePrintOverlay").classList.add("open");
+  document.body.classList.add("printing-share");
 }
 
 document.getElementById("nameIn").focus();
