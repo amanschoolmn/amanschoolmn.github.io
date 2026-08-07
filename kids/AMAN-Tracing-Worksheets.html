@@ -63,6 +63,16 @@
 
   --cell-ratio: 0.8267; /* width/height of the shared letter coordinate space */
   --baseline-frac: 0.6462; /* how far down each cell the writing baseline sits */
+  /* Fixed cell size — width is the authoritative dimension here, not height.
+     The old version sized cells by row HEIGHT (from flex-grow dividing up
+     available vertical space) with no regard for how many cells needed to
+     fit horizontally — fine for a 3-cell row, but 6 cells at that height
+     ran wider than the page, so later cells ran off the edge. This size
+     is solved the other way around: it's the largest width where exactly
+     6 cells + 5 gaps still fit inside the page's printable width (7.4in),
+     with a bit of margin left over (7.2in used of 7.4in available). */
+  --cell-w: 1.10in;
+  --cell-h: 1.331in;
   --scale: 1;
 }
 html[data-theme="dark"] {
@@ -108,7 +118,7 @@ html[data-theme="dark"] .toolbar .brand { color: #d4a94f; }
 .toolbar .brand svg { width: 26px; height: 22px; flex: none; }
 .toolbar-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .toolbar-divider { width: 1px; align-self: stretch; background: var(--shell-border); margin: 2px 2px; }
-.toolbar button, .toolbar select {
+.toolbar button, .toolbar select, .toolbar a.home-link {
   appearance: none;
   border: 1px solid var(--shell-border);
   background: var(--shell-bg);
@@ -118,8 +128,12 @@ html[data-theme="dark"] .toolbar .brand { color: #d4a94f; }
   font-size: 13px;
   cursor: pointer;
   min-height: 36px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
 }
-.toolbar button:hover, .toolbar select:hover { border-color: var(--forest); }
+.toolbar button:hover, .toolbar select:hover, .toolbar a.home-link:hover { border-color: var(--forest); }
 .toolbar button.primary { background: var(--forest); border-color: var(--forest); color: var(--white); }
 html[data-theme="dark"] .toolbar button.primary { background: #d4a94f; border-color: #d4a94f; color: #1a1a1a; }
 .statusbar {
@@ -161,9 +175,8 @@ html[data-theme="dark"] .toolbar button.primary { background: #d4a94f; border-co
 }
 .sheet-header .page-tag { font-size: 11px; color: var(--shell-muted); white-space: nowrap; }
 
-.trace-rows { flex: 1 1 auto; display: flex; flex-direction: column; gap: 0.1in; }
-.trace-row { position: relative; flex: 1 1 0; min-height: 0; }
-.trace-row.model-row { flex: 1.35 1 0; }
+.trace-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
+.trace-row { position: relative; flex: 0 0 auto; height: var(--cell-h); }
 
 /* the ruled baseline every row sits on */
 .trace-row::after {
@@ -179,11 +192,15 @@ html[data-theme="dark"] .toolbar button.primary { background: #d4a94f; border-co
   height: 100%;
   display: flex;
   flex-direction: row-reverse; /* fill right-to-left, matching Arabic writing direction */
-  align-items: stretch;
+  align-items: center;
   justify-content: flex-start;
   gap: 0.12in;
 }
-.trace-cell { height: 100%; aspect-ratio: var(--cell-ratio); flex: 0 0 auto; }
+/* Every cell is the same fixed size, model row included — six of them
+   plus five gaps add up to 7.2in, safely inside the 7.4in printable
+   width. Tune --cell-w above (section 2) if this ever needs to change;
+   --cell-h is derived from it via --cell-ratio, keep them paired. */
+.trace-cell { width: var(--cell-w); height: var(--cell-h); flex: 0 0 auto; }
 .trace-cell svg { width: 100%; height: 100%; display: block; }
 
 .trace-cell.model use {
@@ -246,6 +263,8 @@ html[data-theme="dark"] .toolbar button.primary { background: #d4a94f; border-co
     <svg viewBox="0 0 900 779" aria-hidden="true"><use href="#aman-emblem"></use></svg>
     <span>AMAN<span class="tagline"> · Tracing Worksheets</span></span>
   </div>
+
+  <a href="index.html" class="home-link" title="Back to AMAN Home">🏠 Home</a>
 
   <div class="toolbar-group" role="group" aria-label="Navigate">
     <button id="btnFirst" title="Go to first letter (Home)">⏮ First</button>

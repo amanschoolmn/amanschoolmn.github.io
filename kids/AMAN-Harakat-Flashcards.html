@@ -149,6 +149,24 @@ button, select {
   border-bottom: 1px solid var(--shell-border);
 }
 
+.teacher-panel {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px dashed var(--shell-border);
+}
+.teacher-panel.hidden { display: none; }
+.teacher-toggle[aria-pressed="true"] {
+  background: var(--shell-accent);
+  color: var(--white);
+  border-color: var(--shell-accent);
+}
+html[data-theme="dark"] .teacher-toggle[aria-pressed="true"] { color: #1a1a1a; }
+
 .brand-mini {
   display: flex;
   align-items: center;
@@ -174,7 +192,7 @@ button, select {
   margin: 2px 4px;
 }
 
-.toolbar button, .toolbar select {
+.toolbar button, .toolbar select, .toolbar a.home-link {
   appearance: none;
   border: 1px solid var(--shell-border);
   background: var(--shell-bg);
@@ -187,8 +205,14 @@ button, select {
   line-height: 1.1;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
-.toolbar button:hover, .toolbar select:hover {
+.toolbar button:hover, .toolbar select:hover, .toolbar a.home-link:hover {
   border-color: var(--shell-accent);
+}
+.toolbar a.home-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
 }
 .toolbar button:active { transform: scale(0.97); }
 .toolbar button.primary {
@@ -543,26 +567,7 @@ body.presenting .present-controls { display: flex; }
       <span>AMAN<span class="brand-tagline"> · Flash Cards</span></span>
     </div>
 
-    <div class="toolbar-group" role="group" aria-label="Card set">
-      <button id="btnPortraitSet" aria-pressed="true">Portrait Set</button>
-      <button id="btnLandscapeSet" aria-pressed="false">Landscape Set</button>
-    </div>
-
-    <div class="toolbar-divider"></div>
-
-    <div class="toolbar-group" role="group" aria-label="Logo layout">
-      <button id="btnPlaqueStacked" aria-pressed="true" title="Seal above the name">Logo: Stacked</button>
-      <button id="btnPlaqueWide" aria-pressed="false" title="Seal beside the name">Logo: Side-by-Side</button>
-    </div>
-
-    <div class="toolbar-divider"></div>
-
-    <div class="toolbar-group" role="group" aria-label="Frame color">
-      <button id="btnFrameGreen" aria-pressed="true" title="Green mat, gold trim">Frame: Green</button>
-      <button id="btnFrameGold" aria-pressed="false" title="Gold mat, green trim">Frame: Gold</button>
-    </div>
-
-    <div class="toolbar-divider"></div>
+    <a href="index.html" class="home-link" title="Back to AMAN Home">🏠 Home</a>
 
     <div class="toolbar-group" role="group" aria-label="Navigate marks">
       <button id="btnFirst" title="Go to first mark (Home)">⏮ First</button>
@@ -575,18 +580,62 @@ body.presenting .present-controls { display: flex; }
 
     <div class="toolbar-divider"></div>
 
-    <div class="toolbar-group" role="group" aria-label="Print">
-      <button id="btnPrintCurrent" title="Print only the current card (P)">🖶 Print Card</button>
-      <button id="btnPrintPortrait">Print Portrait Set</button>
-      <button id="btnPrintLandscape">Print Landscape Set</button>
-      <button id="btnPrintAll" class="primary">Print Everything</button>
-    </div>
+    <button id="btnTeacherToggle" class="teacher-toggle" aria-pressed="false" aria-expanded="false"
+            aria-controls="teacherPanel" title="Printing, sizing, and display options">⚙️ Teacher Tools</button>
 
-    <div class="toolbar-divider"></div>
+    <div id="teacherPanel" class="teacher-panel hidden">
+      <div class="toolbar-group" role="group" aria-label="Card set">
+        <button id="btnPortraitSet" aria-pressed="true">Portrait Set</button>
+        <button id="btnLandscapeSet" aria-pressed="false">Landscape Set</button>
+      </div>
 
-    <div class="toolbar-group" role="group" aria-label="Display">
-      <button id="btnPresent" title="Fullscreen presentation mode (F)">⛶ Presentation Mode</button>
-      <button id="btnDark" title="Toggle dark mode (D)" aria-pressed="false">🌙 Dark Mode</button>
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group" role="group" aria-label="Logo layout">
+        <button id="btnPlaqueStacked" aria-pressed="true" title="Seal above the name">Logo: Stacked</button>
+        <button id="btnPlaqueWide" aria-pressed="false" title="Seal beside the name">Logo: Side-by-Side</button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group" role="group" aria-label="Frame color">
+        <button id="btnFrameGreen" aria-pressed="true" title="Green mat, gold trim">Frame: Green</button>
+        <button id="btnFrameGold" aria-pressed="false" title="Gold mat, green trim">Frame: Gold</button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group" role="group" aria-label="Print">
+        <button id="btnPrintCurrent" title="Print only the current card (P)">🖶 Print Card</button>
+        <button id="btnPrintPortrait">Print Portrait Set</button>
+        <button id="btnPrintLandscape">Print Landscape Set</button>
+        <button id="btnPrintAll" class="primary">Print Everything</button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group" role="group" aria-label="Display">
+        <button id="btnPresent" title="Fullscreen presentation mode (F)">⛶ Presentation Mode</button>
+        <button id="btnDark" title="Toggle dark mode (D)" aria-pressed="false">🌙 Dark Mode</button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="zoom-controls" role="group" aria-label="Letter size">
+        <span class="zoom-controls-label" id="letterFitModeLabel">Letter Size — Portrait</span>
+        <button id="letterFitOut" title="Smaller letter ([)">−</button>
+        <span id="letterFitLabel">74%</span>
+        <button id="letterFitIn" title="Bigger letter (])">+</button>
+        <button id="letterFitReset" title="Reset letter size">Reset</button>
+      </div>
+      <div class="zoom-controls" role="group" aria-label="Zoom">
+        <span class="zoom-controls-label">Zoom</span>
+        <button id="zoomOut" title="Zoom out (−)">−</button>
+        <span id="zoomLabel">100%</span>
+        <button id="zoomIn" title="Zoom in (+)">+</button>
+        <button id="zoomReset" title="Reset zoom (0)">Reset</button>
+      </div>
+      <div class="print-tip">Tip: enable "Background graphics" in the print dialog for the truest colors. Letter Size changes the printed card too — Zoom is screen preview only.</div>
     </div>
   </header>
 
@@ -601,21 +650,6 @@ body.presenting .present-controls { display: flex; }
   <!-- =========================== STATUS BAR ================================= -->
   <footer class="statusbar no-print">
     <div id="cardCounter" aria-live="polite">Mark 1 of 8</div>
-    <div class="zoom-controls" role="group" aria-label="Letter size">
-      <span class="zoom-controls-label" id="letterFitModeLabel">Letter Size — Portrait</span>
-      <button id="letterFitOut" title="Smaller letter ([)">−</button>
-      <span id="letterFitLabel">74%</span>
-      <button id="letterFitIn" title="Bigger letter (])">+</button>
-      <button id="letterFitReset" title="Reset letter size">Reset</button>
-    </div>
-    <div class="zoom-controls" role="group" aria-label="Zoom">
-      <span class="zoom-controls-label">Zoom</span>
-      <button id="zoomOut" title="Zoom out (−)">−</button>
-      <span id="zoomLabel">100%</span>
-      <button id="zoomIn" title="Zoom in (+)">+</button>
-      <button id="zoomReset" title="Reset zoom (0)">Reset</button>
-    </div>
-    <div class="print-tip">Tip: enable "Background graphics" in the print dialog for the truest colors. Letter Size changes the printed card too — Zoom is screen preview only.</div>
   </footer>
 
 </div>
@@ -883,6 +917,19 @@ body.presenting .present-controls { display: flex; }
   document.getElementById('pNext').addEventListener('click', next);
   document.getElementById('pPrev').addEventListener('click', prev);
   letterSelect.addEventListener('change', function (e) { goTo(parseInt(e.target.value, 10)); });
+
+  /* -- Teacher Tools panel — collapsed by default so a child sees only
+     navigation; expanding it reflows the toolbar's height, so the card
+     needs a fresh fit-to-viewport pass after toggling. */
+  var btnTeacherToggle = document.getElementById('btnTeacherToggle');
+  var teacherPanel = document.getElementById('teacherPanel');
+  btnTeacherToggle.addEventListener('click', function () {
+    var expanded = teacherPanel.classList.toggle('hidden') === false;
+    btnTeacherToggle.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+    btnTeacherToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    btnTeacherToggle.textContent = expanded ? '⚙️ Hide Teacher Tools' : '⚙️ Teacher Tools';
+    updateScale();
+  });
 
   document.getElementById('btnPortraitSet').addEventListener('click', function () {
     state.orientation = 'portrait'; render();

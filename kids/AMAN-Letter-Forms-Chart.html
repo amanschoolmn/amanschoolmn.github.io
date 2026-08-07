@@ -95,7 +95,7 @@ html, body {
 }
 html[data-theme="dark"] .toolbar .brand { color: var(--gold-light); }
 .toolbar .brand svg { width: 26px; height: 22px; }
-.toolbar button {
+.toolbar button, .toolbar a.home-link {
   appearance: none;
   border: 1px solid var(--shell-border);
   background: var(--shell-bg);
@@ -104,8 +104,12 @@ html[data-theme="dark"] .toolbar .brand { color: var(--gold-light); }
   border-radius: 10px;
   font-size: 13.5px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
 }
-.toolbar button:hover { border-color: var(--forest); }
+.toolbar button:hover, .toolbar a.home-link:hover { border-color: var(--forest); }
 .toolbar button.primary {
   background: var(--forest); border-color: var(--forest); color: var(--white);
 }
@@ -255,6 +259,7 @@ td.col-isolated .cell-glyph { font-size: min(66cqw, 66cqh / 1.758); }
     <svg viewBox="0 0 900 779" aria-hidden="true"><use href="#aman-emblem"></use></svg>
     <span>AMAN<span class="tagline"> · Letter Forms Chart</span></span>
   </div>
+  <a href="index.html" class="home-link" title="Back to AMAN Home">🏠 Home</a>
   <button id="btnDark" aria-pressed="false">🌙 Dark Mode</button>
   <button id="btnPrint" class="primary">🖶 Print Chart</button>
 </header>

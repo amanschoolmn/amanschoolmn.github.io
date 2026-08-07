@@ -109,12 +109,13 @@ html[data-theme="dark"] .topbar .brand { color: var(--gold-light); }
 }
 .topbar .score { font-size: 13px; color: var(--forest); font-weight: 700; white-space: nowrap; }
 html[data-theme="dark"] .topbar .score { color: var(--gold-light); }
-.topbar button {
+.topbar button, .topbar a.home-link {
   appearance: none; border: 1px solid var(--shell-border);
   background: var(--shell-bg); color: var(--shell-text);
   padding: 7px 11px; border-radius: 9px; font-size: 13px; cursor: pointer;
+  text-decoration: none; display: inline-flex; align-items: center; box-sizing: border-box;
 }
-.topbar button:hover { border-color: var(--forest); }
+.topbar button:hover, .topbar a.home-link:hover { border-color: var(--forest); }
 
 /* ----------------------------------------------------------------------------
    GAME STAGE
@@ -262,6 +263,7 @@ html[data-theme="dark"] .end-screen button { background: var(--gold); color: #1a
     <svg viewBox="0 0 900 779" aria-hidden="true"><use href="#aman-emblem"></use></svg>
     <span>AMAN<span class="tagline"> · Letter Match</span></span>
   </div>
+  <a href="index.html" class="home-link" title="Back to AMAN Home">🏠 Home</a>
   <div class="progress">
     <span id="roundLabel">Round 1 of 33</span>
     <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
