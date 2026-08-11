@@ -641,12 +641,29 @@ const $ = (s,el=document)=>el.querySelector(s);
 const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = ()=> 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const fmtDate = iso => { if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
-const ageFromDob = iso => { if(!iso) return null; const b=new Date(iso), n=new Date(); let a=n.getFullYear()-b.getFullYear(); const m=n.getMonth()-b.getMonth(); if(m<0||(m===0&&n.getDate()<b.getDate())) a--; return a; };
+// Parses a "YYYY-MM-DD" date-only string as LOCAL midnight. `new
+// Date("2026-08-08")` — no time component — is parsed as UTC per the
+// ECMAScript date-time string spec, while `new Date(2026,7,8)` (numeric
+// Y/M/D args) always uses local time. For anyone west of Greenwich that
+// meant every date-only string, once run through .toLocaleDateString() or
+// local getters, displayed one calendar day EARLY (reported 2026-08-11: a
+// session correctly stored as "2026-08-08" was showing as "Aug 7, 2026"
+// everywhere fmtDate() touched it — the Progress Tracker session chip,
+// the weekend-recap banner, and the printed PDF all inherited the same
+// bug from this one shared helper). Every place that turns a date-only
+// string into local calendar components now goes through this instead of
+// calling `new Date(iso)` directly.
+const parseLocalDate = iso => { const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); };
+const fmtDate = iso => { if(!iso) return '—'; return parseLocalDate(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const ageFromDob = iso => { if(!iso) return null; const b=parseLocalDate(iso), n=new Date(); let a=n.getFullYear()-b.getFullYear(); const m=n.getMonth()-b.getMonth(); if(m<0||(m===0&&n.getDate()<b.getDate())) a--; return a; };
 const daysToBirthday = iso => { if(!iso) return null; const [,m,dd]=iso.split('-'); const now=new Date(); const tdyMid=new Date(); tdyMid.setHours(0,0,0,0);
   let next=new Date(now.getFullYear(), +m-1, +dd); if(next<tdyMid) next.setFullYear(next.getFullYear()+1);
   return Math.round((next-tdyMid)/864e5); };
-const today = ()=> new Date().toISOString().slice(0,10);
+// Same family of bug: .toISOString() always reports the UTC date, so this
+// used to return TOMORROW's date for the whole evening in any timezone
+// behind UTC (e.g. from ~7pm CDT onward) — "today" for a single-device,
+// single-timezone school app should mean the local calendar date.
+const today = ()=> { const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); };
 const rel = iso => { if(!iso) return ''; const s=(Date.now()-new Date(iso))/1e3; if(s<3600) return Math.max(1,Math.round(s/60))+'m ago'; if(s<86400) return Math.round(s/3600)+'h ago'; if(s<86400*30) return Math.round(s/86400)+'d ago'; return fmtDate(iso); };
 const TYPE_ICON = {html:'🗂️', app:'⚙️', pdf:'📕', doc:'📄', slides:'📽️', sheet:'📊', image:'🖼️', video:'🎬', audio:'🎧', prompt:'🤖', book:'📖', web:'🌐', md:'📝'};
 const DIFFS = ['Foundational','Intermediate','Advanced','All Levels'];
@@ -6135,6 +6152,8 @@ const Progress = {
     if(!this._pctRevealed) this._pctRevealed=new Set();
     if(this._weekendView===undefined) this._weekendView=false;
     if(this._ptSort===undefined) this._ptSort='name';
+    if(this._liveCounterOpen===undefined) this._liveCounterOpen=true;
+    if(this._sortOpen===undefined) this._sortOpen=true;
     const year=this._year, month=this._month, session=this._session, sat=PT_isSat(session);
     const monthKeys = ptMonthKeys(year, month);
     const all = DB.data.students.filter(s=>s.active!==false);
@@ -6170,8 +6189,10 @@ const Progress = {
        <b style="font-family:var(--f-mono);font-size:15px;min-width:52px;text-align:center">${year}</b>
        <button class="btn btn-ghost btn-sm" id="ptYearNext" aria-label="Next year">→</button>
      </div>
-     <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap">
-       ${PT_MONTHS.map(m=>`<button class="chip ${m===month?'on':''}" data-ptmonth="${m}">${m}</button>`).join('')}
+     <div class="filters no-print" style="align-items:center;gap:10px;margin-top:-6px">
+       <button class="btn btn-ghost btn-sm" id="ptMonthPrev" aria-label="Previous month">←</button>
+       <b style="font-family:var(--f-display);font-size:15px;min-width:120px;text-align:center">${month}</b>
+       <button class="btn btn-ghost btn-sm" id="ptMonthNext" aria-label="Next month">→</button>
      </div>
      <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap;margin-top:-6px">
        ${ptWeekendDates(year)[month].map(md=>{ const dk=ptFullDate(year,md); const c=closureFor(dk);
@@ -6182,19 +6203,24 @@ const Progress = {
      <div class="notice warn" style="margin-bottom:14px">
        <span>⛔</span><span><b>School closed — ${esc(closed.reason)}</b>${closed.note?` · ${esc(closed.note)}`:''}<br><span style="font-size:12px;color:var(--ink2)">${wk?`Both ${fmtDate(wk.sat)} and ${fmtDate(wk.sun)} aren't`:`${fmtDate(session)} isn't`} counted as a session. Pick a different date above to take attendance.</span></span>
      </div>` : `
-     <div id="ptLiveCounter" class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">${wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat)}</div>
+     <details class="card" style="margin-bottom:14px" id="ptLiveCounterD" ${this._liveCounterOpen?'open':''}>
+       <summary style="cursor:pointer;font-weight:700;color:var(--green);font-size:13px">📊 Class totals — ${wk?`${fmtDate(wk.sat)} – ${fmtDate(wk.sun)}`:fmtDate(session)}</summary>
+       <div id="ptLiveCounter" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-top:10px;border-radius:10px">${wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat)}</div>
+     </details>
 
      <div class="filters no-print">
        <button class="chip ${!lvl?'on':''}" data-ptlvl="">All</button>
        ${LEVELS.map(L=>`<button class="chip ${lvl===L?'on':''}" data-ptlvl="${L}">${L}</button>`).join('')}
        <input type="search" id="ptFind" placeholder="Find student…" value="${esc(find)}" dir="rtl" style="max-width:190px">
      </div>
-     <div class="filters no-print" style="align-items:center;gap:8px;margin-top:-6px">
-       <span style="font-size:11px;color:var(--ink3);font-weight:700">Sort</span>
-       <button class="chip ${this._ptSort==='name'?'on':''}" data-ptsort="name">Name</button>
-       <button class="chip ${this._ptSort==='age-asc'?'on':''}" data-ptsort="age-asc">Youngest first</button>
-       <button class="chip ${this._ptSort==='age-desc'?'on':''}" data-ptsort="age-desc">Oldest first</button>
-     </div>
+     <details class="card" style="margin-bottom:14px" id="ptSortD" ${this._sortOpen?'open':''}>
+       <summary style="cursor:pointer;font-weight:700;color:var(--green);font-size:13px">Sort</summary>
+       <div class="filters" style="margin-top:10px">
+         <button class="chip ${this._ptSort==='name'?'on':''}" data-ptsort="name">Name</button>
+         <button class="chip ${this._ptSort==='age-asc'?'on':''}" data-ptsort="age-asc">Youngest first</button>
+         <button class="chip ${this._ptSort==='age-desc'?'on':''}" data-ptsort="age-desc">Oldest first</button>
+       </div>
+     </details>
 
      ${shown.length ? LEVELS.map(L=>{ const g=levelGroups[L]; if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
@@ -6217,12 +6243,18 @@ const Progress = {
     // exactly the "jumps to the top every tap" bug reported.
     $('#ptYearPrev',v).onclick=()=>{ this._year--; this._month='June'; this._session=ptFullDate(this._year, ptWeekendDates(this._year).June[0]); this._repaint(v); };
     $('#ptYearNext',v).onclick=()=>{ this._year++; this._month='June'; this._session=ptFullDate(this._year, ptWeekendDates(this._year).June[0]); this._repaint(v); };
-    $$('[data-ptmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.ptmonth; this._session=ptFullDate(year, ptWeekendDates(year)[this._month][0]); this._repaint(v); });
+    // Steps by month rather than jumping to a fixed month like the Year
+    // buttons do, and rolls the year over automatically at Dec\u2194Jan so
+    // browsing never gets stuck at a year boundary.
+    $('#ptMonthPrev',v).onclick=()=>{ let idx=PT_MONTHS.indexOf(this._month)-1, yr=this._year; if(idx<0){ idx=11; yr--; } this._year=yr; this._month=PT_MONTHS[idx]; this._session=ptFullDate(yr, ptWeekendDates(yr)[this._month][0]); this._repaint(v); };
+    $('#ptMonthNext',v).onclick=()=>{ let idx=PT_MONTHS.indexOf(this._month)+1, yr=this._year; if(idx>11){ idx=0; yr++; } this._year=yr; this._month=PT_MONTHS[idx]; this._session=ptFullDate(yr, ptWeekendDates(yr)[this._month][0]); this._repaint(v); };
     $$('[data-ptsession]',v).forEach(b=>b.onclick=()=>{ this._session=ptFullDate(year, b.dataset.ptsession); this._repaint(v); });
     $$('[data-ptlvl]',v).forEach(b=>b.onclick=()=>{ this._levelFilter=b.dataset.ptlvl; this._repaint(v); });
     const f=$('#ptFind',v);
     if(f) f.oninput=()=>{ this._find=f.value; clearTimeout(this._ft); this._ft=setTimeout(()=>{ this._repaint(v); const nf=$('#ptFind'); if(nf){ nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length); } },250); };
     const somEl=$('#ptSom',v); if(somEl) somEl.ontoggle=()=>{ this._somOpen=somEl.open; };
+    const lcD=$('#ptLiveCounterD',v); if(lcD) lcD.ontoggle=()=>{ this._liveCounterOpen=lcD.open; };
+    const sortD=$('#ptSortD',v); if(sortD) sortD.ontoggle=()=>{ this._sortOpen=sortD.open; };
     // Opening a student IS a real navigation to a new screen, so this one
     // keeps Router.render() — scrolling to the top of the detail view on
     // open is the behavior you'd actually want here.
@@ -7271,8 +7303,8 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
     const fam = famList().find(f=>f.key===famKey) || {members:[]};
     const students = fam.members.map(s=>s.name).join(' & ') || famKey;
     const nowM = today().slice(0,7);
-    const periodLabel = new Date(nowM+'-02').toLocaleDateString('en-US',{month:'long',year:'numeric'});
-    const dueDefault = new Date(nowM+'-01').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const periodLabel = parseLocalDate(nowM+'-02').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const dueDefault = parseLocalDate(nowM+'-01').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const amountDefault = Math.max(0, fin.monthly-fin.paidThisMonth) || fin.balance || fin.monthly;
     const statusDefault = fin.monthStatus==='Partial' ? 'reminder' : 'overdue';
     const cashappDefault = '$amanschoolmn  \u2022  (952) 217-3629', zelleDefault = 'amanschool.mn@gmail.com';
