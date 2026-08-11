@@ -5698,6 +5698,16 @@ const closureFor = dateKey => (DB.data.closures||[]).find(c=>c.date===dateKey) |
 // visible, just marked closed rather than hidden.
 const ptMonthKeys = (year, m) => (ptWeekendDates(year)[m]||[]).map(md=>ptFullDate(year,md)).filter(dk=>!closureFor(dk));
 const ptYearKeys = (year) => PT_MONTHS.flatMap(m=>ptMonthKeys(year,m));
+// Given either half of a weekend, returns the real calendar dates for both
+// the Saturday and the following Sunday — plain Date arithmetic, so a
+// weekend that spans a month or year boundary (e.g. Oct 31/Nov 1) still
+// pairs correctly without any special-casing.
+function ptWeekendPair(session){
+  const d = new Date(session+'T00:00:00');
+  const iso = dt => dt.toISOString().slice(0,10);
+  if(PT_isSat(session)){ const sun=new Date(d); sun.setDate(sun.getDate()+1); return {sat:session, sun:iso(sun)}; }
+  const sat=new Date(d); sat.setDate(sat.getDate()-1); return {sat:iso(sat), sun:session};
+}
 
 // Attendance cycle writes the SAME codes attSummary()/cockpit already read
 // (P/A/L/E); UA and EXC are just this module's friendlier on-screen labels
@@ -5712,6 +5722,32 @@ const ptNext = (cycle,cur) => cycle[(cycle.indexOf(cur)+1)%cycle.length];
 const PT_GRADE_SCALE = [[95,'A+'],[90,'A'],[87,'A-'],[83,'B+'],[80,'B'],[77,'B-'],[73,'C+'],[70,'C'],[67,'C-'],[63,'D+'],[60,'D'],[0,'F']];
 const ptGrade = pct => (PT_GRADE_SCALE.find(([m])=>pct>=m) || PT_GRADE_SCALE[PT_GRADE_SCALE.length-1])[1];
 const ptLevelTag = L => L==='Level 1'?'tag-green':L==='Level 2'?'tag-blue':'tag-purple';
+
+// Roster ordering — "Name" sorts on the full name string (which starts
+// with the first name in this school's naming convention, so it reads as
+// alphabetical-by-first-name with a natural tie-break on the rest of the
+// name) using Arabic collation; "age-asc"/"age-desc" sort youngest\u2192oldest
+// or oldest\u2192youngest. Undated students always land at the end of an age
+// sort either way, rather than jumping to the top when the direction flips.
+const ptAgeYears = s => s.dob ? (Date.now()-new Date(s.dob+'T00:00:00'))/3.15576e10 : null;
+function ptSortStudents(arr, sort){
+  const byName = (a,b) => (a.name||'').localeCompare(b.name||'','ar');
+  if(sort==='age-asc' || sort==='age-desc') return [...arr].sort((a,b)=>{
+    const aa=ptAgeYears(a), ab=ptAgeYears(b);
+    if(aa==null && ab==null) return byName(a,b);
+    if(aa==null) return 1; if(ab==null) return -1;
+    return sort==='age-desc' ? ab-aa : aa-ab;
+  });
+  return [...arr].sort(byName);
+}
+
+// Line-style icons for the percentage privacy control (eye / eye-off / lock)
+// — matches the app's existing inline-SVG icon convention (header icons)
+// rather than emoji, since this is a data-privacy control and reads as more
+// deliberate/professional than 👁️/🙈/🔒.
+const PT_ICO_EYE = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M2 12S5.5 5 12 5s10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>`;
+const PT_ICO_EYE_OFF = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M3 3l18 18"/><path d="M10.6 5.2C11 5.1 11.5 5 12 5c6.5 0 10 7 10 7a17.9 17.9 0 0 1-3.2 4.2M6.3 6.3A17.7 17.7 0 0 0 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`;
+const PT_ICO_LOCK = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 
 // Self-contained report-card document — same convention as
 // renderSOTMShareCard/certificates: a full standalone HTML string with its
@@ -5820,6 +5856,91 @@ function ptDefaultMonthSession(){
   return {year:y, month, session: ptFullDate(y, pick)};
 }
 
+// Printable Weekend Recap — same convention as ptReportCardHTML/
+// clnScheduleHTML: a self-contained HTML document with its own inline
+// styles, opened via printHTMLDocument()'s Shadow DOM isolation (see that
+// function's comment for why this can't be a live DOM clone or
+// window.open()+document.write()). Mirrors whatever's on screen when it's
+// generated — same weekend, same sort order, same percentage-hidden/
+// revealed state — so it reads as a clean export of exactly what Nur is
+// looking at, not a separate data view.
+function ptPillColor(kind, val){
+  if(kind==='att'){ if(val==='P'||val==='L') return '#276b43'; if(val==='A') return '#a13a2e'; if(val==='E') return '#33607e'; return '#9a9488'; }
+  if(val==='PASS'||val==='DONE') return '#276b43';
+  if(val==='FAIL'||val==='INC') return '#a13a2e';
+  if(val==='EXC') return '#33607e';
+  return '#9a9488';
+}
+function ptPrintDayCell(e, closed){
+  if(closed) return `<div class="closedcell">Closed</div>`;
+  return `<div class="daywrap">
+    <span class="pchip" style="color:${ptPillColor('att',e.att)};border-color:${ptPillColor('att',e.att)}">${PT_ATT_LABEL[e.att]||'—'}</span>
+    <span class="pchip" style="color:${ptPillColor('quran',e.quran)};border-color:${ptPillColor('quran',e.quran)}">${e.quran||'—'}</span>
+    <span class="pchip" style="color:${ptPillColor('hw',e.hw)};border-color:${ptPillColor('hw',e.hw)}">${e.hw||'—'}</span>
+    <span class="pchip" style="color:${ptPillColor('cw',e.cw)};border-color:${ptPillColor('cw',e.cw)}">${e.cw||'—'}</span>
+  </div>`;
+}
+function ptPrintStudentRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, pctHidden, pctRevealed){
+  const eSat = ptEntry(satDate, s.id), eSun = ptEntry(sunDate, s.id);
+  const st = ptStats(s.id, monthKeys);
+  const age = s.dob ? Math.floor(ptAgeYears(s)) : null;
+  const showPct = !pctHidden || (pctRevealed && pctRevealed.has(s.id));
+  return `<tr>
+    <td><div class="who">
+      <div class="photo">${s.photo?`<img src="${s.photo}" alt="">`:esc(initials(s.name))}</div>
+      <div class="name" dir="rtl">${esc(s.name)}${age!=null?`<span class="age">${age}y</span>`:''}</div>
+    </div></td>
+    <td>${ptPrintDayCell(eSat, satClosed)}</td>
+    <td>${ptPrintDayCell(eSun, sunClosed)}</td>
+    <td class="pct">${showPct ? `<div>Qur\u2019an ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</div><div>HW ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</div><div>CW ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</div>` : `<span class="hiddenpct">Hidden</span>`}</td>
+  </tr>`;
+}
+function ptWeekendPrintHTML(year, month, satDate, sunDate, levelGroups, pctHidden, pctRevealed){
+  const monthKeys = ptMonthKeys(year, month);
+  const satClosed = closureFor(satDate), sunClosed = closureFor(sunDate);
+  const sections = LEVELS.map(L=>{
+    const g = levelGroups[L]||[];
+    if(!g.length) return '';
+    return `<h2>${esc(L)} <span class="sub">${esc(LEVEL_SUB[L]||'')} · ${g.length}</span></h2>
+    <table>
+      <thead><tr><th>Student</th><th>Sat · ${fmtDate(satDate)}</th><th>Sun · ${fmtDate(sunDate)}</th><th>This month</th></tr></thead>
+      <tbody>${g.map(s=>ptPrintStudentRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, pctHidden, pctRevealed)).join('')}</tbody>
+    </table>`;
+  }).join('');
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Weekend Progress \u2014 ${fmtDate(satDate)}\u2013${fmtDate(sunDate)}</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fff;color:#20261f;margin:0;padding:28px}
+  .toolbar-actions{position:sticky;top:0;background:#123626;padding:10px 16px;display:flex;gap:10px;justify-content:center;margin:-28px -28px 20px;z-index:100}
+  .toolbar-actions button{padding:9px 18px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:13.5px;background:#b8872a;color:#20261f}
+  @media print{.toolbar-actions{display:none}body{padding:0}}
+  h1{font-size:19px;color:#1a4a35;margin:0 0 2px}
+  .subhd{font-size:12px;color:#686e5f;margin-bottom:6px}
+  h2{font-size:14.5px;color:#1a4a35;border-bottom:2px solid #1a4a35;padding-bottom:5px;margin:22px 0 10px}
+  h2 .sub{font-size:11px;font-weight:400;color:#686e5f}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px}
+  th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#686e5f;padding:6px 8px;border-bottom:1px solid #d3c6a6}
+  td{padding:8px;border-bottom:1px solid #e2d7bd;vertical-align:middle}
+  .who{display:flex;align-items:center;gap:8px;min-width:140px}
+  .photo{width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#e7cf9b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a4a35}
+  .photo img{width:100%;height:100%;object-fit:cover}
+  .name{direction:rtl;font-weight:600}
+  .age{direction:ltr;display:inline-block;margin-left:6px;font-size:10px;font-weight:400;color:#686e5f}
+  .daywrap{display:flex;gap:4px;flex-wrap:wrap}
+  .pchip{display:inline-block;border:1px solid;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
+  .closedcell{color:#a13a2e;font-style:italic;font-size:11.5px}
+  .pct{font-size:10.5px;color:#3a4139;line-height:1.5}
+  .hiddenpct{font-style:italic;color:#9a9488}
+  @media print{tr{page-break-inside:avoid}}
+</style></head>
+<body>
+<div class="toolbar-actions"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
+<h1>Al-Madrasatu An-Nuriyyah \u2014 Weekend Progress</h1>
+<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (P/L/UA/EXC) \u00b7 Qur\u2019an/HW/CW (PASS or DONE / FAIL or INC / EXC)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
+${sections || '<p style="font-size:13px;color:#686e5f">No students to show.</p>'}
+</body></html>`;
+}
+
 const Progress = {
   render(v){ this._openId ? this.detail(v, this._openId) : this.roster(v); },
 
@@ -5831,13 +5952,17 @@ const Progress = {
   _rowHTML(s, L, session, monthKeys, sat){
     const e = ptEntry(session, s.id);
     const st = ptStats(s.id, monthKeys);
+    const age = s.dob ? Math.floor(ptAgeYears(s)) : null;
     const uaTone = st.ua>=3 ? 'color:var(--bad);font-weight:800' : st.ua===2 ? 'color:var(--warn);font-weight:800' : '';
+    const revealed = this._pctRevealed && this._pctRevealed.has(s.id);
+    const showPct = !this._pctHidden || revealed;
     return `<div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
         ${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}
         <div style="min-width:0;flex:1">
           <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="rtl">${esc(s.name)}</div>
           <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
             <span class="tag ${ptLevelTag(L)}">${L}</span>
+            ${this._ptSort!=='name' && age!=null?`<span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${age}y</span>`:''}
             ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)">🔥${st.streak}</span>`:''}
           </div>
         </div>
@@ -5848,12 +5973,64 @@ const Progress = {
         <button class="pill-cyc ${e.hw||''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="📝 Homework">${sat?(e.hw||'—'):'—'}</button>
         <button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="✏️ Classwork">${e.cw||'—'}</button>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
+        ${showPct ? `
         <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
         <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
         <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
         <span style="${uaTone}">🚫 ${st.ua}</span>
         <span>⏱️ ${st.late}</span>
+        ` : `<span style="font-style:italic;display:inline-flex;align-items:center;gap:4px">${PT_ICO_LOCK} Hidden</span>`}
+        ${this._pctHidden ? `<button class="btn btn-ghost btn-sm no-print" data-ptpct="${s.id}" style="padding:1px 8px;font-size:11px;margin-left:auto" title="${revealed?'Hide again':'Reveal just this student'}">${revealed?PT_ICO_EYE_OFF+' Hide':PT_ICO_EYE+' Reveal'}</button>` : ''}
+      </div>`;
+  },
+  // Weekend Recap variant of _rowHTML — same card, but shows Saturday's and
+  // Sunday's cells as two stacked rows instead of just the one selected
+  // session, so one screenshot covers the whole weekend. Tap-to-cycle still
+  // works on either row; each pill carries its own date (data-cycw) since
+  // two different dates are live on screen at once instead of one.
+  _rowHTMLWeekend(s, L, satDate, sunDate, monthKeys){
+    const eSat = ptEntry(satDate, s.id), eSun = ptEntry(sunDate, s.id);
+    const satClosed = closureFor(satDate), sunClosed = closureFor(sunDate);
+    const st = ptStats(s.id, monthKeys);
+    const age = s.dob ? Math.floor(ptAgeYears(s)) : null;
+    const uaTone = st.ua>=3 ? 'color:var(--bad);font-weight:800' : st.ua===2 ? 'color:var(--warn);font-weight:800' : '';
+    const revealed = this._pctRevealed && this._pctRevealed.has(s.id);
+    const showPct = !this._pctHidden || revealed;
+    const dayRow = (dateKey, e, label, closed, hwEnabled) => `
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:700;color:var(--ink3);font-family:var(--f-mono);min-width:30px">${label}</span>
+        ${closed ? `<span style="font-size:11px;color:var(--ink3);font-style:italic">⛔ Closed</span>` : `
+        <button class="pill-cyc ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'':''}" data-cycw="${s.id}_att_${dateKey}" title="🕌 Attendance">${PT_ATT_LABEL[e.att]||'—'}</button>
+        <button class="pill-cyc ${e.quran||''}" data-cycw="${s.id}_quran_${dateKey}" title="📖 Qur'an">${e.quran||'—'}</button>
+        <button class="pill-cyc ${e.hw||''}" data-cycw="${s.id}_hw_${dateKey}" ${hwEnabled?'':'disabled'} title="📝 Homework">${hwEnabled?(e.hw||'—'):'—'}</button>
+        <button class="pill-cyc ${e.cw||''}" data-cycw="${s.id}_cw_${dateKey}" title="✏️ Classwork">${e.cw||'—'}</button>
+        `}
+      </div>`;
+    return `<div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
+        ${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="rtl">${esc(s.name)}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
+            <span class="tag ${ptLevelTag(L)}">${L}</span>
+            ${this._ptSort!=='name' && age!=null?`<span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${age}y</span>`:''}
+            ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)">🔥${st.streak}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${dayRow(satDate, eSat, 'Sat', satClosed, true)}
+        ${dayRow(sunDate, eSun, 'Sun', sunClosed, false)}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
+        ${showPct ? `
+        <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
+        <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
+        <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
+        <span style="${uaTone}">🚫 ${st.ua}</span>
+        <span>⏱️ ${st.late}</span>
+        ` : `<span style="font-style:italic;display:inline-flex;align-items:center;gap:4px">${PT_ICO_LOCK} Hidden</span>`}
+        ${this._pctHidden ? `<button class="btn btn-ghost btn-sm no-print" data-ptpct="${s.id}" style="padding:1px 8px;font-size:11px;margin-left:auto" title="${revealed?'Hide again':'Reveal just this student'}">${revealed?PT_ICO_EYE_OFF+' Hide':PT_ICO_EYE+' Reveal'}</button>` : ''}
       </div>`;
   },
   _liveCounterHTML(all, session, sat){
@@ -5865,6 +6042,24 @@ const Progress = {
       if(e.cw && e.cw!=='EXC'){ cT++; if(e.cw==='DONE') cD++; }
     });
     return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
+       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
+       <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
+       <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
+       <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
+  },
+  // Weekend Recap variant — same tally, combined across both Saturday and
+  // Sunday's sessions instead of just the one selected date.
+  _liveCounterHTMLWeekend(all, satDate, sunDate){
+    let present=0,late=0,ua=0,qP=0,qT=0,hD=0,hT=0,cD=0,cT=0;
+    all.forEach(s=>{
+      [satDate,sunDate].forEach((dk,i)=>{ if(!dk || closureFor(dk)) return; const e=ptEntry(dk,s.id);
+        if(e.att==='P') present++; else if(e.att==='L'){ present++; late++; } else if(e.att==='A') ua++;
+        if(e.quran && e.quran!=='EXC'){ qT++; if(e.quran==='PASS') qP++; }
+        if(i===0 && e.hw && e.hw!=='EXC'){ hT++; if(e.hw==='DONE') hD++; } // HW is Saturday-only
+        if(e.cw && e.cw!=='EXC'){ cT++; if(e.cw==='DONE') cD++; }
+      });
+    });
+    return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">🗓️ ${fmtDate(satDate)} – ${fmtDate(sunDate)}</b>
        <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
        <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
        <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
@@ -5899,12 +6094,15 @@ const Progress = {
     const monthKeys = ptMonthKeys(year, month);
     const all = DB.data.students.filter(s=>s.active!==false);
     const s = all.find(x=>x.id===sid);
+    // Weekend Recap patches both days' worth of cells from the same
+    // single-row patch, since either day's pill can be the one tapped.
+    const wk = this._weekendView ? ptWeekendPair(session) : null;
     if(s){
       const row = v.querySelector(`[data-row="${sid}"]`);
-      if(row) row.innerHTML = this._rowHTML(s, s.level, session, monthKeys, sat);
+      if(row) row.innerHTML = wk ? this._rowHTMLWeekend(s, s.level, wk.sat, wk.sun, monthKeys) : this._rowHTML(s, s.level, session, monthKeys, sat);
     }
     const lc = $('#ptLiveCounter',v);
-    if(lc) lc.innerHTML = this._liveCounterHTML(all, session, sat);
+    if(lc) lc.innerHTML = wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat);
     const somBody = $('#ptSomBody',v);
     if(somBody) somBody.innerHTML = this._somBodyHTML(all, monthKeys);
     // Re-wire only the patched row's own cells — everything else's
@@ -5916,7 +6114,16 @@ const Progress = {
           const [rsid,field]=b.dataset.cyc.split('_');
           this.cycle(session, rsid, field); this._patchAfterCycle(v, rsid);
         }; });
+        $$('[data-cycw]',row).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
+          const [rsid,field,dateKey]=b.dataset.cycw.split('_');
+          this.cycle(dateKey, rsid, field); this._patchAfterCycle(v, rsid);
+        }; });
         $$('[data-ptopen]',row).forEach(b=>b.onclick=()=>{ this._openId=b.dataset.ptopen; this._tab='overview'; Router.render(); });
+        $$('[data-ptpct]',row).forEach(b=>b.onclick=()=>{
+          const rsid=b.dataset.ptpct;
+          if(this._pctRevealed.has(rsid)) this._pctRevealed.delete(rsid); else this._pctRevealed.add(rsid);
+          this._repaint(v);
+        });
       }
     }
   },
@@ -5924,17 +6131,39 @@ const Progress = {
   roster(v){
     if(!this._month){ const dm=ptDefaultMonthSession(); this._year=dm.year; this._month=dm.month; this._session=dm.session; }
     if(this._somOpen===undefined) this._somOpen=true;
+    if(this._pctHidden===undefined) this._pctHidden=false;
+    if(!this._pctRevealed) this._pctRevealed=new Set();
+    if(this._weekendView===undefined) this._weekendView=false;
+    if(this._ptSort===undefined) this._ptSort='name';
     const year=this._year, month=this._month, session=this._session, sat=PT_isSat(session);
     const monthKeys = ptMonthKeys(year, month);
     const all = DB.data.students.filter(s=>s.active!==false);
     const lvl = this._levelFilter||'', find=(this._find||'').trim();
-    const shown = all.filter(s => (!lvl||s.level===lvl) && (!find||s.name.includes(find)));
-    const closed = closureFor(session);
+    const shown = ptSortStudents(all.filter(s => (!lvl||s.level===lvl) && (!find||s.name.includes(find))), this._ptSort);
+    // Grouped once here (respecting the current level/search filter and
+    // sort order) so the on-screen cards and the Print/PDF export below
+    // both read from the exact same ordering — the export is a clean copy
+    // of what's on screen, not a separately-computed view.
+    const levelGroups = {};
+    LEVELS.forEach(L=>{ levelGroups[L] = shown.filter(s=>s.level===L); });
+    // In Weekend Recap mode a single closed day shouldn't blank the whole
+    // roster — _rowHTMLWeekend already shows "⛔ Closed" for just that
+    // day's row. Only fall back to the full-page closed banner when BOTH
+    // days of the pair are closed (nothing to show either way).
+    const wk = this._weekendView ? ptWeekendPair(session) : null;
+    const closed = wk ? (closureFor(wk.sat) && closureFor(wk.sun) ? closureFor(wk.sat) : null) : closureFor(session);
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div class="eyebrow" style="margin-top:12px">Student Progress</div><h2 class="page-title">Progress Tracker</h2>
      <p class="page-sub">Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly.</p>
-     <div class="filters no-print"><button class="btn btn-o btn-sm" id="ptClosures">📅 Manage closures</button></div>
+     <div class="filters no-print">
+       <button class="btn btn-o btn-sm" id="ptClosures">📅 Manage closures</button>
+       <button class="btn ${this._pctHidden?'btn-p':'btn-o'} btn-sm" id="ptPctHide">${this._pctHidden?PT_ICO_EYE+' Percentages hidden':PT_ICO_EYE_OFF+' Hide percentages for screenshot'}</button>
+       <button class="btn ${this._weekendView?'btn-p':'btn-o'} btn-sm" id="ptWeekendView">${this._weekendView?'📅 Single day':'🗓️ Show Sat + Sun'}</button>
+       ${wk?`<button class="btn btn-p btn-sm" id="ptWeekendPrint">🖨️ Print / Save as PDF</button>`:''}
+     </div>
+     ${this._pctHidden?`<p class="page-sub" style="margin-top:-6px">Percentages are hidden class-wide. Tap Reveal on one student at a time before you screenshot, then Hide it again for the next.</p>`:''}
+     ${wk?`<p class="page-sub" style="margin-top:-6px">Showing the weekend of ${fmtDate(wk.sat)} – ${fmtDate(wk.sun)} — both days on one card, good for a single screenshot.</p>`:''}
 
      <div class="filters no-print" style="align-items:center;gap:10px">
        <button class="btn btn-ghost btn-sm" id="ptYearPrev" aria-label="Previous year">←</button>
@@ -5951,19 +6180,25 @@ const Progress = {
 
      ${closed ? `
      <div class="notice warn" style="margin-bottom:14px">
-       <span>⛔</span><span><b>School closed — ${esc(closed.reason)}</b>${closed.note?` · ${esc(closed.note)}`:''}<br><span style="font-size:12px;color:var(--ink2)">${fmtDate(session)} isn't counted as a session. Pick a different date above to take attendance.</span></span>
+       <span>⛔</span><span><b>School closed — ${esc(closed.reason)}</b>${closed.note?` · ${esc(closed.note)}`:''}<br><span style="font-size:12px;color:var(--ink2)">${wk?`Both ${fmtDate(wk.sat)} and ${fmtDate(wk.sun)} aren't`:`${fmtDate(session)} isn't`} counted as a session. Pick a different date above to take attendance.</span></span>
      </div>` : `
-     <div id="ptLiveCounter" class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">${this._liveCounterHTML(all, session, sat)}</div>
+     <div id="ptLiveCounter" class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">${wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat)}</div>
 
      <div class="filters no-print">
        <button class="chip ${!lvl?'on':''}" data-ptlvl="">All</button>
        ${LEVELS.map(L=>`<button class="chip ${lvl===L?'on':''}" data-ptlvl="${L}">${L}</button>`).join('')}
        <input type="search" id="ptFind" placeholder="Find student…" value="${esc(find)}" dir="rtl" style="max-width:190px">
      </div>
+     <div class="filters no-print" style="align-items:center;gap:8px;margin-top:-6px">
+       <span style="font-size:11px;color:var(--ink3);font-weight:700">Sort</span>
+       <button class="chip ${this._ptSort==='name'?'on':''}" data-ptsort="name">Name</button>
+       <button class="chip ${this._ptSort==='age-asc'?'on':''}" data-ptsort="age-asc">Youngest first</button>
+       <button class="chip ${this._ptSort==='age-desc'?'on':''}" data-ptsort="age-desc">Oldest first</button>
+     </div>
 
-     ${shown.length ? LEVELS.map(L=>{ const g=shown.filter(s=>s.level===L); if(!g.length) return '';
+     ${shown.length ? LEVELS.map(L=>{ const g=levelGroups[L]; if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
-        <div class="grid g2">${g.map(s=>`<div class="card" data-row="${s.id}" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">${this._rowHTML(s, L, session, monthKeys, sat)}</div>`).join('')}</div>`;
+        <div class="grid g2">${g.map(s=>`<div class="card" data-row="${s.id}" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">${wk ? this._rowHTMLWeekend(s, L, wk.sat, wk.sun, monthKeys) : this._rowHTML(s, L, session, monthKeys, sat)}</div>`).join('')}</div>`;
      }).join('') : '<div class="empty"><p>No students match.</p></div>'}
      `}
 
@@ -5996,7 +6231,21 @@ const Progress = {
       const [sid,field]=b.dataset.cyc.split('_');
       this.cycle(session, sid, field); this._patchAfterCycle(v, sid);
     }; });
+    $$('[data-cycw]',v).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
+      const [sid,field,dateKey]=b.dataset.cycw.split('_');
+      this.cycle(dateKey, sid, field); this._patchAfterCycle(v, sid);
+    }; });
     $('#ptClosures',v).onclick=()=>this.closuresModal(v);
+    $('#ptPctHide',v).onclick=()=>{ this._pctHidden=!this._pctHidden; if(!this._pctHidden) this._pctRevealed.clear(); this._repaint(v); };
+    $('#ptWeekendView',v).onclick=()=>{ this._weekendView=!this._weekendView; this._repaint(v); };
+    $$('[data-ptsort]',v).forEach(b=>b.onclick=()=>{ this._ptSort=b.dataset.ptsort; this._repaint(v); });
+    const wPrint = $('#ptWeekendPrint',v);
+    if(wPrint) wPrint.onclick=()=>printHTMLDocument(ptWeekendPrintHTML(year, month, wk.sat, wk.sun, levelGroups, this._pctHidden, this._pctRevealed));
+    $$('[data-ptpct]',v).forEach(b=>b.onclick=()=>{
+      const sid=b.dataset.ptpct;
+      if(this._pctRevealed.has(sid)) this._pctRevealed.delete(sid); else this._pctRevealed.add(sid);
+      this._repaint(v);
+    });
   },
 
   // Add/remove school closures (field trips, weather, illness, Eid, the
@@ -6267,6 +6516,29 @@ function clnEnsureMonth(year,month){
 }
 function clnReshuffleMonth(year,month){ DB.data.cleaning.pairsByMonth[clnKey(year,month)]=clnGenerate(); DB.save(); }
 function clnGroupNames(ids){ return ids.map(id=>{ const s=DB.data.students.find(x=>x.id===id); return s?s.name:'—'; }); }
+// Photo + name chip for one student, used everywhere a duty group is shown
+// on screen (pair overview cards and the per-date schedule). Avatar sits
+// above the name so chips wrap cleanly in a row regardless of group size.
+function clnGroupChipsHTML(ids, size){
+  size = size || 34;
+  const students = ids.map(id=>DB.data.students.find(x=>x.id===id)).filter(Boolean);
+  if(!students.length) return '<span style="font-size:12px;color:var(--ink3)">—</span>';
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap">
+    ${students.map(s=>`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;width:${size+18}px">
+      ${avatarHTML(s, `width:${size}px;height:${size}px;border-radius:50%;font-size:${Math.round(size*0.32)}px;flex-shrink:0`)}
+      <div style="font-size:10px;font-weight:600;text-align:center;line-height:1.2;max-width:${size+18}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" dir="rtl">${esc(s.name)}</div>
+    </div>`).join('')}
+  </div>`;
+}
+// One duty group ("Pair 1", "Trio 2", etc.) as a labeled card of chips —
+// used in the Brothers/Sisters overview at the top of the page.
+function clnPairCardHTML(ids, idx, size){
+  const label = ids.length>2 ? 'Trio' : 'Pair';
+  return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--line2);border-radius:11px">
+    <span class="tag tag-dim" style="flex-shrink:0">${label} ${idx+1}</span>
+    ${clnGroupChipsHTML(ids, size)}
+  </div>`;
+}
 function clnScheduleHTML(year, month, rows){
   const rowsHTML = rows.map(r=>r.closed
     ? `<tr style="opacity:.6"><td>${fmtDate(r.dk)}</td><td>${PT_isSat(r.dk)?'Sat':'Sun'}</td><td colspan="2">⛔ Closed — ${esc(r.closed.reason)}</td></tr>`
@@ -6331,41 +6603,47 @@ const Cleaning = {
 
      <div class="grid g2" style="margin-bottom:16px">
        <div class="card">
-         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
            <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc66 Brothers pairs \u2014 ${month} ${year}</h3>
            <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.brothers.length} group${entry.brothers.length!==1?'s':''}</span>
          </div>
-         <div style="display:flex;flex-direction:column;gap:6px">
-           ${entry.brothers.length? entry.brothers.map(g=>`<div style="padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:13px" dir="rtl">${esc(clnGroupNames(g).join(' + '))}</div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No active brothers on file.</p>'}
+         <div style="display:flex;flex-direction:column;gap:8px">
+           ${entry.brothers.length? entry.brothers.map((g,i)=>clnPairCardHTML(g,i,36)).join('') : '<p style="font-size:13px;color:var(--ink2)">No active brothers on file.</p>'}
          </div>
        </div>
        <div class="card">
-         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
            <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc67 Sisters pairs \u2014 ${month} ${year}</h3>
            <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.sisters.length} group${entry.sisters.length!==1?'s':''}</span>
          </div>
-         <div style="display:flex;flex-direction:column;gap:6px">
-           ${entry.sisters.length? entry.sisters.map(g=>`<div style="padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:13px" dir="rtl">${esc(clnGroupNames(g).join(' + '))}</div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No active sisters on file.</p>'}
+         <div style="display:flex;flex-direction:column;gap:8px">
+           ${entry.sisters.length? entry.sisters.map((g,i)=>clnPairCardHTML(g,i,36)).join('') : '<p style="font-size:13px;color:var(--ink2)">No active sisters on file.</p>'}
          </div>
        </div>
      </div>
 
-     <div class="card" style="margin-bottom:14px;overflow-x:auto">
-       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap">
+     <div class="card" style="margin-bottom:14px">
+       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">
          <h3 style="font-family:var(--f-display);font-size:16px">${month} ${year} Schedule</h3>
          <span style="font-size:11px;color:var(--ink3)">Generated ${fmtDate(entry.generatedAt.slice(0,10))}</span>
        </div>
-       <table class="tbl"><thead><tr><th>Date</th><th>Day</th><th>Brothers on duty</th><th>Sisters on duty</th></tr></thead>
-       <tbody>${rows.map(r=>r.closed ? `<tr style="opacity:.6">
-         <td>${fmtDate(r.dk)}</td>
-         <td>${PT_isSat(r.dk)?'Sat':'Sun'}</td>
-         <td colspan="2">⛔ Closed — ${esc(r.closed.reason)}</td>
-       </tr>` : `<tr>
-         <td>${fmtDate(r.dk)}</td>
-         <td>${PT_isSat(r.dk)?'Sat':'Sun'}</td>
-         <td dir="rtl">${esc(clnGroupNames(r.bGroup).join(' + ')||'—')}</td>
-         <td dir="rtl">${esc(clnGroupNames(r.sGroup).join(' + ')||'—')}</td>
-       </tr>`).join('')}</tbody></table>
+       <div style="display:flex;flex-direction:column;gap:10px">
+         ${rows.map(r=>r.closed ? `
+         <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:11px;opacity:.65">
+           <div style="min-width:76px;flex-shrink:0"><b style="font-family:var(--f-mono);font-size:12.5px">${fmtDate(r.dk)}</b><div style="font-size:10.5px;color:var(--ink3)">${PT_isSat(r.dk)?'Saturday':'Sunday'}</div></div>
+           <span style="font-size:12.5px">⛔ Closed — ${esc(r.closed.reason)}</span>
+         </div>` : `
+         <div style="padding:10px 12px 12px;background:var(--surface2);border:1px solid var(--line2);border-radius:11px">
+           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+             <b style="font-family:var(--f-mono);font-size:12.5px">${fmtDate(r.dk)}</b>
+             <span class="tag ${PT_isSat(r.dk)?'tag-green':'tag-blue'}">${PT_isSat(r.dk)?'Saturday':'Sunday'}</span>
+           </div>
+           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+             <div><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">\ud83d\udc66 Brothers</div>${clnGroupChipsHTML(r.bGroup,32)}</div>
+             <div><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">\ud83d\udc67 Sisters</div>${clnGroupChipsHTML(r.sGroup,32)}</div>
+           </div>
+         </div>`).join('')}
+       </div>
      </div>
 
      <div style="display:flex;gap:10px;flex-wrap:wrap" class="no-print">
