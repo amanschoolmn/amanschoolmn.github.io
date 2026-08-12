@@ -66,6 +66,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15p
 a{color:inherit}
 button{font-family:var(--f-ui);cursor:pointer;border:none;background:none;color:inherit}
 input,select,textarea{font-family:var(--f-ui);font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line2);border-radius:var(--r-sm);padding:9px 12px;width:100%;outline:none;transition:border-color .15s, box-shadow .15s}
+/* iOS renders type=date/time as its own native wheel picker sized off the
+   input's actual box, not a fixed native width — left at the default
+   width:100% inside a wide grid column (e.g. a 2-up modal field), the time
+   picker's AM/PM column has almost no real content to fill that width, so
+   iOS stretches its row-selection bar into a long, mostly-empty strip
+   (reported 2026-08-11 on the interview scheduler's time field). Capping
+   these to a sane content width fixes the picker at the source for every
+   date/time field in the app, not just the one that got screenshotted. */
+input[type="date"],input[type="time"]{max-width:170px}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--glow)}
 textarea{resize:vertical;min-height:74px}
 label{font-size:12px;font-weight:600;color:var(--ink2);letter-spacing:.03em;display:block;margin-bottom:5px}
@@ -3436,6 +3445,14 @@ const REMINDERS = [
  '“Allah is gentle and loves gentleness in all matters.” — agreed upon',
  '“Whoever travels a path seeking knowledge, Allah eases for him a path to Paradise.” — Muslim',
 ];
+// Per-widget top-accent color — kpis is excluded (its own .kpi-card
+// buttons carry individual accents instead, since .wbare strips the
+// wrapper's border/background entirely).
+const WIDGET_ACCENT = {
+  focus:'var(--gold)', momentum:'var(--ok)', quick:'var(--info)', week:'var(--green)',
+  schedule:'var(--info)', memo:'var(--green)', atttrend:'var(--ok)', progress:'var(--gold)',
+  fresh:'var(--info)', recognitions:'var(--gold)', ai:'#7B4FA0', activity:'var(--ink3)', tuition:'var(--gold)'
+};
 Registry.register({ id:'dashboard', name:'Dashboard', icon:'home', group:'Command Center',
 render(v){
   clearInterval(Dashboard._clk);
@@ -3541,14 +3558,14 @@ render(v){
   };
   W.kpis = ()=>{
     const cards = [
-      ['🎓', stu.length||'—', 'Students', '#/students'],
-      ['✅', Object.keys(todayRec).length? presentToday+'/'+stu.length : (attSummary().sessions? attSummary().rate+'%':'—'), Object.keys(todayRec).length?'Present today':'Attendance', '#/students/attendance'],
-      ['📖', d.quran.length||'—', 'Qur’an entries', '#/students'],
-      ['📚', curAvg+'%', 'Curriculum avg', '#/teacher/curriculum'],
-      ['☑️', openTasks.length, 'Open tasks', '#/admin/tasks'],
-      ['🗂️', res.length, 'Resources', '#/library'],
+      ['🎓', stu.length||'—', 'Students', '#/students', 'var(--green)'],
+      ['✅', Object.keys(todayRec).length? presentToday+'/'+stu.length : (attSummary().sessions? attSummary().rate+'%':'—'), Object.keys(todayRec).length?'Present today':'Attendance', '#/students/attendance', 'var(--ok)'],
+      ['📖', d.quran.length||'—', 'Qur’an entries', '#/students', 'var(--info)'],
+      ['📚', curAvg+'%', 'Curriculum avg', '#/teacher/curriculum', 'var(--gold)'],
+      ['☑️', openTasks.length, 'Open tasks', '#/admin/tasks', 'var(--warn)'],
+      ['🗂️', res.length, 'Resources', '#/library', '#7B4FA0'],
     ];
-    return `<div class="kpis">${cards.map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b>${val}</b><span>${lab}</span></button>`).join('')}</div>`;
+    return `<div class="kpis">${cards.map(([i,val,lab,go,cv])=>`<button class="kpi-card" data-go="${go}" style="border-top:3px solid ${cv}"><span class="ki">${i}</span><b>${val}</b><span>${lab}</span></button>`).join('')}</div>`;
   };
   W.quick = ()=> `<div class="whead"><h3>Quick actions</h3></div><div style="display:flex;flex-wrap:wrap;gap:8px">
      <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
@@ -3626,7 +3643,7 @@ render(v){
   W.tuition = ()=> `<div class="whead"><h3>Tuition note</h3></div>
      <textarea id="tuitionNote" placeholder="Fee status, reminders, notes for Br. Abdallah… saved automatically.">${esc(d.settings.tuitionNote||'')}</textarea>`;
 
-  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}">${W[wid]()}</div>`; }
+  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${W[wid]()}</div>`; }
   h += `</div>`;
   v.innerHTML = h;
   wireCommon(v);
@@ -4255,8 +4272,7 @@ Registry.register({ id:'teacher', name:'Teacher Workspace', icon:'pen', group:'W
 render(v,param){
   const tab = param||'cockpit';
   const T = {cockpit:'🎛 Class Day', planner:'Weekly Planner', lessons:'Lesson Plans', quiz:'Quizzes', homework:'Homework', notes:'Teaching Notes', reflect:'Reflections', curriculum:'Curriculum'};
-  v.innerHTML = `<div class="eyebrow">Teacher Workspace</div><h2 class="page-title">Teaching</h2>
-   <p class="page-sub">Your weekend cockpit — prepare, teach, review.</p>
+  v.innerHTML = `${moduleHeroHTML('Teacher Workspace', 'Teaching', 'Your weekend cockpit — prepare, teach, review.', '📝')}
    <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-tab="${k}">${n}</button>`).join('')}</div>
    <div id="tt"></div>`;
   $$('[data-tab]',v).forEach(b=>b.onclick=()=>Router.go('#/teacher/'+b.dataset.tab));
@@ -4289,15 +4305,15 @@ const Teacher = {
       :`<div class="no-print" style="margin-bottom:16px"><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
     <div class="sect">1 · Before class<span class="rule"></span></div>
     <div class="grid g2">
-      <div class="widget"><div class="whead"><h3>${prepDay}’s plan</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/planner">Edit →</button></div>
+      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>${prepDay}’s plan</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/planner">Edit →</button></div>
         <div class="wlist">${slots.map((s,i)=>{ const t=d.planner['pl_'+prepDay+'_'+i];
           return `<div class="wrow" style="cursor:default"><span class="m" style="min-width:96px">${s}</span><span class="t" style="font-weight:400;white-space:normal">${t?esc(t.split('\n')[0]):'<span style="color:var(--ink3)">— not planned —</span>'}</span></div>`; }).join('')}</div></div>
-      <div class="widget"><div class="whead"><h3>Upcoming lessons</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">All →</button></div>
+      <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>Upcoming lessons</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">All →</button></div>
         <div class="wlist">${upLessons.length?upLessons.map(L=>`<div class="wrow" data-go="#/teacher/lessons"><span class="t">${esc(L.title)}</span><span class="m">${fmtDate(L.date)}${L.est?' · '+L.est+'m':''}</span></div>`).join(''):'<div class="wrow" style="cursor:default;color:var(--ink3)">No lesson plans scheduled</div>'}</div></div>
-      <div class="widget"><div class="whead"><h3>Materials checklist</h3></div>
+      <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>Materials checklist</h3></div>
         ${mats.length?`<div class="wlist">${mats.map((x,gi)=>`<div class="wrow" style="cursor:default"><input type="checkbox" data-mat="${x.L.id}_${x.i}" ${(x.L.matDone||[]).includes(x.i)?'checked':''} style="width:auto"><span class="t" style="white-space:normal">${esc(x.m)}</span></div>`).join('')}</div>`
         :'<p style="font-size:13px;color:var(--ink2)">Add materials to lesson plans and check them off here before class.</p>'}</div>
-      <div class="widget"><div class="whead"><h3>Prep radar</h3></div><div class="wlist">
+      <div class="widget" style="border-top:3px solid ${(behind.length||hwOpen.length||dueTasks.length)?'var(--warn)':'var(--ok)'}"><div class="whead"><h3>Prep radar</h3></div><div class="wlist">
         ${behind.length?`<div class="wrow" data-act="quran"><span>📖</span><span class="t">${behind.length} student${behind.length>1?'s':''} due a memorization check</span></div>`:''}
         ${hwOpen.length?`<div class="wrow" data-go="#/teacher/homework"><span>📥</span><span class="t">${hwOpen.length} homework assignment${hwOpen.length>1?'s':''} to review</span></div>`:''}
         ${dueTasks.length?`<div class="wrow" data-go="#/admin/tasks"><span>⏰</span><span class="t">${dueTasks.length} task${dueTasks.length>1?'s':''} due</span></div>`:''}
@@ -4305,7 +4321,7 @@ const Teacher = {
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${['Build a lesson from where the curriculum left off','Give me 3 warm-up activities for today','Simplify today’s topic for the youngest students'].map(c=>`<button class="chip" data-ai="${esc(c)}">✨ ${esc(c)}</button>`).join('')}</div></div>
     </div>
     <div class="sect">2 · During class<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">every action ≤ 2 taps</span></div>
-    <div class="widget" style="margin-bottom:14px"><div style="display:flex;flex-wrap:wrap;gap:8px">
+    <div class="widget" style="margin-bottom:14px;border-top:3px solid var(--green)"><div style="display:flex;flex-wrap:wrap;gap:8px">
       <button class="btn btn-p" data-go="#/students/attendance">✅ Attendance</button>
       <button class="btn btn-p" data-act="quran">📖 Record memorization</button>
       <button class="btn btn-o" data-act="behavior">📝 Behavior note</button>
@@ -4320,11 +4336,11 @@ const Teacher = {
         <input id="ttCustom" type="number" min="1" max="120" placeholder="min" style="max-width:70px;padding:5px 8px">
         <button class="chip" data-timer="custom">Start</button>
         <button class="chip" data-timer="stop">■ Stop</button></div></div>
-    <div class="widget" style="margin-bottom:14px"><div class="whead"><h3>Teaching toolkit — most used first</h3></div>
+    <div class="widget" style="margin-bottom:14px;border-top:3px solid var(--info)"><div class="whead"><h3>Teaching toolkit — most used first</h3></div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">${kit.map(r=>`<button class="chip" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.slice(0,30))}</button>`).join('')}</div></div>
     <div class="sect">3 · After class<span class="rule"></span></div>
     <div class="grid g2">
-      <div class="widget"><div class="whead"><h3>Today’s summary</h3></div>
+      <div class="widget" style="border-top:3px solid var(--ok)"><div class="whead"><h3>Today’s summary</h3></div>
         ${marked||qToday.length? `<div class="wlist">
           <div class="wrow" data-go="#/students/attendance"><span>✅</span><span class="t">${present} present · ${Object.values(todayRec).filter(x=>x==='A').length} absent · ${Object.values(todayRec).filter(x=>x==='E').length} excused · ${Object.values(todayRec).filter(x=>x==='L').length} late</span></div>
           <div class="wrow" style="cursor:default"><span>📖</span><span class="t">${qToday.length} memorization entr${qToday.length===1?'y':'ies'} recorded</span></div></div>`
@@ -4332,13 +4348,13 @@ const Teacher = {
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
           <button class="chip" data-ai="Summarize today: ${present} present of ${d.students.length}, ${qToday.length} Quran entries. Suggest what to focus on next session.">✨ AI class summary</button>
           <button class="chip" data-ai="Draft a warm WhatsApp message to parents summarizing today’s class (${present} present, topics from my planner) and reminding about homework.">✨ Parent message draft</button></div></div>
-      <div class="widget"><div class="whead"><h3>Assign homework</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/homework">All →</button></div>
+      <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>Assign homework</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/homework">All →</button></div>
         ${(d.homework||[]).slice(0,3).map(h=>`<div class="wrow" data-go="#/teacher/homework"><span>${h.reviewed?'✅':'📥'}</span><span class="t">${esc(h.title)}</span><span class="m">${h.due?fmtDate(h.due):''}</span></div>`).join('')||'<p style="font-size:13px;color:var(--ink2)">Nothing assigned yet.</p>'}
         <button class="btn btn-p btn-sm" data-act="hw" style="margin-top:9px">＋ Assign homework</button></div>
-      <div class="widget"><div class="whead"><h3>Reflection — 60 seconds</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/reflect">All →</button></div>
+      <div class="widget" style="border-top:3px solid #7B4FA0"><div class="whead"><h3>Reflection — 60 seconds</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/reflect">All →</button></div>
         <textarea id="ckRef" placeholder="What landed today? What flopped? One change for next time…"></textarea>
         <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-p btn-sm" id="ckRefSave">Save reflection</button></div></div>
-      <div class="widget"><div class="whead"><h3>Next weekend</h3></div>
+      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>Next weekend</h3></div>
         <p style="font-size:13px;color:var(--ink2);margin-bottom:9px">Close the loop while it’s fresh — sketch next Saturday now.</p>
         <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-o btn-sm" data-go="#/teacher/planner">📅 Plan next weekend</button>
         <button class="btn btn-o btn-sm" data-go="#/teacher/lessons">📝 New lesson</button>
@@ -4505,7 +4521,7 @@ const Teacher = {
       <span style="font-size:13.5px;color:var(--ink2)">${d.homework.length} assignment${d.homework.length===1?'':'s'} — assign after class, print sheets, tick reviewed when collected</span>
       <button class="btn btn-p btn-sm" id="hwAdd">＋ Assign homework</button></div>
      ${d.homework.length? `<div class="grid g2">${d.homework.map(h=>`
-       <div class="card" style="${h.reviewed?'opacity:.55':''}"><div style="display:flex;justify-content:space-between;gap:8px">
+       <div class="card" style="border-left:3px solid ${h.reviewed?'var(--ok)':'var(--gold)'};${h.reviewed?'opacity:.55':''}"><div style="display:flex;justify-content:space-between;gap:8px">
         <div><div class="eyebrow">${esc(h.level)} · assigned ${fmtDate(h.assigned)}${h.due?' · due '+fmtDate(h.due):''}</div>
         <h3 style="font-family:var(--f-display);font-size:16.5px;margin:3px 0 6px">${esc(h.title)}</h3></div>
         <div style="display:flex;gap:5px"><button class="btn btn-o btn-sm" data-print="${h.id}">Print</button><button class="btn btn-danger btn-sm" data-del="${h.id}">✕</button></div></div>
@@ -4533,9 +4549,9 @@ const Teacher = {
     const d=DB.data, wk = d.planner;
     const days = ['Saturday','Sunday'];
     const slots = ['Qur’an / Ḥifẓ block','Arabic block','Islamic Studies block','Closing / Homework'];
-    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px">📅 <div>Weekend planner — four blocks per day, autosaves as you type, mirrored on the Dashboard and Class Day cockpit.</div></div>
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px;border-left:3px solid var(--info)">📅 <div>Weekend planner — four blocks per day, autosaves as you type, mirrored on the Dashboard and Class Day cockpit.</div></div>
      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">${days.map(day=>`
-      <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:12px">${day}</h3>
+      <div class="card" style="border-top:3px solid ${day==='Saturday'?'var(--green)':'var(--info)'}"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:12px">${day==='Saturday'?'🕌':'📗'} ${day}</h3>
        ${slots.map((s,i)=>`<div class="field"><label>${s}</label><textarea data-pl="${day}_${i}" placeholder="Lesson, resources, students to check on…">${esc(wk['pl_'+day+'_'+i]||'')}</textarea></div>`).join('')}
       </div>`).join('')}</div>
      <div style="display:flex;gap:9px;margin-top:14px;flex-wrap:wrap" class="no-print">
@@ -4564,7 +4580,7 @@ const Teacher = {
     const up=d.lessons.filter(L=>!L.taught), done=d.lessons.filter(L=>L.taught);
     const card = L=>{
       const autoRel = [...new Set((L.resources||[]).flatMap(rid=>Graph.related(rid,3).map(r=>r.id)))].filter(x=>!(L.resources||[]).includes(x)).slice(0,4);
-      return `<div class="card" style="${L.taught?'opacity:.6':''}"><div style="display:flex;justify-content:space-between;gap:8px"><div>
+      return `<div class="card" style="border-left:3px solid ${L.taught?'var(--ok)':'var(--gold)'};${L.taught?'opacity:.6':''}"><div style="display:flex;justify-content:space-between;gap:8px"><div>
          <div class="eyebrow">${esc(L.subject)} · ${fmtDate(L.date)}${L.est?' · ~'+L.est+' min':''}</div>
          <h3 style="font-family:var(--f-display);font-size:17px;margin:3px 0 7px">${esc(L.title)}</h3></div>
          <div style="display:flex;gap:5px">${L.taught?'':`<button class="btn btn-o btn-sm" data-taught="${L.id}">✓ Taught</button>`}<button class="btn btn-danger btn-sm" data-del="${L.id}">✕</button></div></div>
@@ -4578,7 +4594,7 @@ const Teacher = {
       <span style="font-size:13.5px;color:var(--ink2)">${up.length} upcoming · ${done.length} taught</span>
       <button class="btn btn-p btn-sm" id="lsAdd">＋ New lesson plan</button></div>
      ${up.length? `<div class="grid g2">${up.map(card).join('')}</div>` : `<div class="empty"><div class="big">📝</div><h3>No upcoming lessons</h3><p>Plan one — it links resources, carries a materials checklist into the cockpit, and shows auto-related materials.</p></div>`}
-     ${done.length? `<div class="sect">Taught<span class="rule"></span></div><div class="grid g2">${done.slice(0,6).map(card).join('')}</div>`:''}`;
+     ${done.length? `<div class="sect">✓ Taught<span class="rule"></span></div><div class="grid g2">${done.slice(0,6).map(card).join('')}</div>`:''}`;
     wireCommon(el);
     $$('input[data-mat]',el).forEach(c=>c.onchange=()=>{ const [lid,i]=c.dataset.mat.split('_'); const L=d.lessons.find(x=>x.id===lid);
       L.matDone=L.matDone||[]; c.checked? L.matDone.push(+i) : L.matDone=L.matDone.filter(x=>x!==+i); DB.save(); });
@@ -4618,13 +4634,13 @@ const Teacher = {
     const totalQs = d.quizzes.reduce((a,q)=>a+q.qs.length,0);
     const totalPts = d.quizzes.reduce((a,q)=>a+q.qs.reduce((x,y)=>x+(+y.pts||0),0),0);
     el.innerHTML = `<div class="kpis" style="margin-bottom:16px">${[
-       ['🧪',d.quizzes.length,'Quizzes'],['❓',totalQs,'Total questions'],['🏆',totalPts,'Total points']]
-       .map(([i,val,lab])=>`<div class="kpi-card" style="cursor:default"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
+       ['🧪',d.quizzes.length,'Quizzes','var(--gold)'],['❓',totalQs,'Total questions','var(--info)'],['🏆',totalPts,'Total points','var(--ok)']]
+       .map(([i,val,lab,cv])=>`<div class="kpi-card" style="cursor:default;border-top:3px solid ${cv}"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap" class="no-print">
       ${subjs.length>2?`<div style="display:flex;gap:6px;flex-wrap:wrap">${subjs.map(s=>`<button class="chip${d.planner.qzFilter===s?' on':''}" data-qf="${esc(s)}">${esc(s)}</button>`).join('')}</div>`:'<span></span>'}
       <button class="btn btn-p btn-sm" id="qzAdd">＋ New quiz</button></div>
      ${shown.length? `<div class="grid g2">${shown.map(Q=>`
-      <div class="card"><div style="display:flex;justify-content:space-between"><h3 style="font-family:var(--f-display);font-size:17px">${esc(Q.title)}</h3>
+      <div class="card" style="border-top:3px solid var(--gold)"><div style="display:flex;justify-content:space-between"><h3 style="font-family:var(--f-display);font-size:17px">${esc(Q.title)}</h3>
        <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-print="${Q.id}">Print</button><button class="btn btn-danger btn-sm" data-del="${Q.id}">✕</button></div></div>
        <p style="font-size:12.5px;color:var(--ink2);margin:4px 0 10px">${esc(Q.subject)} · ${Q.qs.length} question${Q.qs.length===1?'':'s'} · ${Q.qs.reduce((a,q)=>a+(+q.pts||0),0)} pts</p>
        <ol style="font-family:var(--f-body);font-size:14.5px;padding-left:20px;display:flex;flex-direction:column;gap:5px">${Q.qs.slice(0,4).map(q=>`<li>${esc(q.q)}</li>`).join('')}${Q.qs.length>4?'<li style="list-style:none;color:var(--ink3)">…</li>':''}</ol>
@@ -4670,19 +4686,19 @@ const Teacher = {
   notes(el){ simpleJournal(el, 'notes_teach', 'Teaching notes', 'Observations, ideas, things to try next session…'); },
   reflect(el){ simpleJournal(el, 'notes_reflect', 'Lesson reflections', 'What landed? What flopped? What will you change?'); },
   curriculum(el){
-    const rows = [['na','📿','Names & Attributes of Allah','9 units · 30 lessons'],['tawhid','☪️','Tawhid (Taʿlīm al-Ṣibyān)','9 lessons · 49 slides'],['mad','🖋️','Madinah Arabic Book 1','10 lessons']];
-    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px">ℹ️ <div>These percentages are self-reported — you set them, nothing computes them automatically. They feed Analytics, the Board Report, and the AI Assistant's summaries, so keep them honest and current.</div></div>
-     <div class="grid g2">${rows.map(([k,ic,t,sub])=>{
+    const rows = [['na','📿','Names & Attributes of Allah','9 units · 30 lessons','var(--gold)'],['tawhid','☪️','Tawhid (Taʿlīm al-Ṣibyān)','9 lessons · 49 slides','var(--green)'],['mad','🖋️','Madinah Arabic Book 1','10 lessons','var(--info)']];
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px;border-left:3px solid var(--info)">ℹ️ <div>These percentages are self-reported — you set them, nothing computes them automatically. They feed Analytics, the Board Report, and the AI Assistant's summaries, so keep them honest and current.</div></div>
+     <div class="grid g2">${rows.map(([k,ic,t,sub,cv])=>{
       const p = unitsPct(k);
       const upd = DB.data.planner['progU_'+k];
-      return `<div class="card"><h3 style="font-family:var(--f-display);font-size:17px">${ic} ${t}</h3>
+      return `<div class="card" style="border-top:3px solid ${cv}"><h3 style="font-family:var(--f-display);font-size:17px">${ic} ${t}</h3>
        <p style="font-size:12.5px;color:var(--ink2);margin:2px 0 12px">${sub}</p>
        <div class="bar" style="margin-bottom:10px"><i style="width:${p}%"></i></div>
        <label>Completion — ${p}%</label>
        <input type="range" min="0" max="100" value="${p}" data-prog="${k}" style="padding:0">
        <div class="prog-upd" style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin-top:8px">${upd?'updated '+rel(upd):'never updated — showing default'}</div>
       </div>`;}).join('')}
-      <div class="card"><h3 style="font-family:var(--f-display);font-size:17px">📖 Qur’an — Ḥifẓ</h3>
+      <div class="card" style="border-top:3px solid #7B4FA0"><h3 style="font-family:var(--f-display);font-size:17px">📖 Qur’an — Ḥifẓ</h3>
       <p style="font-family:var(--f-body);font-size:14.5px;color:var(--ink2);margin-top:6px">Per-student pace lives in the Ḥifẓ Tracker spreadsheet and each student’s profile → Qur’an log. This card intentionally doesn’t duplicate it.</p>
       <button class="btn btn-o btn-sm" style="margin-top:10px" data-go="#/resource/xls-hifdh">Open Ḥifẓ Tracker entry</button></div></div>`;
     wireCommon(el);
@@ -4697,13 +4713,13 @@ function simpleJournal(el, key, title, ph){
   const list=d.planner[key];
   const q=(d.planner['q_'+key]||'').toLowerCase();
   const shown = q? list.filter(n=>n.t.toLowerCase().includes(q)) : list;
-  el.innerHTML = `<div class="card" style="margin-bottom:16px"><label>${title} — new entry</label>
+  el.innerHTML = `<div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><label>📝 ${title} — new entry</label>
     <textarea id="j-in" placeholder="${ph}"></textarea>
     <div style="display:flex;justify-content:flex-end;margin-top:9px"><button class="btn btn-p btn-sm" id="j-add">Save entry</button></div></div>
    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px" class="no-print">
      <span style="font-size:12.5px;color:var(--ink2)">${list.length} entr${list.length===1?'y':'ies'}${q?', '+shown.length+' matching':''}</span>
      ${list.length>3?`<input id="j-q" placeholder="Search entries…" value="${esc(d.planner['q_'+key]||'')}" style="max-width:200px">`:''}</div>
-   <div class="wlist">${shown.map(n=>{ const i=list.indexOf(n); return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span><button class="btn btn-ghost btn-sm" data-jd="${i}">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`; }).join('')||(q?`<div class="empty"><p>No entries match "${esc(q)}".</p></div>`:'<div class="empty"><p>No entries yet.</p></div>')}</div>`;
+   <div class="wlist">${shown.map(n=>{ const i=list.indexOf(n); return `<div class="card" style="margin-bottom:10px;border-left:3px solid var(--green-soft)"><div style="display:flex;justify-content:space-between;gap:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span><button class="btn btn-ghost btn-sm" data-jd="${i}">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`; }).join('')||(q?`<div class="empty"><p>No entries match "${esc(q)}".</p></div>`:'<div class="empty"><p>No entries yet.</p></div>')}</div>`;
   $('#j-add',el).onclick=()=>{ const t=$('#j-in',el).value.trim(); if(!t)return;
     list.unshift({d:new Date().toISOString(), t}); DB.save(); Router.render(); toast('Saved'); };
   const qi=$('#j-q',el); if(qi) qi.oninput=()=>{ d.planner['q_'+key]=qi.value; DB.save();
@@ -4788,6 +4804,21 @@ function renderGoalCard(eta, unitLabel, shortLabelFn, longLabelFn){
     </div>
   </div>`;
 }
+// Shared hero banner — same forest-green/gold brand treatment as the
+// Tuition module's header, reused across every Students-module screen
+// (List, Attendance, and Profile all call this) so the module reads as
+// one cohesive design instead of three separately-styled pages.
+function moduleHeroHTML(eyebrow, title, subtitle, icon){
+  return `<div style="background:linear-gradient(135deg,var(--green) 0%,var(--green-deep) 100%);border-radius:16px;padding:22px 24px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden">
+     <div style="position:absolute;top:-36px;right:-36px;width:150px;height:150px;border-radius:50%;background:color-mix(in srgb, var(--gold) 25%, transparent)"></div>
+     <div style="position:absolute;bottom:-46px;right:60px;width:110px;height:110px;border-radius:50%;background:color-mix(in srgb, var(--gold) 12%, transparent)"></div>
+     <div style="position:relative">
+       <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft)">${esc(eyebrow)}</div>
+       <h2 style="font-family:var(--f-display);font-size:27px;font-weight:700;margin:4px 0 6px;color:#fff">${icon?icon+' ':''}${esc(title)}</h2>
+       <p style="font-size:13px;color:rgba(255,255,255,.82);max-width:560px;line-height:1.5">${esc(subtitle)}</p>
+     </div>
+   </div>`;
+}
 Registry.register({ id:'students', name:'Students', icon:'cap', group:'Workspaces',
 render(v,param){
   if(param==='attendance') return Students.attendance(v);
@@ -4821,7 +4852,8 @@ const Students = {
       const st=hifzStats(s); return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>${esc(QS[st.cur].name)}</span><span>${st.pct.toFixed(0)}%</span></div><div class="bar"><i style="width:${st.pct}%"></i></div></div>`;
     };
     const card = s => { const age=ageFromDob(s.dob); const bIn=daysToBirthday(s.dob);
-      return `<div class="card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="cursor:pointer;display:flex;gap:12px;align-items:center">
+      const lvlAccent = s.level==='Level 1'?'var(--ok)':s.level==='Level 2'?'var(--info)':'#7B4FA0';
+      return `<div class="card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="cursor:pointer;display:flex;gap:12px;align-items:center;border-left:3px solid ${lvlAccent}">
         ${selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none">`:''}
         ${avatarHTML(s)}
         <div style="min-width:0;flex:1"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
@@ -4848,8 +4880,7 @@ const Students = {
       bodyHTML = `<div class="grid g3">${activeShown.slice().sort(sortFns[sortBy]).map(card).join('')}</div>`;
     }
 
-    v.innerHTML = `<div class="eyebrow">Student Information System</div><h2 class="page-title">Students</h2>
-     <p class="page-sub">${d.students.length? d.students.filter(s=>s.active!==false).length+' active students'+(d.students.some(s=>s.active===false)?' · '+d.students.filter(s=>s.active===false).length+' inactive (records kept)':'')+' — level-aware progress, promotion signals, complete records.' : 'No students yet.'}</p>
+    v.innerHTML = `${moduleHeroHTML('Student Information System', 'Students', d.students.length? d.students.filter(s=>s.active!==false).length+' active students'+(d.students.some(s=>s.active===false)?' · '+d.students.filter(s=>s.active===false).length+' inactive (records kept)':'')+' — level-aware progress, promotion signals, complete records.' : 'No students yet.', '🎓')}
      <div class="filters no-print">
        <button class="btn btn-p btn-sm" id="stAdd">＋ Add student</button>
        <button class="btn btn-o btn-sm" id="stImport">⇪ Import</button>
@@ -5247,10 +5278,11 @@ const Students = {
     };
     const sidFmt = 'AMAN-'+String(s.studentNo||0).padStart(3,'0');
     const age = ageFromDob(s.dob);
+    const lvlAccent = s.level==='Level 1'?'var(--ok)':s.level==='Level 2'?'var(--info)':'#7B4FA0';
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div class="detail-head" style="margin-top:12px">
-      ${avatarHTML(s, "width:56px;height:56px;font-size:19px;border-radius:14px")}
-      <div style="flex:1;min-width:220px"><div class="eyebrow">${esc(s.level)} — ${LEVEL_SUB[s.level]} · ${sidFmt}</div>
+     <div class="detail-head" style="margin-top:12px;background:linear-gradient(135deg,color-mix(in srgb,${lvlAccent} 9%,var(--surface)) 0%,var(--surface) 65%);border:1px solid var(--line);border-radius:16px;padding:20px">
+      ${avatarHTML(s, `width:64px;height:64px;font-size:22px;border-radius:16px;border:3px solid ${lvlAccent}`)}
+      <div style="flex:1;min-width:220px"><div class="eyebrow" style="color:${lvlAccent}">${esc(s.level)} — ${LEVEL_SUB[s.level]} · ${sidFmt}</div>
        <h2 class="page-title" style="margin-bottom:2px">${esc(s.preferredName||s.name)}</h2>
        <span style="font-size:13px;color:var(--ink2)">${esc(s.gender||'')}${age!=null?' · '+age+'y (b. '+s.dob+')':''}${s.startDate?' · enrolled '+fmtDate(s.startDate):''}</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" class="no-print">
@@ -5270,7 +5302,7 @@ const Students = {
        <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
        <button id="sDel" style="background:none;border:none;color:var(--bad);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">Delete</button></div>
      <details class="no-print dtl" open style="margin-bottom:16px">
-       <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px"><span class="kb-chevron">▸</span>Personal information<button class="btn btn-ghost btn-sm" id="apEdit" style="margin-left:auto;font-weight:600">✎ Edit</button></summary>
+       <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px"><span class="kb-chevron">▸</span>👤 Personal information<button class="btn btn-ghost btn-sm" id="apEdit" style="margin-left:auto;font-weight:600">✎ Edit</button></summary>
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
          ${admField('Full name', s.name)}${admField('Preferred', s.preferredName)}
          ${admField('Student ID', sidFmt)}${admField('Level', s.level+' — '+LEVEL_SUB[s.level])}
@@ -5300,14 +5332,14 @@ const Students = {
          </div>`; })()}
      </details>
      <details class="no-print dtl" open style="margin-bottom:16px">
-       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>Parents &amp; guardians<span class="rule"></span><button class="btn btn-ghost btn-sm" id="gAdd" style="padding:5px 11px;flex-shrink:0">+</button></summary>
+       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>👪 Parents &amp; guardians<span class="rule"></span><button class="btn btn-ghost btn-sm" id="gAdd" style="padding:5px 11px;flex-shrink:0">+</button></summary>
        ${s.guardians&&s.guardians.length? s.guardians.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
           <div><b>${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${[g.phone,g.email].filter(Boolean).map(esc).join(' · ')||'—'}</div></div>
           <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-gedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-gdel="${g.id}" style="color:var(--bad)">Remove</button></div>
          </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px" class="no-print">No contacts yet — add the primary guardian.</p>'}
      </details>
      <details class="no-print dtl" open style="margin-bottom:16px">
-       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>Emergency contacts<span class="rule"></span><button class="btn btn-ghost btn-sm" id="ecAdd" style="padding:5px 11px;flex-shrink:0">+</button></summary>
+       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>🚨 Emergency contacts<span class="rule"></span><button class="btn btn-ghost btn-sm" id="ecAdd" style="padding:5px 11px;flex-shrink:0">+</button></summary>
        ${s.emergencyContacts&&s.emergencyContacts.length? s.emergencyContacts.map(g=>`<div class="card no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
           <div><b>🚨 ${esc(g.name)||'(unnamed)'}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(g.phone)||'—'}</div></div>
           <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-ecedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-ecdel="${g.id}" style="color:var(--bad)">Remove</button></div>
@@ -5322,9 +5354,9 @@ const Students = {
        <button class="chip" id="pcAdd">📞 Parent contact</button>
        <button class="chip" data-ai="Draft a warm, brief parent progress update (WhatsApp style) for: ${esc(aiCtx())}">✨ Parent update</button></div>
      <div class="grid g3" style="margin-bottom:18px">
-      <div class="widget"><div class="whead"><h3>Attendance</h3></div><div class="kpi">${tot?Math.round(P/tot*100)+'%':'—'}<small>${tot} session${tot===1?'':'s'}</small></div></div>
-      <div class="widget"><div class="whead"><h3>${L1?'Green Book':'Qur’an entries'}</h3></div><div class="kpi">${L1?((s.gb&&s.gb.page)||0)+'<small>of 160 pages</small>':qlog.length+'<small>log entries</small>'}</div></div>
-      <div class="widget"><div class="whead"><h3>Achievements</h3></div><div class="kpi">${ach.length}<small>recorded</small></div></div></div>
+      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>Attendance</h3><span style="font-size:16px">✅</span></div><div class="kpi">${tot?Math.round(P/tot*100)+'%':'—'}<small>${tot} session${tot===1?'':'s'}</small></div></div>
+      <div class="widget" style="border-top:3px solid ${lvlAccent}"><div class="whead"><h3>${L1?'Green Book':'Qur’an entries'}</h3><span style="font-size:16px">📖</span></div><div class="kpi">${L1?((s.gb&&s.gb.page)||0)+'<small>of 160 pages</small>':qlog.length+'<small>log entries</small>'}</div></div>
+      <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>Achievements</h3><span style="font-size:16px">🏅</span></div><div class="kpi">${ach.length}<small>recorded</small></div></div></div>
      ${(()=>{ // trend sparklines — reuses the same spark() the Dashboard already uses, just underused here before
        const attVals=att.slice(0,12).reverse().map(x=>x[1]==='P'?1:x[1]==='L'?0.5:0);
        let progVals=[], progLabel='';
@@ -5340,19 +5372,19 @@ const Students = {
      ${s.active===false?`<div class="notice warn" style="margin-bottom:16px">🚪 <div><b>Inactive</b> — no longer enrolled at AMAN. All records preserved. Use "Reactivate" above to bring them back.</div></div>`:''}
      ${s.notes?`<div class="notice info" style="margin-bottom:16px">📝 <div>${esc(s.notes)}</div></div>`:''}
      <div id="lvlCard"></div>
-     <div class="sect">Class subjects<span class="rule"></span></div>
+     <div class="sect">📚 Class subjects<span class="rule"></span></div>
      <div class="grid g2" style="margin-bottom:6px">
        <div class="card"><label>Arabic — current status</label><input id="subjA" placeholder="e.g., Madinah L4 · strong vocab, weak iʿrāb" value="${esc((s.subj&&s.subj.arabic)||'')}"></div>
        <div class="card"><label>Islamic Studies — current status</label><input id="subjI" placeholder="e.g., Names unit 3 · excellent participation" value="${esc((s.subj&&s.subj.islamic)||'')}"></div></div>
-     ${(L2||L3)?`<div class="sect">${L3?'Memorization & revision log':'Recitation log'}<span class="rule"></span></div>
+     ${(L2||L3)?`<div class="sect">${L3?'📖 Memorization & revision log':'📖 Recitation log'}<span class="rule"></span></div>
      ${qlog.length?`<div class="card" style="padding:6px 14px"><table class="tbl"><thead><tr><th>Date</th><th>Portion</th><th>Type</th><th>Grade</th></tr></thead><tbody>${qlog.slice(0,12).map(q=>`<tr><td style="font-family:var(--f-mono);font-size:12px">${q.date}</td><td>${esc(q.what)}</td><td><span class="tag ${q.kind==='New'?'tag-green':'tag-gold'}">${q.kind}</span></td><td>${esc(q.grade||'—')}</td></tr>`).join('')}</tbody></table></div>`:'<p style="color:var(--ink2);font-size:13.5px">No entries yet.</p>'}`:''}
-     <div class="sect">Behavior notes<span class="rule"></span></div>
+     <div class="sect">🗒️ Behavior notes<span class="rule"></span></div>
      ${beh.length?`<div class="wlist">${beh.slice(0,6).map(b=>`<div class="card" style="margin-bottom:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${b.date} · <span class="tag ${b.kind==='Positive'?'tag-green':'tag-red'}">${b.kind}</span></span><p style="font-family:var(--f-body);margin-top:4px">${esc(b.text)}</p></div>`).join('')}</div>`:'<p style="color:var(--ink2);font-size:13.5px">Clean slate.</p>'}
-     <div class="sect">Parent communication<span class="rule"></span></div>
+     <div class="sect">📞 Parent communication<span class="rule"></span></div>
      ${(s.parentLog||[]).length?`<div class="wlist">${s.parentLog.slice(0,5).map(p=>`<div class="card" style="margin-bottom:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${p.date}</span><p style="font-family:var(--f-body);margin-top:4px">${esc(p.text)}</p></div>`).join('')}</div>`:'<p style="color:var(--ink2);font-size:13.5px">No contacts logged yet.</p>'}
      ${sotmHist.length?`<div class="sect">🌟 Student of the Month<span class="rule"></span></div>
      <div style="display:flex;gap:8px;flex-wrap:wrap">${sotmHist.map(a=>`<span class="tag tag-gold" style="padding:7px 13px;font-size:12px">🌟 ${esc(a.text.replace('🌟 Student of the Month — ',''))} · ${a.date}</span>`).join('')}</div>`:''}
-     <div class="sect">Achievements<span class="rule"></span></div>
+     <div class="sect">🏅 Achievements<span class="rule"></span></div>
      ${ach.length?`<div style="display:flex;gap:8px;flex-wrap:wrap">${ach.map(a=>`<span class="tag tag-gold" style="padding:7px 13px;font-size:12px">🏅 ${esc(a.text)} · ${a.date}</span>`).join('')}</div>`:'<p style="color:var(--ink2);font-size:13.5px">First one coming, in shā’ Allāh.</p>'}`;
     Students.lvlCard($('#lvlCard',v), s, qlog);
     wireCommon(v);
@@ -5621,17 +5653,23 @@ const Students = {
     const rec=d.attendance[date];
     const reasons=d.attendanceReasons[date];
     const stu=d.students.filter(s=>s.active!==false && (!s.startDate||s.startDate<=date));
+    const attCountsHTML = ()=>{ const c={P:0,A:0,L:0,E:0}; Object.values(rec).forEach(k=>{ if(c[k]!==undefined) c[k]++; });
+      return `<span>✅ ${c.P} present</span><span>🕐 ${c.L} late</span><span>⚠️ ${c.A} unexcused</span><span>📋 ${c.E} excused</span><span style="margin-left:auto;opacity:.85">${stu.length} student${stu.length===1?'':'s'} today</span>`; };
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div class="eyebrow" style="margin-top:12px">Attendance</div><h2 class="page-title">Session attendance</h2>
+     <div style="margin-top:12px">${moduleHeroHTML('Attendance', 'Session Attendance', fmtDate(date)+' — tap a pill to mark, saves instantly.', '✅')}</div>
      <div class="filters no-print">
       <input type="date" value="${date}" id="attDate" style="max-width:170px">
       <button class="btn btn-o btn-sm" id="allP">Mark all present</button>
-      <span style="font-size:12.5px;color:var(--ink2)">P present · A absent (unexcused) · L late · E excused absence — saves instantly</span></div>
+      <span style="font-size:12.5px;color:var(--ink2)">P present · A absent (unexcused) · L late · E excused absence</span></div>
+     ${stu.length?`<div id="attCounts" class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">${attCountsHTML()}</div>`:''}
      ${stu.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
-       return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span></div>
-        <div class="card" style="padding:8px 14px"><table class="tbl"><tbody>${g.map(s=>
-         `<tr data-row="${s.id}">${Students._attRowHTML(s,date,rec,reasons)}</tr>`).join('')}
-        </tbody></table></div>`; }).join('')
+       return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+         <div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--green) 5%,var(--surface))">
+           <b style="font-family:var(--f-display);font-size:14.5px">${L} — ${LEVEL_SUB[L]}</b><span style="margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--ink3)">${g.length}</span>
+         </div>
+         <table class="tbl" style="padding:0 6px"><tbody>${g.map(s=>
+          `<tr data-row="${s.id}">${Students._attRowHTML(s,date,rec,reasons)}</tr>`).join('')}
+         </tbody></table></div>`; }).join('')
       : `<div class="empty"><h3>No students to mark</h3><p>Import or add students first.</p><button class="btn btn-p" data-go="#/students">Go to Students</button></div>`}`;
     wireCommon(v);
     $('#attDate',v).onchange=e=>{ Students._attDate=e.target.value; Router.render(); };
@@ -5650,6 +5688,7 @@ const Students = {
         DB.save();
         tr.innerHTML = Students._attRowHTML(s,date,rec,reasons);
         wireRow(s);
+        const cc=$('#attCounts',v); if(cc) cc.innerHTML = attCountsHTML();
       });
       $$('button[data-reason]',tr).forEach(b=>b.onclick=()=>{
         const o=overlay(`<div class="modal" style="max-width:420px"><h3>Excused absence — reason</h3>
@@ -6173,8 +6212,7 @@ const Progress = {
     const closed = wk ? (closureFor(wk.sat) && closureFor(wk.sun) ? closureFor(wk.sat) : null) : closureFor(session);
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div class="eyebrow" style="margin-top:12px">Student Progress</div><h2 class="page-title">Progress Tracker</h2>
-     <p class="page-sub">Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly.</p>
+     <div style="margin-top:12px">${moduleHeroHTML('Student Progress', 'Progress Tracker', "Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly.", '📊')}</div>
      <div class="filters no-print">
        <button class="btn btn-o btn-sm" id="ptClosures">📅 Manage closures</button>
        <button class="btn ${this._pctHidden?'btn-p':'btn-o'} btn-sm" id="ptPctHide">${this._pctHidden?PT_ICO_EYE+' Percentages hidden':PT_ICO_EYE_OFF+' Hide percentages for screenshot'}</button>
@@ -6617,8 +6655,7 @@ const Cleaning = {
     });
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div class="eyebrow" style="margin-top:12px">Student Duties</div><h2 class="page-title">Cleaning Schedule</h2>
-     <p class="page-sub">Brothers and sisters paired separately. New pairs each month; Saturday and Sunday each get a different pair.</p>
+     <div style="margin-top:12px">${moduleHeroHTML('Student Duties', 'Cleaning Schedule', 'Brothers and sisters paired separately. New pairs each month; Saturday and Sunday each get a different pair.', '🧹')}</div>
      <div class="filters no-print"><button class="btn btn-o btn-sm" id="clnClosures">📅 Manage closures</button></div>
 
      ${noGender.length? `<div class="notice warn no-print" style="margin-bottom:14px"><span>\u26a0\ufe0f</span><span>${noGender.length} active student${noGender.length>1?'s':''} ${noGender.length>1?'have':'has'} no gender on file, so ${noGender.length>1?'they are':'they are'} left out of pairing: ${noGender.map(s=>esc(s.name)).join(', ')}. Set it on their profile to include ${noGender.length>1?'them':'them'}.</span></div>` : ''}
@@ -6633,7 +6670,7 @@ const Cleaning = {
      </div>
 
      <div class="grid g2" style="margin-bottom:16px">
-       <div class="card">
+       <div class="card" style="border-top:3px solid var(--info)">
          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
            <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc66 Brothers pairs \u2014 ${month} ${year}</h3>
            <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.brothers.length} group${entry.brothers.length!==1?'s':''}</span>
@@ -6642,7 +6679,7 @@ const Cleaning = {
            ${entry.brothers.length? entry.brothers.map((g,i)=>clnPairCardHTML(g,i,36)).join('') : '<p style="font-size:13px;color:var(--ink2)">No active brothers on file.</p>'}
          </div>
        </div>
-       <div class="card">
+       <div class="card" style="border-top:3px solid #B5567A">
          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
            <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc67 Sisters pairs \u2014 ${month} ${year}</h3>
            <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.sisters.length} group${entry.sisters.length!==1?'s':''}</span>
@@ -6653,12 +6690,12 @@ const Cleaning = {
        </div>
      </div>
 
-     <div class="card" style="margin-bottom:14px">
-       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">
-         <h3 style="font-family:var(--f-display);font-size:16px">${month} ${year} Schedule</h3>
+     <div class="card" style="margin-bottom:14px;padding:0;overflow:hidden">
+       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--green) 5%,var(--surface))">
+         <b style="font-family:var(--f-display);font-size:14.5px">🗓️ ${month} ${year} Schedule</b>
          <span style="font-size:11px;color:var(--ink3)">Generated ${fmtDate(entry.generatedAt.slice(0,10))}</span>
        </div>
-       <div style="display:flex;flex-direction:column;gap:10px">
+       <div style="display:flex;flex-direction:column;gap:10px;padding:16px">
          ${rows.map(r=>r.closed ? `
          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:11px;opacity:.65">
            <div style="min-width:76px;flex-shrink:0"><b style="font-family:var(--f-mono);font-size:12.5px">${fmtDate(r.dk)}</b><div style="font-size:10.5px;color:var(--ink3)">${PT_isSat(r.dk)?'Saturday':'Sunday'}</div></div>
@@ -6797,8 +6834,7 @@ Registry.register({ id:'admin', name:'Administration', icon:'bank', group:'Works
 render(v,param){
   const tab=param||'overview';
   const T={overview:'🎛 Overview', enroll:'Enrollment', calendar:'Events & Trips', tasks:'Tasks', meetings:'Meetings', staff:'Staff', policies:'Documents'};
-  v.innerHTML = `<div class="eyebrow">Operational Control Center</div><h2 class="page-title">Administration</h2>
-   <p class="page-sub">The business side of AMAN — families, tuition, enrollment, events, and paper.</p>
+  v.innerHTML = `${moduleHeroHTML('Operational Control Center', 'Administration', 'The business side of AMAN — families, tuition, enrollment, events, and paper.', '🏛️')}
    <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-tab="${k}">${n}</button>`).join('')}</div><div id="at"></div>`;
   $$('[data-tab]',v).forEach(b=>b.onclick=()=>Router.go('#/admin/'+b.dataset.tab));
   (Admin[tab]||Admin.overview)($('#at',v));
@@ -6844,12 +6880,12 @@ const Admin = {
           ['🗓️',nextEv.length? fmtDate(nextEv[0].date):'—','Next event','#/admin/calendar']]
          .map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:17px">${val}</b><span>${lab}</span></button>`).join('')}</div>
      <div class="grid g2">
-      <div class="widget wfull"><div class="whead"><h3>⚡ Administrative attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
+      <div class="widget wfull" style="border-top:3px solid ${items.length?'var(--gold)':'var(--ok)'}"><div class="whead"><h3>⚡ Administrative attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
         ${items.length? groupedHtml
         :'<p style="font-family:var(--f-body);color:var(--ok)">The office is in order, al-ḥamdu lillāh.</p>'}</div>
-      <div class="widget"><div class="whead"><h3>Upcoming</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/calendar">Calendar →</button></div>
+      <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>🗓️ Upcoming</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/calendar">Calendar →</button></div>
         <div class="wlist">${nextEv.map(e=>`<div class="wrow" data-go="#/admin/calendar"><span class="m">${fmtDate(e.date)}</span><span class="t">${esc(e.title)}</span>${e.kind==='trip'?'<span class="tag tag-blue">trip</span>':''}</div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Nothing scheduled</div>'}</div></div>
-      <div class="widget"><div class="whead"><h3>✨ AI office assistant</h3></div>
+      <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>✨ AI office assistant</h3></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">${[
           'Draft a school announcement for parents',
           'Draft a tuition reminder message (warm, respectful)',
@@ -6858,7 +6894,7 @@ const Admin = {
           'Suggest how to improve our admin workflow']
           .map(c=>`<button class="chip" data-ai="${esc(c)}">${esc(c)}</button>`).join('')}</div>
         <p style="font-size:12px;color:var(--ink3);margin-top:9px">Drafts open in the AI workspace with full school context.</p></div>
-      <div class="widget"><div class="whead"><h3>Recent admin activity</h3></div>
+      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>🕓 Recent admin activity</h3></div>
         <div class="wlist">${d.activity.filter(a=>/task|event|staff|payment|tuition|family|meeting|enroll|promot|student/i.test(a.text)).slice(0,6).map(a=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400">${esc(a.text)}</span><span class="m">${rel(a.t)}</span></div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Quiet so far</div>'}</div></div>
      </div>`;
     wireCommon(el);
@@ -6885,16 +6921,16 @@ const Admin = {
       <div class="rowtags">${miss.length? miss.map(m=>`<span class="tag tag-gold">${esc(m)}</span>`).join('') : `<span class="tag tag-green">${okLabel}</span>`}</div>
     </div>`;
     el.innerHTML = `<div class="grid g3" style="margin-bottom:16px">
-      <div class="widget"><div class="whead"><h3>Enrolled</h3></div><div class="kpi">${act.length}</div></div>
-      <div class="widget"><div class="whead"><h3>Records complete</h3></div><div class="kpi">${done.length}<small>of ${act.length}</small></div></div>
-      <div class="widget"><div class="whead"><h3>Incoming</h3></div><div class="kpi">${incoming.length}<small>${incoming[0]?'start '+fmtDate(incoming[0].startDate):'none scheduled'}</small></div></div></div>
-     ${incoming.length?`<div class="sect">Incoming students<span class="rule"></span></div>
+      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>Enrolled</h3><span style="font-size:16px">🎓</span></div><div class="kpi">${act.length}</div></div>
+      <div class="widget" style="border-top:3px solid ${done.length===act.length?'var(--ok)':'var(--gold)'}"><div class="whead"><h3>Records complete</h3><span style="font-size:16px">✅</span></div><div class="kpi">${done.length}<small>of ${act.length}</small></div></div>
+      <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>Incoming</h3><span style="font-size:16px">🌱</span></div><div class="kpi">${incoming.length}<small>${incoming[0]?'start '+fmtDate(incoming[0].startDate):'none scheduled'}</small></div></div></div>
+     ${incoming.length?`<div class="sect">🌱 Incoming students<span class="rule"></span></div>
       <div class="wlist" style="margin-bottom:14px">${incoming.map(s=>stuRow(s, `<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`, regComplete(s), 'record complete ✓')).join('')}</div>`:''}
-     <div class="sect">Registration completeness<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">tap a student to complete their record</span></div>
+     <div class="sect">📋 Registration completeness<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">tap a student to complete their record</span></div>
      ${incomplete.length? `<div class="wlist">${incomplete.map(x=>stuRow(x.s, null, x.miss, 'complete')).join('')}</div>`
        : `<div class="empty"><div class="big">✅</div><h3>Every active record is complete</h3><p>DOB, guardian, phone, emergency contact, and photo are all on file, mā shāʾ Allāh.</p></div>`}
      ${done.length? `<details style="margin-top:${incomplete.length?'10px':'0'}" class="no-print"><summary style="cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700">✓ Complete · ${done.length}</summary><div class="wlist" style="margin-top:8px">${done.map(x=>stuRow(x.s, null, x.miss, 'complete')).join('')}</div></details>`:''}
-     ${gone.length?`<div class="sect">Withdrawn<span class="rule"></span></div>
+     ${gone.length?`<div class="sect">🚪 Withdrawn<span class="rule"></span></div>
       <div class="wlist">${gone.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span>🚪</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="m">records kept</span></div>`).join('')}</div>`:''}
      <p style="font-size:12px;color:var(--ink3);margin-top:14px">Waiting list: planned for the online-registration version (v7 roadmap) — not built as an empty shell.</p>`;
     wireCommon(el);
@@ -6909,7 +6945,8 @@ const Admin = {
       const open=openId===e.id; const isBig=e.kind!=='class';
       e.checklist=e.checklist||[]; const ckDone=e.checklist.filter(c=>c.done).length;
       const actN=DB.data.students.filter(s=>s.active!==false&&(!s.startDate||s.startDate<=e.date)).length;
-      return `<div class="card" style="margin-bottom:8px">
+      const kindAccent = e.kind==='class'?'var(--ok)':e.kind==='trip'?'var(--info)':'var(--gold)';
+      return `<div class="card" style="margin-bottom:8px;border-left:3px solid ${kindAccent}">
        <div style="display:flex;align-items:center;gap:12px;${isBig?'cursor:pointer':''}" ${isBig?`data-ev="${e.id}"`:''}>
         <span class="tag ${e.kind==='class'?'tag-green':e.kind==='trip'?'tag-blue':'tag-gold'}" style="min-width:86px;text-align:center">${fmtDate(e.date)}</span>
         <span style="flex:1;font-weight:500">${esc(e.title)}${e.kind==='trip'?' 🚌':''}</span>
@@ -6929,9 +6966,9 @@ const Admin = {
         ${e.rid&&DB.res(e.rid)?`<button class="chip on" data-go="#/resource/${esc(e.rid)}">📎 ${esc(DB.res(e.rid).title)}</button>`:''}`:''}
       </div>`; };
     el.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:12px" class="no-print"><button class="btn btn-p btn-sm" id="evAdd">＋ Add event</button></div>
-     <div class="sect">Upcoming<span class="rule"></span></div>
+     <div class="sect">🗓️ Upcoming<span class="rule"></span></div>
      ${up.map(row).join('')||'<p style="color:var(--ink2);font-size:13.5px">Nothing scheduled.</p>'}
-     ${past.length?`<div class="sect">Past<span class="rule"></span></div><div>${past.slice(-6).map(row).join('')}</div>`:''}`;
+     ${past.length?`<div class="sect">📜 Past<span class="rule"></span></div><div>${past.slice(-6).map(row).join('')}</div>`:''}`;
     wireCommon(el);
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $$('[data-ev]',el).forEach(h=>h.addEventListener('click', e=>{ if(e.target.closest('input,select,button,textarea')) return;
@@ -6975,7 +7012,8 @@ const Admin = {
     const high=open.filter(t=>t.pri==='High').length;
     const row = t=>{
       const link = t.link? (t.link[0]==='s'? d.students.find(s=>s.id===t.link.slice(2)) : DB.res(t.link.slice(2))) : null;
-      return `<div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;${t.done?'opacity:.5':''}">
+      const priAccent = t.pri==='High'?'var(--bad)':t.pri==='Low'?'var(--ink3)':'var(--gold)';
+      return `<div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;border-left:3px solid ${priAccent};${t.done?'opacity:.5':''}">
        <input type="checkbox" ${t.done?'checked':''} data-tk="${t.id}" aria-label="Mark '${esc(t.text)}' done" style="width:auto">
        <span style="flex:1;min-width:150px;${t.done?'text-decoration:line-through':''}">${esc(t.text)}</span>
        ${t.pri==='High'?'<span class="tag tag-red">high</span>':t.pri==='Low'?'<span class="tag tag-dim">low</span>':''}
@@ -6987,7 +7025,7 @@ const Admin = {
     el.innerHTML = `<div class="kpis" style="margin-bottom:16px">${[
        ['☐',open.length,'Open tasks'],['⏰',overdue.length,'Overdue'],['🔴',high,'High priority'],['✅',done.length,'Completed']]
        .map(([i,val,lab])=>`<div class="kpi-card" style="cursor:default"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
-     <div class="card" style="margin-bottom:16px"><label>New task</label>
+     <div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><label>✏️ New task</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tk-t" placeholder="What needs doing?" aria-label="Task description" style="flex:2;min-width:180px">
        <select id="tk-p" aria-label="Priority" style="max-width:110px"><option>Normal</option><option>High</option><option>Low</option></select>
        <select id="tk-c" aria-label="Category" style="max-width:140px">${['General','Tuition','Enrollment','Communication','Facility','Event'].map(c=>`<option>${c}</option>`).join('')}</select>
@@ -7010,10 +7048,10 @@ const Admin = {
   staff(el){
     const d=DB.data;
     el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px" class="no-print">
-      <span style="font-size:13.5px;color:var(--ink2)">${d.staff.length} staff member${d.staff.length===1?'':'s'}</span>
+      <span style="font-size:13.5px;color:var(--ink2)">👥 ${d.staff.length} staff member${d.staff.length===1?'':'s'}</span>
       <button class="btn btn-p btn-sm" id="sfAdd">＋ Add staff</button></div>
-     ${d.staff.length? `<div class="grid g2">${d.staff.map(s=>`<div class="card" style="display:flex;gap:13px;align-items:center">
-       <div class="avatar" style="width:44px;height:44px;flex-shrink:0">${esc(initials(s.name))}</div>
+     ${d.staff.length? `<div class="grid g2">${d.staff.map(s=>`<div class="card" style="display:flex;gap:13px;align-items:center;border-left:3px solid ${famColor(s.name)}">
+       <div class="avatar" style="width:44px;height:44px;flex-shrink:0;background:${famColor(s.name)}">${esc(initials(s.name))}</div>
        <div style="flex:1;min-width:0"><b>${esc(s.name)}</b><br><span style="font-size:12.5px;color:var(--ink2)">${esc(s.role)}</span>${s.contact?`<br><span style="font-size:12px;font-family:var(--f-mono)">${esc(s.contact)}</span>`:''}</div>
        <button class="btn btn-ghost btn-sm" data-del="${s.id}">✕</button></div>`).join('')}</div>`
      : `<div class="empty"><div class="big">👥</div><h3>No staff on file</h3><p>Add teachers, assistants, or volunteers — name, role, and a way to reach them.</p></div>`}`;
@@ -7032,13 +7070,14 @@ const Admin = {
   },
   policies(el){
     const docs = DB.data.resources.filter(r=>['Administrative','Parent Communication','Brand Assets'].includes(r.category));
-    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px">🗂 <div>Every official document, pulled live from the Knowledge Base — one source of truth, no copies. Need something that doesn't exist yet? Draft it with AI, then add it as a resource.</div></div>
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px;border-left:3px solid var(--info)">🗂 <div>Every official document, pulled live from the Knowledge Base — one source of truth, no copies. Need something that doesn't exist yet? Draft it with AI, then add it as a resource.</div></div>
      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" class="no-print">${[
        'Draft a formal absence & attendance policy for AMAN',
        'Draft a student code of conduct',
        'Draft a health & emergency policy',
        'Draft a field trip permission slip template']
        .map(c=>`<button class="chip" data-ai="${esc(c)} — match the tone of our Family Welcome Packet.">✨ ${esc(c)}</button>`).join('')}</div>
+     <div class="sect">📂 Documents on file<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${docs.length}</span></div>
      <div class="grid g3">${docs.map(rCard).join('')}</div>`;
     wireCards(el); 
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
