@@ -6186,12 +6186,11 @@ const Progress = {
 
      <div class="filters no-print" style="align-items:center;gap:10px">
        <button class="btn btn-ghost btn-sm" id="ptYearPrev" aria-label="Previous year">←</button>
-       <b style="font-family:var(--f-mono);font-size:15px;min-width:52px;text-align:center">${year}</b>
+       <b style="font-family:var(--f-mono);font-size:15px;min-width:48px;text-align:center">${year}</b>
        <button class="btn btn-ghost btn-sm" id="ptYearNext" aria-label="Next year">→</button>
-     </div>
-     <div class="filters no-print" style="align-items:center;gap:10px;margin-top:-6px">
+       <span style="width:1px;height:20px;background:var(--line2)"></span>
        <button class="btn btn-ghost btn-sm" id="ptMonthPrev" aria-label="Previous month">←</button>
-       <b style="font-family:var(--f-display);font-size:15px;min-width:120px;text-align:center">${month}</b>
+       <b style="font-family:var(--f-display);font-size:15px;min-width:90px;text-align:center">${month}</b>
        <button class="btn btn-ghost btn-sm" id="ptMonthNext" aria-label="Next month">→</button>
      </div>
      <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap;margin-top:-6px">
@@ -6711,6 +6710,28 @@ function famList(){ // auto-derived families from patronymics + overrides
   return Object.values(map).sort((a,b)=>b.members.length-a.members.length);
 }
 function famRec(key){ return DB.data.families[key]=DB.data.families[key]||{phone:'', note:'', log:[]}; }
+// Shared visual identity for the Tuition module — families don't have
+// photos the way students do, so a deterministic colored initial fills
+// that role everywhere a family shows up (Matrix's frozen column,
+// Families cards, Owe's action cards, Overview's "behind" mini-cards):
+// same family, same color, every time, so it reads as one identity as
+// you move between tabs rather than four differently-styled lists.
+const FAM_PALETTE = ['#1a4a35','#b8872a','#33607e','#7d5ba6','#a13a2e','#2c5f45','#835916','#4a6fa5'];
+function famColor(key){ let h=0; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))>>>0; return FAM_PALETTE[h%FAM_PALETTE.length]; }
+function famAvatarHTML(key, size){
+  size = size||40;
+  const initial = (key.trim()[0]||'؟').toUpperCase();
+  return `<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;background:${famColor(key)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${Math.round(size*0.4)}px;font-family:var(--f-display);flex-shrink:0">${esc(initial)}</div>`;
+}
+// One consistent pill for the four tuition statuses, used in place of the
+// plain text/`.tag` labels the Families and Owe tabs used before — a
+// colored dot + label reads faster than a text-only tag at a glance.
+const FAM_STATUS_ICON = {Paid:'✓', Partial:'~', Due:'!', Excused:'E'};
+function famStatusBadge(status){
+  const cv = {Paid:'--ok', Partial:'--warn', Due:'--bad', Excused:'--info'}[status] || null;
+  if(!cv) return `<span class="tag tag-dim">${esc(status)}</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 4px;border-radius:99px;font-size:11.5px;font-weight:700;background:color-mix(in srgb,var(${cv}) 15%,transparent);color:var(${cv})"><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(${cv});color:#fff;font-size:9.5px;font-weight:800">${FAM_STATUS_ICON[status]||'?'}</span>${esc(status)}</span>`;
+}
 function famPlan(key){ return DB.data.finance.plans[key]=DB.data.finance.plans[key]||{monthly:0, rateMode:'auto', perStudentRate:null, regFee:0, regPaid:false, start:today().slice(0,7), note:''}; }
 function famActiveCount(key){ return DB.data.students.filter(s=>s.active!==false && famKey(s)===key).length; }
 function famEffectiveMonthly(key, activeCount){
@@ -7027,8 +7048,15 @@ Registry.register({ id:'tuition', name:'Tuition', icon:'coins', group:'Workspace
 render(v,param){
   const tab=param||'overview';
   const T={overview:'🎛 Overview', matrix:'📅 Matrix', families:'👪 Families', owe:'📞 Who Owes Now'};
-  v.innerHTML = `<div class="eyebrow">Family Accounts</div><h2 class="page-title">Tuition</h2>
-   <p class="page-sub">Every family's plan, payments, and balance — computed automatically from what you log.</p>
+  v.innerHTML = `<div style="background:linear-gradient(135deg,var(--green) 0%,var(--green-deep) 100%);border-radius:16px;padding:22px 24px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden">
+     <div style="position:absolute;top:-36px;right:-36px;width:150px;height:150px;border-radius:50%;background:color-mix(in srgb, var(--gold) 25%, transparent)"></div>
+     <div style="position:absolute;bottom:-46px;right:60px;width:110px;height:110px;border-radius:50%;background:color-mix(in srgb, var(--gold) 12%, transparent)"></div>
+     <div style="position:relative">
+       <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft)">Family Accounts</div>
+       <h2 style="font-family:var(--f-display);font-size:27px;font-weight:700;margin:4px 0 6px;color:#fff">💰 Tuition</h2>
+       <p style="font-size:13px;color:rgba(255,255,255,.82);max-width:520px;line-height:1.5">Every family's plan, payments, and balance — computed automatically from what you log.</p>
+     </div>
+   </div>
    <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-tab="${k}">${n}</button>`).join('')}</div><div id="tt"></div>`;
   $$('[data-tab]',v).forEach(b=>b.onclick=()=>Router.go('#/tuition/'+b.dataset.tab));
   (Tuition[tab]||Tuition.overview)($('#tt',v));
@@ -7066,19 +7094,31 @@ const Tuition = {
     });
     el.innerHTML = `
      <div class="grid g3" style="margin-bottom:8px">
-       <div class="widget"><div class="whead"><h3>Collected to date</h3></div><div class="kpi">$${collected}<small>of $${expected} expected</small></div></div>
-       <div class="widget"><div class="whead"><h3>Collected this month</h3></div><div class="kpi">$${collectedThisMonth}<small>of $${expectedThisMonth} due · ${nowM}</small></div></div>
-       <div class="widget"><div class="whead"><h3>Outstanding</h3></div><div class="kpi" style="${outstanding?'color:var(--bad)':''}">$${outstanding}<small>${dueNow.length} famil${dueNow.length===1?'y':'ies'} behind</small></div></div>
-       <div class="widget"><div class="whead"><h3>Collection rate</h3></div><div class="kpi">${rate}%<small>${fams.length} active famil${fams.length===1?'y':'ies'}</small></div></div>
+       <div class="widget" style="border-top:3px solid var(--green)">
+         <div class="whead"><h3>Collected to date</h3><span style="font-size:17px">💰</span></div>
+         <div class="kpi">$${collected}<small>of $${expected} expected</small></div>
+       </div>
+       <div class="widget" style="border-top:3px solid var(--info)">
+         <div class="whead"><h3>Collected this month</h3><span style="font-size:17px">📅</span></div>
+         <div class="kpi">$${collectedThisMonth}<small>of $${expectedThisMonth} due · ${nowM}</small></div>
+       </div>
+       <div class="widget" style="border-top:3px solid ${outstanding?'var(--bad)':'var(--ok)'}">
+         <div class="whead"><h3>Outstanding</h3><span style="font-size:17px">${outstanding?'⚠️':'✅'}</span></div>
+         <div class="kpi" style="${outstanding?'color:var(--bad)':''}">$${outstanding}<small>${dueNow.length} famil${dueNow.length===1?'y':'ies'} behind</small></div>
+       </div>
+       <div class="widget" style="border-top:3px solid var(--gold)">
+         <div class="whead"><h3>Collection rate</h3><span style="font-size:17px">📊</span></div>
+         <div class="kpi">${rate}%<small>${fams.length} active famil${fams.length===1?'y':'ies'}</small></div>
+       </div>
      </div>
-     <div class="widget" style="margin-bottom:18px">${spark(rateTrend,'Collection rate % · last 12 months',100)}</div>
+     <div class="widget" style="margin-bottom:18px;border-top:3px solid var(--green-soft)">${spark(rateTrend,'Collection rate % · last 12 months',100)}</div>
      ${expectedThisMonth>0?`<div class="card" style="margin-bottom:18px">
-       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-bottom:6px"><span>This month's collection progress</span><span>${thisMonthPct}%</span></div>
-       <div class="bar" style="height:10px"><i style="width:${thisMonthPct}%"></i></div></div>`:''}
+       <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink2);margin-bottom:8px"><span style="font-weight:700;color:var(--ink)">📈 This month's collection progress</span><b style="font-family:var(--f-mono);color:var(--green)">${thisMonthPct}%</b></div>
+       <div class="bar" style="height:11px"><i style="width:${thisMonthPct}%;background:linear-gradient(90deg,var(--green) 0%,var(--gold) 100%)"></i></div></div>`:''}
      ${noPlan.length?`<div class="notice info no-print" style="margin-bottom:16px">⚡ <div>${noPlan.map(f=>esc(f.key)).join(' and ')} — recently added, no tuition plan yet. <button class="btn btn-p btn-sm" id="quickSetup2" style="margin-left:6px">Set $100/student, start this month</button></div></div>`:''}
-     ${dueNow.length?`<div class="sect">Behind this month (${nowM})<span class="rule"></span><button class="btn btn-ghost btn-sm" data-go="#/tuition/owe" style="margin-left:auto">See all →</button></div>
+     ${dueNow.length?`<div class="sect">📞 Behind this month (${nowM})<span class="rule"></span><button class="btn btn-ghost btn-sm" data-go="#/tuition/owe" style="margin-left:auto">See all →</button></div>
       <div class="grid g3">${dueNow.slice(0,6).map(({f,fin})=>{ const cv=statusVar[fin.monthStatus];
-        return `<div class="card" style="cursor:pointer;background:color-mix(in srgb,var(${cv}) 8%,var(--surface));border-left:3px solid var(${cv})" data-go="#/tuition/owe"><b>👪 ${esc(f.key)}</b><div style="margin-top:4px"><b style="font-size:12.5px">${fin.monthStatus}</b> ${fin.balance?`<span style="font-size:12.5px;color:var(--ink2)">$${fin.balance} balance</span>`:''}</div></div>`; }).join('')}</div>`
+        return `<div class="card" style="cursor:pointer;display:flex;align-items:center;gap:11px;background:color-mix(in srgb,var(${cv}) 8%,var(--surface));border-left:3px solid var(${cv})" data-go="#/tuition/owe">${famAvatarHTML(f.key,36)}<div style="min-width:0;flex:1"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-display)">${esc(f.key)}</b><div style="margin-top:4px">${famStatusBadge(fin.monthStatus)} ${fin.balance?`<span style="font-size:12px;color:var(--ink2);margin-left:4px">$${fin.balance}</span>`:''}</div></div></div>`; }).join('')}</div>`
       :'<div class="empty"><div class="big">✅</div><h3>Everyone\u2019s current</h3><p>No family owes anything for this month, al-\u1e25amdulill\u0101h.</p></div>'}
     `;
     wireCommon(el);
@@ -7097,30 +7137,39 @@ const Tuition = {
     const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
     const statusColor={paid:'var(--ok)', partial:'var(--warn)', unpaid:'var(--bad)', excused:'var(--info)', future:'var(--ink3)', before:'var(--ink3)'};
     const statusSym={paid:'\u2713', partial:'~', unpaid:'\u2715', excused:'E', future:'', before:''};
+    const legend=[['ok','Paid'],['warn','Partial'],['bad','Unpaid'],['info','Excused']];
     el.innerHTML = `
-     <div class="filters no-print" style="margin-bottom:14px">
+     <div class="filters no-print" style="margin-bottom:14px;align-items:center">
        <div style="display:flex;align-items:center;gap:4px">
          <button class="btn btn-ghost btn-sm" id="mtxPrev" aria-label="Previous year" style="padding:6px 10px">\u2039</button>
          <select id="mtxYear" aria-label="Select year" style="max-width:110px">${Array.from({length:11},(_,i)=>year-3+i).map(y=>`<option ${y===year?'selected':''}>${y}</option>`).join('')}</select>
          <button class="btn btn-ghost btn-sm" id="mtxNext" aria-label="Next year" style="padding:6px 10px">\u203a</button>
        </div>
-       <span style="font-size:12px;color:var(--ink3)">\u2713 paid \u00b7 ~ partial \u00b7 \u2715 unpaid \u00b7 E excused \u00b7 blank = not yet due or before enrollment \u00b7 tap a month to act on it</span>
+       <span style="display:flex;flex-wrap:wrap;gap:11px;align-items:center;font-size:12px;color:var(--ink3)">${legend.map(([cv,lbl])=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:var(--${cv});display:inline-block"></span>${lbl}</span>`).join('')}<span>blank = not due yet · tap a month to act on it</span></span>
      </div>
-     <div class="scrollx"><table class="tbl" style="min-width:820px">
-      <thead><tr><th class="mtx-frozen" style="text-align:left">Family</th>${TUITION_MONTHS.map(m=>`<th style="text-align:center">${m}</th>`).join('')}<th style="text-align:right">Paid YTD</th><th style="text-align:right">Balance</th></tr></thead>
-      <tbody>${fams.map(f=>{
-        const months=famMonthMatrix(f.key, year);
-        const fin=famFinance(f.key);
-        return `<tr>
-          <td class="mtx-frozen" style="cursor:pointer" data-openfam="${esc(f.key)}"><b>\ud83d\udc6a ${esc(f.key)}</b></td>
-          ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}">
-            <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'18%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>
-          </td>`).join('')}
-          <td style="text-align:right;font-family:var(--f-mono)">$${fin.paid}</td>
-          <td style="text-align:right;font-family:var(--f-mono);${fin.balance?'color:var(--bad)':''}">$${fin.balance}</td>
-        </tr>`;
-      }).join('')}</tbody>
-     </table></div>
+     <div class="card" style="padding:0;overflow:hidden">
+       <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--green) 5%,var(--surface))">
+         <span style="font-size:16px">📅</span><b style="font-family:var(--f-display);font-size:14.5px">Payment Matrix — ${year}</b>
+       </div>
+       <div class="scrollx"><table class="tbl" style="min-width:820px">
+        <thead><tr><th class="mtx-frozen" style="text-align:left">Family</th>${TUITION_MONTHS.map(m=>`<th style="text-align:center">${m}</th>`).join('')}<th style="text-align:right">Paid YTD</th><th style="text-align:right">Balance</th></tr></thead>
+        <tbody>${fams.map((f,i)=>{
+          const months=famMonthMatrix(f.key, year);
+          const fin=famFinance(f.key);
+          const zebra = i%2 ? 'background:var(--surface2)' : '';
+          return `<tr>
+            <td class="mtx-frozen" style="cursor:pointer;${zebra}" data-openfam="${esc(f.key)}">
+              <div style="display:flex;align-items:center;gap:8px">${famAvatarHTML(f.key,26)}<b>${esc(f.key)}</b></div>
+            </td>
+            ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'};${zebra}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'20%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>
+            </td>`).join('')}
+            <td style="text-align:right;font-family:var(--f-mono);${zebra}">$${fin.paid}</td>
+            <td style="text-align:right;font-family:var(--f-mono);${zebra}${fin.balance?';color:var(--bad);font-weight:700':''}">$${fin.balance}</td>
+          </tr>`;
+        }).join('')}</tbody>
+       </table></div>
+     </div>
      ${!fams.length?'<p style="color:var(--ink2);font-size:13.5px;margin-top:12px">No families yet \u2014 students group automatically once named with \u0628\u0646 / \u0628\u0646\u062a.</p>':''}
     `;
     wireCommon(el);
@@ -7146,14 +7195,20 @@ const Tuition = {
       const activeM=f.members.filter(s=>s.active!==false);
       const open=openKey===f.key;
       const cv = fin.monthly>0 ? statusVar[fin.monthStatus] : null;
-      const stTag = fin.monthly>0? `<b style="font-size:12.5px">${fin.monthStatus} \u00b7 ${nowM}</b>` : '<span class="tag tag-dim">no plan set</span>';
       return `<div class="card" style="margin-bottom:10px${cv?`;background:color-mix(in srgb,var(${cv}) 8%,var(--surface));border-left:3px solid var(${cv})`:''}">
-       <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;cursor:pointer" data-fam="${esc(f.key)}">
-        <b style="font-family:var(--f-display);font-size:16.5px">\ud83d\udc6a ${esc(f.key)}</b>
-        <span style="font-size:12px;color:var(--ink2)">${activeM.length} student${activeM.length===1?'':'s'}${f.members.length>activeM.length?' (+'+(f.members.length-activeM.length)+' inactive)':''}</span>
-        ${stTag}
-        ${fin.balance?`<b style="font-size:12.5px">$${fin.balance} balance</b>`:''}
-        <span style="margin-left:auto;color:var(--ink3)">${open?'\u25be':'\u25b8'}</span></div>
+       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer" data-fam="${esc(f.key)}">
+        ${famAvatarHTML(f.key,40)}
+        <div style="flex:1;min-width:160px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <b style="font-family:var(--f-display);font-size:16.5px">${esc(f.key)}</b>
+            <span style="font-size:12px;color:var(--ink2)">${activeM.length} student${activeM.length===1?'':'s'}${f.members.length>activeM.length?' (+'+(f.members.length-activeM.length)+' inactive)':''}</span>
+          </div>
+          <div style="margin-top:5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            ${fin.monthly>0? famStatusBadge(fin.monthStatus) : '<span class="tag tag-dim">no plan set</span>'}
+            ${fin.balance?`<b style="font-size:12.5px;color:var(--bad)">$${fin.balance} balance</b>`:''}
+          </div>
+        </div>
+        <span style="color:var(--ink3);font-size:15px">${open?'\u25be':'\u25b8'}</span></div>
        ${open?`
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin:11px 0">${f.members.map(s=>`<button class="chip ${s.active===false?'':'on'}" data-go="#/students/${s.id}" style="${s.active===false?'opacity:.5':''}">${esc(s.name)}</button>`).join('')}</div>
         <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
@@ -7174,7 +7229,7 @@ const Tuition = {
           <button class="btn btn-p btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
           <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.monthly||'?'}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">\u2728 Reminder draft</button>
           <button class="chip" data-log="${esc(f.key)}">\ud83d\udcde Log contact</button></div>
-        ${fin.pays.length?`<div class="scrollx"><table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Type</th><th>Method</th><th>Note</th><th></th></tr></thead><tbody>${fin.pays.slice(0,8).map(p=>`<tr><td style="font-family:var(--f-mono);font-size:12px">${p.date}</td><td><b>$${p.amount}</b></td><td><span class="tag ${p.kind==='registration'?'tag-blue':p.kind==='excused'?'tag-dim':'tag-green'}">${p.kind}</span></td><td style="font-size:12px">${esc(p.method||'\u2014')}</td><td style="font-size:12.5px">${esc(p.note||'')}</td><td><button class="btn btn-ghost btn-sm" data-pdel="${p.id}">\u2715</button></td></tr>`).join('')}</tbody></table></div>`:'<p style="font-size:12.5px;color:var(--ink3)">No payments recorded yet.</p>'}
+        ${fin.pays.length?`<div class="scrollx" style="border:1px solid var(--line);border-radius:10px"><table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Type</th><th>Method</th><th>Note</th><th></th></tr></thead><tbody>${fin.pays.slice(0,8).map((p,i)=>`<tr style="${i%2?'background:var(--surface2)':''}"><td style="font-family:var(--f-mono);font-size:12px">${p.date}</td><td><b>$${p.amount}</b></td><td><span class="tag ${p.kind==='registration'?'tag-blue':p.kind==='excused'?'tag-dim':'tag-green'}">${p.kind}</span></td><td style="font-size:12px">${esc(p.method||'\u2014')}</td><td style="font-size:12.5px">${esc(p.note||'')}</td><td><button class="btn btn-ghost btn-sm" data-pdel="${p.id}">\u2715</button></td></tr>`).join('')}</tbody></table></div>`:'<p style="font-size:12.5px;color:var(--ink3)">No payments recorded yet.</p>'}
         ${(rec.log||[]).length?`<div style="margin-top:8px"><b style="font-size:11px;letter-spacing:.07em;color:var(--ink3)">CONTACT LOG</b>${rec.log.slice(0,3).map(x=>`<p style="font-size:12.5px;font-family:var(--f-body);margin-top:3px"><span style="font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${x.date}</span> ${esc(x.text)}</p>`).join('')}</div>`:''}`:''}
       </div>`; };
     el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px">\ud83d\udc6a <div>Families are grouped automatically from patronymics (\u0628\u0646 / \u0628\u0646\u062a). Auto mode computes monthly tuition from active student count \u00d7 rate \u2014 set a per-family rate only for exceptions like scholarships.</div></div>
@@ -7249,14 +7304,24 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
     const owing=fams.map(f=>({f, fin:famFinance(f.key), rec:famRec(f.key)}))
       .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
       .sort((a,b)=>b.fin.balance-a.fin.balance);
-    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">Families not yet paid for ${nowM} \u2014 sorted by balance owed.${owing.length?' <button class="chip no-print" id="tuDraftAll" style="margin-left:6px">\u2709\ufe0f Draft all reminders</button>':''}</p>
+    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">📞 Families not yet paid for ${nowM} \u2014 sorted by balance owed.${owing.length?' <button class="chip no-print" id="tuDraftAll" style="margin-left:6px">\u2709\ufe0f Draft all reminders</button>':''}</p>
      ${owing.length? owing.map(({f,fin,rec})=>{
         const shortMsg = tuitionReminderMsg(f.key, fin, nowM);
         const digits = rec.phone? rec.phone.replace(/[^0-9+]/g,'') : '';
-        return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px">
-        <div><b style="font-family:var(--f-display);font-size:15.5px">\ud83d\udc6a ${esc(f.key)}</b>
-          <span class="tag ${fin.monthStatus==='Partial'?'tag-gold':'tag-red'}" style="margin-left:6px">${fin.monthStatus}</span>
-          <div style="font-size:12.5px;color:var(--ink2);margin-top:3px">Owes $${Math.max(0,fin.monthly-fin.paidThisMonth)} this month \u00b7 $${fin.balance} total balance${rec.phone?' \u00b7 '+esc(rec.phone):''}</div></div>
+        const owedNow = Math.max(0,fin.monthly-fin.paidThisMonth);
+        const cv = fin.monthStatus==='Partial' ? '--warn' : '--bad';
+        return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:9px;border-left:3px solid var(${cv})">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:220px">
+          ${famAvatarHTML(f.key,40)}
+          <div style="min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-family:var(--f-display);font-size:15.5px">${esc(f.key)}</b>${famStatusBadge(fin.monthStatus)}</div>
+            <div style="font-size:12.5px;color:var(--ink2);margin-top:4px">$${fin.balance} total balance${rec.phone?' \u00b7 '+esc(rec.phone):''}</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;padding-left:8px">
+            <div style="font-family:var(--f-display);font-size:22px;font-weight:700;color:var(${cv})">$${owedNow}</div>
+            <div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">owed now</div>
+          </div>
+        </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap" class="no-print">
           ${digits?`<a class="btn btn-ghost btn-sm" href="tel:${esc(digits)}">\ud83d\udcde Call</a><a class="btn btn-ghost btn-sm" href="sms:${esc(digits)}?&body=${encodeURIComponent(shortMsg)}">\ud83d\udcac Text reminder</a>`:''}
           <button class="chip" data-copy="${esc(shortMsg)}">\ud83d\udccb Copy reminder</button>
@@ -7308,8 +7373,9 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
     const amountDefault = Math.max(0, fin.monthly-fin.paidThisMonth) || fin.balance || fin.monthly;
     const statusDefault = fin.monthStatus==='Partial' ? 'reminder' : 'overdue';
     const cashappDefault = '$amanschoolmn  \u2022  (952) 217-3629', zelleDefault = 'amanschool.mn@gmail.com';
-    const o = overlay(`<div class="modal" style="max-width:540px"><h3>Payment reminder flyer \u2014 ${esc(famKey)}</h3>
-      <p style="font-size:12.5px;color:var(--ink3);margin-top:-6px">Pre-filled from this family's tuition record \u2014 check it over, then download.</p>
+    const o = overlay(`<div class="modal" style="max-width:540px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${famAvatarHTML(famKey,32)}<h3 style="margin:0">Payment reminder flyer</h3></div>
+      <p style="font-size:12.5px;color:var(--ink3);margin:0 0 16px 42px">${esc(famKey)} family \u2014 pre-filled from this family's tuition record, check it over then download.</p>
       <div class="field"><label>Student(s)</label><input id="pr-student" value="${esc(students)}"></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
         <div class="field"><label>Billing period</label><input id="pr-period" value="${esc(periodLabel)}"></div>
@@ -7460,7 +7526,9 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
   },
   /* ---------- shared payment / excuse form ---------- */
   payForm(fam, prefillYM){
-    const o=overlay(`<div class="modal" style="max-width:420px"><h3>Record payment \u2014 family ${esc(fam)}</h3>
+    const o=overlay(`<div class="modal" style="max-width:420px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${famAvatarHTML(fam,32)}<h3 style="margin:0">Record payment</h3></div>
+      <p style="font-size:12.5px;color:var(--ink3);margin:0 0 16px 42px">${esc(fam)} family</p>
       <div class="field"><label>Type</label><select id="py-k">
         <option value="tuition">Tuition</option>
         <option value="registration">Registration fee</option>
