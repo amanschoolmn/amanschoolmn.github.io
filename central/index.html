@@ -1486,6 +1486,45 @@ function fmtTime(hm){
   const h12 = ((h+11)%12)+1;
   return h12+':'+String(m).padStart(2,'0')+' '+period;
 }
+// Custom hour/minute/AM-PM <select> trio, replacing <input type="time">
+// wherever a time is entered. iOS's native inline time wheel sizes itself
+// off the input's box on iPhone (fixable with a CSS max-width, see the
+// input[type=time] rule up top) but NOT on iPad — reported 2026-08-12,
+// iPad still showed the same empty stretched selection bar after that fix
+// landed, meaning iPad sizes the picker some other way CSS can't reach.
+// Plain <select>s render identically on every device and OS, so this
+// sidesteps the native picker (and its per-device quirks) entirely rather
+// than chasing another platform-specific workaround. A hidden input at
+// the original id keeps producing the same "HH:MM" 24h string the rest
+// of the app already reads (fmtTime, buildCalendarEvent, etc.), so no
+// downstream code needs to change.
+function timeSelectHTML(id, value){
+  let h24=null, mn=null;
+  if(value && value.includes(':')){ const p=value.split(':'); h24=+p[0]; mn=+p[1]; }
+  const h12 = h24==null? '' : (h24%12===0?12:h24%12);
+  const ap = h24==null? '' : (h24<12?'AM':'PM');
+  const hOpts = '<option value="">--</option>'+Array.from({length:12},(_,i)=>i+1).map(x=>`<option value="${x}" ${h12===x?'selected':''}>${x}</option>`).join('');
+  const mOpts = '<option value="">--</option>'+Array.from({length:60},(_,i)=>i).map(x=>`<option value="${x}" ${mn===x?'selected':''}>${String(x).padStart(2,'0')}</option>`).join('');
+  const apOpts = `<option value="" ${!ap?'selected':''}>--</option><option value="AM" ${ap==='AM'?'selected':''}>AM</option><option value="PM" ${ap==='PM'?'selected':''}>PM</option>`;
+  return `<div class="timesel" data-timesel-for="${id}" style="display:flex;gap:6px;align-items:center">
+    <select data-tp="h" style="width:auto;min-width:58px;flex:1">${hOpts}</select><span style="color:var(--ink3)">:</span>
+    <select data-tp="m" style="width:auto;min-width:62px;flex:1">${mOpts}</select>
+    <select data-tp="ap" style="width:auto;min-width:62px;flex:1">${apOpts}</select>
+    <input type="hidden" id="${id}" value="${value||''}"></div>`;
+}
+function wireTimeSelect(container, id){
+  const wrap = container.querySelector(`[data-timesel-for="${id}"]`);
+  if(!wrap) return;
+  const hidden = wrap.querySelector('#'+id);
+  const sync = ()=>{
+    const h=wrap.querySelector('[data-tp="h"]').value, m=wrap.querySelector('[data-tp="m"]').value, ap=wrap.querySelector('[data-tp="ap"]').value;
+    if(h===''||m===''||ap===''){ hidden.value=''; return; }
+    let h24=(+h)%12; if(ap==='PM') h24+=12;
+    hidden.value = String(h24).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  };
+  wrap.querySelectorAll('select').forEach(s=>s.onchange=sync);
+  sync();
+}
 function admFirstName(name){ const t=(name||'').trim(); return t.split(/\s+/)[0] || t; }
 function admSplitAddress(addr){
   addr = (addr||'').trim();
@@ -7908,13 +7947,14 @@ const Admissions = {
         </div>`:''}
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
         <div class="field"><label>Interview date</label><input id="il-date" type="date"></div>
-        <div class="field"><label>Interview time</label><input id="il-time" type="time"></div>
+        <div class="field"><label>Interview time</label>${timeSelectHTML('il-time','')}</div>
       </div>
       <div class="field"><label>Interview location</label><input id="il-loc" value="${esc(AMAN_ADDRESS)}"></div>
       <div class="field"><label>Program</label><select id="il-prog"><option>In-Person</option><option>Online</option></select></div>
       <p style="font-size:12.5px;color:var(--ink3);margin-top:-4px">Confirming this generates the Conditional Acceptance letter — ready to print/save as PDF and a companion email draft, both opened in a new tab for you to review before sending.</p>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Advance &amp; Generate Letter</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
+    wireTimeSelect(o, 'il-time');
     $('[data-x=s]',o).onclick=()=>{
       const dateVal = $('#il-date',o).value, timeVal = $('#il-time',o).value;
       if(!dateVal || !timeVal){ toast('Interview date and time are required'); return; }
@@ -7955,14 +7995,15 @@ const Admissions = {
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
         <div class="field"><label>Class start date</label><input id="ac-start" type="date"></div>
         <div class="field"><label>Location</label><input id="ac-loc" value="${esc(AMAN_ADDRESS)}"></div>
-        <div class="field"><label>Class start time</label><input id="ac-t1" type="time"></div>
-        <div class="field"><label>Class end time</label><input id="ac-t2" type="time"></div>
+        <div class="field"><label>Class start time</label>${timeSelectHTML('ac-t1','')}</div>
+        <div class="field"><label>Class end time</label>${timeSelectHTML('ac-t2','')}</div>
         <div class="field"><label>Registration fee (per student)</label><input id="ac-reg" type="number" value="50"></div>
         <div class="field"><label>First month's tuition (per student)</label><input id="ac-tui" type="number" value="90"></div>
       </div>
       <p style="font-size:12.5px;color:var(--ink3);margin-top:-4px">Confirming this generates the Official Acceptance letter with class details and payment summary — ready to print/save as PDF and a companion email draft, both opened in a new tab for you to review before sending.</p>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Accept &amp; Generate Letter</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
+    wireTimeSelect(o, 'ac-t1'); wireTimeSelect(o, 'ac-t2');
     $('[data-x=s]',o).onclick=()=>{
       const startVal = $('#ac-start',o).value, t1 = $('#ac-t1',o).value, t2 = $('#ac-t2',o).value;
       if(!startVal || !t1 || !t2){ toast('Start date and class start/end times are required'); return; }
