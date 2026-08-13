@@ -632,6 +632,11 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
 @media print {
   .toolbar, .no-print, .page-arrow { display: none !important; }
   html, body { background: #fff !important; }
+  /* Browsers strip background colors/images from printed pages by default (an ink-saving
+     default) unless every element is explicitly told to keep them. This was previously only
+     applied to exercise buttons, so every colored page background -- the cover, part-color
+     bars, tinted cards -- printed as plain white. Apply it universally instead. */
+  * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .stage { padding: 0 !important; gap: 0 !important; display: block !important; }
   /* IMPORTANT: pages print as normal block flow, not flex. A flex column can be taller than one
      physical 11in sheet whenever a lesson runs long (extra exercises, teacher notes, etc.) -- and
@@ -646,9 +651,18 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     display: block !important; break-after: page;
   }
   body.print-all .page:last-child { break-after: auto; }
+  /* Cover / certificate / chapter-intro pages are short, fixed-length, single-screen content --
+     they can never overflow a physical sheet, so it's safe (and necessary) to give them their
+     flex layout back for print. That's what lets .cover-body / .cert-body / .intro-body's
+     `flex: 1 1 auto` actually fill and vertically center the page again -- a block-level parent
+     ignores flex properties entirely, which is why this broke the moment .page above went block. */
+  body.print-current .page.current.cover-page, body.print-all .page.cover-page,
+  body.print-current .page.current.cert-page,  body.print-all .page.cert-page,
+  body.print-current .page.current.intro-page, body.print-all .page.intro-page {
+    display: flex !important; flex-direction: column;
+  }
   .page-header, .page-footer, .cover-body, .home-hero { break-inside: avoid; }
   .page-header { break-after: avoid; }
-  .ex-opt:disabled, .ex-opt { color-adjust: exact; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
 @media (max-width: 760px) {
