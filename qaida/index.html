@@ -663,10 +663,19 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     box-shadow: none !important; transform: none !important; display: none !important; border-radius: 0 !important;
     height: 11in; max-height: 11in; overflow: hidden;
   }
+  /* page-break-after (the legacy property name) is included alongside the modern break-after
+     because every fix attempt so far changed something ELSE while leaving this exact property
+     untouched, and the page count never moved -- which points at this property itself, not at
+     content height, scale, or overflow. Older WebKit/iOS print engines have a documented history
+     of inconsistent support for the modern break-* properties while supporting the legacy
+     page-break-* names reliably. Both are set so whichever one the engine actually honors takes
+     effect; they don't conflict when both present. */
   body.print-current .page.current, body.print-all .page {
-    display: block !important; break-after: page; break-before: auto;
+    display: block !important;
+    break-after: page; page-break-after: always;
+    break-before: auto; page-break-before: auto;
   }
-  body.print-all .page:last-child { break-after: auto; }
+  body.print-all .page:last-child { break-after: auto; page-break-after: auto; }
   /* Cover / certificate / chapter-intro pages are short, fixed-length, single-screen content --
      they can never overflow a physical sheet, so it's safe (and necessary) to give them their
      flex layout back for print. That's what lets .cover-body / .cert-body / .intro-body's
@@ -677,8 +686,8 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
   body.print-current .page.current.intro-page, body.print-all .page.intro-page {
     display: flex !important; flex-direction: column;
   }
-  .page-header, .page-footer, .cover-body, .home-hero { break-inside: avoid; }
-  .page-header { break-after: avoid; }
+  .page-header, .page-footer, .cover-body, .home-hero { break-inside: avoid; page-break-inside: avoid; }
+  .page-header { break-after: avoid; page-break-after: avoid; }
   /* Regular lesson pages lost their flex layout for print (see the .page rule above -- needed to
      stop long pages from clipping). That also removed the mechanism that pushed .page-footer to
      the bottom of the page, so on any page whose content doesn't reach close to a full 11in --
@@ -707,7 +716,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
 
 .page-kicker .sub { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: 0.75; }
 .footer-continue { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--shell-muted); font-style: italic; }
-@media print { .ex, .glyph-cell, .concept-card, .blend-card, .word-card, .reveal-card, table.forms-tbl tr { break-inside: avoid; } }
+@media print { .ex, .glyph-cell, .concept-card, .blend-card, .word-card, .reveal-card, table.forms-tbl tr { break-inside: avoid; page-break-inside: avoid; } }
 
 .ayah-hero {
   width: 100%; min-height: 3in; border: 4px solid var(--part-color, var(--gold)); border-radius: 24px;
@@ -1345,7 +1354,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     page.appendChild(body);
     var footer = ce('div', 'page-footer');
     footer.style.position = 'relative'; footer.style.zIndex = '1';
-    footer.appendChild(ce('span', null, 'Book One \u00B7 build 16'));
+    footer.appendChild(ce('span', null, 'Book One \u00B7 build 17'));
     footer.appendChild(ce('span', null, 'amanschoolmn.org'));
     page.appendChild(footer);
     addPage(page, 'Cover');
