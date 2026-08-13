@@ -1599,8 +1599,16 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       ['y, like in yes', '\u064A', ['\u0648', '\u0628', '\u062A']],
       ['the a in father (alif)', '\u0627', ['\u0644', '\u062F', '\u0648']]
     ];
+    /* 28 items, distributed across 10 pages -- 28 doesn't divide evenly by 3, so a fixed
+       3-per-page split leaves the 10th page with exactly 1 leftover item (barely a quarter of
+       a page). Borrow one item each from the two previous pages instead, so the shortfall is
+       spread as 2+2 rather than left as a single orphaned item. */
+    var FIND_PAGE_SIZES = [3, 3, 3, 3, 3, 3, 3, 3, 2, 2];
+    var findOffset = 0;
     for (var pg = 0; pg < 10; pg++) {
-      var chunk = FIND_ITEMS.slice(pg * 3, pg * 3 + 3);
+      var pageSize = FIND_PAGE_SIZES[pg];
+      var chunk = FIND_ITEMS.slice(findOffset, findOffset + pageSize);
+      findOffset += pageSize;
       var sx = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (3 + pg) + ' of 15', title: 'Practice \u2014 Find the Letter', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
       chunk.forEach(function (item) {
         var choices = shuffle([item[1]].concat(item[2])).map(function (l) { return { html: l, correct: l === item[1] }; });
@@ -3191,13 +3199,40 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
   var state = { index: 0 };
   var PAGE_W_PX = 816, PAGE_H_PX = 1056;
   var stageEl = document.querySelector('.stage');
+  /* isPrinting guards against a real bug: iOS's live print preview (the panel where you drag the
+     Scaling slider) re-renders this page inside its own preview pane, which fires a genuine
+     `resize` event. Without this guard, updateScale() would recompute --scale from
+     window.innerHeight AS MEASURED INSIDE THAT PREVIEW PANE -- meaningless numbers -- and write
+     them as an inline style, which can undermine print CSS and, worse, mutate a layout-affecting
+     property while the browser is mid-calculation on print pagination. Both the "everything
+     vanishes at 99% scaling" bug and pages not fully shrinking to 1 physical sheet trace back to
+     this. Freezing --scale at 1 for the entire print/preview window removes the trigger outright
+     instead of trying to out-cascade it after the fact. */
+  var isPrinting = false;
   function updateScale() {
+    if (isPrinting) return;
     var availW = stageEl.clientWidth * 0.94;
     var availH = window.innerHeight * 0.84;
     var fit = Math.min(availW / PAGE_W_PX, availH / PAGE_H_PX, 1);
     document.documentElement.style.setProperty('--scale', fit);
   }
+  function enterPrintMode() {
+    isPrinting = true;
+    document.documentElement.style.setProperty('--scale', 1);
+  }
+  function exitPrintMode() {
+    isPrinting = false;
+    updateScale();
+  }
   window.addEventListener('resize', updateScale);
+  window.addEventListener('beforeprint', enterPrintMode);
+  window.addEventListener('afterprint', exitPrintMode);
+  if (window.matchMedia) {
+    var printMql = window.matchMedia('print');
+    var printMqlHandler = function (m) { if (m.matches) enterPrintMode(); else exitPrintMode(); };
+    if (printMql.addEventListener) printMql.addEventListener('change', printMqlHandler);
+    else if (printMql.addListener) printMql.addListener(printMqlHandler);
+  }
 
   function updateToolbarProgress() {
     var total = LESSON_IDS.length;
