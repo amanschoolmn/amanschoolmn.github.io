@@ -648,17 +648,23 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
      bars, tinted cards -- printed as plain white. Apply it universally instead. */
   * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .stage { padding: 0 !important; gap: 0 !important; display: block !important; }
-  /* IMPORTANT: pages print as normal block flow, not flex. A flex column can be taller than one
-     physical 11in sheet whenever a lesson runs long (extra exercises, teacher notes, etc.) -- and
-     browsers do not reliably fragment flex containers across printed pages, so content past the
-     bottom edge would otherwise be clipped instead of continuing onto the next sheet. Block layout
-     fragments correctly, so a long page simply spills onto a second printed sheet with nothing lost. */
+  /* Every page is forced to EXACTLY 11in with overflow hidden -- not min-height, not "let the
+     browser figure out where to break." Relying on the browser to fragment content correctly
+     across sheets has produced an unexplained doubling (one real sheet, one blank sheet, for
+     every single page) across multiple different fix attempts, none of which changed that
+     outcome. A hard-capped height removes the ambiguity entirely: each .page can only ever
+     occupy one physical sheet, because it is physically impossible for it to be taller than one.
+     The trade-off is that a page whose content is genuinely too long to fit would now have its
+     overflow clipped rather than spilling to a second sheet -- but every page in this book was
+     already audited to fit comfortably within one sheet, so that trade-off should not cost
+     anything in practice. If a specific page turns out to need more room, that page gets fixed
+     directly rather than reverting to unpredictable automatic fragmentation for the whole book. */
   .page {
     box-shadow: none !important; transform: none !important; display: none !important; border-radius: 0 !important;
-    min-height: 11in;
+    height: 11in; max-height: 11in; overflow: hidden;
   }
   body.print-current .page.current, body.print-all .page {
-    display: block !important; break-after: page;
+    display: block !important; break-after: page; break-before: auto;
   }
   body.print-all .page:last-child { break-after: auto; }
   /* Cover / certificate / chapter-intro pages are short, fixed-length, single-screen content --
@@ -673,6 +679,22 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
   }
   .page-header, .page-footer, .cover-body, .home-hero { break-inside: avoid; }
   .page-header { break-after: avoid; }
+  /* Regular lesson pages lost their flex layout for print (see the .page rule above -- needed to
+     stop long pages from clipping). That also removed the mechanism that pushed .page-footer to
+     the bottom of the page, so on any page whose content doesn't reach close to a full 11in --
+     most pages, since this book deliberately keeps individual pages light -- the footer now just
+     sits wherever the content ends, with a dead zone of blank space below it down to the physical
+     edge. Absolute positioning pins it back to the bottom without needing flex, so it works
+     correctly in block layout too. Cover / certificate / chapter-intro pages are excluded: they
+     already have correct bottom-pinned footers via the flex layout restored for them above, and
+     absolute-positioning their footer as well would pull it out of that flex flow and risk
+     overlapping their centered content. */
+  .page:not(.cover-page):not(.cert-page):not(.intro-page) .page-footer {
+    position: absolute; left: 0.5in; right: 0.5in; bottom: 0.46in; margin-top: 0;
+  }
+  /* Reserve clearance so a near-full page's own content (the alphabet grid, the letter-forms
+     table) can't run down into the now-absolutely-positioned footer above. */
+  .page:not(.cover-page):not(.cert-page):not(.intro-page) .page-body { padding-bottom: 0.4in; }
 }
 
 @media (max-width: 760px) {
@@ -1323,7 +1345,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     page.appendChild(body);
     var footer = ce('div', 'page-footer');
     footer.style.position = 'relative'; footer.style.zIndex = '1';
-    footer.appendChild(ce('span', null, 'Book One'));
+    footer.appendChild(ce('span', null, 'Book One \u00B7 build 16'));
     footer.appendChild(ce('span', null, 'amanschoolmn.org'));
     page.appendChild(footer);
     addPage(page, 'Cover');
