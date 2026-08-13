@@ -630,6 +630,16 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
    ============================================================ */
 @page { size: 8.5in 11in; margin: 0; }
 @media print {
+  /* Every page renders scaled down on screen to fit the viewport (transform: scale(var(--scale)),
+     computed by JS from window size -- necessary on a phone, since an 8.5x11in page is much wider
+     than the screen). `transform: none` below stops that scale from being PAINTED, but WebKit's
+     print pagination engine appears to compute page-break positions from the scaled layout before
+     that override takes effect, then paints the final PDF unscaled -- producing one real page of
+     content followed by a mostly-empty leftover page, for every single page in the book. Pinning
+     the underlying custom property to 1 (not just neutralizing the transform's visual effect)
+     removes the scale before pagination ever runs. `!important` here beats the plain inline style
+     the JS scale-to-fit code sets on this same element. */
+  :root { --scale: 1 !important; }
   .toolbar, .no-print, .page-arrow { display: none !important; }
   html, body { background: #fff !important; }
   /* Browsers strip background colors/images from printed pages by default (an ink-saving
