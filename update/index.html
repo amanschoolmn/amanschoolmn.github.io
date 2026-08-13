@@ -777,14 +777,18 @@
   "use strict";
 
   // ============================================================
-  // CONFIG — replace these two values with your actual endpoints
-  // before publishing this form. Same pattern as the admissions
-  // form: Formspree is the primary/reliable submission, the Apps
-  // Script call is a fire-and-forget second write into a sheet.
+  // CONFIG
+  // FORMSPREE_ENDPOINT is the same form used by the main AMAN
+  // application (amanschoolmn.org/apply/) — reused here rather than a
+  // separate form, so update-request emails land in the same inbox.
+  // APPS_SCRIPT_URL is your live deployment from
+  // AMAN-Admissions-AppsScript.gs (Deploy → Manage deployments → copy
+  // the Web app URL). Paste it below before publishing — every
+  // version handed back so far has only had a placeholder here.
   // ============================================================
   const FORM_CONFIG = {
-    FORMSPREE_ENDPOINT: "https://formspree.io/f/YOUR_FORM_ID",       // TODO: replace
-    APPS_SCRIPT_URL: "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec" // TODO: replace
+    FORMSPREE_ENDPOINT: "https://formspree.io/f/xaqkjdkq",
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec"
   };
 
   const childrenList = document.getElementById('childrenList');
@@ -878,10 +882,9 @@
         return Array.from(card.querySelectorAll('[data-field="' + field + '"]:checked')).map(el => el.value);
       };
       students.push({
-        firstName: get('childFirst'),
-        middleName: get('childMiddle'),
-        lastName: get('childLast'),
-        name: [get('childFirst'), get('childMiddle'), get('childLast')].filter(Boolean).join(' '),
+        fname: get('childFirst'),
+        mname: get('childMiddle'),
+        lname: get('childLast'),
         nameArabic: get('childNameArabic'),
         dob: get('childDob'),
         gender: get('childGender'),
@@ -890,7 +893,7 @@
         islamicBackground: get('childIslamicBackground'),
         interests: getChecked('childInterests'),
         goals: get('childGoals'),
-        learningDifferences: get('childLearningDiff'),
+        learningDiff: get('childLearningDiff'),
         healthConditions: get('childHealthConditions'),
         hasAllergies: get('childHasAllergies'),
         allergiesDescribe: get('childAllergiesDescribe'),
@@ -924,43 +927,46 @@
     const students = collectChildren();
     const changed = Array.from(document.querySelectorAll('input[name="changed"]:checked')).map(c => c.value);
 
-    const payload = {
-      formType: 'AMAN Returning Family Update',
-      submittedAt: new Date().toISOString(),
-      guardianFirst: document.getElementById('guardianFirst').value.trim(),
-      guardianMiddle: document.getElementById('guardianMiddle').value.trim(),
-      guardianLast: document.getElementById('guardianLast').value.trim(),
-      relationship: document.getElementById('relationship').value,
-      email: emailEl.value.trim(),
-      primaryPhone: document.getElementById('primaryPhone').value.trim(),
-      preferredContact: document.getElementById('preferredContact').value,
-      yearsWithAman: document.getElementById('yearsWithAman').value,
-      address: {
-        street: document.getElementById('street').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        state: document.getElementById('state').value,
-        zip: document.getElementById('zip').value.trim()
-      },
-      whatChanged: changed,
-      emergencyContact: {
-        firstName: document.getElementById('ecFirst').value.trim(),
-        lastName: document.getElementById('ecLast').value.trim(),
-        relationship: document.getElementById('ecRelationship').value.trim(),
-        phone: document.getElementById('ecPhone').value.trim()
-      },
-      authorizedPickup: document.getElementById('authorizedPickup').value.trim(),
-      howHeard: document.getElementById('howHeard').value,
-      students: students
-    };
+    // Field names below match the site's existing AMAN-Admissions-AppsScript.gs
+    // convention exactly (form_type routes it to handleUpdate_; students_json
+    // is parsed with s.fname/s.mname/s.lname etc., same as the main
+    // application's students_json). This submission shares that same Apps
+    // Script deployment and Formspree form as the main application — it is
+    // NOT a separate pipeline.
+    const params = new URLSearchParams();
+    params.append('form_type', 'family_update');
+    params.append('application_id', 'UPDATE-' + Date.now());
+    params.append('students_json', JSON.stringify(students));
+    params.append('guardian_first', document.getElementById('guardianFirst').value.trim());
+    params.append('guardian_middle', document.getElementById('guardianMiddle').value.trim());
+    params.append('guardian_last', document.getElementById('guardianLast').value.trim());
+    params.append('relationship', document.getElementById('relationship').value);
+    params.append('email', emailEl.value.trim());
+    params.append('primary_phone', document.getElementById('primaryPhone').value.trim());
+    params.append('preferred_contact', document.getElementById('preferredContact').value);
+    params.append('years_with_aman', document.getElementById('yearsWithAman').value);
+    params.append('street', document.getElementById('street').value.trim());
+    params.append('city', document.getElementById('city').value.trim());
+    params.append('state', document.getElementById('state').value);
+    params.append('zip', document.getElementById('zip').value.trim());
+    params.append('what_changed', changed.join(', '));
+    params.append('ec_first', document.getElementById('ecFirst').value.trim());
+    params.append('ec_last', document.getElementById('ecLast').value.trim());
+    params.append('ec_relationship', document.getElementById('ecRelationship').value.trim());
+    params.append('ec_phone', document.getElementById('ecPhone').value.trim());
+    params.append('authorized_pickup', document.getElementById('authorizedPickup').value.trim());
+    params.append('heard', document.getElementById('howHeard').value);
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
 
-    // Primary submission — Formspree
+    // Primary submission — Formspree. Sent as URL-encoded form data (not
+    // JSON) so the notification email reads as flat, labeled fields the
+    // same way your other forms' emails do.
     fetch(FORM_CONFIG.FORMSPREE_ENDPOINT, {
       method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Accept': 'application/json' },
+      body: params
     })
     .then(function(res){
       if(!res.ok) throw new Error('Formspree error');
@@ -977,13 +983,14 @@
       submitBtn.textContent = 'Submit Update';
     });
 
-    // Secondary submission — Apps Script → Google Sheet (fire-and-forget)
+    // Secondary submission — same Apps Script deployment that already
+    // handles the AMAN and Amaanah applications and the Parent Agreement
+    // (fire-and-forget; Formspree above is the reliable path).
     try{
       fetch(FORM_CONFIG.APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
+        body: params
       }).catch(function(){ /* silent — Formspree is the reliable path */ });
     }catch(err){ /* silent */ }
   });
