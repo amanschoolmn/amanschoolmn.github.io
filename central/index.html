@@ -1007,6 +1007,51 @@ function admFromRow(row){
     log:[{date: today(), text:'Application received via website'}],
   };
 }
+// Maps one CSV row (one child, from the AMAN-Admissions-AppsScript.gs
+// "Family Updates" sheet — the returning-family update form) into a
+// reviewable record. Unlike admFromRow this is never used to create a new
+// student — only to propose changes to one that should already exist.
+function updFromRow(row){
+  const g = k => (row[k]||'').trim();
+  const name = [g('Student First Name'), g('Student Middle Name'), g('Student Last Name')].filter(Boolean).join(' ');
+  const addr = [g('Street'), [g('City'), g('State')].filter(Boolean).join(', '), g('ZIP')].filter(Boolean).join(', ');
+  return {
+    id: uid(), sourceId: g('Row ID'), updateId: g('Update ID')||g('Row ID'),
+    studentIdx: +g('Student #')||1, submitted: g('Timestamp')||today(),
+    studentName: name, studentNameArabic: g('Student Name (Arabic)'), studentDob: g('Student DOB'),
+    studentGender: g('Student Gender'), studentLevel: g('Current Level'), studentIdText: g('Student ID'),
+    islamicBackground: g("Islamic/Qur'an Background"), interests: g('Subject Interests'),
+    goals: g('Goals'), learningDiff: g('Learning Differences'),
+    healthConditions: g('Health Conditions'), allergy: g('Allergies'), allergyDetail: g('Allergy Details'), meds: g('Medications'),
+    guardianName: [g('Guardian First Name'), g('Guardian Middle Name'), g('Guardian Last Name')].filter(Boolean).join(' '),
+    relationship: g('Relationship'), email: g('Email'), primaryPhone: g('Primary Phone'),
+    preferredContact: g('Preferred Contact'), yearsWithAman: g('Years With AMAN'),
+    address: addr, whatChanged: g('What Changed'),
+    ecName: [g('Emergency Contact First Name'), g('Emergency Contact Last Name')].filter(Boolean).join(' '),
+    ecRelationship: g('Emergency Contact Relationship'), ecPhone: g('Emergency Contact Phone'),
+    pickup: g('Authorized Pickup'), heard: g('Heard About Us'),
+    matchedStudentId: ''
+  };
+}
+// "Level 1 — Green Book" (the update form's option text) -> "Level 1" (the
+// roster's stored value). Returns '' for "Not sure — AMAN staff will
+// confirm" so that never shows up as a proposed change.
+function updNormalizeLevel(v){ const m = /Level [123]/.exec(v||''); return m ? m[0] : ''; }
+// Best-effort match at sync time — staff still confirms (or repicks) in the
+// review modal before anything is written, this just pre-selects a likely
+// candidate. Prefers the AMAN-0xx Student ID the family entered (parsed
+// back to the plain studentNo the roster actually keys on); falls back to
+// an unambiguous exact name match only when there's exactly one.
+function updMatchStudent(u){
+  const idNum = /(\d+)/.exec(u.studentIdText||'');
+  if(idNum){
+    const byNo = DB.data.students.find(s=>s.studentNo===parseInt(idNum[1],10));
+    if(byNo) return byNo.id;
+  }
+  const exact = DB.data.students.filter(s=>s.name.toLowerCase()===u.studentName.toLowerCase());
+  return exact.length===1 ? exact[0].id : '';
+}
+
 function threeWeeksFrom(iso){ const d = iso? new Date(iso) : new Date(); d.setDate(d.getDate()+21); return d.toISOString().slice(0,10); }
 // Name -> hosted photo URL, from the student roster export. Only backfills
 // students whose real name matches exactly and who don't already have a
@@ -3089,13 +3134,13 @@ const DB = {
       finance:{plans:{
         'أفركان': {monthly:0, rateMode:'auto', perStudentRate:100, regFee:0, regPaid:false, start:'2026-08', note:''},
         'خالد': {monthly:0, rateMode:'auto', perStudentRate:100, regFee:0, regPaid:false, start:'2026-08', note:''},
-      }, payments:[]}, families:{}, unmatchedAgreements:[],
+      }, payments:[]}, families:{}, unmatchedAgreements:[], pendingUpdates:[], resolvedUpdateIds:[],
       // bookMeta: per-book (subject|series) tracking config for the Knowledge Base
       // completeness view — currently just { totalUnits } per book, keyed by
       // kbBookKey(). Absent/empty for a book = "not tracking gaps yet", never
       // treated as "complete" — see kbBookCompleteness().
       bookMeta:{},
-      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'', lastTuitionCheckMonth:'' }
+      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'', updateCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=update', updateLastSync:'', lastTuitionCheckMonth:'' }
     };
   },
   load(){
@@ -3214,6 +3259,15 @@ const DB = {
       d.closures = d.closures || [];
       d.schema=13;
     }
+    if(d.schema<14){
+      // Family Updates — the returning-family "update your info" form
+      // (update/index.html), synced through the same Apps Script as
+      // admissions but reviewed against the existing roster rather than
+      // creating new records.
+      if(!Array.isArray(d.pendingUpdates)) d.pendingUpdates=[];
+      if(!Array.isArray(d.resolvedUpdateIds)) d.resolvedUpdateIds=[];
+      d.schema=14;
+    }
     const def = this.defaults();
     for(const k of Object.keys(def)) if(!(k in d)) d[k] = def[k];
     // nested settings keys added after schema 2 won't be picked up by the
@@ -3244,6 +3298,11 @@ const DB = {
       if(!d.settings.agreementCsvUrl || isOldAgreementPublishLink) d.settings.agreementCsvUrl=agrNewUrl;
       if(d.settings.agreementLastSync===undefined) d.settings.agreementLastSync='';
       if(!Array.isArray(d.unmatchedAgreements)) d.unmatchedAgreements=[];
+      const updNewUrl = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=update';
+      if(!d.settings.updateCsvUrl) d.settings.updateCsvUrl=updNewUrl;
+      if(d.settings.updateLastSync===undefined) d.settings.updateLastSync='';
+      if(!Array.isArray(d.pendingUpdates)) d.pendingUpdates=[];
+      if(!Array.isArray(d.resolvedUpdateIds)) d.resolvedUpdateIds=[];
       if(d.settings.lastTuitionCheckMonth===undefined) d.settings.lastTuitionCheckMonth='';
     }
     if(Array.isArray(d.students)){ sotmLinkPhotos(d); migrateStudentContacts(d); }
@@ -5047,6 +5106,25 @@ const Students = {
        <button class="btn btn-o btn-sm" id="stShare">🌟 Create Share Card</button>
      </div>
      <div class="filters no-print" style="margin-top:-6px">
+       <button class="btn btn-o btn-sm" id="stSyncUpdates">📝 Check Family Updates</button>
+       <button class="btn btn-ghost btn-sm" id="stUpdateCfg">⚙ Update Sync Settings</button>
+       <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${d.settings.updateLastSync?'Last synced '+rel(d.settings.updateLastSync):'Never synced'}</span>
+     </div>
+     ${(()=>{ const pending = (d.pendingUpdates||[]); if(!pending.length) return '';
+       const needsMatch = pending.filter(u=>!u.matchedStudentId || !d.students.some(s=>s.id===u.matchedStudentId)).length;
+       return `<details class="no-print" open style="margin-bottom:14px">
+       <summary style="cursor:pointer;padding:10px 14px;background:color-mix(in srgb,var(--info) 10%,var(--surface));border:1px solid var(--info);border-radius:10px;font-size:13.5px;font-weight:600">📝 ${pending.length} family update${pending.length===1?'':'s'} to review${needsMatch?' — '+needsMatch+' need'+(needsMatch===1?'s':'')+' matching':''}</summary>
+       <div style="margin-top:8px">${pending.map((u,i)=>{
+         const s = u.matchedStudentId ? d.students.find(x=>x.id===u.matchedStudentId) : null;
+         return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+           <div><b>${esc(u.studentName||'(no name given)')}</b> ${s?`<span class="tag tag-green" style="margin-left:4px">matched: ${esc(s.preferredName||s.name)}</span>`:'<span class="tag tag-gold" style="margin-left:4px">needs matching</span>'}
+             <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(u.guardianName||'—')}${u.whatChanged?' · changed: '+esc(u.whatChanged):''}</div>
+             <div style="font-size:11.5px;color:var(--ink3);margin-top:2px;font-family:var(--f-mono)">${u.submitted?fmtDate(u.submitted):''}</div></div>
+           <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-p btn-sm" data-review-update="${i}">Review</button><button class="btn btn-ghost btn-sm" data-dismiss-update="${i}">Dismiss</button></div>
+         </div>`;
+       }).join('')}</div>
+     </details>`; })()}
+     <div class="filters no-print" style="margin-top:-6px">
        <button class="btn btn-ghost btn-sm" id="stExport">⬇ CSV</button>
        <button class="btn btn-ghost btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select'}</button>
        ${d.students.length?`<input type="search" id="stFind" placeholder="Find student…" value="${esc(Students._find||'')}" style="max-width:190px">`:''}
@@ -5089,6 +5167,168 @@ const Students = {
       d.students.forEach(s=>{ if(selected.has(s.id)) s.active=true; }); DB.log('Bulk reactivated '+selected.size+' students'); }));
     $('#bulkExport',v)&&($('#bulkExport',v).onclick=()=>Students.exportCSV([...selected]));
     const f=$('#stFind',v); if(f){ f.oninput=()=>{ Students._find=f.value; clearTimeout(Students._ft); Students._ft=setTimeout(()=>{Router.render(); const nf=$('#stFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
+    $('#stSyncUpdates',v).onclick=()=>Students.syncUpdates();
+    $('#stUpdateCfg',v).onclick=()=>Students.updateSettingsForm();
+    $$('[data-review-update]',v).forEach(b=>b.onclick=()=>Students.reviewUpdateForm(+b.dataset.reviewUpdate));
+    $$('[data-dismiss-update]',v).forEach(b=>b.onclick=()=>{
+      const u = DB.data.pendingUpdates[+b.dataset.dismissUpdate]; if(!u) return;
+      confirmBox('Dismiss this update from '+(u.guardianName||u.studentName)+'? This does not change anything on the student record.', ()=>{
+        if(u.sourceId) DB.data.resolvedUpdateIds.push(u.sourceId);
+        DB.data.pendingUpdates.splice(+b.dataset.dismissUpdate,1);
+        DB.log('Dismissed family update: '+(u.studentName||u.guardianName||'(unnamed)'));
+        DB.save(); toast('Dismissed'); Router.render();
+      });
+    });
+  },
+  async syncUpdates(){
+    const url = (DB.data.settings.updateCsvUrl||'').trim();
+    if(!url){ Students.updateSettingsForm(); return; }
+    toast('Checking for family updates…');
+    try{
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const text = await res.text();
+      const rows = csvToObjects(text);
+      const have = new Set(DB.data.pendingUpdates.map(u=>u.sourceId).filter(Boolean));
+      const resolved = new Set(DB.data.resolvedUpdateIds||[]);
+      let added=0;
+      rows.forEach(row=>{
+        const rid=(row['Row ID']||'').trim(); if(!rid || have.has(rid) || resolved.has(rid)) return;
+        const u = updFromRow(row); if(!u.studentName) return;
+        u.matchedStudentId = updMatchStudent(u);
+        DB.data.pendingUpdates.push(u); have.add(rid); added++;
+      });
+      DB.data.settings.updateLastSync = new Date().toISOString();
+      if(added) DB.log('Family Updates sync: '+added+' submission'+(added===1?'':'s')+' to review');
+      DB.save(); Router.render();
+      toast(added? added+' update'+(added===1?'':'s')+' to review' : 'No new family updates');
+    }catch(err){ toast(syncErrorMessage(err)); }
+  },
+  updateSettingsForm(){
+    const cur = DB.data.settings.updateCsvUrl||'';
+    const o = overlay(`<div class="modal" style="max-width:520px"><h3>Family Updates Sync Settings</h3>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Paste the same Apps Script Web App URL used for admissions, with <code>?sheet=update</code> added to the end instead. Same deployment, same script — just a different query so it reads the "Family Updates" tab (from the returning-family update form at update/index.html). Nothing is written to any student's record until you review and apply it below.</p>
+      <div class="field"><label>Apps Script export URL</label><input id="upd-url" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/…/exec?sheet=update"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ DB.data.settings.updateCsvUrl=$('#upd-url',o).value.trim(); DB.save(); o.remove(); toast('Saved'); };
+  },
+  // The reviewable field set for a Family Update. `get` reads the current
+  // value off a student record; `apply` writes an accepted value onto one.
+  // Deliberately excludes Student ID (matching-only, never roster-editable)
+  // and anything with no home on the student record yet (Years With AMAN,
+  // Islamic Background, What Changed — shown as read-only context instead).
+  updateFieldDefs(){
+    const ensureG = s=>{ if(!s.guardians||!s.guardians.length) s.guardians=[{id:uid(),name:'',relation:'Guardian',phone:'',email:''}]; return s.guardians[0]; };
+    const ensureE = s=>{ if(!s.emergencyContacts||!s.emergencyContacts.length) s.emergencyContacts=[{id:uid(),name:'',relation:'',phone:''}]; return s.emergencyContacts[0]; };
+    const ensureA = s=>{ if(!s.application) s.application={}; return s.application; };
+    return [
+      {key:'name', label:'Student name', group:'Student', risky:true, get:s=>s.name, set:(s,v)=>{s.name=v;}},
+      {key:'dob', label:'Date of birth', group:'Student', get:s=>s.dob, set:(s,v)=>{s.dob=v;}},
+      {key:'gender', label:'Gender', group:'Student', get:s=>s.gender, set:(s,v)=>{s.gender=v;}},
+      {key:'level', label:'Level', group:'Student', get:s=>s.level, set:(s,v)=>{s.level=v;}},
+      {key:'address', label:'Home address', group:'Contact', get:s=>(s.application&&s.application.address)||'', set:(s,v)=>{ensureA(s).address=v;}},
+      {key:'contactPref', label:'Preferred contact', group:'Contact', get:s=>(s.application&&s.application.contactPref)||'', set:(s,v)=>{ensureA(s).contactPref=v;}},
+      {key:'pickup', label:'Authorized pickup', group:'Contact', get:s=>(s.application&&s.application.pickup)||'', set:(s,v)=>{ensureA(s).pickup=v;}},
+      {key:'guardianName', label:'Guardian name', group:'Guardian', get:s=>(s.guardians&&s.guardians[0]&&s.guardians[0].name)||'', set:(s,v)=>{ensureG(s).name=v;}},
+      {key:'guardianRelation', label:'Guardian relation', group:'Guardian', get:s=>(s.guardians&&s.guardians[0]&&s.guardians[0].relation)||'', set:(s,v)=>{ensureG(s).relation=v;}},
+      {key:'guardianPhone', label:'Guardian phone', group:'Guardian', get:s=>(s.guardians&&s.guardians[0]&&s.guardians[0].phone)||'', set:(s,v)=>{ensureG(s).phone=v;}},
+      {key:'guardianEmail', label:'Guardian email', group:'Guardian', get:s=>(s.guardians&&s.guardians[0]&&s.guardians[0].email)||'', set:(s,v)=>{ensureG(s).email=v;}},
+      {key:'ecName', label:'Emergency contact', group:'Emergency contact', get:s=>(s.emergencyContacts&&s.emergencyContacts[0]&&s.emergencyContacts[0].name)||'', set:(s,v)=>{ensureE(s).name=v;}},
+      {key:'ecRelation', label:'Emergency contact relation', group:'Emergency contact', get:s=>(s.emergencyContacts&&s.emergencyContacts[0]&&s.emergencyContacts[0].relation)||'', set:(s,v)=>{ensureE(s).relation=v;}},
+      {key:'ecPhone', label:'Emergency contact phone', group:'Emergency contact', get:s=>(s.emergencyContacts&&s.emergencyContacts[0]&&s.emergencyContacts[0].phone)||'', set:(s,v)=>{ensureE(s).phone=v;}},
+      {key:'healthConditions', label:'Health conditions', group:'Health', get:s=>(s.application&&s.application.healthConditions)||'', set:(s,v)=>{ensureA(s).healthConditions=v;}},
+      {key:'allergy', label:'Allergies', group:'Health', get:s=>(s.application&&s.application.allergy)||'', set:(s,v)=>{ensureA(s).allergy=v;}},
+      {key:'allergyDetail', label:'Allergy details', group:'Health', get:s=>(s.application&&s.application.allergyDetail)||'', set:(s,v)=>{ensureA(s).allergyDetail=v;}},
+      {key:'meds', label:'Medications', group:'Health', get:s=>(s.application&&s.application.meds)||'', set:(s,v)=>{ensureA(s).meds=v;}},
+      {key:'interests', label:'Subject interests', group:'Academic', get:s=>(s.application&&s.application.interests)||'', set:(s,v)=>{ensureA(s).interests=v;}},
+      {key:'goals', label:'Goals', group:'Academic', get:s=>(s.application&&s.application.goals)||'', set:(s,v)=>{ensureA(s).goals=v;}},
+      {key:'learningNeeds', label:'Learning needs', group:'Academic', get:s=>(s.application&&s.application.learningNeeds)||'', set:(s,v)=>{ensureA(s).learningNeeds=v;}},
+    ];
+  },
+  updateNewValues(u){
+    return {
+      name: u.studentName, dob: u.studentDob, gender: u.studentGender, level: updNormalizeLevel(u.studentLevel),
+      address: u.address, contactPref: u.preferredContact, pickup: u.pickup,
+      guardianName: u.guardianName, guardianRelation: u.relationship, guardianPhone: u.primaryPhone, guardianEmail: u.email,
+      ecName: u.ecName, ecRelation: u.ecRelationship, ecPhone: u.ecPhone,
+      healthConditions: u.healthConditions, allergy: u.allergy, allergyDetail: u.allergyDetail, meds: u.meds,
+      interests: u.interests, goals: u.goals, learningNeeds: u.learningDiff
+    };
+  },
+  reviewUpdateForm(idx){
+    const u = DB.data.pendingUpdates[idx];
+    if(!u){ toast('Already resolved'); return; }
+    const renderFor = (student)=>{
+      const defs = Students.updateFieldDefs();
+      const newVals = Students.updateNewValues(u);
+      const changes = defs.map(def=>{
+        const oldVal = (def.get(student)||'').toString().trim();
+        const newVal = (newVals[def.key]||'').toString().trim();
+        return {def, oldVal, newVal};
+      }).filter(c=>c.newVal && c.newVal!==c.oldVal);
+      const groups = [];
+      changes.forEach(c=>{ let g=groups.find(x=>x.name===c.def.group); if(!g){ g={name:c.def.group, items:[]}; groups.push(g); } g.items.push(c); });
+      const context = [
+        u.yearsWithAman?'With AMAN '+esc(u.yearsWithAman):'', u.whatChanged?'Family says changed: '+esc(u.whatChanged):'',
+        u.islamicBackground?"Qur'an background: "+esc(u.islamicBackground):''
+      ].filter(Boolean).join(' · ');
+      return `<div class="field"><label>Applying to</label>
+          <div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 12px">
+            ${avatarHTML(student, 'width:36px;height:36px;font-size:14px;border-radius:9px')}
+            <div><b>${esc(student.preferredName||student.name)}</b> <span style="color:var(--ink3);font-family:var(--f-mono);font-size:11.5px">AMAN-${String(student.studentNo||0).padStart(3,'0')}</span></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="upd-repick" style="margin-top:6px;padding:2px 6px;text-decoration:underline">Not the right student? Search…</button>
+        </div>
+        ${context?`<p style="font-size:12.5px;color:var(--ink3);margin:0 0 10px">${context}</p>`:''}
+        ${!changes.length? `<p style="font-size:13.5px;color:var(--ink2);padding:8px 0">No changes to apply — everything the family submitted already matches this student's record.</p>` :
+          groups.map(g=>`<div class="sect" style="margin:14px 0 6px;font-size:13px">${esc(g.name)}<span class="rule"></span></div>
+            ${g.items.map(c=>`<label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)">
+              <input type="checkbox" class="upd-cb" data-key="${c.def.key}" value="${esc(c.newVal)}" ${c.def.risky?'':'checked'} style="width:auto;margin-top:3px;flex-shrink:0">
+              <span><b>${esc(c.def.label)}</b><br><span style="color:var(--ink3)">${esc(c.oldVal||'(blank)')}</span> → <span style="color:var(--ok);font-weight:600">${esc(c.newVal)}</span></span>
+            </label>`).join('')}`).join('')}`;
+    };
+    let student = u.matchedStudentId ? DB.data.students.find(x=>x.id===u.matchedStudentId) : null;
+    const o = overlay(`<div class="modal" style="max-width:560px"><h3>Review family update — ${esc(u.studentName||'(no name given)')}</h3>
+      <p style="font-size:13px;color:var(--ink2);margin:-6px 0 12px">Submitted by <b>${esc(u.guardianName||'—')}</b>${u.email?' ('+esc(u.email)+')':''} · ${u.submitted?fmtDate(u.submitted):''}</p>
+      <div id="upd-body">${student? renderFor(student) : ''}</div>
+      <div id="upd-pick" style="${student?'display:none':''}">
+        <input type="search" id="upd-find" placeholder="Search by student name…" style="margin-bottom:8px">
+        <div id="upd-list" style="max-height:240px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:6px"></div>
+      </div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s" ${student?'':'disabled'}>Apply selected changes</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const renderPicker=(filter)=>{
+      const f=(filter||'').toLowerCase();
+      const shown = DB.data.students.filter(s=>s.active!==false && (!f || s.name.toLowerCase().includes(f)));
+      $('#upd-list',o).innerHTML = shown.length? shown.slice(0,30).map(s=>
+        `<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;padding:6px 4px;font-weight:400;border-bottom:1px solid var(--line);cursor:pointer">
+          <input type="radio" name="upd-pick-r" class="upd-pick-cb" data-sid="${s.id}" style="width:auto">
+          ${esc(s.preferredName||s.name)} <span style="color:var(--ink3);font-size:12px">— AMAN-${String(s.studentNo||0).padStart(3,'0')}</span>
+        </label>`).join('') : '<p style="font-size:12.5px;color:var(--ink3);padding:8px">No matching students.</p>';
+      $$('.upd-pick-cb',o).forEach(cb=>cb.onchange=()=>{
+        student = DB.data.students.find(x=>x.id===cb.dataset.sid);
+        $('#upd-body',o).innerHTML = renderFor(student);
+        $('#upd-pick',o).style.display='none';
+        $('[data-x=s]',o).disabled=false;
+      });
+    };
+    const wireRepick=()=>{ const btn=$('#upd-repick',o); if(btn) btn.onclick=()=>{ $('#upd-pick',o).style.display='block'; renderPicker(''); }; };
+    wireRepick();
+    if(!student) renderPicker('');
+    $('#upd-find',o) && ($('#upd-find',o).oninput=e=>renderPicker(e.target.value));
+    $('[data-x=s]',o).onclick=()=>{
+      if(!student){ toast('Pick a student first'); return; }
+      const defs = Students.updateFieldDefs();
+      const applied=[];
+      $$('.upd-cb',o).forEach(cb=>{ if(!cb.checked) return; const def=defs.find(d=>d.key===cb.dataset.key); if(!def) return; def.set(student, cb.value); applied.push(def.label); });
+      if(u.sourceId) DB.data.resolvedUpdateIds.push(u.sourceId);
+      DB.data.pendingUpdates.splice(idx,1);
+      DB.log('Applied family update for '+student.name+(applied.length?': '+applied.join(', '):' (no fields selected)'));
+      DB.save(); o.remove();
+      toast(applied.length? 'Updated '+student.name : 'No changes applied');
+      Router.render();
+    };
   },
   sharePanel(){
     const stu = DB.data.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));
