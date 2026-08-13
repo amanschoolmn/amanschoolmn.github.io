@@ -1354,7 +1354,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     page.appendChild(body);
     var footer = ce('div', 'page-footer');
     footer.style.position = 'relative'; footer.style.zIndex = '1';
-    footer.appendChild(ce('span', null, 'Book One \u00B7 build 17'));
+    footer.appendChild(ce('span', null, 'Book One \u00B7 build 18'));
     footer.appendChild(ce('span', null, 'amanschoolmn.org'));
     page.appendChild(footer);
     addPage(page, 'Cover');
@@ -3258,9 +3258,20 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
   window.addEventListener('resize', updateScale);
   window.addEventListener('beforeprint', enterPrintMode);
   window.addEventListener('afterprint', exitPrintMode);
+  /* Found the actual bug behind "scaling the print preview blanks the page permanently, even
+     after returning to 100%": this matchMedia listener used to call exitPrintMode() whenever
+     print media stopped matching. Interactively dragging iOS's print Scaling slider appears to
+     cause exactly that transient mismatch mid-session -- so exitPrintMode() fired WHILE THE PRINT
+     DIALOG WAS STILL OPEN, dropped the isPrinting guard, and let updateScale() recompute --scale
+     from measurements taken inside the print-preview pane (meaningless numbers) with nothing left
+     to stop it from happening again. Nothing in that chain ever re-fires just from moving the
+     slider back to 100%, which is exactly why only a full exit-and-retry recovered it. Fix:
+     matchMedia is now only ever allowed to ENTER print mode (a legitimate extra safety net for
+     platforms where beforeprint doesn't fire reliably); only the real `afterprint` event -- fired
+     once, when printing is genuinely finished -- is allowed to exit it. */
   if (window.matchMedia) {
     var printMql = window.matchMedia('print');
-    var printMqlHandler = function (m) { if (m.matches) enterPrintMode(); else exitPrintMode(); };
+    var printMqlHandler = function (m) { if (m.matches) enterPrintMode(); };
     if (printMql.addEventListener) printMql.addEventListener('change', printMqlHandler);
     else if (printMql.addListener) printMql.addListener(printMqlHandler);
   }
