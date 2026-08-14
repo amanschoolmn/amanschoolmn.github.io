@@ -647,6 +647,12 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
      applied to exercise buttons, so every colored page background -- the cover, part-color
      bars, tinted cards -- printed as plain white. Apply it universally instead. */
   * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* box-shadow is a screen-only depth cue and isn't needed on a printed page -- and combined with
+     forcing print-color-adjust: exact above (needed to keep background colors from printing as
+     white), soft/blurred shadows on the many cards throughout the book (glyph tiles, word cards,
+     exercise buttons) were rendering as a repeating grid of solid gray blocks instead of a subtle
+     blur. Removing shadows for print entirely is simpler and safer than trying to tune around it. */
+  * { box-shadow: none !important; }
   .stage { padding: 0 !important; gap: 0 !important; display: block !important; }
   /* Every page is forced to EXACTLY 11in with overflow hidden -- not min-height, not "let the
      browser figure out where to break." Relying on the browser to fragment content correctly
@@ -1354,7 +1360,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     page.appendChild(body);
     var footer = ce('div', 'page-footer');
     footer.style.position = 'relative'; footer.style.zIndex = '1';
-    footer.appendChild(ce('span', null, 'Book One \u00B7 build 18'));
+    footer.appendChild(ce('span', null, 'Book One \u00B7 build 21'));
     footer.appendChild(ce('span', null, 'amanschoolmn.org'));
     page.appendChild(footer);
     addPage(page, 'Cover');
@@ -1556,7 +1562,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     var TITLE = 'The Alphabet', ARTITLE = '\u0627\u0644\u062D\u0631\u0648\u0641 \u0627\u0644\u0647\u0650\u062C\u064E\u0627\u0626\u0650\u064A\u0651\u064E\u0629';
 
     /* P1: the grid */
-    var s1 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 1 of 15', title: TITLE, arTitle: ARTITLE, badgeLetter: '1', lessonId: LID });
+    var s1 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 1 of 12', title: TITLE, arTitle: ARTITLE, badgeLetter: '1', lessonId: LID });
     s1.body.appendChild(ce('div', 'lesson-intro',
       '<span class="li-kicker">Read Together</span><span class="li-ar" lang="ar">' + ARTITLE + '</span>' +
       'Arabic has 28 letters, written and read from right to left. Say each name out loud as you point to it.'));
@@ -1576,7 +1582,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     closePage(s1.page, 'The Alphabet', { lessonId: LID, isLast: false });
 
     /* P2: look-alike letters, all 9 groups */
-    var s2 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 2 of 15', title: 'Look-Alike Letters', arTitle: '\u062D\u064F\u0631\u0648\u0641\u064C \u0645\u064F\u062A\u064E\u0634\u064E\u0627\u0628\u0650\u0647\u064E\u0629\u064C', badgeLetter: '1', lessonId: LID });
+    var s2 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 2 of 12', title: 'Look-Alike Letters', arTitle: '\u062D\u064F\u0631\u0648\u0641\u064C \u0645\u064F\u062A\u064E\u0634\u064E\u0627\u0628\u0650\u0647\u064E\u0629\u064C', badgeLetter: '1', lessonId: LID });
     s2.body.appendChild(ce('div', 'lesson-intro',
       '<span class="li-kicker">Look Closely</span>' +
       'Some letters are cousins \u2014 the only difference is the dots. Say each pair or trio out loud, dots and all.'));
@@ -1630,17 +1636,15 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       ['y, like in yes', '\u064A', ['\u0648', '\u0628', '\u062A']],
       ['the a in father (alif)', '\u0627', ['\u0644', '\u062F', '\u0648']]
     ];
-    /* 28 items, distributed across 10 pages -- 28 doesn't divide evenly by 3, so a fixed
-       3-per-page split leaves the 10th page with exactly 1 leftover item (barely a quarter of
-       a page). Borrow one item each from the two previous pages instead, so the shortfall is
-       spread as 2+2 rather than left as a single orphaned item. */
-    var FIND_PAGE_SIZES = [3, 3, 3, 3, 3, 3, 3, 3, 2, 2];
+    /* 28 items divides perfectly into 7 pages of 4 -- no remainder, no uneven pages, unlike the
+       3-per-page split this replaces. */
+    var FIND_PAGE_SIZES = [4, 4, 4, 4, 4, 4, 4];
     var findOffset = 0;
-    for (var pg = 0; pg < 10; pg++) {
+    for (var pg = 0; pg < 7; pg++) {
       var pageSize = FIND_PAGE_SIZES[pg];
       var chunk = FIND_ITEMS.slice(findOffset, findOffset + pageSize);
       findOffset += pageSize;
-      var sx = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (3 + pg) + ' of 15', title: 'Practice \u2014 Find the Letter', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
+      var sx = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (3 + pg) + ' of 12', title: 'Practice \u2014 Find the Letter', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
       chunk.forEach(function (item) {
         var choices = shuffle([item[1]].concat(item[2])).map(function (l) { return { html: l, correct: l === item[1] }; });
         renderMCQ(sx.body, { lessonId: LID, title: 'Find the Letter', instructions: 'Which letter makes the sound ' + item[0] + '?', choices: choices });
@@ -1662,7 +1666,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     ];
     for (var pg2 = 0; pg2 < 3; pg2++) {
       var chunk2 = DIFF_ITEMS.slice(pg2 * 3, pg2 * 3 + 3);
-      var sy = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (13 + pg2) + ' of 15', title: 'Practice \u2014 Spot the Difference', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
+      var sy = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (10 + pg2) + ' of 12', title: 'Practice \u2014 Spot the Difference', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
       if (pg2 === 0) sy.body.appendChild(ce('div', 'ex-instructions', 'Three of these are the same letter. One is different. Which one?'));
       chunk2.forEach(function (item) {
         var choices = item[0].map(function (letter, i) { return { html: letter, correct: i === item[1], note: i === item[1] ? null : item[2] }; });
@@ -1714,9 +1718,16 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     }
     /* 28 letters, 7 rows per page = 4 pages -- 7 rows keeps each table comfortably under
        half the page even with intro text, learned the hard way from a 28-row table overflow. */
-    for (var pg = 0; pg < 4; pg++) {
-      var chunk = FORM_LETTERS.slice(pg * 7, pg * 7 + 7);
-      var sx = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (pg+1) + ' of 8', title: 'Letter Shapes', arTitle: '\u0623\u064E\u0634\u0652\u0643\u064E\u0627\u0644\u064F \u0627\u0644\u062D\u0631\u0648\u0641', badgeLetter: '2', lessonId: LID });
+    /* Redistributed per direct feedback against the printed book: page 1 (of this pair) ends
+       at \u0634, page 2 covers the rest through \u064A -- two well-filled pages instead of four
+       thin ones. */
+    var SHAPES_PAGE_SIZES = [13, 15];
+    var shapesOffset = 0;
+    for (var pg = 0; pg < 2; pg++) {
+      var pageSize = SHAPES_PAGE_SIZES[pg];
+      var chunk = FORM_LETTERS.slice(shapesOffset, shapesOffset + pageSize);
+      shapesOffset += pageSize;
+      var sx = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page ' + (pg+1) + ' of 6', title: 'Letter Shapes', arTitle: '\u0623\u064E\u0634\u0652\u0643\u064E\u0627\u0644\u064F \u0627\u0644\u062D\u0631\u0648\u0641', badgeLetter: '2', lessonId: LID });
       if (pg === 0) {
         sx.body.appendChild(ce('div', 'lesson-intro',
           '<span class="li-kicker">Read Together</span><span class="li-ar" lang="ar">\u0623\u064E\u0634\u0652\u0643\u064E\u0627\u0644\u064F \u0627\u0644\u062D\u0631\u0648\u0641</span>' +
@@ -1734,38 +1745,39 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     }
     /* P5: connects-forward practice */
     mcqPracticePage({
-      part: 'part-1', kicker: KICK, sub: 'Page 5 of 8', title: 'Practice \u2014 Connecting', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID,
+      part: 'part-1', kicker: KICK, sub: 'Page 3 of 6', title: 'Practice \u2014 Connecting', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID,
       lead: 'Does the letter connect to the one AFTER it in a word?', exTitle: 'Connects Forward?', small: true,
       items: [
-        { instructions: 'Does \u0631 connect forward?', choices: [ { html: 'Yes, always', correct: false, note: '\u0631 is one of six letters that never link forward.' }, { html: 'No, never', correct: true }, { html: 'Only at the end', correct: false } ] },
-        { instructions: 'Does \u0628 connect forward?', choices: [ { html: 'Yes, always', correct: true }, { html: 'No, never', correct: false, note: '\u0628 connects freely on both sides.' } ] },
-        { instructions: 'Does \u0648 connect forward?', choices: [ { html: 'No, never', correct: true }, { html: 'Yes, always', correct: false, note: '\u0648 is one of the six non-connectors.' } ] }
+        { instructions: 'Does \u0631 connect forward?', choices: [ { html: 'Yes, always', correct: false, note: '\u0631 is one of six letters that never link forward.' }, { html: 'No, never', correct: true }, { html: 'Only at the end', correct: false }, { html: 'Only at the start', correct: false } ] },
+        { instructions: 'Does \u0628 connect forward?', choices: [ { html: 'Yes, always', correct: true }, { html: 'No, never', correct: false, note: '\u0628 connects freely on both sides.' }, { html: 'Only at the end', correct: false }, { html: 'Only at the start', correct: false } ] },
+        { instructions: 'Does \u0648 connect forward?', choices: [ { html: 'No, never', correct: true }, { html: 'Yes, always', correct: false, note: '\u0648 is one of the six non-connectors.' }, { html: 'Only at the end', correct: false }, { html: 'Only at the start', correct: false } ] }
       ]
     });
     /* P6: which-form practice */
     mcqPracticePage({
-      part: 'part-1', kicker: KICK, sub: 'Page 6 of 8', title: 'Practice \u2014 Which Form?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID,
+      part: 'part-1', kicker: KICK, sub: 'Page 4 of 6', title: 'Practice \u2014 Which Form?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID,
       exTitle: 'Which Form Is This?',
       items: [
         { instructions: 'This is the MIDDLE form of a letter: \u0640\u0628\u0640 \u2014 which letter?', choices: [ { html: '\u0628', correct: true }, { html: '\u062A', correct: false, note: '\u062A\u2019s middle form has two dots on top: \u0640\u062A\u0640.' }, { html: '\u062B', correct: false }, { html: '\u0646', correct: false } ] },
-        { instructions: 'This is the END form of a letter: \u0640\u0646 \u2014 which letter?', choices: [ { html: '\u0646', correct: true }, { html: '\u0628', correct: false, note: '\u0628\u2019s end form dips below the line: \u0640\u0628.' }, { html: '\u064A', correct: false } ] },
-        { instructions: 'This is the START form of a letter: \u062Cَ\u0640 \u2014 which letter?', choices: [ { html: '\u062C', correct: true }, { html: '\u062D', correct: false, note: '\u062C has a dot underneath its start form.' }, { html: '\u062E', correct: false } ] }
+        { instructions: 'This is the END form of a letter: \u0640\u0646 \u2014 which letter?', choices: [ { html: '\u0646', correct: true }, { html: '\u0628', correct: false, note: '\u0628\u2019s end form dips below the line: \u0640\u0628.' }, { html: '\u064A', correct: false }, { html: '\u062A', correct: false } ] },
+        { instructions: 'This is the START form of a letter: \u062Cَ\u0640 \u2014 which letter?', choices: [ { html: '\u062C', correct: true }, { html: '\u062D', correct: false, note: '\u062C has a dot underneath its start form.' }, { html: '\u062E', correct: false }, { html: '\u0628', correct: false } ] },
+        { instructions: 'This is the MIDDLE form of a letter: \u0640\u0633\u0640 \u2014 which letter?', choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634 has three dots on top; \u0633 has none.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] }
       ]
     });
     /* P7: reveal + teacher tip */
-    var s7 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 7 of 8', title: 'Practice \u2014 Read Each Form', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
+    var s7 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 5 of 6', title: 'Practice \u2014 Read Each Form', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
     renderReveal(s7.body, { title: 'Read Each Form', instructions: 'Say the letter name for each, then tap to check.',
       items: [ { ar: '\u0645', hint: 'm\u012Bm \u2014 isolated' }, { ar: '\u0645\u0640', hint: 'm\u012Bm \u2014 start' }, { ar: '\u0640\u0645\u0640', hint: 'm\u012Bm \u2014 middle' }, { ar: '\u0640\u0645', hint: 'm\u012Bm \u2014 end' },
                 { ar: '\u0633', hint: 's\u012Bn \u2014 isolated' }, { ar: '\u0633\u0640', hint: 's\u012Bn \u2014 start' } ] });
     renderMCQ(s7.body, { lessonId: LID, title: 'Which Form Is This?', instructions: 'This is the END form of a letter: \u0640\u0633 \u2014 which letter?',
-      choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634\u2019s end form has three dots on top.' }, { html: '\u0635', correct: false } ] });
+      choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634\u2019s end form has three dots on top.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] });
     closePage(s7.page, 'Practice \u2014 Read Each Form', { lessonId: LID, isLast: false });
 
-    var s8 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 8 of 8', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
+    var s8 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 6 of 6', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
     renderMCQ(s8.body, { lessonId: LID, title: 'Which Form Is This?', instructions: 'This is the START form of a letter: \u0633َ\u0640 \u2014 which letter?',
-      choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634\u2019s start form has three dots on top.' }, { html: '\u0635', correct: false } ] });
+      choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634\u2019s start form has three dots on top.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] });
     renderMCQ(s8.body, { lessonId: LID, title: 'Connects Forward?', instructions: 'Does \u0630 connect forward to the letter after it?', small: true,
-      choices: [ { html: 'No, never', correct: true }, { html: 'Yes, always', correct: false, note: '\u0630 is one of the six non-connectors.' } ] });
+      choices: [ { html: 'No, never', correct: true }, { html: 'Yes, always', correct: false, note: '\u0630 is one of the six non-connectors.' }, { html: 'Only at the end', correct: false }, { html: 'Only at the start', correct: false } ] });
     teacherTip(s8.body, {
       objective: 'Read a letter correctly no matter which of its four forms it takes in a word.',
       prereq: 'Lesson 1 \u2014 knows all 28 letters by name and shape in isolation.',
