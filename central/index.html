@@ -5037,6 +5037,7 @@ render(v,param){
   if(param==='attendance') return Students.attendance(v);
   if(param==='progress') return Progress.render(v);
   if(param==='cleaning') return Cleaning.render(v);
+  if(param==='fieldtrip') return FieldTrips.render(v);
   if(param && DB.data.students.find(s=>s.id===param)) return Students.profile(v,param);
   Students.list(v);
 }});
@@ -5101,6 +5102,7 @@ const Students = {
        <button class="btn btn-o btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
        <button class="btn btn-o btn-sm" data-go="#/students/progress">📊 Progress Tracker</button>
        <button class="btn btn-o btn-sm" data-go="#/students/cleaning">🧹 Cleaning Schedule</button>
+       <button class="btn btn-o btn-sm" data-go="#/students/fieldtrip">🎒 Field Trip Checklist</button>
        <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
        <button class="btn btn-o btn-sm" data-go="#/admissions">📥 Admissions</button>
        <button class="btn btn-o btn-sm" id="stShare">🌟 Create Share Card</button>
@@ -7224,6 +7226,117 @@ function regComplete(s){ // registration completeness per student
   if(!s.photo) missing.push('photo');
   return missing;
 }
+const FIELDTRIP_CSV_DEFAULT = 'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=fieldtrip';
+// A day-of headcount/checklist, not a data pipeline: reads the "Field Trip
+// Permissions" sheet live every time this page opens (or Refresh is
+// tapped) and just displays it — nothing here is written back to
+// DB.data/localStorage, so there's no schema, no migration, nothing that
+// can drift out of sync with the sheet. Deliberately NOT wired the way
+// Family Updates is; see the reasoning logged when this was scoped.
+const FieldTrips = {
+  _rows:null, _tripKey:'', _loading:false, _lastFetch:'', _checked:{},
+
+  async load(){
+    FieldTrips._loading = true; Router.render();
+    const url = DB.data.settings.fieldTripCsvUrl || FIELDTRIP_CSV_DEFAULT;
+    try{
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const text = await res.text();
+      FieldTrips._rows = csvToObjects(text);
+      FieldTrips._lastFetch = new Date().toISOString();
+      if(!FieldTrips._tripKey) FieldTrips._tripKey = FieldTrips.defaultTripKey();
+    }catch(err){
+      toast(syncErrorMessage(err));
+      if(FieldTrips._rows===null) FieldTrips._rows = [];
+    }
+    FieldTrips._loading = false; Router.render();
+  },
+  tripKey(row){ return (row['Trip Name']||'(untitled trip)') + '|' + (row['Trip Date']||''); },
+  trips(){
+    const map = new Map();
+    (FieldTrips._rows||[]).forEach(r=>{
+      const k = FieldTrips.tripKey(r), t = r['Timestamp']||'';
+      if(!map.has(k) || t > map.get(k)) map.set(k, t);
+    });
+    return [...map.entries()].sort((a,b)=> (b[1]||'').localeCompare(a[1]||''));
+  },
+  defaultTripKey(){ const t = FieldTrips.trips(); return t.length ? t[0][0] : ''; },
+
+  render(v){
+    const rows = FieldTrips._rows;
+    const trips = FieldTrips.trips();
+    v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
+     <div style="margin-top:12px">${moduleHeroHTML('Field Trips', 'Trip Day Checklist', 'A live headcount pulled straight from permission slip submissions — names, allergies, medications, and who has signed.', '🎒')}</div>
+     <div class="filters no-print">
+       ${trips.length ? `<select id="ftPick" style="min-width:240px">${trips.map(([k])=>`<option value="${esc(k)}" ${k===FieldTrips._tripKey?'selected':''}>${esc(k.split('|')[0])} — ${esc(k.split('|')[1]||'')}</option>`).join('')}</select>` : ''}
+       <button class="btn btn-o btn-sm" id="ftRefresh" ${FieldTrips._loading?'disabled':''}>${FieldTrips._loading?'Loading…':'🔄 Refresh'}</button>
+       <button class="btn btn-o btn-sm" id="ftPrint">🖨️ Print</button>
+       <button class="btn btn-ghost btn-sm" id="ftCfg">⚙ Source</button>
+       <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${FieldTrips._lastFetch? 'Loaded '+rel(FieldTrips._lastFetch) : ''}</span>
+     </div>
+     <div id="ftBody">${FieldTrips.bodyHTML()}</div>`;
+    wireCommon(v);
+    $('#ftRefresh',v).onclick=()=>FieldTrips.load();
+    $('#ftPrint',v).onclick=()=>window.print();
+    $('#ftCfg',v).onclick=()=>FieldTrips.settingsForm();
+    const pick = $('#ftPick',v);
+    if(pick) pick.onchange=()=>{ FieldTrips._tripKey = pick.value; Router.render(); };
+    $$('[data-ft-check]',v).forEach(cb=>cb.onchange=()=>{ FieldTrips._checked[cb.dataset.ftCheck] = cb.checked; });
+    if(rows===null && !FieldTrips._loading) FieldTrips.load();
+  },
+
+  bodyHTML(){
+    if(FieldTrips._rows===null) return `<p style="padding:24px;color:var(--ink2)">${FieldTrips._loading?'Loading submissions…':'Tap Refresh to load submissions.'}</p>`;
+    if(!FieldTrips._rows.length) return `<p style="padding:24px;color:var(--ink2)">No permission slip submissions found yet.</p>`;
+    const students = FieldTrips._rows.filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey);
+    if(!students.length) return `<p style="padding:24px;color:var(--ink2)">No submissions for this trip yet.</p>`;
+    const allergyCount = students.filter(s=>s['Allergies']==='Has allergies').length;
+    const unsigned = students.filter(s=>s['Signature Captured']!=='Yes').length;
+    const cols = ['Here','Student','Level','Allergies / Meds','Guardian','Emergency Contact','Signed'];
+    return `
+      <div class="filters no-print" style="gap:16px;font-size:12.5px;color:var(--ink2)">
+        <span><b>${students.length}</b> student${students.length===1?'':'s'}</span>
+        ${allergyCount? `<span style="color:var(--bad)"><b>${allergyCount}</b> with allergies</span>`:''}
+        ${unsigned? `<span style="color:var(--warn)"><b>${unsigned}</b> missing signature</span>`:''}
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--surface2);text-align:left">
+            ${cols.map(c=>`<th style="padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)" ${c==='Here'?'class="no-print"':''}>${c}</th>`).join('')}
+          </tr></thead>
+          <tbody>
+            ${students.map(s=>{
+              const name = [s['Student First Name'],s['Student Middle Name'],s['Student Last Name']].filter(Boolean).join(' ');
+              const rowId = s['Row ID']||name;
+              const allergy = s['Allergies']==='Has allergies' ? `<span class="tag tag-red">⚠ ${esc(s['Allergy Details']||'Allergies')}</span>` : '<span style="color:var(--ink3)">—</span>';
+              const meds = s['Medications'] ? `<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Medications'])}</div>` : '';
+              const sig = s['Signature Captured']==='Yes' ? (s['Signature File']? `<a href="${esc(s['Signature File'])}" target="_blank" rel="noopener" class="tag tag-green">✓ view</a>` : '<span class="tag tag-green">✓</span>') : '<span class="tag tag-gold">missing</span>';
+              return `<tr style="border-top:1px solid var(--line)">
+                <td style="padding:9px 12px" class="no-print"><input type="checkbox" data-ft-check="${esc(rowId)}" ${FieldTrips._checked[rowId]?'checked':''} style="width:18px;height:18px"></td>
+                <td style="padding:9px 12px"><b>${esc(name)}</b>${s['Student Notes']?`<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Student Notes'])}</div>`:''}</td>
+                <td style="padding:9px 12px;font-size:13px">${esc(s['Level']||'—')}</td>
+                <td style="padding:9px 12px">${allergy}${meds}</td>
+                <td style="padding:9px 12px;font-size:13px">${esc([s['Guardian First Name'],s['Guardian Last Name']].filter(Boolean).join(' ')||'—')}<div style="font-size:11.5px;color:var(--ink3)">${esc(s['Phone']||'')}</div></td>
+                <td style="padding:9px 12px;font-size:13px">${esc(s['Emergency Contact Name']||'—')}<div style="font-size:11.5px;color:var(--ink3)">${esc(s['Emergency Contact Phone']||'')}</div></td>
+                <td style="padding:9px 12px">${sig}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  },
+
+  settingsForm(){
+    const cur = DB.data.settings.fieldTripCsvUrl || FIELDTRIP_CSV_DEFAULT;
+    const o = overlay(`<div class="modal" style="max-width:520px"><h3>Field Trip Checklist Source</h3>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Same Apps Script deployment as everything else, with <code>?sheet=fieldtrip</code> — reads straight from the "Field Trip Permissions" tab, live, every time you open this page. Nothing shown here is ever saved locally.</p>
+      <div class="field"><label>Apps Script export URL</label><input id="ft-url" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/…/exec?sheet=fieldtrip"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ DB.data.settings.fieldTripCsvUrl=$('#ft-url',o).value.trim(); DB.save(); o.remove(); toast('Saved'); FieldTrips.load(); };
+  }
+};
 Registry.register({ id:'admin', name:'Administration', icon:'bank', group:'Workspaces',
 render(v,param){
   const tab=param||'overview';
