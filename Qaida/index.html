@@ -195,6 +195,7 @@ html[data-theme="dark"] .page-arrow { background: #1d2225; color: var(--gold-lig
   overflow: visible;
 }
 .page.current { display: flex; }
+.sheet-pair { display: contents; }
 .page::before {
   content: ''; position: absolute; left: 0; right: 0; top: 0; height: 7px;
   background: var(--part-color, var(--forest));
@@ -309,6 +310,15 @@ html[data-theme="dark"] .page-arrow { background: #1d2225; color: var(--gold-lig
 .home-stat .num { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--forest); }
 .home-stat .lbl { font-size: 10px; color: var(--shell-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .home-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.16in; }
+.finale-hero { text-align: center; margin: 0.1in 0 0.22in; }
+.finale-trophy { width: 0.85in; height: 0.85in; color: var(--gold); margin: 0 auto 0.08in; }
+.finale-trophy svg { width: 100%; height: 100%; }
+.finale-stars { display: flex; justify-content: center; gap: 0.06in; color: var(--gold); margin-bottom: 0.1in; }
+.finale-stars svg { width: 0.22in; height: 0.22in; }
+.finale-lead { font-family: var(--font-display); font-size: 20px; color: var(--forest); }
+.finale-stats { display: flex; gap: 0.18in; justify-content: center; margin: 0.2in auto 0; max-width: 5.4in; }
+.finale-stats .home-stat { flex: 1; padding: 0.16in 0.1in; }
+.finale-stats .home-stat .num { font-size: 26px; }
 .home-part-card {
   border: 1.5px solid var(--shell-border); border-radius: 18px; padding: 0.16in 0.17in;
   background: var(--white); display: flex; flex-direction: column; gap: 6px;
@@ -565,11 +575,11 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
 .ex-opt {
   font-family: var(--font-ar); font-size: 24px; min-width: 1in; min-height: 0.7in;
   padding: 0.08in 0.18in; border-radius: 18px; border: 2.5px solid var(--shell-border);
-  background: var(--white); color: var(--ink); cursor: pointer; direction: rtl;
+  background: var(--white); color: var(--ink); cursor: pointer; direction: rtl; unicode-bidi: plaintext;
   box-shadow: var(--sh-2);
   transition: border-color 0.1s, background 0.1s, transform 0.06s, box-shadow 0.1s;
 }
-.ex-opt.small { font-family: var(--font-ui); font-size: 12px; }
+.ex-opt.small { font-family: var(--font-ui); font-size: 12px; direction: ltr; }
 .ex-opt:hover:not(:disabled) { border-color: var(--part-color, var(--forest)); }
 .ex-opt:active:not(:disabled) { transform: scale(0.97); }
 .ex-opt:disabled { cursor: default; }
@@ -587,16 +597,16 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
 }
 .reveal-card:hover { transform: translateY(-2px); border-color: var(--part-color, var(--gold)); }
 .reveal-card .rg { font-family: var(--font-ar); font-size: 30px; color: var(--ink); }
-.reveal-card .rh { font-size: 10.5px; color: var(--part-color, var(--gold)); margin-top: 5px; font-family: var(--font-ui); font-weight: 600; }
+.reveal-card .rh { font-size: 10.5px; color: var(--part-color, var(--gold)); margin-top: 5px; font-family: var(--font-ui); font-weight: 600; direction: ltr; }
 .reveal-card .rh.shown { color: var(--shell-muted); }
 
 .ex-match { display: flex; gap: 0.3in; direction: rtl; justify-content: center; }
 .match-col { display: flex; flex-direction: column; gap: 0.08in; min-width: 1.3in; }
 .match-item {
   font-family: var(--font-ar); font-size: 18px; padding: 0.08in 0.12in; border: 2px solid var(--shell-border);
-  border-radius: 10px; background: var(--white); cursor: pointer; text-align: center; direction: rtl;
+  border-radius: 10px; background: var(--white); cursor: pointer; text-align: center; direction: rtl; unicode-bidi: plaintext;
 }
-.match-item.small { font-family: var(--font-ui); font-size: 12px; }
+.match-item.small { font-family: var(--font-ui); font-size: 12px; direction: ltr; }
 .match-item.selected { border-color: var(--gold); background: var(--gold-tint); }
 .match-item.matched { border-color: var(--ok); background: #e4f3e8; color: var(--ok); cursor: default; }
 .match-item.shake { animation: shakeit 0.35s; }
@@ -620,6 +630,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
   background: transparent; color: var(--forest); padding: 0.06in 0.2in; width: 4.5in; max-width: 90%; margin: 0.14in 0 0.05in;
 }
 .cert-name-input::placeholder { font-family: var(--font-ui); font-size: 14px; color: var(--shell-muted); }
+.cert-name-label { font-size: 10.5px; color: var(--shell-muted); margin-top: -0.02in; }
 .cert-line { font-size: 12.5px; color: var(--shell-muted); max-width: 5in; line-height: 1.6; }
 .cert-sign { display: flex; gap: 0.6in; margin-top: 0.28in; }
 .cert-sign div { text-align: center; font-size: 10.5px; color: var(--shell-muted); }
@@ -676,12 +687,41 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
      of inconsistent support for the modern break-* properties while supporting the legacy
      page-break-* names reliably. Both are set so whichever one the engine actually honors takes
      effect; they don't conflict when both present. */
-  body.print-current .page.current, body.print-all .page {
+  body.print-current #pagesRoot > .page.current, body.print-all #pagesRoot > .page {
     display: block !important;
     break-after: page; page-break-after: always;
     break-before: auto; page-break-before: auto;
   }
-  body.print-all .page:last-child { break-after: auto; page-break-after: auto; }
+  body.print-all #pagesRoot > .page:last-child { break-after: auto; page-break-after: auto; }
+  /* Print density: "Print Whole Book" packs two regular pages onto one physical sheet instead
+     of one page per sheet -- cheaper to print, less premium-feeling, by design. Each .sheet-pair
+     (built in JS by pairing up consecutive non-cover/cert pages) becomes the unit that owns the
+     page break; the .page elements inside it no longer break on their own, and are zoomed to
+     half height so two stack into exactly one 11in sheet. zoom (not transform) is used because
+     it participates in layout -- the same reasoning as the --scale fix above, just applied on
+     purpose here instead of avoided. A lone unpaired page (odd count) keeps its own full sheet
+     via .sheet-pair-solo, not squeezed to half height. "Print This Page" (print-current) is
+     exempted entirely: it shows only the current page, at full size, on its own sheet, even if
+     that page normally lives in a pair -- pairing is a whole-book print convenience, not
+     something a person asking for one specific page should have to think about. */
+  body.print-all .sheet-pair {
+    display: block; height: 11in; max-height: 11in; overflow: hidden;
+    break-after: page; page-break-after: always;
+  }
+  body.print-all .sheet-pair:last-child { break-after: auto; page-break-after: auto; }
+  body.print-all .sheet-pair .page {
+    display: block !important; zoom: 0.5;
+    break-after: auto; page-break-after: auto;
+  }
+  body.print-all .sheet-pair-solo .page { zoom: 1; }
+  body.print-all .sheet-pair:not(.sheet-pair-solo) .page:first-child { border-bottom: 1px dashed var(--shell-border); }
+  body.print-current .sheet-pair:has(.page.current) {
+    display: block; height: 11in; max-height: 11in; overflow: hidden;
+  }
+  body.print-current .sheet-pair .page.current {
+    display: block !important; zoom: 1; break-after: auto; page-break-after: auto;
+  }
+  body.print-current .sheet-pair .page:not(.current) { display: none !important; }
   /* Cover / certificate / chapter-intro pages are short, fixed-length, single-screen content --
      they can never overflow a physical sheet, so it's safe (and necessary) to give them their
      flex layout back for print. That's what lets .cover-body / .cert-body / .intro-body's
@@ -722,6 +762,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
 
 .page-kicker .sub { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: 0.75; }
 .footer-continue { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--shell-muted); font-style: italic; }
+.page-num { font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
 @media print { .ex, .glyph-cell, .concept-card, .blend-card, .word-card, .reveal-card, table.forms-tbl tr { break-inside: avoid; page-break-inside: avoid; } }
 
 .ayah-hero {
@@ -1325,13 +1366,28 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       } else {
         footer.appendChild(ce('span', 'footer-continue', 'Keep going \u2192'));
       }
+      footer.appendChild(ce('span', 'page-num', ''));
       footer.appendChild(ce('span', null, '\u0642\u064E\u0627\u0639\u0650\u062F\u064E\u0629\u064F \u0627\u0644\u0646\u0651\u064F\u0648\u0631\u0650\u064A\u0651\u064E\u0629\u0650 \u00B7 AMAN'));
     } else {
       footer.appendChild(ce('span', null, 'Q\u0101\u2019idat An-N\u016Briyyah \u00B7 Al-Madrasatu An-Nuriyyah (AMAN)'));
+      footer.appendChild(ce('span', 'page-num', ''));
       footer.appendChild(ce('span', null, '\u0642\u064E\u0627\u0639\u0650\u062F\u064E\u0629\u064F \u0627\u0644\u0646\u0651\u064F\u0648\u0631\u0650\u064A\u0651\u064E\u0629\u0650'));
     }
     page.appendChild(footer);
     addPage(page, label);
+  }
+
+  /* ---- Page numbers: filled in once, after every addPage() call, so the total is known.
+     Matches the "Page X of Y" the on-screen nav/pageSelect already shows for the same page --
+     one consistent number a teacher can reference, whether they're looking at the screen or a
+     printed copy. Cover and certificate don't build a .page-num element (see closePage above),
+     so they're intentionally left unnumbered, same as most books leave the cover and any
+     certificate insert out of the page count. */
+  function numberPages() {
+    pages.forEach(function (pg, i) {
+      var el = pg.el.querySelector('.page-num');
+      if (el) el.textContent = 'Page ' + (i + 1) + ' of ' + pages.length;
+    });
   }
   function paintCheck(lessonId) {
     var els = document.querySelectorAll('[data-lesson="' + lessonId + '"]');
@@ -1360,7 +1416,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     page.appendChild(body);
     var footer = ce('div', 'page-footer');
     footer.style.position = 'relative'; footer.style.zIndex = '1';
-    footer.appendChild(ce('span', null, 'Book One \u00B7 build 21'));
+    footer.appendChild(ce('span', null, 'Book One \u00B7 build 22'));
     footer.appendChild(ce('span', null, 'amanschoolmn.org'));
     page.appendChild(footer);
     addPage(page, 'Cover');
@@ -1379,6 +1435,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     homeBodyEl = body;
     var footer = ce('div', 'page-footer');
     footer.appendChild(ce('span', null, 'Q\u0101\u2019idat An-N\u016Briyyah'));
+    footer.appendChild(ce('span', 'page-num', ''));
     footer.appendChild(ce('span', null, 'Home'));
     page.appendChild(footer);
     addPage(page, 'Home');
@@ -1538,6 +1595,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     page.appendChild(body);
     var footer = ce('div', 'page-footer'); footer.style.color='rgba(255,255,255,0.6)'; footer.style.borderTopColor='rgba(255,255,255,0.2)';
     footer.appendChild(ce('span', null, 'Part 1'));
+    footer.appendChild(ce('span', 'page-num', ''));
     footer.appendChild(ce('span', null, 'Chapter Introduction'));
     page.appendChild(footer);
     addPage(page, 'Part 1 Intro');
@@ -1548,7 +1606,8 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     var s = shellPage({ part: opts.part, kicker: opts.kicker, sub: opts.sub, title: opts.title, arTitle: opts.arTitle, badgeLetter: opts.badgeLetter, lessonId: opts.lessonId });
     if (opts.lead) s.body.appendChild(ce('div', 'ex-instructions', opts.lead));
     opts.items.forEach(function (item) {
-      renderMCQ(s.body, { lessonId: opts.lessonId, title: opts.exTitle || 'Practice', instructions: item.instructions, small: item.small, choices: item.choices });
+      var small = item.small !== undefined ? item.small : opts.small;
+      renderMCQ(s.body, { lessonId: opts.lessonId, title: opts.exTitle || 'Practice', instructions: item.instructions, promptAr: item.promptAr, small: small, choices: item.choices });
     });
     if (opts.tip) teacherTip(s.body, opts.tip);
     closePage(s.page, opts.title, { lessonId: opts.lessonId, isLast: !!opts.isLast });
@@ -1758,10 +1817,10 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       part: 'part-1', kicker: KICK, sub: 'Page 4 of 6', title: 'Practice \u2014 Which Form?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID,
       exTitle: 'Which Form Is This?',
       items: [
-        { instructions: 'This is the MIDDLE form of a letter: \u0640\u0628\u0640 \u2014 which letter?', choices: [ { html: '\u0628', correct: true }, { html: '\u062A', correct: false, note: '\u062A\u2019s middle form has two dots on top: \u0640\u062A\u0640.' }, { html: '\u062B', correct: false }, { html: '\u0646', correct: false } ] },
-        { instructions: 'This is the END form of a letter: \u0640\u0646 \u2014 which letter?', choices: [ { html: '\u0646', correct: true }, { html: '\u0628', correct: false, note: '\u0628\u2019s end form dips below the line: \u0640\u0628.' }, { html: '\u064A', correct: false }, { html: '\u062A', correct: false } ] },
-        { instructions: 'This is the START form of a letter: \u062Cَ\u0640 \u2014 which letter?', choices: [ { html: '\u062C', correct: true }, { html: '\u062D', correct: false, note: '\u062C has a dot underneath its start form.' }, { html: '\u062E', correct: false }, { html: '\u0628', correct: false } ] },
-        { instructions: 'This is the MIDDLE form of a letter: \u0640\u0633\u0640 \u2014 which letter?', choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634 has three dots on top; \u0633 has none.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] }
+        { instructions: 'This is the MIDDLE form of a letter \u2014 which letter?', promptAr: '\u0640\u0628\u0640', choices: [ { html: '\u0628', correct: true }, { html: '\u062A', correct: false, note: '\u062A\u2019s middle form has two dots on top: \u0640\u062A\u0640.' }, { html: '\u062B', correct: false }, { html: '\u0646', correct: false } ] },
+        { instructions: 'This is the END form of a letter \u2014 which letter?', promptAr: '\u0640\u0646', choices: [ { html: '\u0646', correct: true }, { html: '\u0628', correct: false, note: '\u0628\u2019s end form dips below the line: \u0640\u0628.' }, { html: '\u064A', correct: false }, { html: '\u062A', correct: false } ] },
+        { instructions: 'This is the START form of a letter \u2014 which letter?', promptAr: '\u062Cَ\u0640', choices: [ { html: '\u062C', correct: true }, { html: '\u062D', correct: false, note: '\u062C has a dot underneath its start form.' }, { html: '\u062E', correct: false }, { html: '\u0628', correct: false } ] },
+        { instructions: 'This is the MIDDLE form of a letter \u2014 which letter?', promptAr: '\u0640\u0633\u0640', choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634 has three dots on top; \u0633 has none.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] }
       ]
     });
     /* P7: reveal + teacher tip */
@@ -1769,12 +1828,12 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     renderReveal(s7.body, { title: 'Read Each Form', instructions: 'Say the letter name for each, then tap to check.',
       items: [ { ar: '\u0645', hint: 'm\u012Bm \u2014 isolated' }, { ar: '\u0645\u0640', hint: 'm\u012Bm \u2014 start' }, { ar: '\u0640\u0645\u0640', hint: 'm\u012Bm \u2014 middle' }, { ar: '\u0640\u0645', hint: 'm\u012Bm \u2014 end' },
                 { ar: '\u0633', hint: 's\u012Bn \u2014 isolated' }, { ar: '\u0633\u0640', hint: 's\u012Bn \u2014 start' } ] });
-    renderMCQ(s7.body, { lessonId: LID, title: 'Which Form Is This?', instructions: 'This is the END form of a letter: \u0640\u0633 \u2014 which letter?',
+    renderMCQ(s7.body, { lessonId: LID, title: 'Which Form Is This?', instructions: 'This is the END form of a letter \u2014 which letter?', promptAr: '\u0640\u0633',
       choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634\u2019s end form has three dots on top.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] });
     closePage(s7.page, 'Practice \u2014 Read Each Form', { lessonId: LID, isLast: false });
 
     var s8 = shellPage({ part: 'part-1', kicker: KICK, sub: 'Page 6 of 6', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
-    renderMCQ(s8.body, { lessonId: LID, title: 'Which Form Is This?', instructions: 'This is the START form of a letter: \u0633َ\u0640 \u2014 which letter?',
+    renderMCQ(s8.body, { lessonId: LID, title: 'Which Form Is This?', instructions: 'This is the START form of a letter \u2014 which letter?', promptAr: '\u0633َ\u0640',
       choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634\u2019s start form has three dots on top.' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] });
     renderMCQ(s8.body, { lessonId: LID, title: 'Connects Forward?', instructions: 'Does \u0630 connect forward to the letter after it?', small: true,
       choices: [ { html: 'No, never', correct: true }, { html: 'Yes, always', correct: false, note: '\u0630 is one of the six non-connectors.' }, { html: 'Only at the end', correct: false }, { html: 'Only at the start', correct: false } ] });
@@ -1801,7 +1860,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       choices: [ { html: '\u0633', correct: true }, { html: '\u0634', correct: false, note: '\u0634 has three dots and sounds like \u201csh.\u201d' }, { html: '\u0635', correct: false }, { html: '\u0646', correct: false } ] });
     renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', instructions: 'Which of these letters does NOT connect to the letter after it?',
       choices: [ { html: '\u0628', correct: false }, { html: '\u062F', correct: true }, { html: '\u0646', correct: false }, { html: '\u0645', correct: false } ] });
-    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', instructions: 'This is the START form of a letter: \u0628\u0640 \u2014 which letter?',
+    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', instructions: 'This is the START form of a letter \u2014 which letter?', promptAr: '\u0628\u0640',
       choices: [ { html: '\u0628', correct: true }, { html: '\u062A', correct: false }, { html: '\u0646', correct: false } ] });
     closePage(s1.page, 'Review & Mastery Check (1)', { lessonId: LID, isLast: false });
 
@@ -1862,16 +1921,18 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       ]);
     page.appendChild(body);
     var footer = ce('div', 'page-footer'); footer.style.color='rgba(255,255,255,0.75)'; footer.style.borderTopColor='rgba(255,255,255,0.25)';
-    footer.appendChild(ce('span', null, 'Part 2')); footer.appendChild(ce('span', null, 'Chapter Introduction'));
+    footer.appendChild(ce('span', null, 'Part 2')); footer.appendChild(ce('span', 'page-num', '')); footer.appendChild(ce('span', null, 'Chapter Introduction'));
     page.appendChild(footer);
     addPage(page, 'Part 2 Intro');
   })();
 
   function conceptRow(host, items, small) {
     var row = ce('div', 'concept-row');
+    if (typeof small === 'number') row.style.gap = '0.1in';
     items.forEach(function (item) {
       var card = ce('div', 'concept-card');
-      if (small) card.style.width = '1.55in';
+      if (small === true) card.style.width = '1.55in';
+      else if (typeof small === 'number') card.style.width = small + 'in';
       if (item.label) { var l = ce('div', 'cg-label', item.label); l.setAttribute('lang', 'ar'); card.appendChild(l); }
       var stage = ce('div', 'cg-stage');
       var g = ce('div', 'cg-glyph', item.text);
@@ -1890,56 +1951,50 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     lessonStart(LID, 'Short Vowels', '\u0627\u0644\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0642\u064E\u0635\u0650\u064A\u0631\u064E\u0629', 'part-2');
     var KICK = 'Part 2 <span class="sep">&middot;</span> Lesson 1';
 
-    var s1 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 1 of 7', title: 'Short Vowels', arTitle: '\u0627\u0644\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0642\u064E\u0635\u0650\u064A\u0631\u064E\u0629', badgeLetter: '1', lessonId: LID });
+    var s1 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 1 of 5', title: 'Short Vowels', arTitle: '\u0627\u0644\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0642\u064E\u0635\u0650\u064A\u0631\u064E\u0629', badgeLetter: '1', lessonId: LID });
     s1.body.appendChild(ce('div', 'lesson-intro',
       '<span class="li-kicker">Read Together</span><span class="li-ar" lang="ar">\u0627\u0644\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0642\u064E\u0635\u0650\u064A\u0631\u064E\u0629</span>' +
-      'Every letter needs a small mark to be said out loud. Fat\u1E25ah gives an \u201ca\u201d sound. Kasrah gives an \u201ci\u201d sound. \u1E28ammah gives a \u201cu\u201d sound. Watch \u0628 change sound with each one:'));
+      'Every letter needs a small mark to be said out loud. Fat\u1E25ah gives an \u201ca\u201d sound. Kasrah gives an \u201ci\u201d sound. \u1E0Dammah gives a \u201cu\u201d sound. Watch \u0628 change sound with each one:'));
     conceptRow(s1.body, [
       { text: '\u0628\u064E', shiftY: 0.137, label: '\u0641\u062A\u062D\u0629' },
       { text: '\u0628\u0650', shiftY: -0.305, label: '\u0643\u0633\u0631\u0629' },
       { text: '\u0628\u064F', shiftY: 0.197, label: '\u0636\u0645\u0629' }
-    ]);
-    closePage(s1.page, 'Short Vowels', { lessonId: LID, isLast: false });
-
-    var s2 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 2 of 7', title: 'More Letters, Same Idea', arTitle: '\u062D\u064F\u0631\u0648\u0641\u064C \u0623\u064F\u062E\u0652\u0631\u0649', badgeLetter: '1', lessonId: LID });
-    s2.body.appendChild(ce('div', 'ex-instructions', 'The same three marks work on every letter. Try these:'));
-    conceptRow(s2.body, [
+    ], 1.5);
+    s1.body.appendChild(ce('div', 'ex-instructions', 'The same three marks work on every letter. Try these:'));
+    conceptRow(s1.body, [
       { text: '\u062F\u064E', shiftY: -0.053 }, { text: '\u062F\u0650', shiftY: -0.053 }, { text: '\u062F\u064F', shiftY: -0.053 },
       { text: '\u0631\u064E', shiftY: -0.217 }, { text: '\u0631\u0650', shiftY: -0.217 }, { text: '\u0631\u064F', shiftY: -0.217 }
-    ], true);
-    closePage(s2.page, 'More Letters, Same Idea (1)', { lessonId: LID, isLast: false });
-
-    var s2b = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 7', title: 'More Letters, Same Idea', arTitle: '\u062D\u064F\u0631\u0648\u0641\u064C \u0623\u064F\u062E\u0652\u0631\u0649', badgeLetter: '1', lessonId: LID });
-    s2b.body.appendChild(ce('div', 'ex-instructions', 'Two more letters:'));
-    conceptRow(s2b.body, [
+    ], 1.1);
+    s1.body.appendChild(ce('div', 'ex-instructions', 'Two more letters:'));
+    conceptRow(s1.body, [
       { text: '\u0644\u064E', shiftY: 0.099 }, { text: '\u0644\u0650', shiftY: 0.099 }, { text: '\u0644\u064F', shiftY: 0.099 },
       { text: '\u0646\u064E', shiftY: 0.029 }, { text: '\u0646\u0650', shiftY: 0.029 }, { text: '\u0646\u064F', shiftY: 0.029 }
-    ], true);
-    closePage(s2b.page, 'More Letters, Same Idea (2)', { lessonId: LID, isLast: false });
+    ], 1.1);
+    closePage(s1.page, 'Short Vowels', { lessonId: LID, isLast: false });
 
-    var s3 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 4 of 7', title: 'Practice \u2014 Which Mark?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
+    var s3 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 2 of 5', title: 'Practice \u2014 Which Mark?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
     renderMCQ(s3.body, { lessonId: LID, title: 'Which Mark?', instructions: 'Which mark gives the \u201ci\u201d sound?',
-      choices: [ { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: 'Kasrah ( \u0650 )', correct: true }, { html: '\u1E28ammah ( \u064F )', correct: false } ] });
+      choices: [ { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: 'Kasrah ( \u0650 )', correct: true }, { html: '\u1E0Dammah ( \u064F )', correct: false } ] });
     renderMCQ(s3.body, { lessonId: LID, title: 'Which Mark?', instructions: 'Which mark sits UNDER the letter, not above it?',
-      choices: [ { html: 'Kasrah ( \u0650 )', correct: true }, { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: '\u1E28ammah ( \u064F )', correct: false } ] });
+      choices: [ { html: 'Kasrah ( \u0650 )', correct: true }, { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: '\u1E0Dammah ( \u064F )', correct: false } ] });
     renderMCQ(s3.body, { lessonId: LID, title: 'Which Mark?', instructions: 'Which mark gives the \u201cu\u201d sound?',
-      choices: [ { html: '\u1E28ammah ( \u064F )', correct: true }, { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: 'Kasrah ( \u0650 )', correct: false } ] });
+      choices: [ { html: '\u1E0Dammah ( \u064F )', correct: true }, { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: 'Kasrah ( \u0650 )', correct: false } ] });
     closePage(s3.page, 'Practice \u2014 Which Mark?', { lessonId: LID, isLast: false });
 
-    var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 5 of 7', title: 'Practice \u2014 Read the Sound', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
+    var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 5', title: 'Practice \u2014 Read the Sound', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
     renderReveal(s4.body, { title: 'Read the Sound', instructions: 'Tap each card to check your reading.',
       items: [ { ar: '\u062F\u064E', hint: 'da' }, { ar: '\u0633\u0650', hint: 'si' }, { ar: '\u0642\u064F', hint: 'qu' }, { ar: '\u0644\u064E', hint: 'la' }, { ar: '\u0645\u0650', hint: 'mi' }, { ar: '\u0646\u064F', hint: 'nu' }, { ar: '\u0631\u064E', hint: 'ra' }, { ar: '\u062A\u0650', hint: 'ti' } ] });
     closePage(s4.page, 'Practice \u2014 Read the Sound', { lessonId: LID, isLast: false });
 
-    var s5 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 6 of 7', title: 'Practice \u2014 Speed Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
+    var s5 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 4 of 5', title: 'Practice \u2014 Speed Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
     renderReveal(s5.body, { title: 'Speed Round', instructions: 'Read each one fast, then check.',
       items: [ { ar: '\u0628\u064E', hint: 'ba' }, { ar: '\u062C\u0650', hint: 'ji' }, { ar: '\u062E\u064F', hint: 'khu' }, { ar: '\u0633\u064E', hint: 'sa' }, { ar: '\u0641\u0650', hint: 'fi' }, { ar: '\u0647\u064F', hint: 'hu' } ] });
     closePage(s5.page, 'Practice \u2014 Speed Round', { lessonId: LID, isLast: false });
 
-    var s6 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 7 of 7', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
+    var s6 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 5 of 5', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '1', lessonId: LID });
     renderMCQ(s6.body, { lessonId: LID, title: 'Which Mark?', instructions: 'Which mark sits ABOVE the letter and gives an \u201ca\u201d sound?',
-      choices: [ { html: 'Fat\u1E25ah ( \u064E )', correct: true }, { html: 'Kasrah ( \u0650 )', correct: false }, { html: '\u1E28ammah ( \u064F )', correct: false } ] });
-    renderMCQ(s6.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0642َمَرٌ read?',
+      choices: [ { html: 'Fat\u1E25ah ( \u064E )', correct: true }, { html: 'Kasrah ( \u0650 )', correct: false }, { html: '\u1E0Dammah ( \u064F )', correct: false } ] });
+    renderMCQ(s6.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0642َمَرٌ read?',
       choices: [ { html: 'qa-ma-run', correct: true }, { html: 'qu-mi-run', correct: false } ] });
     teacherTip(s6.body, {
       objective: 'Produce the correct short vowel sound for fat\u1E25ah, kasrah, and \u1E0Dammah on any letter.',
@@ -1959,47 +2014,44 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     lessonStart(LID, 'Suk\u016Bn', '\u0627\u0644\u0633\u0651\u064F\u0643\u0648\u0646', 'part-2');
     var KICK = 'Part 2 <span class="sep">&middot;</span> Lesson 2';
 
-    var s1 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 1 of 6', title: 'Suk\u016Bn \u2014 the Resting Mark', arTitle: '\u0627\u0644\u0633\u0651\u064F\u0643\u0648\u0646', badgeLetter: '2', lessonId: LID });
+    var s1 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 1 of 5', title: 'Suk\u016Bn \u2014 the Resting Mark', arTitle: '\u0627\u0644\u0633\u0651\u064F\u0643\u0648\u0646', badgeLetter: '2', lessonId: LID });
     s1.body.appendChild(ce('div', 'lesson-intro',
       '<span class="li-kicker">Read Together</span><span class="li-ar" lang="ar">\u0627\u0644\u0633\u0651\u064F\u0643\u0648\u0646</span>' +
       'Suk\u016Bn is a small circle above a letter. It means: no vowel at all \u2014 just the bare sound, held for a moment. Compare:'));
-    conceptRow(s1.body, [ { text: '\u0628\u064E', shiftY: 0.137, label: '\u0641\u062A\u062D\u0629' }, { text: '\u0628\u0652', shiftY: 0.138, label: '\u0633\u0643\u0648\u0646' } ]);
-    closePage(s1.page, 'Suk\u016Bn', { lessonId: LID, isLast: false });
-
-    var s1b = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 2 of 6', title: 'Try More Letters', arTitle: '\u062D\u064F\u0631\u0648\u0641\u064C \u0623\u064F\u062E\u0652\u0631\u0649', badgeLetter: '2', lessonId: LID });
-    s1b.body.appendChild(ce('div', 'ex-instructions', 'The same idea works on every letter. Try these:'));
-    conceptRow(s1b.body, [
+    conceptRow(s1.body, [ { text: '\u0628\u064E', shiftY: 0.137, label: '\u0641\u062A\u062D\u0629' }, { text: '\u0628\u0652', shiftY: 0.138, label: '\u0633\u0643\u0648\u0646' } ], 1.5);
+    s1.body.appendChild(ce('div', 'ex-instructions', 'The same idea works on every letter. Try these:'));
+    conceptRow(s1.body, [
       { text: '\u062F\u064E', shiftY: baseGy('\u062F') }, { text: '\u062F\u0652', shiftY: baseGy('\u062F') },
       { text: '\u0646\u064E', shiftY: baseGy('\u0646') }, { text: '\u0646\u0652', shiftY: baseGy('\u0646') },
       { text: '\u0644\u064E', shiftY: baseGy('\u0644') }, { text: '\u0644\u0652', shiftY: baseGy('\u0644') }
-    ]);
-    closePage(s1b.page, 'Try More Letters', { lessonId: LID, isLast: false });
+    ], 1.1);
+    closePage(s1.page, 'Suk\u016Bn', { lessonId: LID, isLast: false });
 
-    var s2 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 6', title: 'Practice \u2014 Blend a Closed Syllable', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
+    var s2 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 2 of 5', title: 'Practice \u2014 Blend a Closed Syllable', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
     s2.body.appendChild(ce('div', 'ex-instructions', 'A vowel letter followed by a suk\u016Bn letter blends into ONE sound, no pause. Tap each one.'));
     renderReveal(s2.body, { items: [ { ar: '\u0623\u064E\u0628\u0652', hint: 'ab' }, { ar: '\u0645\u0650\u0646\u0652', hint: 'min' }, { ar: '\u0642\u064F\u0644\u0652', hint: 'qul' }, { ar: '\u0647\u064E\u0644\u0652', hint: 'hal' }, { ar: '\u0628\u064E\u0644\u0652', hint: 'bal' }, { ar: '\u0645\u0650\u0646\u0652', hint: 'min' } ] });
     closePage(s2.page, 'Practice \u2014 Blend a Closed Syllable', { lessonId: LID, isLast: false });
 
-    var s3 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 4 of 6', title: 'Practice \u2014 What Does Suk\u016Bn Mean?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
-    renderMCQ(s3.body, { lessonId: LID, title: 'What Does Suk\u016Bn Mean?', instructions: 'What does the suk\u016Bn mark tell you?',
+    var s3 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 5', title: 'Practice \u2014 What Does Suk\u016Bn Mean?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
+    renderMCQ(s3.body, { lessonId: LID, title: 'What Does Suk\u016Bn Mean?', small: true, instructions: 'What does the suk\u016Bn mark tell you?',
       choices: [ { html: 'No vowel \u2014 just the bare sound', correct: true }, { html: 'Say the letter twice', correct: false }, { html: 'Skip the letter', correct: false } ] });
-    renderMCQ(s3.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0634َمْسٌ (the middle letter carries suk\u016Bn) read?',
+    renderMCQ(s3.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0634َمْسٌ (the middle letter carries suk\u016Bn) read?',
       choices: [ { html: 'sham-sun', correct: true }, { html: 'sha-ma-su', correct: false, note: 'That would need a vowel on the \u0645 \u2014 but it has suk\u016Bn, no vowel.' }, { html: 'sh-am-sun', correct: false } ] });
     closePage(s3.page, 'Practice \u2014 What Does Suk\u016Bn Mean?', { lessonId: LID, isLast: false });
 
-    var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 5 of 6', title: 'Suk\u016Bn in Real Words', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
+    var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 4 of 5', title: 'Suk\u016Bn in Real Words', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
     s4.body.appendChild(ce('div', 'callout callout-remember',
       'Suk\u016Bn shows up in real words all the time \u2014 the quiet pause in <span lang="ar" style="font-family:var(--font-ar)">\u0634َمْسٌ</span> (shams, \u201csun\u201d), ' +
       '<span lang="ar" style="font-family:var(--font-ar)">نَجْمٌ</span> (najm, \u201cstar\u201d), and <span lang="ar" style="font-family:var(--font-ar)">بَيْتٌ</span> (bayt, \u201chouse\u201d).'));
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0628َيْتٌ read?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0628َيْتٌ read?',
       choices: [ { html: 'bay-tun', correct: true }, { html: 'ba-ya-tun', correct: false, note: 'The \u064A carries suk\u016Bn \u2014 no vowel between it and the \u0628.' } ] });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0646َجْمٌ read?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0646َجْمٌ read?',
       choices: [ { html: 'naj-mun', correct: true }, { html: 'na-ja-mun', correct: false, note: 'The \u062C carries suk\u016Bn \u2014 no vowel between it and the \u0646.' } ] });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0642ُلْ read?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0642ُلْ read?',
       choices: [ { html: 'qul', correct: true }, { html: 'qu-lu', correct: false, note: 'The \u0644 carries suk\u016Bn \u2014 no extra vowel at the end.' } ] });
     closePage(s4.page, 'Suk\u016Bn in Real Words', { lessonId: LID, isLast: false });
 
-    var s5 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 6 of 6', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
+    var s5 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 5 of 5', title: 'Practice \u2014 One More Round', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '2', lessonId: LID });
     renderReveal(s5.body, { title: 'One More Round', instructions: 'Read each closed syllable, then check.',
       items: [ { ar: '\u0646َجْمٌ', hint: 'najmun (star)' }, { ar: '\u0637ِفْلٌ', hint: '\u1E6Diflun (child)' }, { ar: '\u0642ُلْ', hint: 'qul' },
                 { ar: '\u0634َمْسٌ', hint: 'shamsun (sun)' }, { ar: '\u0647َلْ', hint: 'hal' }, { ar: '\u0645ِنْ', hint: 'min' } ] });
@@ -2035,7 +2087,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     closePage(s1b.page, 'Try More Letters', { lessonId: LID, isLast: false });
 
     var s2 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 5', title: 'Practice \u2014 What Does Shaddah Do?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '3', lessonId: LID });
-    renderMCQ(s2.body, { lessonId: LID, title: 'What Does Shaddah Do?', instructions: 'What does shaddah tell you to do?',
+    renderMCQ(s2.body, { lessonId: LID, title: 'What Does Shaddah Do?', small: true, instructions: 'What does shaddah tell you to do?',
       choices: [ { html: 'Hold the letter firmly, almost like saying it twice', correct: true }, { html: 'Skip the letter', correct: false }, { html: 'Say it very softly', correct: false } ] });
     renderMCQ(s2.body, { lessonId: LID, title: 'Spot the Shaddah', instructions: 'Which of these has shaddah?',
       choices: [ { html: '\u0628َّ', correct: true }, { html: '\u0628َ', correct: false }, { html: '\u0628ْ', correct: false } ] });
@@ -2051,7 +2103,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 5 of 5', title: 'Practice \u2014 Mixed Review', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '3', lessonId: LID });
     renderMCQ(s4.body, { lessonId: LID, title: 'Mixed Review', instructions: 'Which of these has shaddah?',
       choices: [ { html: '\u0645ِنْ', correct: false, note: 'That has suk\u016Bn, not shaddah.' }, { html: '\u0631َبَّ', correct: true }, { html: '\u0633َبَ', correct: false, note: 'No mark on top at all \u2014 just plain fat\u1E25ah.' } ] });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0631َبَّ read?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0631َبَّ read?',
       choices: [ { html: 'rabba (doubled b)', correct: true }, { html: 'ra-ba (single b)', correct: false, note: 'The shaddah doubles the \u0628 \u2014 hold it firmly.' } ] });
     teacherTip(s4.body, {
       objective: 'Pronounce a shaddah letter with clear doubled emphasis.',
@@ -2090,9 +2142,9 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
 
     var s2 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 5', title: 'Practice \u2014 Which Sound?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '4', lessonId: LID });
     renderMCQ(s2.body, { lessonId: LID, title: 'Which Sound?', instructions: 'Which tanw\u012Bn sounds like \u201c\u2013un\u201d?',
-      choices: [ { html: 'Fat\u1E25atan ( \u064B )', correct: false }, { html: 'Kasratan ( \u064D )', correct: false }, { html: '\u1E28ammatan ( \u064C )', correct: true } ] });
+      choices: [ { html: 'Fat\u1E25atan ( \u064B )', correct: false }, { html: 'Kasratan ( \u064D )', correct: false }, { html: '\u1E0Dammatan ( \u064C )', correct: true } ] });
     renderMCQ(s2.body, { lessonId: LID, title: 'Which Sound?', instructions: 'Which tanw\u012Bn sounds like \u201c\u2013an\u201d?',
-      choices: [ { html: 'Fat\u1E25atan ( \u064B )', correct: true }, { html: 'Kasratan ( \u064D )', correct: false }, { html: '\u1E28ammatan ( \u064C )', correct: false } ] });
+      choices: [ { html: 'Fat\u1E25atan ( \u064B )', correct: true }, { html: 'Kasratan ( \u064D )', correct: false }, { html: '\u1E0Dammatan ( \u064C )', correct: false } ] });
     s2.body.appendChild(ce('div', 'callout callout-remember',
       'You\u2019ll meet tanw\u012Bn on real words very soon \u2014 that same mark ends <span lang="ar" style="font-family:var(--font-ar)">بَابٌ</span> (b\u0101bun, \u201cdoor\u201d) and <span lang="ar" style="font-family:var(--font-ar)">قَلَمٌ</span> (qalamun, \u201cpen\u201d).'));
     closePage(s2.page, 'Practice \u2014 Which Sound?', { lessonId: LID, isLast: false });
@@ -2101,13 +2153,13 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     renderReveal(s3.body, { title: 'Read It', items: [ { ar: '\u0628\u064B', hint: 'ban' }, { ar: '\u062F\u064D', hint: 'din' }, { ar: '\u0645\u064C', hint: 'mun' }, { ar: '\u0631\u064B', hint: 'ran' },
       { ar: '\u0633\u064D', hint: 'sin' }, { ar: '\u0644\u064C', hint: 'lun' } ] });
     renderMCQ(s3.body, { lessonId: LID, title: 'Which Sound?', instructions: 'Which mark makes \u0642 sound like \u201cqin\u201d?',
-      choices: [ { html: 'Kasratan ( \u064D )', correct: true }, { html: 'Fat\u1E25atan ( \u064B )', correct: false }, { html: '\u1E28ammatan ( \u064C )', correct: false } ] });
+      choices: [ { html: 'Kasratan ( \u064D )', correct: true }, { html: 'Fat\u1E25atan ( \u064B )', correct: false }, { html: '\u1E0Dammatan ( \u064C )', correct: false } ] });
     closePage(s3.page, 'Practice \u2014 Read It', { lessonId: LID, isLast: false });
 
     var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 5 of 5', title: 'Practice \u2014 Tanw\u012Bn in Real Words', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '4', lessonId: LID });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How does \u0646َجْمٌ end?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How does \u0646َجْمٌ end?',
       choices: [ { html: 'With \u201c-un\u201d', correct: true }, { html: 'With \u201c-an\u201d', correct: false }, { html: 'With no \u201cn\u201d sound', correct: false } ] });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How does \u0642َلَمٌ end?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How does \u0642َلَمٌ end?',
       choices: [ { html: 'With \u201c-un\u201d', correct: true }, { html: 'With \u201c-in\u201d', correct: false }, { html: 'With \u201c-an\u201d', correct: false } ] });
     renderMCQ(s4.body, { lessonId: LID, title: 'Which Word?', instructions: 'Which word ends in kasratan, \u201c-in\u201d?',
       choices: [ { html: '\u0628َابٍ', correct: true }, { html: '\u0628َابٌ', correct: false, note: 'That ends in \u1E0Dammatan, \u201c-un.\u201d' }, { html: '\u0628َابًا', correct: false } ] });
@@ -2166,7 +2218,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       choices: [ { html: '\u0643ِتَابٌ', correct: true }, { html: '\u0628ِنْتٌ', correct: false, note: 'No madd letter here \u2014 just kasrah and suk\u016Bn.' } ] });
     renderMCQ(s4.body, { lessonId: LID, title: 'Spot the Madd', instructions: 'Which word has a long vowel in it?',
       choices: [ { html: '\u0642َمَرٌ', correct: false, note: 'No madd letter \u2014 all three vowels stay short.' }, { html: '\u0637َالِبٌ', correct: true } ] });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', instructions: 'How is \u0637َالِبٌ read?',
+    renderMCQ(s4.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How is \u0637َالِبٌ read?',
       choices: [ { html: '\u1E6D\u0101-libun (long first vowel)', correct: true }, { html: '\u1E6Da-libun (short first vowel)', correct: false, note: 'The \u0627 right after the fat\u1E25ah stretches it long.' } ] });
     teacherTip(s4.body, {
       objective: 'Distinguish and correctly stretch the three long-vowel pairings.',
@@ -2185,9 +2237,9 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     var KICK = 'Part 2 <span class="sep">&middot;</span> Review';
     var s1 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 1 of 5', title: 'Review & Mastery Check', arTitle: '\u0645ُرَاجَعَةٌ وَتَقْيِيمٌ', badgeLetter: '\u2605', lessonId: LID });
     s1.body.appendChild(ce('div', 'lesson-intro', '<span class="li-kicker">Before Moving On</span>A mixed check across every mark in Part 2.'));
-    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', instructions: 'What does suk\u016Bn ( \u0652 ) tell you?',
+    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', small: true, instructions: 'What does suk\u016Bn ( \u0652 ) tell you?',
       choices: [ { html: 'No vowel \u2014 just the bare sound', correct: true }, { html: 'Stretch the vowel', correct: false }, { html: 'Double the letter', correct: false } ] });
-    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', instructions: 'Which mark doubles a letter\u2019s sound?',
+    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', small: true, instructions: 'Which mark doubles a letter\u2019s sound?',
       choices: [ { html: 'Tanw\u012Bn', correct: false }, { html: 'Shaddah', correct: true }, { html: 'Suk\u016Bn', correct: false } ] });
     closePage(s1.page, 'Review & Mastery Check (1)', { lessonId: LID, isLast: false });
 
@@ -2201,13 +2253,13 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     var s3 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 3 of 5', title: 'Review & Mastery Check', arTitle: '\u0645ُرَاجَعَةٌ وَتَقْيِيمٌ', badgeLetter: '\u2605', lessonId: LID });
     renderReveal(s3.body, { title: 'Read Each One', instructions: 'Read each marked letter, then tap to check.',
       items: [ { ar: '\u0633َّ', hint: 'ssa (shaddah)' }, { ar: '\u0646ْ', hint: 'n (suk\u016Bn)' }, { ar: '\u0631ٍ', hint: 'rin (tanw\u012Bn)' }, { ar: '\u062Fِي', hint: 'dee (long)' }, { ar: '\u0644ُ', hint: 'lu' }, { ar: '\u0647َا', hint: 'haa (long)' } ] });
-    renderMCQ(s3.body, { lessonId: LID, title: 'Mastery Check', instructions: 'Which mark makes a letter\u2019s sound doubled?',
+    renderMCQ(s3.body, { lessonId: LID, title: 'Mastery Check', small: true, instructions: 'Which mark makes a letter\u2019s sound doubled?',
       choices: [ { html: 'Shaddah', correct: true }, { html: 'Suk\u016Bn', correct: false }, { html: 'Tanw\u012Bn', correct: false } ] });
     closePage(s3.page, 'Review & Mastery Check (3)', { lessonId: LID, isLast: false });
 
     var s4 = shellPage({ part: 'part-2', kicker: KICK, sub: 'Page 4 of 5', title: 'Review & Mastery Check', arTitle: '\u0645ُرَاجَعَةٌ وَتَقْيِيمٌ', badgeLetter: '\u2605', lessonId: LID });
     renderMCQ(s4.body, { lessonId: LID, title: 'Mastery Check', instructions: 'Which mark gives an \u201c-in\u201d sound at the end of a word?',
-      choices: [ { html: 'Kasratan ( \u064D )', correct: true }, { html: 'Fat\u1E25atan ( \u064B )', correct: false }, { html: '\u1E28ammatan ( \u064C )', correct: false } ] });
+      choices: [ { html: 'Kasratan ( \u064D )', correct: true }, { html: 'Fat\u1E25atan ( \u064B )', correct: false }, { html: '\u1E0Dammatan ( \u064C )', correct: false } ] });
     renderMCQ(s4.body, { lessonId: LID, title: 'Mastery Check', instructions: 'Which letter, added after fat\u1E25ah, makes a long \u201caa\u201d sound?',
       choices: [ { html: '\u0627', correct: true }, { html: '\u064A', correct: false }, { html: '\u0648', correct: false } ] });
     closePage(s4.page, 'Review & Mastery Check (4)', { lessonId: LID, isLast: false });
@@ -2251,7 +2303,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       ]);
     page.appendChild(body);
     var footer = ce('div', 'page-footer'); footer.style.color='rgba(255,255,255,0.7)'; footer.style.borderTopColor='rgba(255,255,255,0.25)';
-    footer.appendChild(ce('span', null, 'Part 3')); footer.appendChild(ce('span', null, 'Chapter Introduction'));
+    footer.appendChild(ce('span', null, 'Part 3')); footer.appendChild(ce('span', 'page-num', '')); footer.appendChild(ce('span', null, 'Chapter Introduction'));
     page.appendChild(footer);
     addPage(page, 'Part 3 Intro');
   })();
@@ -2286,11 +2338,11 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       introHTML: 'The same drill, now with kasrah under every letter. Keep it short and connected \u2014 \u201cbi,\u201d not \u201cb\u201d then \u201ci.\u201d' });
     closePage(s2.page, 'Blending \u2014 Kasrah', { lessonId: LID, isLast: false });
 
-    var s3 = harakahPage(DAMMA, { kicker: KICK, sub: 'Page 3 of 3', title: 'Blending \u2014 \u1E28ammah', arTitle: '\u0627\u0644\u062D\u0631\u0648\u0641 \u0645\u0639 \u0627\u0644\u0636\u0645\u0629', badgeLetter: '1', lessonId: LID,
+    var s3 = harakahPage(DAMMA, { kicker: KICK, sub: 'Page 3 of 3', title: 'Blending \u2014 \u1E0Dammah', arTitle: '\u0627\u0644\u062D\u0631\u0648\u0641 \u0645\u0639 \u0627\u0644\u0636\u0645\u0629', badgeLetter: '1', lessonId: LID,
       introHTML: 'And once more with \u1E0Dammah. After this page you\u2019ve blended every letter with all three short vowels.' });
     renderMCQ(s3.body, { lessonId: LID, title: 'Quick Check', instructions: 'In \u0646ُرُدُ (all three letters carry \u1E0Dammah), what vowel is on the \u0646?',
-      choices: [ { html: '\u1E28ammah ( \u064F )', correct: true }, { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: 'Kasrah ( \u0650 )', correct: false } ] });
-    closePage(s3.page, 'Blending \u2014 \u1E28ammah', { lessonId: LID, isLast: true });
+      choices: [ { html: '\u1E0Dammah ( \u064F )', correct: true }, { html: 'Fat\u1E25ah ( \u064E )', correct: false }, { html: 'Kasrah ( \u0650 )', correct: false } ] });
+    closePage(s3.page, 'Blending \u2014 \u1E0Dammah', { lessonId: LID, isLast: true });
   })();
 
   /* ---- Lesson 3.2: Blending Two Letters (4 pages) ---- */
@@ -2401,7 +2453,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     closePage(s1.page, 'Blending Three Letters', { lessonId: LID, isLast: false });
 
     var s2 = shellPage({ part: 'part-3', kicker: KICK, sub: 'Page 2 of 5', title: 'Practice \u2014 Blending Three Letters', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '3', lessonId: LID });
-    renderMCQ(s2.body, { lessonId: LID, title: 'Read the Word', instructions: 'How many separate sounds does \u0643َتَبَ blend into one flowing word?',
+    renderMCQ(s2.body, { lessonId: LID, title: 'Read the Word', small: true, instructions: 'How many separate sounds does \u0643َتَبَ blend into one flowing word?',
       choices: [ { html: 'Three', correct: true }, { html: 'Two', correct: false }, { html: 'Four', correct: false } ] });
     renderMCQ(s2.body, { lessonId: LID, title: 'Which Word?', instructions: 'Which word means \u201che went out\u201d?',
       choices: [ { html: '\u062Eَرَجَ', correct: true }, { html: '\u062Fَخَلَ', correct: false, note: 'That means \u201che entered\u201d \u2014 the opposite!' }, { html: '\u0630َهَبَ', correct: false } ] });
@@ -2536,14 +2588,14 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     s1.body.appendChild(ce('div', 'lesson-intro', '<span class="li-kicker">Before Moving On</span>Blending is the bridge to real reading \u2014 make sure it\u2019s solid before Part 4\u2019s words.'));
     renderReveal(s1.body, { title: 'Speed Round', instructions: 'Read each as fast as you can, then tap to check.',
       items: [ { ar: '\u0633َعَ', hint: 'sa-a' }, { ar: '\u062Fِبُ', hint: 'di-bu' }, { ar: '\u0646ُتَ', hint: 'nu-ta' }, { ar: '\u0645َلِ', hint: 'ma-li' }, { ar: '\u0631ُسِ', hint: 'ru-si' }, { ar: '\u0644َجَ', hint: 'la-ja' } ] });
-    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', instructions: 'In \u0633َمِعَ, how many separate sounds blend into one word?',
+    renderMCQ(s1.body, { lessonId: LID, title: 'Mastery Check', small: true, instructions: 'In \u0633َمِعَ, how many separate sounds blend into one word?',
       choices: [ { html: 'Three', correct: true }, { html: 'Two', correct: false }, { html: 'Four', correct: false } ] });
     closePage(s1.page, 'Review & Mastery Check (1)', { lessonId: LID, isLast: false });
 
     var s2 = shellPage({ part: 'part-3', kicker: KICK, sub: 'Page 2 of 5', title: 'Review & Mastery Check', arTitle: '\u0645ُرَاجَعَةٌ وَتَقْيِيمٌ', badgeLetter: '\u2605', lessonId: LID });
     renderMCQ(s2.body, { lessonId: LID, title: 'Mastery Check', instructions: 'Which letters, joined, make \u0643َتَبَ ?',
       choices: [ { html: '\u0643 + \u062A + \u0628', correct: true }, { html: '\u0643 + \u0628 + \u062A', correct: false }, { html: '\u0642 + \u062A + \u0628', correct: false } ] });
-    renderMCQ(s2.body, { lessonId: LID, title: 'Mastery Check', instructions: 'How many sounds blend into \u062Fَرَسَ ?',
+    renderMCQ(s2.body, { lessonId: LID, title: 'Mastery Check', small: true, instructions: 'How many sounds blend into \u062Fَرَسَ ?',
       choices: [ { html: 'Three', correct: true }, { html: 'Two', correct: false }, { html: 'Four', correct: false } ] });
     closePage(s2.page, 'Review & Mastery Check (2)', { lessonId: LID, isLast: false });
 
@@ -2606,7 +2658,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       ]);
     page.appendChild(body);
     var footer = ce('div', 'page-footer'); footer.style.color='rgba(255,255,255,0.7)'; footer.style.borderTopColor='rgba(255,255,255,0.25)';
-    footer.appendChild(ce('span', null, 'Part 4')); footer.appendChild(ce('span', null, 'Chapter Introduction'));
+    footer.appendChild(ce('span', null, 'Part 4')); footer.appendChild(ce('span', 'page-num', '')); footer.appendChild(ce('span', null, 'Chapter Introduction'));
     page.appendChild(footer);
     addPage(page, 'Part 4 Intro');
   })();
@@ -2864,7 +2916,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     lessonStart(LID, 'Sun Letters & Moon Letters', '\u0627\u0644\u062D\u0631\u0648\u0641ُ الشَّمْسِيَّةُ وَالْقَمَرِيَّةُ', 'part-4');
     var KICK = 'Part 4 <span class="sep">&middot;</span> Lesson 4';
 
-    var s1 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 1 of 7', title: 'Sun Letters & Moon Letters', arTitle: '\u0627\u0644\u062D\u0631\u0648\u0641ُ الشَّمْسِيَّةُ وَالْقَمَرِيَّةُ', badgeLetter: '4', lessonId: LID });
+    var s1 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 1 of 6', title: 'Sun Letters & Moon Letters', arTitle: '\u0627\u0644\u062D\u0631\u0648\u0641ُ الشَّمْسِيَّةُ وَالْقَمَرِيَّةُ', badgeLetter: '4', lessonId: LID });
     s1.body.appendChild(ce('div', 'lesson-intro',
       '<span class="li-kicker">Read Together</span>' +
       'You already know \u0627\u0644 means \u201cthe.\u201d Here\u2019s a secret: some letters after \u0627\u0644 SWALLOW its \u0644 sound completely \u2014 ' +
@@ -2876,7 +2928,7 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     s1.body.appendChild(row1);
     closePage(s1.page, 'Sun Letters & Moon Letters', { lessonId: LID, isLast: false });
 
-    var s2 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 2 of 6', title: 'Moon Letters & Sun Letters', arTitle: '\u0627\u0644\u062D\u0631\u0648\u0641ُ الْقَمَرِيَّةُ', badgeLetter: '4', lessonId: LID });
+    var s2 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 2 of 6', title: 'Sun Letters & Moon Letters', arTitle: '\u0627\u0644\u062D\u0631\u0648\u0641ُ الشَّمْسِيَّةُ وَالْقَمَرِيَّةُ', badgeLetter: '4', lessonId: LID });
     s2.body.appendChild(ce('div', 'ex-instructions', 'With a moon letter, \u0644 keeps its own sound \u2014 you hear \u201cal-\u201d clearly, and \u0644 carries suk\u016Bn.'));
     wordRow(s2.body, [
       { ar: '\u0627\u0644\u0652\u0642\u064E\u0645\u064E\u0631\u064F', tr: 'al-qamaru', en: 'the moon' },
@@ -2891,13 +2943,13 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
       { ar: '\u0627\u0644\u0637\u064E\u0651\u0627\u0644\u0650\u0628\u064F', tr: 'a\u1E6D-\u1E6D\u0101libu', en: 'the student' },
       { ar: '\u0627\u0644\u0646\u064E\u0651\u062C\u0652\u0645\u064F', tr: 'an-najmu', en: 'the star' }
     ]);
-    closePage(s2.page, 'Moon Letters & Sun Letters', { lessonId: LID, isLast: false });
+    closePage(s2.page, 'Sun Letters & Moon Letters', { lessonId: LID, isLast: false });
 
     var s4 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 3 of 6', title: 'Practice \u2014 Sun or Moon?', arTitle: '\u062A\u064E\u062F\u0652\u0631\u0650\u064A\u0628\u064C', badgeLetter: '4', lessonId: LID });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Sun or Moon?', instructions: 'In \u0627\u0644\u0634َّمْسُ, is the \u0644 heard or silent?',
-      choices: [ { html: 'Silent \u2014 \u0634 is a sun letter', correct: true }, { html: 'Heard clearly', correct: false, note: '\u0634 swallows the \u0644 sound \u2014 that\u2019s why it\u2019s called a sun letter.' } ] });
-    renderMCQ(s4.body, { lessonId: LID, title: 'Sun or Moon?', instructions: 'In \u0627\u0644\u0652\u0642َمَرُ, is the \u0644 heard or silent?',
-      choices: [ { html: 'Heard clearly \u2014 \u0642 is a moon letter', correct: true }, { html: 'Silent', correct: false, note: '\u0642 lets the \u0644 be heard \u2014 that\u2019s why it\u2019s called a moon letter.' } ] });
+    renderMCQ(s4.body, { lessonId: LID, title: 'Sun or Moon?', small: true, instructions: 'In \u0627\u0644\u0634َّمْسُ, is the \u0644 heard or silent?',
+      choices: [ { html: 'Silent', correct: true }, { html: 'Heard clearly', correct: false, note: '\u0634 swallows the \u0644 sound \u2014 that\u2019s why it\u2019s called a sun letter.' } ] });
+    renderMCQ(s4.body, { lessonId: LID, title: 'Sun or Moon?', small: true, instructions: 'In \u0627\u0644\u0652\u0642َمَرُ, is the \u0644 heard or silent?',
+      choices: [ { html: 'Heard clearly', correct: true }, { html: 'Silent', correct: false, note: '\u0642 lets the \u0644 be heard \u2014 that\u2019s why it\u2019s called a moon letter.' } ] });
     renderMCQ(s4.body, { lessonId: LID, title: 'Which Word?', instructions: 'Which word has a SILENT \u0644?',
       choices: [ { html: '\u0627\u0644\u0646َّجْمُ', correct: true }, { html: '\u0627\u0644\u0652\u0628َيْتُ', correct: false, note: '\u0628 is a moon letter \u2014 the \u0644 is heard here.' } ] });
     closePage(s4.page, 'Practice \u2014 Sun or Moon?', { lessonId: LID, isLast: false });
@@ -3166,8 +3218,8 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     closePage(s4.page, 'Final Challenge (4)', { lessonId: LID, isLast: false });
 
     var s5 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 5 of 8', title: 'Final Challenge', arTitle: '\u0627\u0644\u062A\u064E\u0651\u062D\u064E\u062F\u0651\u064A \u0627\u0644\u0623\u064E\u062E\u0650\u064A\u0631', badgeLetter: '\u2605', lessonId: LID });
-    renderMCQ(s5.body, { lessonId: LID, title: 'Sun or Moon?', instructions: 'In \u0627\u0644\u0631َّحْمَنِ, is the \u0644 heard or silent?',
-      choices: [ { html: 'Silent \u2014 \u0631 is a sun letter', correct: true }, { html: 'Heard clearly', correct: false } ] });
+    renderMCQ(s5.body, { lessonId: LID, title: 'Sun or Moon?', small: true, instructions: 'In \u0627\u0644\u0631َّحْمَنِ, is the \u0644 heard or silent?',
+      choices: [ { html: 'Silent', correct: true }, { html: 'Heard clearly', correct: false, note: '\u0631 is a sun letter \u2014 it swallows the \u0644 sound.' } ] });
     renderMCQ(s5.body, { lessonId: LID, title: 'Which Word?', instructions: 'Which word means \u201che returned\u201d?',
       choices: [ { html: ROOT_WORDS[15].ar, correct: true }, { html: ROOT_WORDS[14].ar, correct: false, note: ROOT_WORDS[14].ar + ' means \u201che found.\u201d' }, { html: ROOT_WORDS[13].ar, correct: false } ] });
     closePage(s5.page, 'Final Challenge (5)', { lessonId: LID, isLast: false });
@@ -3188,9 +3240,19 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     closePage(s7.page, 'Final Challenge (7)', { lessonId: LID, isLast: false });
 
     var s8 = shellPage({ part: 'part-4', kicker: KICK, sub: 'Page 8 of 8', title: 'You Did It', arTitle: '\u0623َحْسَنْتَ', badgeLetter: '\u2605', lessonId: LID });
+    var hero = ce('div', 'finale-hero');
+    hero.appendChild(ce('div', 'finale-trophy', ICON_TROPHY()));
+    hero.appendChild(ce('div', 'finale-stars', ICON_STAR() + ICON_STAR() + ICON_STAR() + ICON_STAR() + ICON_STAR()));
+    hero.appendChild(ce('div', 'finale-lead', 'You read the whole book.'));
+    s8.body.appendChild(hero);
     s8.body.appendChild(ce('div', 'callout callout-remember',
       'From 28 bare letters to reading real words, phrases, and four short s\u016Brahs \u2014 that\u2019s the whole journey of this ' +
       'book. Turn the page for your certificate.'));
+    var finaleStats = ce('div', 'finale-stats');
+    finaleStats.innerHTML =
+      '<div class="home-stat"><div class="num" id="finaleLessonsDone">0/0</div><div class="lbl">Lessons Done</div></div>' +
+      '<div class="home-stat"><div class="num" id="finaleStarsEarned">0</div><div class="lbl">Stars Earned</div></div>';
+    s8.body.appendChild(finaleStats);
     teacherTip(s8.body, {
       objective: 'Confirm cumulative mastery across all four parts before awarding the certificate.',
       point: 'This challenge deliberately mixes topics from the entire book, out of order \u2014 real reading never comes in a predictable sequence.',
@@ -3216,9 +3278,9 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     nameInput.value = Progress.name || '';
     nameInput.addEventListener('input', function () { Progress.name = nameInput.value; saveProgress(); });
     body.appendChild(nameInput);
-    var namePrint = ce('div', 'cert-name-input print-only-name', Progress.name || '\u2014');
-    namePrint.style.borderBottom = 'none';
+    var namePrint = ce('div', 'cert-name-input print-only-name', Progress.name || '');
     body.appendChild(namePrint);
+    body.appendChild(ce('div', 'cert-name-label', 'Student Name'));
     body.appendChild(ce('div', 'cert-line',
       'has completed Q\u0101\u2019idat An-N\u016Briyyah, Book One, mastering the Arabic alphabet, the vowel marks, blending, ' +
       'and reading words, phrases, and four short s\u016Brahs \u2014 ready to continue toward reading directly from the Qur\u2019an.'));
@@ -3227,6 +3289,31 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     body.appendChild(sign);
     page.appendChild(body);
     addPage(page, 'Certificate');
+  })();
+
+  numberPages();
+
+  /* ---- Print density: pair up regular pages two-to-a-sheet for "Print Whole Book" ----
+     Runs once, after every addPage() call above, so `pages` already holds every page in
+     final order. Cover and certificate are excluded -- each stays its own standalone sheet,
+     since a book's face and a certificate meant to be handed to a child shouldn't be printed
+     as half a cut sheet. Everything else pairs up sequentially; an odd count leaves the last
+     page (here, "You Did It") solo rather than forcing an uneven pairing. This only changes
+     print output -- see the .sheet-pair CSS (screen: display:contents, so it's invisible to
+     on-screen layout/navigation; print: the unit that owns the page break and the zoom). */
+  (function buildPrintSheets() {
+    var regular = pages.filter(function (pg) {
+      return !pg.el.classList.contains('cover-page') && !pg.el.classList.contains('cert-page');
+    });
+    for (var i = 0; i < regular.length; i += 2) {
+      var a = regular[i].el;
+      var b = regular[i + 1] ? regular[i + 1].el : null;
+      var sheet = document.createElement('div');
+      sheet.className = 'sheet-pair' + (b ? '' : ' sheet-pair-solo');
+      a.parentNode.insertBefore(sheet, a);
+      sheet.appendChild(a);
+      if (b) sheet.appendChild(b);
+    }
   })();
 
   /* ============================================================
@@ -3298,6 +3385,10 @@ html[data-theme="dark"] .tt-grid dd { color: var(--shell-text); }
     if (txt) txt.textContent = done + '/' + total;
     var starEl = document.getElementById('starTallyText');
     if (starEl) starEl.textContent = totalStars();
+    var finaleDone = document.getElementById('finaleLessonsDone');
+    if (finaleDone) finaleDone.textContent = done + '/' + total;
+    var finaleStars = document.getElementById('finaleStarsEarned');
+    if (finaleStars) finaleStars.textContent = totalStars();
   }
   function refreshProgressChrome() {
     updateToolbarProgress();
