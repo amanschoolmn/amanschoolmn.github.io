@@ -458,6 +458,14 @@
   <div class="error-banner" id="errorBanner"></div>
 
   <form id="updateForm" novalidate>
+    <!-- Honeypot: real visitors never see or fill this in; a bot that
+         auto-fills every field will. Formspree isn't in this form's path
+         anymore, so this is the only spam defense it has — the Apps
+         Script backend already drops anything with hp_field set. -->
+    <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+      <label for="hpField">Leave this field blank</label>
+      <input type="text" id="hpField" name="hp_field" tabindex="-1" autocomplete="off">
+    </div>
 
     <!-- FAMILY INFO -->
     <section class="card ornamented">
@@ -778,16 +786,15 @@
 
   // ============================================================
   // CONFIG
-  // FORMSPREE_ENDPOINT is the same form used by the main AMAN
-  // application (amanschoolmn.org/apply/) — reused here rather than a
-  // separate form, so update-request emails land in the same inbox.
+  // Apps Script only — no Formspree on this form, by design.
   // APPS_SCRIPT_URL is your live deployment from
   // AMAN-Admissions-AppsScript.gs (Deploy → Manage deployments → copy
-  // the Web app URL). Paste it below before publishing — every
-  // version handed back so far has only had a placeholder here.
+  // the Web app URL). As of this version this is the ONLY submission
+  // path, so if this URL is wrong or the deployment is down, a family
+  // gets a clear error on screen — there's no second path to fall
+  // back on silently.
   // ============================================================
   const FORM_CONFIG = {
-    FORMSPREE_ENDPOINT: "https://formspree.io/f/xaqkjdkq",
     APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec"
   };
 
@@ -930,9 +937,9 @@
     // Field names below match the site's existing AMAN-Admissions-AppsScript.gs
     // convention exactly (form_type routes it to handleUpdate_; students_json
     // is parsed with s.fname/s.mname/s.lname etc., same as the main
-    // application's students_json). This submission shares that same Apps
-    // Script deployment and Formspree form as the main application — it is
-    // NOT a separate pipeline.
+    // application's students_json). This shares that same Apps Script
+    // deployment as the main application, but is otherwise its own path —
+    // no Formspree involved for this form.
     const params = new URLSearchParams();
     params.append('form_type', 'family_update');
     params.append('application_id', 'UPDATE-' + Date.now());
@@ -956,43 +963,44 @@
     params.append('ec_phone', document.getElementById('ecPhone').value.trim());
     params.append('authorized_pickup', document.getElementById('authorizedPickup').value.trim());
     params.append('heard', document.getElementById('howHeard').value);
+    params.append('hp_field', document.getElementById('hpField').value); // honeypot — see note on the field itself
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting…';
 
-    // Primary submission — Formspree. Sent as URL-encoded form data (not
-    // JSON) so the notification email reads as flat, labeled fields the
-    // same way your other forms' emails do.
-    fetch(FORM_CONFIG.FORMSPREE_ENDPOINT, {
+    // The ONLY submission path for this form — no Formspree. Deliberately
+    // NOT mode:'no-cors' (that would make the response opaque and we'd
+    // have no way to know if it actually worked, which is exactly the
+    // failure mode that went unnoticed before: families saw a success
+    // screen based on a different service entirely, while this call
+    // failed silently in the background). Content-Type stays implicit
+    // (URLSearchParams body -> application/x-www-form-urlencoded), which
+    // keeps this a CORS-safelisted "simple request" Apps Script can
+    // answer directly — Apps Script has no doOptions(), so a JSON
+    // Content-Type here would trigger a preflight it can't answer and
+    // this would fail outright.
+    fetch(FORM_CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' },
       body: params
     })
-    .then(function(res){
-      if(!res.ok) throw new Error('Formspree error');
-      return res.json().catch(function(){ return {}; });
-    })
-    .then(function(){
+    .then(function(res){ return res.text(); })
+    .then(function(text){
+      let result;
+      try{ result = JSON.parse(text); }catch(err){ result = null; }
+      if(!result || result.status !== 'ok'){
+        console.error('Apps Script did not confirm success:', text);
+        throw new Error(result && result.message ? result.message : 'Submission not confirmed');
+      }
       form.style.display = 'none';
       successView.style.display = 'block';
       successView.scrollIntoView({behavior:'smooth', block:'start'});
     })
-    .catch(function(){
+    .catch(function(err){
+      console.error('Update form submission failed:', err);
       showError("We couldn't submit your update just now. Please try again, or call Br. Abdallah at (612) 444-2609.");
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit Update';
     });
-
-    // Secondary submission — same Apps Script deployment that already
-    // handles the AMAN and Amaanah applications and the Parent Agreement
-    // (fire-and-forget; Formspree above is the reliable path).
-    try{
-      fetch(FORM_CONFIG.APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: params
-      }).catch(function(){ /* silent — Formspree is the reliable path */ });
-    }catch(err){ /* silent */ }
   });
 
 })();
