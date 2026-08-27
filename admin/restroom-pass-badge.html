@@ -20,7 +20,8 @@ body {
 }
 .toolbar { max-width: 900px; margin: 0 auto 32px; text-align: center; }
 .toolbar h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: 0.02em; }
-.toolbar p { margin: 0 0 20px; font-size: 14px; color: #4a5a52; }
+.toolbar p { margin: 0 0 8px; font-size: 14px; color: #4a5a52; }
+.toolbar .fallback { font-size: 12.5px; color: #7a8a82; margin: 0 0 20px; }
 .toolbar button {
   background: var(--forest); color: var(--parchment); border: none;
   padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 6px;
@@ -60,7 +61,8 @@ body {
   <div class="toolbar">
     <h1>AMAN Restroom Passes</h1>
     <p>Tap Print, then print each pass on 4&times;6&quot; photo paper (or letter paper and trim) and laminate.</p>
-    <button onclick="window.print()">Print Passes</button>
+    <p class="fallback">Button not responding? Open this file in Safari or Chrome (not an in-app preview), then use your browser's own Share/Print option.</p>
+    <button id="printBtn" type="button">Print Passes</button>
   </div>
   <div class="gallery">
     <div class="pass-card">
@@ -72,5 +74,10 @@ body {
       <div class="pass-label">Women's Restroom Pass</div>
     </div>
   </div>
+  <script>
+    document.getElementById('printBtn').addEventListener('click', function () {
+      window.print();
+    });
+  </script>
 </body>
 </html>
