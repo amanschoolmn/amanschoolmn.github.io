@@ -1566,7 +1566,7 @@ window.onerror = function (msg, src, line, col, err) {
     page.appendChild(body);
     var footer = ce('div', 'page-footer');
     footer.style.position = 'relative'; footer.style.zIndex = '1';
-    footer.appendChild(ce('span', null, 'Book One \u00B7 build 51'));
+    footer.appendChild(ce('span', null, 'Book One \u00B7 build 25'));
     footer.appendChild(ce('span', null, 'amanschoolmn.org'));
     page.appendChild(footer);
     addPage(page, 'Cover');
@@ -4925,4 +4925,293 @@ window.onerror = function (msg, src, line, col, err) {
       wrap.classList.add('is-dragging');
       ghost = wrap.cloneNode(true);
       ghost.classList.add('drag-ghost');
-      Array.prototype.forEach.call(ghost.querySelectorAll('.edit-block-controls'), function (c) { c.remove
+      Array.prototype.forEach.call(ghost.querySelectorAll('.edit-block-controls'), function (c) { c.remove(); });
+      document.body.appendChild(ghost);
+      dropIndicator = document.createElement('div');
+      dropIndicator.className = 'drop-indicator';
+      dropIndicator.style.display = 'none';
+      document.body.appendChild(dropIndicator);
+      moveGhost(e.clientX, e.clientY);
+      window.addEventListener('pointermove', onDragMove);
+      window.addEventListener('pointerup', onDragEnd);
+    }
+
+    function moveGhost(x, y) {
+      if (!ghost) return;
+      ghost.style.left = (x + 16) + 'px';
+      ghost.style.top = (y + 16) + 'px';
+    }
+
+    function handleEdgeTurn(x) {
+      if (x < EDGE_PX) { scheduleEdgeFlip(prev); }
+      else if (x > window.innerWidth - EDGE_PX) { scheduleEdgeFlip(next); }
+      else { clearTimeout(edgeTimer); edgeTimer = null; }
+    }
+    function scheduleEdgeFlip(fn) {
+      if (edgeTimer) return;
+      edgeTimer = setTimeout(function () { fn(); edgeTimer = null; }, EDGE_DELAY);
+    }
+
+    function positionDropIndicator(x, y) {
+      var body = currentPageBody();
+      if (!body || !dropIndicator) return;
+      var wraps = Array.prototype.slice.call(body.querySelectorAll(':scope > .edit-block-wrap'))
+        .filter(function (w) { return w !== draggingWrap; });
+      var rect = body.getBoundingClientRect();
+      if (!wraps.length) {
+        dropIndicator.style.display = 'block';
+        dropIndicator.style.left = rect.left + 'px';
+        dropIndicator.style.width = rect.width + 'px';
+        dropIndicator.style.top = (rect.top + 8) + 'px';
+        dropIndicator._target = { parent: body, ref: null };
+        return;
+      }
+      var target = wraps[wraps.length - 1], before = false;
+      for (var i = 0; i < wraps.length; i++) {
+        var r = wraps[i].getBoundingClientRect();
+        if (y < r.top + r.height / 2) { target = wraps[i]; before = true; break; }
+        target = wraps[i]; before = false;
+      }
+      var r2 = target.getBoundingClientRect();
+      dropIndicator.style.display = 'block';
+      dropIndicator.style.left = r2.left + 'px';
+      dropIndicator.style.width = r2.width + 'px';
+      dropIndicator.style.top = (before ? r2.top - 3 : r2.bottom + 3) + 'px';
+      dropIndicator._target = { parent: body, ref: before ? target : target.nextSibling };
+    }
+
+    function onDragMove(e) {
+      moveGhost(e.clientX, e.clientY);
+      handleEdgeTurn(e.clientX);
+      positionDropIndicator(e.clientX, e.clientY);
+    }
+
+    function onDragEnd() {
+      window.removeEventListener('pointermove', onDragMove);
+      window.removeEventListener('pointerup', onDragEnd);
+      clearTimeout(edgeTimer); edgeTimer = null;
+      var t = dropIndicator && dropIndicator._target;
+      if (t && draggingWrap) {
+        t.parent.insertBefore(draggingWrap, t.ref || null);
+        saveEdits();
+        updateDeleteButtonState();
+      }
+      if (ghost) { ghost.remove(); ghost = null; }
+      if (dropIndicator) { dropIndicator.remove(); dropIndicator = null; }
+      if (draggingWrap) { draggingWrap.classList.remove('is-dragging'); draggingWrap = null; }
+    }
+
+    /* ---- Whole-page deletion (only ever for an already-emptied page) ----
+       An empty .page-body is easy to end up with once blocks can be dragged onto
+       other pages. Deleting the page itself removes it from the DOM and from the
+       `pages` registry, rebuilds the page-jump dropdown, renumbers every remaining
+       "Page X of Y" footer via the existing numberPages(), and repairs the stored
+       jump target (LESSON_META[id].pageIndex) for every lesson that comes after it
+       so Home-screen "Continue" links and lesson chips still land on the right page. */
+    function pageIndexOf(pg) { return pages.findIndex(function (p) { return p.el === pg; }); }
+
+    function deletePageByElement(pg, opts) {
+      opts = opts || {};
+      var idx = pageIndexOf(pg);
+      if (idx < 0) return false;
+
+      Object.keys(LESSON_META).forEach(function (id) {
+        if (LESSON_META[id].pageIndex > idx) LESSON_META[id].pageIndex -= 1;
+      });
+
+      pg.parentNode.removeChild(pg);
+      pages.splice(idx, 1);
+
+      while (pageSelect.firstChild) pageSelect.removeChild(pageSelect.firstChild);
+      pages.forEach(function (p, i) {
+        var opt = document.createElement('option');
+        opt.value = i; opt.textContent = (i + 1) + '. ' + p.label;
+        pageSelect.appendChild(opt);
+      });
+      numberPages();
+
+      if (state.index >= pages.length) state.index = pages.length - 1;
+      else if (state.index > idx) state.index -= 1;
+      if (!opts.silent) render();
+
+      var uid = pg.getAttribute('data-page-uid');
+      if (uid && deletedPageUids.indexOf(uid) === -1) deletedPageUids.push(uid);
+      return true;
+    }
+
+    function pageDeleteEligibility(pg) {
+      if (!pg || pg.getAttribute('data-editable-page') !== 'true') {
+        return { ok: false, reason: 'This page cannot be deleted.' };
+      }
+      var body = pg.querySelector('.page-body');
+      var blockCount = body ? body.querySelectorAll(':scope > .edit-block-wrap').length : 0;
+      if (blockCount > 0) {
+        return { ok: false, reason: 'Move or remove all content from this page before deleting it.' };
+      }
+      if (pg.querySelector('.mark-done-btn')) {
+        return { ok: false, reason: 'This page holds the lesson\u2019s Mark Complete button and can\u2019t be deleted.' };
+      }
+      var idx = pageIndexOf(pg);
+      var isLessonStart = Object.keys(LESSON_META).some(function (id) { return LESSON_META[id].pageIndex === idx; });
+      if (isLessonStart) {
+        return { ok: false, reason: 'This is the opening page of a lesson (Home links here) and can\u2019t be deleted.' };
+      }
+      return { ok: true, reason: 'Delete this empty page' };
+    }
+
+    function updateDeleteButtonState() {
+      if (!deleteBtn) return;
+      var pg = document.querySelector('.page.current');
+      var check = pageDeleteEligibility(pg);
+      deleteBtn.disabled = !check.ok;
+      deleteBtn.title = check.reason;
+    }
+
+    function buildEditsPayload() {
+      var data = { pages: [], deletedPages: deletedPageUids.slice() };
+      pages.forEach(function (pg) {
+        var body = pg.el.querySelector('.page-body');
+        var order = [], htmlById = {};
+        if (body) {
+          Array.prototype.forEach.call(body.querySelectorAll(':scope > .edit-block-wrap'), function (w) {
+            var id = w.getAttribute('data-block-id');
+            order.push(id);
+            var inner = w.querySelector('.edit-block-inner');
+            if (inner) htmlById[id] = inner.innerHTML;
+          });
+        }
+        data.pages.push({ order: order, html: htmlById });
+      });
+      return data;
+    }
+
+    function saveEdits() {
+      try { localStorage.setItem(EDIT_KEY, JSON.stringify(buildEditsPayload())); }
+      catch (err) { /* storage unavailable -- edits still work for this session */ }
+    }
+
+    function applyEditsData(data) {
+      if (!data) return;
+      // Replay whole-page deletions first so the `pages` array shrinks back down to the
+      // shape it was in when this snapshot was saved -- the per-page block edits below are
+      // indexed positionally and only line up correctly once that's done.
+      if (data.deletedPages) {
+        data.deletedPages.forEach(function (uid) {
+          var pg = document.querySelector('[data-page-uid="' + uid + '"]');
+          if (pg) deletePageByElement(pg, { silent: true });
+        });
+      }
+      if (!data.pages) return;
+      var allBlocks = {};
+      Array.prototype.forEach.call(document.querySelectorAll('.edit-block-wrap'), function (w) {
+        allBlocks[w.getAttribute('data-block-id')] = w;
+      });
+      data.pages.forEach(function (pd, i) {
+        var body = pages[i] && pages[i].el.querySelector('.page-body');
+        if (!body || !pd.order) return;
+        var ref = null;
+        pd.order.forEach(function (id) {
+          var w = allBlocks[id];
+          if (!w) return; // block no longer exists (book was updated since this edit)
+          if (pd.html && pd.html[id] != null) {
+            var inner = w.querySelector('.edit-block-inner');
+            if (inner) inner.innerHTML = pd.html[id];
+          }
+          body.insertBefore(w, ref ? ref.nextSibling : body.firstChild);
+          ref = w;
+        });
+      });
+    }
+
+    function loadEdits() {
+      // A "Save Corrected Book" download seeds its edits as window.__AMAN_PRESEED_EDITS__
+      // (see the saveBtn handler below) so opening THAT file shows the fixed content
+      // immediately, even in a browser/device that never had it in localStorage.
+      if (window.__AMAN_PRESEED_EDITS__) {
+        applyEditsData(window.__AMAN_PRESEED_EDITS__);
+        saveEdits(); // carry the seed forward into this browser's own local storage too
+        return;
+      }
+      var raw;
+      try { raw = localStorage.getItem(EDIT_KEY); } catch (err) { return; }
+      if (!raw) return;
+      var data;
+      try { data = JSON.parse(raw); } catch (err) { return; }
+      applyEditsData(data);
+    }
+    loadEdits();
+
+    var editBtn = document.getElementById('btnEditMode');
+    var saveBtn = document.getElementById('btnSaveBook');
+    var discardBtn = document.getElementById('btnDiscardEdits');
+    var deleteBtn = document.getElementById('btnDeletePage');
+    var banner = document.getElementById('editModeBanner');
+
+    editBtn.addEventListener('click', function () {
+      var on = !document.body.classList.contains('content-edit-mode');
+      document.body.classList.toggle('content-edit-mode', on);
+      editBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      editBtn.classList.toggle('toggle-on', on);
+      editBtn.textContent = on ? '\u2716 Exit Edit Mode' : '\u270E Edit Content';
+      banner.classList.toggle('hidden', !on);
+      Array.prototype.forEach.call(document.querySelectorAll('.edit-block-inner'), function (el) {
+        if (on) el.setAttribute('contenteditable', 'true'); else el.removeAttribute('contenteditable');
+      });
+      updateScale();
+      updateDeleteButtonState();
+    });
+
+    deleteBtn.addEventListener('click', function () {
+      var pg = document.querySelector('.page.current');
+      var check = pageDeleteEligibility(pg);
+      if (!check.ok) return; // button should already be disabled in this case
+      if (!confirm('Delete this empty page? Page numbers will update automatically. Use Discard Edits to undo (this reverts ALL edits, not just this one).')) return;
+      deletePageByElement(pg);
+      saveEdits();
+      updateDeleteButtonState();
+    });
+
+    // The delete button's eligibility depends on which page is current and what's on it --
+    // both change from several places (arrows, keyboard, page-select, block drag/delete).
+    // Watching for the class flip render() does on every page change catches all of them
+    // from one place instead of hooking each navigation entry point separately.
+    new MutationObserver(updateDeleteButtonState).observe(root, {
+      attributes: true, attributeFilter: ['class'], subtree: true
+    });
+    updateDeleteButtonState();
+
+    saveBtn.addEventListener('click', function () {
+      // Built from PRISTINE_HTML (the file exactly as it loaded, before any page was
+      // built) so the download is a normal, un-doubled copy of the book -- the seeded
+      // edits are what makes it "corrected" once its own script rebuilds the pages.
+      var payload = JSON.stringify(buildEditsPayload()).replace(/<\/script/gi, '<\\/script');
+      var seed = '<!--AMAN_EDIT_SEED_START--><script>window.__AMAN_PRESEED_EDITS__ = ' + payload + ';<\/script><!--AMAN_EDIT_SEED_END-->';
+      var seedRegex = /<!--AMAN_EDIT_SEED_START-->[\s\S]*?<!--AMAN_EDIT_SEED_END-->/;
+      var outHtml = seedRegex.test(PRISTINE_HTML) ? PRISTINE_HTML.replace(seedRegex, seed) : PRISTINE_HTML;
+      var full = '<!DOCTYPE html>\n' + outHtml;
+      var blob = new Blob([full], { type: 'text/html' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'AMAN-Qaida-Book-NextGen-corrected.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    });
+
+    discardBtn.addEventListener('click', function () {
+      if (confirm('Discard every change made in Edit Mode -- including deleted pages -- and reload the original book? This cannot be undone.')) {
+        try { localStorage.removeItem(EDIT_KEY); } catch (err) {}
+        location.reload();
+      }
+    });
+  }());
+
+  refreshHomeBody();
+  updateToolbarProgress();
+  render();
+}());
+
+</script>
+</body>
+</html>
