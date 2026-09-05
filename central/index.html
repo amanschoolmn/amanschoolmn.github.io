@@ -5808,12 +5808,28 @@ const Students = {
       DB.save(); o.remove(); toast(isNew?'Added':'Saved'); Router.render();
     };
   },
-  promote(s){
-    const i=LEVELS.indexOf(s.level); if(i>=2) return;
-    confirmBox('Promote '+s.name+' to '+LEVELS[i+1]+' — '+LEVEL_SUB[LEVELS[i+1]]+'? Their '+LEVEL_SUB[s.level]+' history is kept.', ()=>{
-      s.level=LEVELS[i+1]; DB.log('Promoted '+s.name+' to '+s.level+' 🎉');
-      DB.data.achievements.push({sid:s.id, text:'Promoted to '+s.level+' — '+LEVEL_SUB[s.level], date:today()});
-      DB.save(); toast(s.name+' promoted — mā shāʾ Allāh!'); Router.render();
+  // targetLevel lets Level 1 skip straight to Level 3 (an advanced student
+  // who's clearly ready doesn't have to sit through Level 2 first) — asked
+  // for directly 2026-09. Any forward move is accepted, not just the next
+  // level up; still refuses sideways/backward moves.
+  promote(s, targetLevel){
+    const i=LEVELS.indexOf(s.level), ti=LEVELS.indexOf(targetLevel);
+    if(i<0 || ti<=i) return;
+    const skipped = ti>i+1 ? LEVELS.slice(i+1, ti) : [];
+    const msg = 'Promote '+s.name+' to '+targetLevel+' — '+LEVEL_SUB[targetLevel]+'? Their '+LEVEL_SUB[s.level]+' history is kept.'
+      + (skipped.length ? ' This skips '+skipped.join(' and ')+' entirely — make sure that\u2019s intended.' : '');
+    confirmBox(msg, ()=>{
+      const from=s.level;
+      s.level=targetLevel;
+      // Islamic Studies enrollment: only ever auto-ENABLE, never disable —
+      // a promotion should never silently pull someone who already has an
+      // exception out of Islamic Studies. Level 3 is enrolled by default,
+      // so landing there is the one case worth nudging forward automatically.
+      let gbNote = '';
+      if(targetLevel==='Level 3' && !s.gbEnrolled){ s.gbEnrolled=true; gbNote=' Also enrolled in Islamic Studies (Level 3 default — untoggle on their profile if not wanted yet).'; }
+      DB.log('Promoted '+s.name+' from '+from+' to '+targetLevel+' 🎉');
+      DB.data.achievements.push({sid:s.id, text:'Promoted to '+targetLevel+' — '+LEVEL_SUB[targetLevel]+(skipped.length?' (skipped '+skipped.join(', ')+')':''), date:today()});
+      DB.save(); toast(s.name+' promoted — mā shāʾ Allāh!'+gbNote); Router.render();
     });
   },
   /* ---------- printable one-pager: a keepsake, not a raw page dump — photo,
@@ -6234,7 +6250,12 @@ const Students = {
       const pct=Math.min(100, g.page/GB_TOTAL*100);
       const eta=paceETA(log, g.page, GB_TOTAL, 'page');
       el.innerHTML = `<div class="sect">Green Book — مُعَلِّمُ الْقِرَاءَةِ الْعَرَبِيَّةِ<span class="rule"></span></div>
-       ${g.page>=GB_TOTAL?`<div class="notice info" style="margin-bottom:12px">🎉 <div><b>Green Book complete!</b> ${esc(s.name)} meets the requirement for Level 2 — Muṣḥaf Reading. <button class="btn btn-p btn-sm" id="promoteBtn">Promote to Level 2</button></div></div>`:''}
+       ${g.page>=GB_TOTAL?`<div class="notice info" style="margin-bottom:12px">🎉 <div><b>Green Book complete!</b> ${esc(s.name)} meets the requirement for Level 2 — Muṣḥaf Reading. Ready to skip ahead instead? Level 3 is there too.
+         <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+           <button class="btn btn-p btn-sm" id="promoteBtn2">Promote to Level 2</button>
+           <button class="btn btn-o btn-sm" id="promoteBtn3">Promote to Level 3</button>
+         </div>
+       </div></div>`:''}
        <div class="card" style="margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:4px"><span>Page ${g.page} of ${GB_TOTAL}</span><span style="font-family:var(--f-mono)">${pct.toFixed(0)}%${g.fluency?' · '+esc(g.fluency):''}</span></div>
         <div class="bar" style="height:10px;margin-bottom:12px"><i style="width:${pct}%"></i></div>
@@ -6250,7 +6271,8 @@ const Students = {
         g.page=page; g.fluency=$('#gb-flu',el).value==='—'?'':$('#gb-flu',el).value;
         log.push({date:today(), page, fluency:g.fluency, note:$('#gb-note',el).value.trim()});
         DB.log('Green Book update — '+s.name+' p.'+page); DB.save(); toast('Updated'); Router.render(); };
-      const pb=$('#promoteBtn',el); if(pb) pb.onclick=()=>Students.promote(s);
+      const pb2=$('#promoteBtn2',el); if(pb2) pb2.onclick=()=>Students.promote(s,'Level 2');
+      const pb3=$('#promoteBtn3',el); if(pb3) pb3.onclick=()=>Students.promote(s,'Level 3');
       return;
     }
     if(s.level==='Level 2'){
@@ -6279,7 +6301,7 @@ const Students = {
         m.page=page; m.fluency=$('#mu-flu',el).value==='—'?'':$('#mu-flu',el).value; m.acc=$('#mu-acc',el).value==='—'?'':$('#mu-acc',el).value;
         log.push({date:today(), page, fluency:m.fluency, acc:m.acc, note:$('#mu-note',el).value.trim()});
         DB.log('Muṣḥaf reading — '+s.name+' p.'+page); DB.save(); toast('Recorded'); Router.render(); };
-      const pb=$('#promoteBtn',el); if(pb) pb.onclick=()=>Students.promote(s);
+      const pb=$('#promoteBtn',el); if(pb) pb.onclick=()=>Students.promote(s,'Level 3');
       return;
     }
     // Level 3 — Ḥifẓ
