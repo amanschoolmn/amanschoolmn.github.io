@@ -21,6 +21,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" crossorigin="anonymous">
 <!-- Payment reminder flyer (Tuition → Who Owes Now) renders to PNG via html2canvas. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- PDF export for the Print/Save-as-PDF flow (see printHTMLDocument's PRINT BUG #5
+     comment) — generates a real PDF client-side instead of relying on
+     window.print(), which iOS does not support from a home-screen-installed
+     web app at all. Exposes window.jspdf.jsPDF. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
 <style>
 /* ============ AMAN CENTRAL DESIGN SYSTEM ============ */
 :root{
@@ -693,6 +698,12 @@ const uid = ()=> 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,
 // calling `new Date(iso)` directly.
 const parseLocalDate = iso => { const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); };
 const fmtDate = iso => { if(!iso) return '—'; return parseLocalDate(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+// Date of birth specifically is always shown as numeric Month/Day/Year
+// (e.g. 01/23/2016) — asked for directly 2026-09, distinct from fmtDate's
+// "Jan 23, 2016" style used everywhere else. Storage stays ISO
+// (YYYY-MM-DD) throughout — required by <input type=date> and every
+// age/date-math helper in this file — this only ever touches display text.
+const fmtDob = iso => { if(!iso) return '—'; const d=parseLocalDate(iso); return String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+'/'+d.getFullYear(); };
 const ageFromDob = iso => { if(!iso) return null; const b=parseLocalDate(iso), n=new Date(); let a=n.getFullYear()-b.getFullYear(); const m=n.getMonth()-b.getMonth(); if(m<0||(m===0&&n.getDate()<b.getDate())) a--; return a; };
 const daysToBirthday = iso => { if(!iso) return null; const [,m,dd]=iso.split('-'); const now=new Date(); const tdyMid=new Date(); tdyMid.setHours(0,0,0,0);
   let next=new Date(now.getFullYear(), +m-1, +dd); if(next<tdyMid) next.setFullYear(next.getFullYear()+1);
@@ -2920,52 +2931,114 @@ function openLetterPreview(html){
   overlay.appendChild(frame);
   document.body.appendChild(overlay);
 }
-// Prints a full HTML document string (as produced by renderSOTMShareCard,
-// renderSOTMCertificate, letter/checklist builders, etc.) reliably on every
-// platform this app runs on, including installed iOS home-screen PWAs.
+// Prints/exports a full HTML document string (as produced by
+// renderSOTMShareCard, renderSOTMCertificate, letter/checklist builders,
+// etc.) reliably on every platform this app runs on, including installed
+// iOS home-screen PWAs.
 //
-// This function has had two wrong fixes before this one — both worth
+// This function has had four wrong fixes before this one — all worth
 // recording so a future edit doesn't repeat them:
 // PRINT BUG #2: extracting the letter's <style> tag and injecting it
 // straight into this document leaked its rules (e.g. a `body{background:
 // #000}` rule meant for an isolated page) onto the entire live app.
 // PRINT BUG #3: moving to a hidden <iframe> with srcdoc avoided that leak,
 // but iOS Safari does not reliably print an iframe's content via
-// frame.contentWindow.print() at all, regardless of the iframe's own
-// sizing/visibility — the printed page came out blank because the platform
-// itself doesn't support printing a sub-frame's content that way. No CSS or
-// timing fix to the iframe approach can work around that; it needed a
-// different mechanism entirely.
-// FIX: print from THIS top-level document (the one thing that reliably
-// works on iOS) but give the injected content real CSS isolation using a
-// Shadow DOM instead of an iframe. A shadow root's stylesheet only matches
-// elements inside that shadow tree — since the injected content never
-// contains a literal <body> (only its innerHTML), a rule like `body{...}`
-// inside the letter's own <style> simply matches nothing outside, and
-// nothing at all leaks into the live app. Shadow DOM content is still part
-// of the normal document render tree (unlike an iframe's separate
-// browsing context), so window.print() on the top-level page prints it
-// correctly.
+// frame.contentWindow.print() at all. FIX at the time: print from THIS
+// top-level document but give the injected content CSS isolation via a
+// Shadow DOM instead of an iframe.
+// PRINT BUG #4: the Shadow DOM host stayed invisible the whole time, then
+// fired window.print() automatically two animation frames later with
+// nothing on screen and no button to tap — the kind of delayed call
+// browsers increasingly swallow. FIX at the time: show the content
+// immediately with a real Print/Close bar and call window.print()
+// synchronously in the same tap, with that visible button as a fallback if
+// the automatic call ever got swallowed.
 //
-// PRINT BUG #4 (found 2026-09): this used to build the Shadow DOM content
-// while #print-root stayed invisible (display:none) the whole time, then
-// fired window.print() automatically two requestAnimationFrame ticks later
-// with nothing on screen and no button to tap. That delay is exactly the
-// shape of thing browsers have been getting stricter about — window.print(),
-// like window.open(), is only guaranteed to fire when it's the direct,
-// immediate result of a tap, and an iOS/Safari update can silently start
-// swallowing a call that waited even a couple of frames, with no error
-// anywhere. That's what "the print button stopped working" turns out to be
-// almost every time: nothing wrong with the data or the markup, a browser
-// update just stopped honoring the delayed call. FIX: reuse the same idea
-// that already works for openLetterPreview() — show the content on screen
-// right away with its own Print/Close bar (a real, no-print, LIGHT-DOM
-// button, so a tap on it is always a fresh, direct user gesture), and call
-// window.print() immediately/synchronously in the same tap that opened it.
-// If a future platform update ever swallows that automatic call again, the
-// Print button sitting on screen still works, because tapping it fires a
-// brand new click event with its own activation — it doesn't depend on any
-// timing at all.
+// PRINT BUG #5 (found 2026-09, and this is the one that actually mattered):
+// none of that was the real problem. Confirmed from a screenshot showing no
+// Safari browser chrome at all — this app is being used as a home-screen-
+// installed web app (apple-mobile-web-app-capable, standalone display
+// mode), and window.print() has been unreliable-to-completely-broken from
+// that specific mode on iOS for a very long time (documented as far back as
+// iOS 9, still an open complaint on Apple's own developer forums today) —
+// the print sheet can appear and then simply never produce anything, with
+// no error JS can catch. Tapping the visible, freshly-activated Print
+// button from PRINT BUG #4's fix doesn't help, because the problem was
+// never about *when* window.print() gets called — it's that iOS doesn't
+// honor it AT ALL from this display mode, full stop. No amount of timing
+// or activation-preserving cleverness can fix a call the platform is
+// refusing to complete. The one documented workaround (open the page in a
+// plain Safari tab instead of the home-screen icon) isn't realistic to ask
+// for every time.
+// FIX: stop depending on window.print() here. The primary action now
+// renders the document to a canvas (html2canvas) and assembles a real,
+// multi-page PDF client-side (jsPDF), then triggers a normal file
+// download/share — a code path that doesn't touch the print pipeline iOS
+// breaks in standalone mode at all. A "system print dialog" option stays
+// as a secondary, smaller action for contexts where it does work (desktop
+// browsers, a plain Safari tab) — but it's no longer what anyone has to
+// rely on. html2canvas can't read INTO a Shadow DOM reliably (its Shadow
+// DOM/Web Component support is incomplete upstream), so the export step
+// builds a separate, temporary, light-DOM copy of the content — CSS-scoped
+// with scopeCssText() so the source document's own `body{...}`-style rules
+// still can't leak into the live app — positioned off-screen, captured,
+// then removed. The visible on-screen PREVIEW is untouched and stays
+// Shadow-DOM-isolated exactly as PRINT BUG #3's fix intended.
+//
+// Prefixes every selector in a block of CSS text with a scope class, so
+// e.g. `body{color:#000}` becomes `.scope123 body{color:#000}` — matches
+// nothing outside an element carrying that class. At-rule preludes
+// (@media, @page, @keyframes, @font-face, and keyframe steps like `50%`)
+// are left untouched; only the innermost rule selectors get scoped. This
+// is deliberately simple rather than a full CSS parser — it only needs to
+// handle the plain selectors (element/class/descendant/comma-separated)
+// that this file's own print-document generators actually use, not
+// arbitrary third-party CSS.
+function scopeCssText(css, scopeClass){
+  css = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  return css.replace(/([^{}]+)\{/g, (m, sel)=>{
+    const t = sel.trim();
+    if(!t || /^@|^(from|to|\d+%)$/.test(t)) return m;
+    return t.split(',').map(s=>{ s=s.trim(); return s ? '.'+scopeClass+(s==='*'?' *':' '+s) : s; }).join(', ') + '{';
+  });
+}
+// Renders a printable HTML-document string to a real PDF Blob via a
+// temporary, off-screen, CSS-scoped light-DOM copy (see PRINT BUG #5
+// above for why light DOM rather than the visible Shadow DOM preview).
+async function htmlDocToPdfBlob(html){
+  if(typeof html2canvas!=='function') throw new Error('html2canvas failed to load');
+  if(typeof window.jspdf==='undefined') throw new Error('jsPDF failed to load');
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const styleText = [...doc.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  const bodyHTML = doc.body ? doc.body.innerHTML : html;
+  const scopeClass = 'pdfcap'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:fixed;top:0;left:-99999px;width:850px;background:#fff';
+  holder.innerHTML = `<style>${scopeCssText(styleText, scopeClass)}\n.${scopeClass} .toolbar-actions{display:none!important}</style><div class="${scopeClass}"><div class="pt-print-inner">${bodyHTML}</div></div>`;
+  document.body.appendChild(holder);
+  try{
+    const captureTarget = holder.querySelector('.pt-print-inner');
+    const canvas = await html2canvas(captureTarget, {scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:850});
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({unit:'pt', format:'letter'});
+    const pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW, imgH = canvas.height*(imgW/canvas.width);
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    let heightLeft = imgH, position = 0;
+    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+    heightLeft -= pageH;
+    while(heightLeft > 0){
+      position -= pageH;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+    }
+    return pdf.output('blob');
+  } finally {
+    holder.remove();
+  }
+}
 function printHTMLDocument(html){
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const styleText = [...doc.querySelectorAll('style')].map(s=>s.textContent).join('\n');
@@ -2981,7 +3054,8 @@ function printHTMLDocument(html){
   // directly-tappable buttons) plus a plain child div that gets its own
   // Shadow DOM for the isolated printable content.
   host.innerHTML = `<div class="pp-bar no-print">
-      <button type="button" class="pp-go">\uD83D\uDDA8\uFE0F Print / Save as PDF</button>
+      <button type="button" class="pp-go">\u2B07\uFE0F Download PDF</button>
+      <button type="button" class="pp-sys">System print dialog\u2026</button>
       <button type="button" class="pp-x">\u2715 Close</button>
     </div><div class="pp-shadow"></div>`;
   const shadowHost = host.querySelector('.pp-shadow');
@@ -3003,10 +3077,12 @@ function printHTMLDocument(html){
     st.textContent = `#print-root{display:none}
       #print-root.pp-open{display:flex;flex-direction:column;position:fixed;inset:0;z-index:100000;background:#f4ead6}
       #print-root .pp-shadow{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff}
-      #print-root .pp-bar{display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-shrink:0;
+      #print-root .pp-bar{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-shrink:0;flex-wrap:wrap;
         padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}
-      #print-root .pp-bar button{padding:9px 18px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:13.5px;font-family:inherit}
+      #print-root .pp-bar button{padding:9px 16px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit}
       #print-root .pp-go{background:#b8872a;color:#20261f}
+      #print-root .pp-go:disabled{opacity:.6}
+      #print-root .pp-sys{background:transparent;color:#f4ead6;border:1px solid rgba(244,234,214,.4)!important;font-weight:600!important}
       #print-root .pp-x{background:transparent;color:#f4ead6;border:1px solid rgba(244,234,214,.4)!important}
       @media print{
         body>*:not(#print-root){display:none!important}
@@ -3019,16 +3095,27 @@ function printHTMLDocument(html){
   host.classList.add('pp-open');
   const closeHost = () => { host.classList.remove('pp-open'); host.innerHTML=''; };
   host.querySelector('.pp-x').onclick = closeHost;
-  host.querySelector('.pp-go').onclick = () => window.print();
-  // Auto-close once the print dialog is dismissed (Chrome/desktop Safari
-  // fire this reliably) so nobody has to remember to tap Close. If a
-  // platform never fires it, the Close button is still right there.
-  window.onafterprint = closeHost;
-
-  // First attempt: fire immediately, synchronously, in the exact same tap
-  // that opened this — the one moment window.print() is most reliably
-  // honored. The visible Print button above is the guaranteed fallback.
-  window.print();
+  // System print dialog stays available as a secondary option (works fine
+  // on desktop browsers and a plain Safari tab) but is no longer the
+  // primary action — see PRINT BUG #5 above for why it can't be relied on
+  // in this app's actual daily usage context.
+  host.querySelector('.pp-sys').onclick = () => window.print();
+  const goBtn = host.querySelector('.pp-go');
+  goBtn.onclick = async () => {
+    goBtn.disabled = true; const label = goBtn.textContent; goBtn.textContent = 'Generating\u2026';
+    try{
+      const blob = await htmlDocToPdfBlob(html);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'AMAN.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 30000);
+    } catch(err){
+      toast('PDF export failed \u2014 try "System print dialog" instead');
+    } finally {
+      goBtn.disabled = false; goBtn.textContent = label;
+    }
+  };
 }
 
 function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, interviewDate, interviewTime){
@@ -5509,7 +5596,7 @@ const Students = {
           groups.map(g=>`<div class="sect" style="margin:14px 0 6px;font-size:13px">${esc(g.name)}<span class="rule"></span></div>
             ${g.items.map(c=>`<label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)">
               <input type="checkbox" class="upd-cb" data-key="${c.def.key}" value="${esc(c.newVal)}" ${c.def.risky?'':'checked'} style="width:auto;margin-top:3px;flex-shrink:0">
-              <span><b>${esc(c.def.label)}</b><br><span style="color:var(--ink3)">${esc(c.oldVal||'(blank)')}</span> → <span style="color:var(--ok);font-weight:600">${esc(c.newVal)}</span></span>
+              <span><b>${esc(c.def.label)}</b><br><span style="color:var(--ink3)">${esc(c.def.key==='dob'&&c.oldVal?fmtDob(c.oldVal):(c.oldVal||'(blank)'))}</span> → <span style="color:var(--ok);font-weight:600">${esc(c.def.key==='dob'?fmtDob(c.newVal):c.newVal)}</span></span>
             </label>`).join('')}`).join('')}`;
     };
     let student = u.matchedStudentId ? DB.data.students.find(x=>x.id===u.matchedStudentId) : null;
@@ -5902,7 +5989,7 @@ const Students = {
       ${avatarHTML(s, `width:64px;height:64px;font-size:22px;border-radius:16px;border:3px solid ${lvlAccent}`)}
       <div style="flex:1;min-width:220px"><div class="eyebrow" style="color:${lvlAccent}">${esc(s.level)} — ${LEVEL_SUB[s.level]} · ${sidFmt}</div>
        <h2 class="page-title" style="margin-bottom:2px">${esc(s.preferredName||s.name)}</h2>
-       <span style="font-size:13px;color:var(--ink2)">${esc(s.gender||'')}${age!=null?' · '+age+'y (b. '+s.dob+')':''}${s.startDate?' · enrolled '+fmtDate(s.startDate):''}</span></div>
+       <span style="font-size:13px;color:var(--ink2)">${esc(s.gender||'')}${age!=null?' · '+age+'y (b. '+fmtDob(s.dob)+')':''}${s.startDate?' · enrolled '+fmtDate(s.startDate):''}</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" class="no-print">
        <button class="btn btn-ghost btn-sm" id="sFav" title="${s.favorite?'Remove from favorites':'Add to favorites'}" style="font-size:17px;line-height:1;padding:9px 12px;color:var(--gold)">${s.favorite?'★':'☆'}</button>
        <button class="btn btn-o" id="sEdit">Edit</button>
@@ -5924,7 +6011,7 @@ const Students = {
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
          ${admField('Full name', s.name)}${admField('Preferred', s.preferredName)}
          ${admField('Student ID', sidFmt)}${admField('Level', s.level+' — '+LEVEL_SUB[s.level])}
-         ${admField('Gender', s.gender)}${admField('Date of birth', s.dob?s.dob+(age!=null?' · '+age+'y':''):'')}
+         ${admField('Gender', s.gender)}${admField('Date of birth', s.dob?fmtDob(s.dob)+(age!=null?' · '+age+'y':''):'')}
          ${admField('Enrolled', s.startDate?fmtDate(s.startDate):'')}${admField('Status', s.active!==false?'Active':'Inactive')}
          <div style="grid-column:1/-1">${admField('Medical', s.medical)}</div>
        </div>
@@ -6284,7 +6371,7 @@ const Students = {
     rows.forEach(s=>{
       const g = (s.guardians&&s.guardians[0])||{};
       const ec = (s.emergencyContacts&&s.emergencyContacts[0])||{};
-      lines.push([ 'AMAN-'+String(s.studentNo||0).padStart(3,'0'), s.name, s.preferredName||'', s.level, s.gender||'', s.dob||'',
+      lines.push([ 'AMAN-'+String(s.studentNo||0).padStart(3,'0'), s.name, s.preferredName||'', s.level, s.gender||'', s.dob?fmtDob(s.dob):'',
         s.active!==false?'Active':'Inactive', g.name||'', g.phone||'', g.email||'', ec.name||'', ec.phone||'', s.medical||'' ].map(esc2).join(','));
     });
     const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
@@ -7178,7 +7265,7 @@ const Progress = {
            <span style="font-size:12px;color:var(--ink2)">${LEVEL_SUB[s.level]}</span>
            <span class="tag tag-dim">${year}</span>
          </div>
-         <div style="font-size:12px;color:var(--ink3);font-family:var(--f-mono);margin-top:3px">${s.dob?('DOB '+s.dob+(age!=null?' · '+age+'y':'')):''}</div>
+         <div style="font-size:12px;color:var(--ink3);font-family:var(--f-mono);margin-top:3px">${s.dob?('DOB '+fmtDob(s.dob)+(age!=null?' · '+age+'y':'')):''}</div>
        </div>
      </div>
      <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-pttab="${k}">${n}</button>`).join('')}</div>
