@@ -7087,6 +7087,7 @@ const Progress = {
         ${top?`<div class="no-print" style="display:flex;align-items:center;gap:10px">
           <b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>
           <button class="btn btn-o btn-sm" data-somcert="${top.s.id}" title="Generate this student's Student of the Month certificate for this month">🏆 Certificate</button>
+          <button class="btn btn-o btn-sm" data-somshare="${top.s.id}" title="Generate a shareable Student of the Month card for this student">🌟 Share Card</button>
         </div>`:''}
       </div>`; }).join('');
   },
@@ -7101,6 +7102,23 @@ const Progress = {
     $$('[data-somcert]',container).forEach(b=>b.onclick=()=>{
       const s = DB.data.students.find(x=>x.id===b.dataset.somcert);
       if(s) Students.sotmForm(s, PT_MONTHS.indexOf(this._month), this._year);
+    });
+    // Same single-student shortcut as the Certificate button above, but for
+    // the Share Card — asked for directly 2026-09 so a specific level's
+    // winner can be shared without going through sharePanel()'s full
+    // multi-student picker modal. Reuses that exact same generation path
+    // (renderSOTMShareCard + openLetterPreview + achievement log) so a
+    // one-tap share card here is indistinguishable from one built by hand.
+    $$('[data-somshare]',container).forEach(b=>b.onclick=()=>{
+      const s = DB.data.students.find(x=>x.id===b.dataset.somshare);
+      if(!s) return;
+      const monthDisplay = sotmFormatMonths(PT_MONTHS.indexOf(this._month), null, this._year);
+      const html = renderSOTMShareCard([s], monthDisplay);
+      DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'});
+      DB.log('Student of the Month share card generated for '+s.name+' — '+monthDisplay);
+      DB.save();
+      toast('Share card ready — added to '+s.name+'\u2019s history');
+      openLetterPreview(html);
     });
   },
   // Combined "Overall Student of the Month" — Qur'an Progress blended with
@@ -7134,6 +7152,7 @@ const Progress = {
         ${top?`<div class="no-print" style="display:flex;align-items:center;gap:10px">
           <b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>
           <button class="btn btn-o btn-sm" data-combosomcert="${top.s.id}" title="Generate this student's Student of the Month certificate for this month">🏆 Certificate</button>
+          <button class="btn btn-o btn-sm" data-combosomshare="${top.s.id}" title="Generate a shareable Student of the Month card for this student">🌟 Share Card</button>
         </div>`:''}
       </div>`; }).join('');
   },
@@ -7158,6 +7177,20 @@ const Progress = {
     $$('[data-combosomcert]',v).forEach(b=>b.onclick=()=>{
       const s = DB.data.students.find(x=>x.id===b.dataset.combosomcert);
       if(s) Students.sotmForm(s, PT_MONTHS.indexOf(this._month), this._year);
+    });
+    // Same one-tap Share Card shortcut as the Qur'an-only panel's
+    // _wireSomCert — see that one's comment for why this bypasses
+    // sharePanel()'s multi-student picker.
+    $$('[data-combosomshare]',v).forEach(b=>b.onclick=()=>{
+      const s = DB.data.students.find(x=>x.id===b.dataset.combosomshare);
+      if(!s) return;
+      const monthDisplay = sotmFormatMonths(PT_MONTHS.indexOf(this._month), null, this._year);
+      const html = renderSOTMShareCard([s], monthDisplay);
+      DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'});
+      DB.log('Student of the Month share card generated for '+s.name+' — '+monthDisplay);
+      DB.save();
+      toast('Share card ready — added to '+s.name+'\u2019s history');
+      openLetterPreview(html);
     });
   },
   _wireComboSomWeights(v){
