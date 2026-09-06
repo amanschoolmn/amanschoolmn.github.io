@@ -7984,13 +7984,21 @@ function famFinance(key){
   const p=famPlan(key); const pays=DB.data.finance.payments.filter(x=>x.fam===key);
   const activeCount=famActiveCount(key);
   const monthly=famEffectiveMonthly(key, activeCount);
-  const paid=pays.filter(x=>x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
   const nowM=today().slice(0,7);
   // Only excused months that actually fall inside the billing window count
   // against it — an excused record with a stray out-of-range date (before
   // the plan started, or in the future) shouldn't silently shrink the total.
   const excusedMonths=new Set(pays.filter(x=>x.kind==='excused' && p.start && x.date.slice(0,7)>=p.start && x.date.slice(0,7)<=nowM).map(x=>x.date.slice(0,7)));
-  let expected=0;
+  // Tuition and the one-time registration fee are tracked as two separate
+  // buckets, and a payment only ever pays down its own bucket — found while
+  // chasing the أفركان discrepancy: a $100 registration payment was logged
+  // (kind:'registration'), but this function's "paid" used to lump every
+  // non-excused payment together regardless of kind, so that one-time fee
+  // silently counted as $100 of tuition and understated the real balance.
+  // paidThisMonth just below already excludes registration payments for
+  // exactly this reason — this brings the overall total in line with that
+  // same rule instead of contradicting it.
+  let tuitionExpected=0;
   if(p.start){
     // Priced month by month via famMonthlyForYm — see its comment for why:
     // a flat totalMonths × today's-rate silently repriced a family's whole
@@ -8002,14 +8010,19 @@ function famFinance(key){
     for(let idx=startIdx; idx<=endIdx; idx++){
       const y=Math.floor((idx-1)/12), m=((idx-1)%12)+1;
       const ym=y+'-'+String(m).padStart(2,'0');
-      if(!excusedMonths.has(ym)) expected += famMonthlyForYm(key, ym);
+      if(!excusedMonths.has(ym)) tuitionExpected += famMonthlyForYm(key, ym);
     }
   }
-  if(p.regFee>0 && !p.regPaid) expected += p.regFee;
+  const tuitionPaid = pays.filter(x=>x.kind!=='excused' && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0);
+  const regExpected = (p.regFee>0 && !p.regPaid) ? p.regFee : 0;
+  const regPaid = pays.filter(x=>x.kind==='registration').reduce((a,x)=>a+(+x.amount||0),0);
+  const expected = tuitionExpected + regExpected;
+  const paid = tuitionPaid + regPaid; // combined total collected, fine for display — the buckets stay separate for balance
+  const balance = Math.max(0, tuitionExpected-tuitionPaid) + Math.max(0, regExpected-regPaid);
   const paidThisMonth=pays.filter(x=>x.date.slice(0,7)===nowM && x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
   const excusedThisMonth=excusedMonths.has(nowM);
   const monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
-  return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance:Math.max(0,expected-paid),
+  return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance,
     monthStatus, paidThisMonth, monthly, activeCount, excusedMonths};
 }
 const TUITION_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
