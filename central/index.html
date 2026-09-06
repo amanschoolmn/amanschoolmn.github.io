@@ -7951,6 +7951,31 @@ function famEffectiveMonthly(key, activeCount){
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
   return rate*(activeCount==null?famActiveCount(key):activeCount);
 }
+// What a family's tuition SHOULD have been for one specific past month —
+// found while chasing down a miscalculation for أفركان: every place that
+// priced a past month (total expected, the Payment Matrix, the 12-month
+// collection-rate trend) was using famEffectiveMonthly(), which prices off
+// TODAY'S active headcount. That's right for THIS month, but wrong for
+// every month before a family's size changed — a sibling enrolling partway
+// through the year had their whole family's history retroactively repriced
+// at the new, larger headcount (or the reverse, understated, if someone
+// left). أفركان is exactly this shape: كافية and يوسف both show an Aug 2026
+// start, but if either's actual join date differs by even a month in the
+// live data, every month of "expected" was silently wrong.
+// Fix: price each month by who had actually joined by then, using each
+// student's own startDate rather than the family's current headcount.
+// Known gap: a student who has since gone inactive has no tracked
+// withdrawal date, so they still count for months up through today — this
+// corrects the far more common case (a later-joining sibling) without
+// inventing a departure date the data doesn't have.
+function famMonthlyForYm(key, ym){
+  const p=famPlan(key);
+  if(p.rateMode==='manual') return p.monthly||0;
+  const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
+  const cutoff=ym+'-31'; // safe sentinel: any real YYYY-MM-DD in this month sorts <= this string
+  const count=DB.data.students.filter(s=>famKey(s)===key && s.active!==false && (s.startDate||(p.start?p.start+'-01':''))<=cutoff).length;
+  return rate*count;
+}
 function monthsBetween(a, b){ // 'YYYY-MM' inclusive count
   const [ay,am]=a.split('-').map(Number), [by,bm]=b.split('-').map(Number);
   return Math.max(0,(by-ay)*12+(bm-am)+1);
@@ -7961,11 +7986,24 @@ function famFinance(key){
   const monthly=famEffectiveMonthly(key, activeCount);
   const paid=pays.filter(x=>x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
   const nowM=today().slice(0,7);
-  const excusedMonths=new Set(pays.filter(x=>x.kind==='excused').map(x=>x.date.slice(0,7)));
+  // Only excused months that actually fall inside the billing window count
+  // against it — an excused record with a stray out-of-range date (before
+  // the plan started, or in the future) shouldn't silently shrink the total.
+  const excusedMonths=new Set(pays.filter(x=>x.kind==='excused' && p.start && x.date.slice(0,7)>=p.start && x.date.slice(0,7)<=nowM).map(x=>x.date.slice(0,7)));
   let expected=0;
-  if(monthly>0 && p.start){
-    const totalMonths=monthsBetween(p.start, nowM);
-    expected += Math.max(0, totalMonths-excusedMonths.size)*monthly;
+  if(p.start){
+    // Priced month by month via famMonthlyForYm — see its comment for why:
+    // a flat totalMonths × today's-rate silently repriced a family's whole
+    // history whenever its headcount changed. Iterates via a monotonic
+    // "months since year 0" index (y*12+m) rather than manually rolling
+    // month/year over at 12, which is easy to get subtly wrong.
+    const [sy,sm]=p.start.split('-').map(Number), [ny,nm]=nowM.split('-').map(Number);
+    const startIdx=sy*12+sm, endIdx=ny*12+nm;
+    for(let idx=startIdx; idx<=endIdx; idx++){
+      const y=Math.floor((idx-1)/12), m=((idx-1)%12)+1;
+      const ym=y+'-'+String(m).padStart(2,'0');
+      if(!excusedMonths.has(ym)) expected += famMonthlyForYm(key, ym);
+    }
   }
   if(p.regFee>0 && !p.regPaid) expected += p.regFee;
   const paidThisMonth=pays.filter(x=>x.date.slice(0,7)===nowM && x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
@@ -7977,7 +8015,6 @@ function famFinance(key){
 const TUITION_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function famMonthMatrix(key, year){
   const p=famPlan(key); const pays=DB.data.finance.payments.filter(x=>x.fam===key);
-  const monthly=famEffectiveMonthly(key);
   const nowM=today().slice(0,7);
   const months=[];
   for(let m=1;m<=12;m++){
@@ -7986,6 +8023,9 @@ function famMonthMatrix(key, year){
     if(p.start && ym<p.start) status='before';
     else if(ym>nowM) status='future';
     else {
+      // Each cell judged against what THAT month actually owed, not
+      // today's rate — see famMonthlyForYm's comment.
+      const monthly=famMonthlyForYm(key, ym);
       const monthPays=pays.filter(x=>x.date.slice(0,7)===ym);
       if(monthPays.some(x=>x.kind==='excused')) status='excused';
       else {
@@ -8696,7 +8736,7 @@ const Tuition = {
     const months12=[...Array(12)].map((_,i)=>{ const dt=new Date(); dt.setDate(1); dt.setMonth(dt.getMonth()-(11-i)); return dt.toISOString().slice(0,7); });
     const rateTrend = months12.map(ym=>{
       let exp=0, col=0;
-      fams.forEach(f=>{ const p=famPlan(f.key), monthly=famEffectiveMonthly(f.key);
+      fams.forEach(f=>{ const p=famPlan(f.key), monthly=famMonthlyForYm(f.key, ym); // that month's own rate, not today's headcount
         if(monthly>0 && p.start && ym>=p.start) exp+=monthly;
         col += DB.data.finance.payments.filter(x=>x.fam===f.key && x.date.slice(0,7)===ym && x.kind!=='excused' && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0); });
       return exp>0? Math.round(Math.min(100,col/exp*100)) : (col>0?100:0);
