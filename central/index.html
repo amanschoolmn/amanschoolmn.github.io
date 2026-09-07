@@ -3171,7 +3171,8 @@ function printHTMLDocument(html){
       #print-root .pp-x{background:transparent;color:#f4ead6;border:1px solid rgba(244,234,214,.4)!important}
       @media print{
         body>*:not(#print-root){display:none!important}
-        #print-root{display:block!important;position:static}
+        #print-root{display:block!important;position:static!important;inset:auto!important}
+        #print-root .pp-shadow{position:static!important;overflow:visible!important;flex:unset!important;height:auto!important}
         #print-root .no-print{display:none!important}
       }`;
     document.head.appendChild(st);
