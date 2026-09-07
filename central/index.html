@@ -19,13 +19,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" crossorigin="anonymous">
-<!-- Payment reminder flyer (Tuition → Who Owes Now) renders to PNG via html2canvas. -->
+<!-- Payment reminder flyer (Tuition → Who Owes Now) and the Student of the
+     Month share card (Students → 🌟 → Create Share Card) both render to PNG
+     via html2canvas — unrelated to printHTMLDocument, which is
+     window.print()-only again (see PRINT BUG #6 on that function). -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- PDF export for the Print/Save-as-PDF flow (see printHTMLDocument's PRINT BUG #5
-     comment) — generates a real PDF client-side instead of relying on
-     window.print(), which iOS does not support from a home-screen-installed
-     web app at all. Exposes window.jspdf.jsPDF. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
 <style>
 /* ============ AMAN CENTRAL DESIGN SYSTEM ============ */
 :root{
@@ -3097,9 +3095,8 @@ function openLetterPreview(html){
   overlay.appendChild(frame);
   document.body.appendChild(overlay);
 }
-// Prints/exports a full HTML document string (as produced by
-// renderSOTMShareCard, renderSOTMCertificate, letter/checklist builders,
-// etc.).
+// Prints a full HTML document string (as produced by renderSOTMShareCard,
+// renderSOTMCertificate, letter/checklist builders, etc.).
 //
 // PRINT BUG HISTORY (kept so a future edit doesn't repeat any of these):
 // #2: extracting the letter's <style> tag and injecting it straight into
@@ -3114,96 +3111,22 @@ function openLetterPreview(html){
 // window.print() automatically two animation frames later with nothing on
 // screen and no button to tap. FIX: show the content immediately with a
 // real Print/Close bar and call window.print() synchronously in the same
-// tap, with that visible button as a fallback if the automatic call ever
-// got swallowed.
+// tap.
 // #5 (2026-09): confirmed directly by the person using this app — this app
 // runs as a home-screen-installed web app on their iOS device specifically,
-// and window.print() has never worked from that display mode there, full
-// stop, however it's triggered. This is a platform ceiling: no timing or
-// activation-preserving trick in this function can produce a print sheet
-// iOS itself refuses to honor. FIX: stop depending on window.print() as the
-// primary action here. Generate a real PDF client-side instead
-// (html2canvas renders the content to a canvas, jsPDF assembles a real,
-// multi-page PDF from it) and trigger a normal file download/share — a code
-// path that never touches the print pipeline iOS breaks in standalone
-// mode. A "System print dialog" option stays available as a secondary
-// action for contexts where it does work (desktop browsers, a plain Safari
-// tab).
-// #5.5 (2026-09, same day): reverted #5's fix back to a pure
-// window.print() flow on request ("go back to the old settings"), built as
-// reliably as a pure window.print() flow can be (#4's visible-content
-// pattern, not #4's original broken shape). Then confirmed directly: the
-// person actually is on iOS standalone, and print really did stop the
-// moment this reverted — i.e. #5's PDF-generation path was the thing
-// actually making this work for them, not incidental to it. RESTORED #5's
-// fix here. The lesson, not just the code: for THIS app's actual daily
-// context (an iOS home-screen icon), the PDF-generation path is not an
-// alternative to window.print() — it is the only one of the two that
-// works, and reverting away from it should not happen again without
-// re-confirming the person's actual usage context first.
-//
-// html2canvas can't read INTO a Shadow DOM reliably (its Shadow DOM/Web
-// Component support is incomplete upstream), so the export step builds a
-// separate, temporary, light-DOM copy of the content — CSS-scoped with
-// scopeCssText() so the source document's own `body{...}`-style rules
-// still can't leak into the live app — positioned off-screen, captured,
-// then removed. The visible on-screen PREVIEW is untouched and stays
-// Shadow-DOM-isolated exactly as #3's fix intended.
-//
-// Prefixes every selector in a block of CSS text with a scope class, so
-// e.g. `body{color:#000}` becomes `.scope123 body{color:#000}` — matches
-// nothing outside an element carrying that class. At-rule preludes
-// (@media, @page, @keyframes, @font-face, and keyframe steps like `50%`)
-// are left untouched; only the innermost rule selectors get scoped. This
-// is deliberately simple rather than a full CSS parser — it only needs to
-// handle the plain selectors (element/class/descendant/comma-separated)
-// that this file's own print-document generators actually use, not
-// arbitrary third-party CSS.
-function scopeCssText(css, scopeClass){
-  css = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  return css.replace(/([^{}]+)\{/g, (m, sel)=>{
-    const t = sel.trim();
-    if(!t || /^@|^(from|to|\d+%)$/.test(t)) return m;
-    return t.split(',').map(s=>{ s=s.trim(); return s ? '.'+scopeClass+(s==='*'?' *':' '+s) : s; }).join(', ') + '{';
-  });
-}
-// Renders a printable HTML-document string to a real PDF Blob via a
-// temporary, off-screen, CSS-scoped light-DOM copy (see PRINT BUG #5
-// above for why light DOM rather than the visible Shadow DOM preview).
-async function htmlDocToPdfBlob(html){
-  if(typeof html2canvas!=='function') throw new Error('html2canvas failed to load');
-  if(typeof window.jspdf==='undefined') throw new Error('jsPDF failed to load');
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const styleText = [...doc.querySelectorAll('style')].map(s=>s.textContent).join('\n');
-  const bodyHTML = doc.body ? doc.body.innerHTML : html;
-  const scopeClass = 'pdfcap'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-
-  const holder = document.createElement('div');
-  holder.style.cssText = 'position:fixed;top:0;left:-99999px;width:850px;background:#fff';
-  holder.innerHTML = `<style>${scopeCssText(styleText, scopeClass)}\n.${scopeClass} .toolbar-actions{display:none!important}</style><div class="${scopeClass}"><div class="pt-print-inner">${bodyHTML}</div></div>`;
-  document.body.appendChild(holder);
-  try{
-    const captureTarget = holder.querySelector('.pt-print-inner');
-    const canvas = await html2canvas(captureTarget, {scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:850});
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({unit:'pt', format:'letter'});
-    const pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
-    const imgW = pageW, imgH = canvas.height*(imgW/canvas.width);
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-    let heightLeft = imgH, position = 0;
-    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-    heightLeft -= pageH;
-    while(heightLeft > 0){
-      position -= pageH;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-      heightLeft -= pageH;
-    }
-    return pdf.output('blob');
-  } finally {
-    holder.remove();
-  }
-}
+// and window.print() has never worked from that display mode there. FIX:
+// generate a real PDF client-side instead (html2canvas + jsPDF) and trigger
+// a file download, bypassing the print pipeline iOS breaks in standalone
+// mode, with "System print dialog" kept as a secondary option.
+// #6 (2026-09, later): reverted #5 on explicit request, back to a pure
+// window.print() flow only — done WITH #5's known iOS-standalone limitation
+// re-confirmed and knowingly accepted this time (not rediscovered the hard
+// way as in the earlier #5.5 attempt). If print silently does nothing again
+// on the iOS home-screen install, that limitation is the reason — the fix
+// is to reinstate #5's PDF-generation path (in AMAN-Central_107_v1.html),
+// not to debug this function further. Kept #4's visible Print/Close bar
+// rather than #4's original invisible/auto-fire shape, since that was a
+// separate, already-settled bug with no bearing on this revert.
 function printHTMLDocument(html){
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const styleText = [...doc.querySelectorAll('style')].map(s=>s.textContent).join('\n');
@@ -3219,8 +3142,7 @@ function printHTMLDocument(html){
   // directly-tappable buttons) plus a plain child div that gets its own
   // Shadow DOM for the isolated printable content.
   host.innerHTML = `<div class="pp-bar no-print">
-      <button type="button" class="pp-go">\u2B07\uFE0F Download PDF</button>
-      <button type="button" class="pp-sys">System print dialog\u2026</button>
+      <button type="button" class="pp-go">\uD83D\uDDA8\uFE0F Print / Save as PDF</button>
       <button type="button" class="pp-x">\u2715 Close</button>
     </div><div class="pp-shadow"></div>`;
   const shadowHost = host.querySelector('.pp-shadow');
@@ -3246,8 +3168,6 @@ function printHTMLDocument(html){
         padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}
       #print-root .pp-bar button{padding:9px 16px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit}
       #print-root .pp-go{background:#b8872a;color:#20261f}
-      #print-root .pp-go:disabled{opacity:.6}
-      #print-root .pp-sys{background:transparent;color:#f4ead6;border:1px solid rgba(244,234,214,.4)!important;font-weight:600!important}
       #print-root .pp-x{background:transparent;color:#f4ead6;border:1px solid rgba(244,234,214,.4)!important}
       @media print{
         body>*:not(#print-root){display:none!important}
@@ -3260,27 +3180,7 @@ function printHTMLDocument(html){
   host.classList.add('pp-open');
   const closeHost = () => { host.classList.remove('pp-open'); host.innerHTML=''; };
   host.querySelector('.pp-x').onclick = closeHost;
-  // System print dialog stays available as a secondary option (works fine
-  // on desktop browsers and a plain Safari tab) but is no longer the
-  // primary action — see PRINT BUG #5 above for why it can't be relied on
-  // in this app's actual daily usage context.
-  host.querySelector('.pp-sys').onclick = () => window.print();
-  const goBtn = host.querySelector('.pp-go');
-  goBtn.onclick = async () => {
-    goBtn.disabled = true; const label = goBtn.textContent; goBtn.textContent = 'Generating\u2026';
-    try{
-      const blob = await htmlDocToPdfBlob(html);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'AMAN.pdf';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url), 30000);
-    } catch(err){
-      toast('PDF export failed \u2014 try "System print dialog" instead');
-    } finally {
-      goBtn.disabled = false; goBtn.textContent = label;
-    }
-  };
+  host.querySelector('.pp-go').onclick = () => window.print();
 }
 
 
