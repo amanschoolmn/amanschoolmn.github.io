@@ -4044,6 +4044,7 @@ Registry.register({ id:'dashboard', name:'Dashboard', icon:'home', group:'Comman
 render(v){
   clearInterval(Dashboard._clk);
   const d=DB.data, stu=d.students.filter(s=>s.active!==false), res=d.resources;
+  resolveAllHifzGoals(d);
   // widget order: merge stored prefs with any new widgets (non-destructive migration)
   const known = WIDGETS.map(w=>w.id);
   let on = d.settings.widgets;
@@ -4103,6 +4104,8 @@ render(v){
   // — NEEDS ATTENTION: the auto-generated daily checklist —
   W.focus = ()=>{
     const items=[];
+    stu.filter(s=>s.level==='Level 3').forEach(s=>(s.hifzGoalHistory||[]).filter(g=>g.status==='met'&&!g.celebrated).forEach(g=>
+      items.push({i:'🍩',t:s.name+' reached the Juzʼ '+g.juz+' goal — treat Level 3 to donuts!', go:'#/students/'+s.id, tag:'treat!', why:'Ḥifẓ goal (Juzʼ '+g.juz+', deadline '+fmtDate(g.deadline)+') completed on '+fmtDate(g.resolvedDate)})));
     if(daysTo===0 && stu.length && !Object.keys(todayRec).length)
       items.push({i:'✅',t:'Attendance not taken yet for today’s class', go:'#/students/attendance', tag:'now', why:'today is a scheduled class day and no attendance is recorded yet'});
     openTasks.filter(t=>t.due&&t.due<tdy).forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed'}));
@@ -5347,6 +5350,134 @@ function hifzStats(s){
   const pct=Math.min(100, pages/total*100);
   return {pid, order, cur, idx, pages, total, pct, next:order.slice(idx+1, idx+4), curSpan, within};
 }
+/* ---- Ḥifẓ milestone goals (per-student Juzʼ targets w/ deadline, for the
+   class-wide treat incentive) ---- */
+// Standard 604-page Madinah Muṣḥaf: the page each Juzʼ begins on. Formula
+// (N-1)*20+2, with two well-known named exceptions (Juzʼ 7 begins page
+// 121, not 122; Juzʼ 11 begins page 201, not 202). Index 31 is a sentinel
+// (605) marking one-past-the-end, so Juzʼ 30's range computes the same
+// way as every other Juzʼ's.
+const JUZ_PAGE = [null,1,22,42,62,82,102,121,142,162,182,201,222,242,262,282,302,322,342,362,382,402,422,442,462,482,502,522,542,562,582,605];
+function surahOfPage(p){ let best=1; for(let n=1;n<=114;n++){ if(QS[n].p<=p) best=n; else break; } return best; }
+// Counts, page by page, how much of Juzʼ N a student has actually
+// memorized so far, given their path and current position — not a single
+// threshold comparison. A single threshold ("curPage has reached Juzʼ N's
+// start page") looks right at first but is WRONG whenever Juzʼ N's
+// boundary falls in the middle of a multi-Juzʼ sūrah like Al-Baqarah or
+// An-Nisāʾ: reaching that page only means that sūrah's tail end (still
+// ahead — a sūrah is always memorized start→end) isn't done yet, even
+// though later, already-finished sūrahs beyond it are. Checking full
+// page-range coverage sidesteps that trap entirely.
+function juzProgress(s, N){
+  const h=s.hifz||{}; const pid=HIFZ_PATHS[h.path]?h.path:'standard';
+  const order=HIFZ_PATHS[pid].order();
+  const cur=order.includes(h.cur)?h.cur:order[0];
+  const idx=order.indexOf(cur);
+  let done=0, tot=0;
+  for(let p=JUZ_PAGE[N]; p<JUZ_PAGE[N+1]; p++){
+    tot++;
+    const sIdx = order.indexOf(surahOfPage(p));
+    if(sIdx < idx || (sIdx===idx && h.curPage && p<=h.curPage)) done++;
+  }
+  return {done, tot, pct: tot? done/tot*100 : 0};
+}
+function isJuzComplete(s, N){ const jp=juzProgress(s,N); return jp.done===jp.tot; }
+// Furthest Juzʼ this student's position has finished WITHOUT any gap
+// behind it, walked in the direction their path actually travels (30→1
+// for standard, 1→30 for reverse) rather than a fixed numeric sweep —
+// this is the number worth showing as "current milestone," since a Juzʼ
+// deep inside the sūrah currently being worked on can occasionally read
+// as individually complete while an earlier one in the same sūrah isn't
+// (see isJuzComplete's comment); walking in path order and stopping at
+// the first gap reports the honest, contiguous "how far along" figure.
+function furthestJuzDone(s){
+  const pid = HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard';
+  const seq = pid==='standard' ? [...Array(30)].map((_,i)=>30-i) : [...Array(30)].map((_,i)=>i+1);
+  let done=0; for(const N of seq){ if(isJuzComplete(s,N)) done=N; else break; }
+  return done;
+}
+// Resolves one student's active Ḥifẓ goal (s.hifzGoal) against their real
+// progress, if it's been either finished or run past its deadline —
+// moving it into s.hifzGoalHistory and clearing the active slot. Returns
+// true if it changed anything (caller is responsible for DB.save()).
+// Finishing ON time is flagged 'met' (celebrated:false — this is what the
+// class-treat alert watches for); finishing AFTER the deadline is still
+// honestly recorded as 'met-late' rather than silently downgraded to a
+// miss, matching how this app treats every other honest-record-keeping
+// case, but doesn't trigger the treat alert. Missing the deadline
+// entirely (not yet done when the deadline passes) records 'missed'.
+function checkHifzGoal(s){
+  const g = s.hifzGoal; if(!g) return false;
+  s.hifzGoalHistory = s.hifzGoalHistory||[];
+  if(isJuzComplete(s, g.juz)){
+    const onTime = !g.deadline || today()<=g.deadline;
+    s.hifzGoalHistory.unshift({...g, resolvedDate:today(), status:onTime?'met':'met-late', celebrated:!onTime});
+    DB.log(s.name+' — reached the Juzʼ '+g.juz+' goal'+(onTime?'':' (past the '+fmtDate(g.deadline)+' deadline)'));
+    s.hifzGoal = null; return true;
+  }
+  if(g.deadline && today() > g.deadline){
+    s.hifzGoalHistory.unshift({...g, resolvedDate:today(), status:'missed', celebrated:true});
+    s.hifzGoal = null; return true;
+  }
+  return false;
+}
+// Scans every active Level 3 student for a goal that's just been resolved
+// — called from the Dashboard so a goal met between visits to that
+// student's own profile still surfaces the class-treat alert right away.
+function resolveAllHifzGoals(d){
+  let changed=false;
+  d.students.forEach(s=>{ if(s.active!==false && s.level==='Level 3' && s.hifzGoal && checkHifzGoal(s)) changed=true; });
+  if(changed) DB.save();
+}
+// Any Level 3 student with an allergy on file — reused on the treat-day
+// card as a reminder to bring an alternative, and matching the exact
+// "has a real value, not n/a/none/no" test already used for the same
+// field's health-flag display elsewhere in this app.
+function allergyReminderHTML(){
+  const flagged = DB.data.students.filter(s=>s.active!==false && s.level==='Level 3'
+    && s.application && s.application.allergy && !/^(n\/a|none|no)$/i.test(s.application.allergy.trim()));
+  if(!flagged.length) return '';
+  return `<p style="font-size:11.5px;margin-top:6px">⚠ Allergy on file for: ${flagged.map(s=>esc(s.name)).join(', ')} — bring an alternative.</p>`;
+}
+function renderTreatGoalCard(s){
+  const pid = HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard';
+  const juzSeq = pid==='standard' ? [...Array(30)].map((_,i)=>30-i) : [...Array(30)].map((_,i)=>i+1);
+  const g = s.hifzGoal;
+  const justMet = (s.hifzGoalHistory||[]).find(x=>x.status==='met' && !x.celebrated);
+  let body;
+  if(justMet){
+    body = `<div class="notice info" style="margin-bottom:0">🍩 <div><b>Goal met on time — Juzʼ ${justMet.juz}!</b> ${esc(s.name)} finished by the ${fmtDate(justMet.deadline)} deadline. Time to treat Level 3 to donuts.
+      ${allergyReminderHTML()}
+      <button class="btn btn-p btn-sm" id="hzGoalCelebrate" style="margin-top:8px">✅ Donuts delivered — mark celebrated</button></div></div>`;
+  } else if(g){
+    const jp = juzProgress(s, g.juz);
+    const daysLeft = g.deadline? Math.round((new Date(g.deadline)-new Date(today()))/864e5) : null;
+    body = `<div class="card" style="margin-bottom:0">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+        <b style="font-family:var(--f-display);font-size:15px">Goal: finish Juzʼ ${g.juz}</b>
+        <span class="tag ${daysLeft!=null&&daysLeft<0?'tag-red':daysLeft!=null&&daysLeft<=7?'tag-gold':'tag-dim'}">${daysLeft==null?'no deadline':daysLeft<0?Math.abs(daysLeft)+'d past deadline':daysLeft===0?'due today':daysLeft+'d left'}</span>
+      </div>
+      <div class="bar" style="height:8px;margin-bottom:6px"><i style="width:${jp.pct}%"></i></div>
+      <p style="font-size:11.5px;color:var(--ink3)">${jp.done} of ${jp.tot} pages of Juzʼ ${g.juz} memorized so far · set ${fmtDate(g.setDate)}${g.deadline?' · due '+fmtDate(g.deadline):''}</p>
+      <button class="btn btn-ghost btn-sm" id="hzGoalCancel" style="margin-top:6px">Cancel goal</button>
+    </div>`;
+  } else {
+    const options = juzSeq.filter(N=>!isJuzComplete(s,N));
+    body = options.length? `<div class="grid" style="grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:0">
+      <div class="field"><label>Target Juzʼ</label><select id="hzGoalJuz">${options.map(N=>`<option value="${N}">Juzʼ ${N}</option>`).join('')}</select></div>
+      <div class="field"><label>Deadline</label><input id="hzGoalDeadline" type="date" min="${today()}"></div>
+      <button class="btn btn-p btn-sm" id="hzGoalSet">Set goal</button>
+    </div>` : `<p style="font-size:12.5px;color:var(--ok);margin-bottom:0">🕋 Every Juzʼ already memorized — nothing left to assign.</p>`;
+  }
+  const hist = (s.hifzGoalHistory||[]).slice(0,5);
+  return `<div class="card" style="margin-bottom:14px;border-top:3px solid #b8872a">
+    <b style="font-family:var(--f-display);font-size:16px;display:block;margin-bottom:6px">🍩 Class Treat Goal</b>
+    <p style="font-size:12px;color:var(--ink2);margin-bottom:10px">A Juzʼ target with a deadline — reaching it on time triggers a class-wide donut treat for Level 3.</p>
+    ${body}
+    ${hist.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">Goal history (${hist.length})</summary>
+      <div class="wlist" style="margin-top:6px">${hist.map(h2=>`<div class="wrow" style="cursor:default"><span>${h2.status==='met'?'✅':h2.status==='met-late'?'🕐':'❌'}</span><span class="t">Juzʼ ${h2.juz} — ${h2.status==='met'?'met on time':h2.status==='met-late'?'finished after the deadline':'deadline missed'}</span><span class="m">${fmtDate(h2.resolvedDate)}</span></div>`).join('')}</div></details>`:''}
+  </div>`;
+}
 function ayahStats(st){
   // Full ayah count for every sūrah already finished, plus a proportional
   // estimate of how far into the current (in-progress) sūrah's ayahs the
@@ -6376,6 +6507,7 @@ const Students = {
     // Level 3 — Ḥifẓ
     const h=s.hifz=s.hifz||{path:'standard', cur:114, curPage:null, goalWeekly:0, strengths:'', improve:''};
     s.hifzLog = s.hifzLog||[];
+    if(checkHifzGoal(s)) DB.save();
     const st=hifzStats(s);
     const ays=ayahStats(st);
     const newest30=qlog.filter(q=>q.kind==='New'&&q.date>=new Date(Date.now()-30*864e5).toISOString().slice(0,10)).length;
@@ -6388,6 +6520,7 @@ const Students = {
     el.innerHTML = `<div class="sect">Ḥifẓ — Madinah Muṣḥaf<span class="rule"></span></div>
      ${st.pct>=100?`<div class="notice info" style="margin-bottom:12px">🕋 <div><b>Ḥifẓ complete — all thirty Juzʼ!</b> ${esc(s.name)} has completed memorizing the entire Qur'an by heart. <button class="btn btn-p btn-sm" id="hifzCertBtn">🎓 Certificate</button></div></div>`:''}
      ${renderGoalCard(eta3, 'pages', e=>nextName?'Finish '+esc(QS[st.cur].name)+', begin '+esc(nextName):'Reach '+e.shortTarget+' pages', e=>'Complete '+esc(HIFZ_PATHS[st.pid].name)+' ('+st.total.toFixed(0)+' p.)')}
+     ${renderTreatGoalCard(s)}
      <details style="margin-bottom:14px">
        <summary style="cursor:pointer;font-family:var(--f-display);font-size:15px;font-weight:600;padding:2px 0 8px">📊 Memorization Goal &amp; Tracker</summary>
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin-bottom:10px">
@@ -6428,6 +6561,18 @@ const Students = {
     const hifzCert=$('#hifzCertBtn',el); if(hifzCert) hifzCert.onclick=()=>printHTMLDocument(renderHifzCertificate({name:s.name}));
     $('#hz-page',el).onchange=e=>{ const p=+e.target.value||null; h.curPage=p?Math.max(QS[h.cur].p,Math.min(604,p)):null; saveH(); };
     $('#hz-goal',el).onchange=e=>{ h.goalWeekly=+e.target.value||0; saveH(); };
+    const hzGoalSet=$('#hzGoalSet',el); if(hzGoalSet) hzGoalSet.onclick=()=>{
+      const juz=+$('#hzGoalJuz',el).value, deadline=$('#hzGoalDeadline',el).value;
+      if(!deadline){ toast('Pick a deadline first'); return; }
+      s.hifzGoal={juz, deadline, setDate:today()};
+      DB.log(s.name+' — new Ḥifẓ goal: Juzʼ '+juz+' by '+fmtDate(deadline));
+      DB.save(); Router.render();
+    };
+    const hzGoalCancel=$('#hzGoalCancel',el); if(hzGoalCancel) hzGoalCancel.onclick=()=>confirmBox('Cancel this goal?', ()=>{ s.hifzGoal=null; DB.save(); Router.render(); });
+    const hzGoalCelebrate=$('#hzGoalCelebrate',el); if(hzGoalCelebrate) hzGoalCelebrate.onclick=()=>{
+      const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated);
+      if(g) g.celebrated=true; DB.save(); Router.render(); toast('🍩 Enjoy the celebration!');
+    };
     $('#hz-str',el).onchange=e=>{ h.strengths=e.target.value.trim(); DB.save(); };
     $('#hz-imp',el).onchange=e=>{ h.improve=e.target.value.trim(); DB.save(); };
   },
