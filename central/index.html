@@ -694,7 +694,7 @@ const uid = ()=> 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,
 // bug from this one shared helper). Every place that turns a date-only
 // string into local calendar components now goes through this instead of
 // calling `new Date(iso)` directly.
-const parseLocalDate = iso => { const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); };
+const parseLocalDate = iso => { const [y,m,d] = iso.slice(0,10).split('-').map(Number); return new Date(y, m-1, d); };
 const fmtDate = iso => { if(!iso) return '—'; return parseLocalDate(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
 // Date of birth specifically is always shown as numeric Month/Day/Year
 // (e.g. 01/23/2016) — asked for directly 2026-09, distinct from fmtDate's
