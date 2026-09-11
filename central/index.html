@@ -8008,7 +8008,7 @@ function famList(){ // auto-derived families from patronymics + overrides
     (map[k]=map[k]||{key:k, solo:!famKey(s), members:[]}).members.push(s); });
   return Object.values(map).sort((a,b)=>b.members.length-a.members.length);
 }
-function famRec(key){ return DB.data.families[key]=DB.data.families[key]||{phone:'', note:'', log:[]}; }
+function famRec(key){ return DB.data.families[key]=DB.data.families[key]||{phone:'', note:'', log:[], sponsorName:'', sponsorPhone:''}; }
 // Shared visual identity for the Tuition module — families don't have
 // photos the way students do, so a deterministic colored initial fills
 // that role everywhere a family shows up (Matrix's frozen column,
@@ -8813,8 +8813,9 @@ render(v,param){
 }});
 /* shared by Tuition.owe() and Tuition.draftAllReminders() so the wording
    never drifts between the one-at-a-time and batch paths. */
-function tuitionReminderMsg(famKey, fin, nowM){
-  return `As-sal\u0101mu \u02bfalaykum ${famKey} family \u2014 friendly reminder: $${Math.max(0,fin.monthly-fin.paidThisMonth)} is due for ${nowM} at AMAN (balance $${fin.balance}). Jaz\u0101kAllahu khayran!`;
+function tuitionReminderMsg(famKey, fin, nowM, rec){
+  const to = rec&&rec.sponsorName ? rec.sponsorName+' — on behalf of the '+famKey+' family' : famKey+' family';
+  return `As-sal\u0101mu \u02bfalaykum ${to} \u2014 friendly reminder: $${Math.max(0,fin.monthly-fin.paidThisMonth)} is due for ${nowM} at AMAN (balance $${fin.balance}). Jaz\u0101kAllahu khayran!`;
 }
 const Tuition = {
   /* ---------- OVERVIEW ---------- */
@@ -8956,6 +8957,7 @@ const Tuition = {
           <div style="margin-top:5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
             ${fin.monthly>0? famStatusBadge(fin.monthStatus) : '<span class="tag tag-dim">no plan set</span>'}
             ${fin.balance?`<b style="font-size:12.5px;color:var(--bad)">$${fin.balance} balance</b>`:''}
+            ${rec.sponsorName?`<span style="font-size:11.5px;color:var(--gold);font-weight:600">🤝 sponsored by ${esc(rec.sponsorName)}</span>`:''}
           </div>
         </div>
         <span style="color:var(--ink3);font-size:15px">${open?'\u25be':'\u25b8'}</span></div>
@@ -8974,6 +8976,11 @@ const Tuition = {
           <div class="field"><label>Reg. fee paid?</label><select data-pf="regPaid"><option value="0" ${!fin.plan.regPaid?'selected':''}>Not yet</option><option value="1" ${fin.plan.regPaid?'selected':''}>Paid \u2713</option></select></div>
           <div class="field"><label>Family phone</label><input data-ff="phone" value="${esc(rec.phone)}"></div>
         </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+          <div class="field"><label>Sponsor name <span style="font-weight:400;color:var(--ink3)">(if someone else is paying)</span></label><input data-ff="sponsorName" value="${esc(rec.sponsorName)}" placeholder="e.g. another family covering tuition"></div>
+          <div class="field"><label>Sponsor phone</label><input data-ff="sponsorPhone" value="${esc(rec.sponsorPhone)}"></div>
+        </div>
+        ${rec.sponsorName?`<p style="font-size:11.5px;color:var(--ink3);margin:-2px 0 10px">Reminders and call/text links for ${esc(f.key)} will go to ${esc(rec.sponsorName)} instead of the family's own phone — the balance itself still tracks under ${esc(f.key)}.</p>`:''}
         <div class="field"><label>Financial / family note</label><input data-ff="note" value="${esc(rec.note)}" placeholder="arrangements, discounts, reminders\u2026"></div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px" class="no-print">
           <button class="btn btn-p btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
@@ -9056,8 +9063,9 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
       .sort((a,b)=>b.fin.balance-a.fin.balance);
     el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">📞 Families not yet paid for ${nowM} \u2014 sorted by balance owed.${owing.length?' <button class="chip no-print" id="tuDraftAll" style="margin-left:6px">\u2709\ufe0f Draft all reminders</button>':''}</p>
      ${owing.length? owing.map(({f,fin,rec})=>{
-        const shortMsg = tuitionReminderMsg(f.key, fin, nowM);
-        const digits = rec.phone? rec.phone.replace(/[^0-9+]/g,'') : '';
+        const shortMsg = tuitionReminderMsg(f.key, fin, nowM, rec);
+        const contactPhone = rec.sponsorPhone || rec.phone;
+        const digits = contactPhone? contactPhone.replace(/[^0-9+]/g,'') : '';
         const owedNow = Math.max(0,fin.monthly-fin.paidThisMonth);
         const cv = fin.monthStatus==='Partial' ? '--warn' : '--bad';
         return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:9px;border-left:3px solid var(${cv})">
@@ -9065,7 +9073,8 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
           ${famAvatarHTML(f.key,40)}
           <div style="min-width:0">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-family:var(--f-display);font-size:15.5px">${esc(f.key)}</b>${famStatusBadge(fin.monthStatus)}</div>
-            <div style="font-size:12.5px;color:var(--ink2);margin-top:4px">$${fin.balance} total balance${rec.phone?' \u00b7 '+esc(rec.phone):''}</div>
+            <div style="font-size:12.5px;color:var(--ink2);margin-top:4px">$${fin.balance} total balance${contactPhone?' · '+esc(contactPhone):''}</div>
+            ${rec.sponsorName?`<div style="font-size:11.5px;color:var(--gold);margin-top:2px;font-weight:600">🤝 Sponsored by ${esc(rec.sponsorName)}</div>`:''}
           </div>
           <div style="margin-left:auto;text-align:right;padding-left:8px">
             <div style="font-family:var(--f-display);font-size:22px;font-weight:700;color:var(${cv})">$${owedNow}</div>
@@ -9096,7 +9105,7 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
       .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
       .sort((a,b)=>b.fin.balance-a.fin.balance);
     if(!owing.length){ toast('No outstanding balances this month, al-ḥamdu lillāh'); return; }
-    const msgs = owing.map(({f,fin})=>({fam:f.key, msg:tuitionReminderMsg(f.key, fin, nowM)}));
+    const msgs = owing.map(({f,fin,rec})=>({fam:f.key, msg:tuitionReminderMsg(f.key, fin, nowM, rec)}));
     const allText = msgs.map(m=>m.msg).join('\n\n');
     const o = overlay(`<div class="modal" style="max-width:520px"><h3>Reminders drafted \u2014 ${owing.length} famil${owing.length===1?'y':'ies'}</h3>
       <p style="font-size:13px;color:var(--ink2)">Copy each one individually below, or copy all of them at once and split them out when sending. \ud83c\udfab generates the branded flyer image for that family instead of plain text.</p>
