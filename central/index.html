@@ -8008,7 +8008,40 @@ function famList(){ // auto-derived families from patronymics + overrides
     (map[k]=map[k]||{key:k, solo:!famKey(s), members:[]}).members.push(s); });
   return Object.values(map).sort((a,b)=>b.members.length-a.members.length);
 }
-function famRec(key){ return DB.data.families[key]=DB.data.families[key]||{phone:'', note:'', log:[], sponsorName:'', sponsorPhone:''}; }
+function famRec(key){ return DB.data.families[key]=DB.data.families[key]||{phone:'', note:'', log:[], sponsorName:'', sponsorPhone:'', sponsorFamilyKey:''}; }
+// A family this one's tuition is auto-credited from, resolved to an
+// existing, currently-real family (not just whatever free text happens to
+// be in sponsorName) — this is what payForm checks after logging a
+// payment, so it only ever matches an actual family on the roster.
+function famPrimaryGuardian(key){
+  for(const s of DB.data.students){ if(famKey(s)===key && (s.guardians||[]).length) return s.guardians[0]; }
+  return null;
+}
+// After a tuition payment for sponsorFam, auto-credits every family linked
+// to it (rec.sponsorFamilyKey === sponsorFam) for whatever THAT family
+// still owes for the same month — not a portion of the sponsor's own
+// payment amount, since family sizes and rates differ, matching how the
+// sponsor actually pays: their own tuition plus whatever the sponsored
+// family owes, in one transaction. Skips a linked family that's already
+// covered for that month rather than logging a redundant $0 entry.
+function autoCreditLinkedFamilies(sponsorFam, payDate, method){
+  const ym = payDate.slice(0,7);
+  const credited = [];
+  Object.keys(DB.data.families).forEach(key=>{
+    if(key===sponsorFam) return;
+    const rec = DB.data.families[key];
+    if(!rec || rec.sponsorFamilyKey!==sponsorFam) return;
+    const monthly = famEffectiveMonthly(key);
+    if(monthly<=0) return;
+    const already = DB.data.finance.payments.filter(x=>x.fam===key && x.date.slice(0,7)===ym && x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+(+x.amount||0),0);
+    const remaining = Math.max(0, monthly-already);
+    if(remaining<=0) return;
+    DB.data.finance.payments.push({id:uid(), fam:key, amount:remaining, date:payDate, kind:'tuition', note:'Auto-credited \u2014 sponsor ('+sponsorFam+') paid on '+payDate, method});
+    DB.log('Auto-credited $'+remaining+' \u2014 '+key+' (sponsored by '+sponsorFam+')');
+    credited.push({key, amount:remaining});
+  });
+  return credited;
+}
 // Shared visual identity for the Tuition module — families don't have
 // photos the way students do, so a deterministic colored initial fills
 // that role everywhere a family shows up (Matrix's frozen column,
@@ -8980,7 +9013,11 @@ const Tuition = {
           <div class="field"><label>Sponsor name <span style="font-weight:400;color:var(--ink3)">(if someone else is paying)</span></label><input data-ff="sponsorName" value="${esc(rec.sponsorName)}" placeholder="e.g. another family covering tuition"></div>
           <div class="field"><label>Sponsor phone</label><input data-ff="sponsorPhone" value="${esc(rec.sponsorPhone)}"></div>
         </div>
-        ${rec.sponsorName?`<p style="font-size:11.5px;color:var(--ink3);margin:-2px 0 10px">Reminders and call/text links for ${esc(f.key)} will go to ${esc(rec.sponsorName)} instead of the family's own phone — the balance itself still tracks under ${esc(f.key)}.</p>`:''}
+        <div class="field" style="margin-bottom:4px"><label>Linked family <span style="font-weight:400;color:var(--ink3)">(auto-marks ${esc(f.key)} paid whenever THIS family logs a tuition payment)</span></label>
+          <select data-ff="sponsorFamilyKey"><option value="">\u2014 none \u2014</option>${famList().filter(fl=>!fl.solo && fl.key!==f.key).map(fl=>`<option value="${esc(fl.key)}" ${rec.sponsorFamilyKey===fl.key?'selected':''}>${esc(fl.key)}</option>`).join('')}</select>
+        </div>
+        ${rec.sponsorFamilyKey?`<p style="font-size:11.5px;color:var(--ok);margin:-2px 0 10px">\ud83d\udd17 Linked \u2014 next time ${esc(rec.sponsorFamilyKey)} logs a tuition payment, ${esc(f.key)}'s balance for that month is auto-credited too.</p>`
+          :rec.sponsorName?`<p style="font-size:11.5px;color:var(--ink3);margin:-2px 0 10px">Reminders and call/text links for ${esc(f.key)} will go to ${esc(rec.sponsorName)} instead of the family's own phone \u2014 the balance itself still tracks under ${esc(f.key)}. Set "Linked family" above too if that family's payments should auto-cover this balance.</p>`:''}
         <div class="field"><label>Financial / family note</label><input data-ff="note" value="${esc(rec.note)}" placeholder="arrangements, discounts, reminders\u2026"></div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px" class="no-print">
           <button class="btn btn-p btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
@@ -9011,6 +9048,18 @@ const Tuition = {
       else p[k]= inp.value===''? (k==='perStudentRate'?null:0) : +inp.value;
       DB.log('Tuition plan updated \u2014 family '+openKey); DB.save(); Router.render(); });
     $$('[data-ff]',el).forEach(inp=>inp.onchange=()=>{ famRec(openKey)[inp.dataset.ff]=inp.value.trim(); DB.save(); });
+    const sponsorFamSel=$('[data-ff=sponsorFamilyKey]',el);
+    if(sponsorFamSel) sponsorFamSel.onchange=()=>{
+      const rec=famRec(openKey), linkedKey=sponsorFamSel.value.trim();
+      rec.sponsorFamilyKey=linkedKey;
+      if(linkedKey && !rec.sponsorName){ // convenience only — never overwrites something already typed in
+        const g=famPrimaryGuardian(linkedKey);
+        rec.sponsorName = g? g.name : linkedKey;
+        if(g&&g.phone && !rec.sponsorPhone) rec.sponsorPhone=g.phone;
+      }
+      DB.log((linkedKey? 'Linked \u2014 '+openKey+' auto-credited from '+linkedKey+'\u2019s tuition payments' : 'Unlinked sponsor family \u2014 '+openKey));
+      DB.save(); Router.render();
+    };
     $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
     $$('[data-pdel]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this payment record?',()=>{
       DB.data.finance.payments=DB.data.finance.payments.filter(x=>x.id!==b.dataset.pdel); DB.save(); Router.render(); }));
@@ -9348,7 +9397,10 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
       DB.data.finance.payments.push({id:uid(), fam, amount:a, date:payDate, kind, note:$('#py-n',o).value.trim(), method:$('#py-m',o).value});
       if(kind==='registration') famPlan(fam).regPaid=true;
       DB.log('Payment recorded \u2014 $'+a+' from family '+fam);
-      DB.save(); o.remove(); toast('$'+a+' recorded'); Router.render(); };
+      const credited = kind==='tuition' ? autoCreditLinkedFamilies(fam, payDate, $('#py-m',o).value) : [];
+      DB.save(); o.remove();
+      toast('$'+a+' recorded'+(credited.length? ' \u2014 also auto-credited '+credited.map(c=>c.key+' ($'+c.amount+')').join(', ') : ''));
+      Router.render(); };
   },
 };
 
