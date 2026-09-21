@@ -4897,6 +4897,7 @@ const Teacher = {
     el.innerHTML = `
     ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><button class="btn btn-p btn-sm no-print" id="enterClassMode" style="flex-shrink:0">🖥 Class Mode</button></div>`
       :`<div class="no-print" style="margin-bottom:16px"><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
+    ${Teacher.treatGoalsRosterHTML()}
     <div class="sect">1 · Before class<span class="rule"></span></div>
     <div class="grid g2">
       <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>${prepDay}’s plan</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/planner">Edit →</button></div>
@@ -4955,6 +4956,7 @@ const Teacher = {
         <button class="btn btn-o btn-sm" data-go="#/teacher/quiz">🧪 New quiz</button></div></div>
     </div>`;
     wireCommon(el);
+    const tgP=$('#tgRosterPrint',el); if(tgP) tgP.onclick=()=>Teacher.printTreatGoalsRoster();
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $$('[data-act=quran]',el).forEach(b=>b.onclick=()=>Teacher.quickQuran());
     $$('[data-act=behavior]',el).forEach(b=>b.onclick=()=>Teacher.quickStudent('Behavior note','behavior'));
@@ -5300,6 +5302,66 @@ const Teacher = {
       r.closest('.card').querySelector('label').textContent='Completion — '+r.value+'%';
       r.closest('.card').querySelector('.bar i').style.width=r.value+'%';
       r.closest('.card').querySelector('.prog-upd').textContent='updated just now'; });
+  },
+  // ---- Class Treat Goals roster: the class-wide view of every active
+  // Level 3 student's Ḥifẓ milestone goal (renderTreatGoalCard sets/shows
+  // ONE student's own goal, on their own profile — this is the aggregate
+  // teacher sees at a glance, without opening 27 profiles one at a time).
+  // Lives on the Class Day tab — the tab that's already on screen the
+  // moment Teacher Workspace opens — rather than a tab that has to be
+  // found first.
+  treatGoalsRosterHTML(){
+    const d = DB.data;
+    if(resolveAllHifzGoals(d)) DB.save(); // catch anything that resolved since last render
+    const stu = d.students.filter(s=>s.active!==false && s.level==='Level 3');
+    const justMet = stu.filter(s=>(s.hifzGoalHistory||[]).some(h=>h.status==='met'&&!h.celebrated));
+    const withGoal = stu.filter(s=>s.hifzGoal && !justMet.includes(s));
+    const noGoal = stu.filter(s=>!s.hifzGoal && !justMet.includes(s));
+    const rows = withGoal.map(s=>{
+      const g=s.hifzGoal, jp=juzProgress(s,g.juz);
+      const daysLeft = g.deadline? Math.round((new Date(g.deadline)-new Date(today()))/864e5) : null;
+      return {s,g,jp,daysLeft};
+    }).sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
+    return `<div class="card" style="margin-bottom:16px;border-top:3px solid #b8872a">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div><b style="font-family:var(--f-display);font-size:17px">🍩 Class Treat Goals</b>
+        <p style="font-size:12px;color:var(--ink2);margin-top:2px">${withGoal.length+justMet.length} of ${stu.length} active Level 3 students have a goal set${rows.length?' · soonest deadline first':''}</p></div>
+        ${rows.length?`<button class="btn btn-o btn-sm no-print" id="tgRosterPrint">🖨 Print</button>`:''}
+      </div>
+      ${justMet.length?`<div class="notice info" style="margin:10px 0 0">🍩 <div><b>${justMet.length} student${justMet.length>1?'s':''} just met their goal — time to treat Level 3!</b> ${justMet.map(s=>esc(s.name)).join(', ')}.
+        ${allergyReminderHTML()}
+        <p style="font-size:11.5px;color:var(--ink3);margin-top:6px">Mark celebrated from each student's own profile once the donuts are delivered.</p></div></div>`:''}
+      ${rows.length?`<div class="wlist" style="max-height:440px;overflow-y:auto;margin-top:10px">${rows.map(({s,g,jp,daysLeft})=>`
+        <div class="wrow" data-go="#/students/${s.id}">
+          <span class="t" style="flex:1;min-width:120px">${esc(s.name)}</span>
+          <span class="m" style="min-width:150px;font-size:12px">Juzʼ ${g.juz} · ${jp.done}/${jp.tot}p</span>
+          <span class="tag ${daysLeft!=null&&daysLeft<0?'tag-red':daysLeft!=null&&daysLeft<=7?'tag-gold':'tag-dim'}" style="min-width:92px;text-align:center">${daysLeft==null?'no deadline':daysLeft<0?Math.abs(daysLeft)+'d overdue':daysLeft===0?'due today':daysLeft+'d left'}</span>
+        </div>`).join('')}</div>`
+      :(justMet.length?'':`<p style="font-size:13px;color:var(--ink2);margin-top:10px">No goals set yet — open a Level 3 student's profile → Ḥifẓ section → Class Treat Goal to set one.</p>`)}
+      ${noGoal.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">${noGoal.length} student${noGoal.length>1?'s':''} without a goal yet</summary>
+        <div class="wlist" style="margin-top:6px">${noGoal.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span class="t">${esc(s.name)}</span></div>`).join('')}</div></details>`:''}
+    </div>`;
+  },
+  printTreatGoalsRoster(){
+    const d = DB.data;
+    const stu = d.students.filter(s=>s.active!==false && s.level==='Level 3' && s.hifzGoal);
+    const rows = stu.map(s=>{ const g=s.hifzGoal, jp=juzProgress(s,g.juz); return {s,g,jp}; })
+      .sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
+    printWindow('AMAN — Class Treat Goals Roster',
+      `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}
+       h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}
+       .meta{font-size:12px;color:#555;margin-bottom:18px}
+       table{width:100%;border-collapse:collapse;font-size:13px}
+       th{text-align:left;background:#f4ead6;padding:7px 9px;border-bottom:2px solid #1a4a35;font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:#1a4a35}
+       td{padding:7px 9px;border-bottom:1px solid #ddd}
+       .od{color:#b3261e;font-weight:700}`,
+      `<h1>🍩 Class Treat Goals — Roster</h1>
+       <div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · Level 3 — Ḥifẓ · prepared ${new Date().toLocaleDateString()} · ${rows.length} active goal${rows.length===1?'':'s'}</div>
+       <table><thead><tr><th>Student</th><th>Target Juzʼ</th><th>Progress</th><th>Deadline</th></tr></thead><tbody>
+       ${rows.map(({s,g,jp})=>{ const daysLeft=g.deadline?Math.round((new Date(g.deadline)-new Date(today()))/864e5):null;
+         return `<tr><td>${esc(s.name)}</td><td>Juzʼ ${g.juz}</td><td>${jp.done}/${jp.tot} pages</td><td${daysLeft!=null&&daysLeft<0?' class="od"':''}>${fmtDate(g.deadline)}${daysLeft!=null&&daysLeft<0?' (overdue)':''}</td></tr>`;
+       }).join('')}
+       </tbody></table>`);
   }
 };
 function simpleJournal(el, key, title, ph){
