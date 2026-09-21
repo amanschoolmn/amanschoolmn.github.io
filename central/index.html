@@ -4873,6 +4873,21 @@ render(v,param){
   (Teacher[tab]||Teacher.cockpit)($('#tt',v));
 }});
 const TT = {end:null, iv:null}; // class timer survives navigation
+const TreatUI = {filter:'all'}; // Class Treat Goals roster filter chip, survives re-render
+// Next real class day (Sat/Sun) from today, skipping anything in
+// DB.data.closures — used to frame Class Treat Goal deadlines against
+// "your next class" instead of a raw day count, which is what actually
+// matters for a weekend-only school.
+function nextClassDate(){
+  const d = new Date();
+  for(let i=0;i<28;i++){
+    const dow=d.getDay();
+    const dk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if((dow===6||dow===0) && !closureFor(dk)) return dk;
+    d.setDate(d.getDate()+1);
+  }
+  return null;
+}
 const Teacher = {
   /* ---------- CLASS DAY COCKPIT ---------- */
   cockpit(el){
@@ -4957,6 +4972,12 @@ const Teacher = {
     </div>`;
     wireCommon(el);
     const tgP=$('#tgRosterPrint',el); if(tgP) tgP.onclick=()=>Teacher.printTreatGoalsRoster();
+    $$('[data-treatfilter]',el).forEach(b=>b.onclick=()=>{ TreatUI.filter=b.dataset.treatfilter; Router.render(); });
+    $$('[data-celebrate]',el).forEach(b=>b.onclick=()=>{
+      const s=d.students.find(x=>x.id===b.dataset.celebrate); if(!s) return;
+      const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated);
+      if(g) g.celebrated=true; DB.save(); toast('🍩 Enjoy the celebration!'); Router.render();
+    });
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $$('[data-act=quran]',el).forEach(b=>b.onclick=()=>Teacher.quickQuran());
     $$('[data-act=behavior]',el).forEach(b=>b.onclick=()=>Teacher.quickStudent('Behavior note','behavior'));
@@ -5317,39 +5338,86 @@ const Teacher = {
     const justMet = stu.filter(s=>(s.hifzGoalHistory||[]).some(h=>h.status==='met'&&!h.celebrated));
     const withGoal = stu.filter(s=>s.hifzGoal && !justMet.includes(s));
     const noGoal = stu.filter(s=>!s.hifzGoal && !justMet.includes(s));
+    // NOTE: an active goal can never actually be "overdue" here — the app
+    // auto-resolves any goal past its deadline into hifzGoalHistory
+    // (status 'missed') the moment resolveAllHifzGoals runs above, which
+    // happens on every render. So instead of a dead "overdue" bucket, the
+    // real signal to surface is recently-missed goals from history — that's
+    // the thing a teacher can actually act on (set a new goal).
+    const cutoff30 = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    const recentMissed = stu.flatMap(s=>(s.hifzGoalHistory||[]).filter(h=>h.status==='missed' && h.resolvedDate>=cutoff30).map(h=>({s,h})))
+      .sort((a,b)=>b.h.resolvedDate.localeCompare(a.h.resolvedDate));
     const rows = withGoal.map(s=>{
       const g=s.hifzGoal, jp=juzProgress(s,g.juz);
       const daysLeft = g.deadline? Math.round((new Date(g.deadline)-new Date(today()))/864e5) : null;
-      return {s,g,jp,daysLeft};
+      const bucket = daysLeft!=null && daysLeft<=7 ? 'week' : 'ontrack';
+      return {s,g,jp,daysLeft,bucket};
     }).sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
+    const dueWeek=rows.filter(r=>r.bucket==='week'), onTrack=rows.filter(r=>r.bucket==='ontrack');
+    const metAllTime = d.students.reduce((n,s)=>n+(s.hifzGoalHistory||[]).filter(h=>h.status==='met').length,0);
+    const nc = nextClassDate();
+    const dueByNextClass = nc? rows.filter(r=>r.g.deadline && r.g.deadline<=nc).length : 0;
+    const filt = ['all','week','ontrack'].includes(TreatUI.filter)?TreatUI.filter:'all';
+    const rowHTML = ({s,g,jp,daysLeft})=>{
+      const tagCls = daysLeft!=null&&daysLeft<=2?'tag-red':daysLeft!=null&&daysLeft<=7?'tag-gold':'tag-dim';
+      const tagTxt = daysLeft==null?'no deadline':daysLeft===0?'due today':daysLeft+'d left';
+      return `<div class="wrow" data-go="#/students/${s.id}" style="flex-direction:column;align-items:stretch;gap:5px">
+        <div style="display:flex;align-items:center;gap:8px">
+          ${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}
+          <span class="t">${esc(s.name)}</span>
+          <span class="m">Juzʼ ${g.juz} · ${jp.done}/${jp.tot}p</span>
+          <span class="tag ${tagCls}" style="flex-shrink:0">${tagTxt}</span>
+        </div>
+        <div class="bar" style="height:5px;margin-left:34px"><i style="width:${jp.pct}%"></i></div>
+      </div>`;
+    };
+    const section = (title,list,tagCls)=> list.length? `<div style="margin-top:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink3);margin-bottom:4px;display:flex;align-items:center;gap:6px">${title} <span class="tag ${tagCls}" style="padding:1px 7px">${list.length}</span></div>
+      <div class="wlist">${list.map(rowHTML).join('')}</div>
+    </div>` : '';
+    const listHTML = filt==='all'
+      ? section('Due this week',dueWeek,'tag-gold') + section('On track',onTrack,'tag-dim')
+      : `<div class="wlist" style="margin-top:10px">${(filt==='week'?dueWeek:onTrack).map(rowHTML).join('')}</div>`;
     return `<div class="card" style="margin-bottom:16px;border-top:3px solid #b8872a">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div><b style="font-family:var(--f-display);font-size:17px">🍩 Class Treat Goals</b>
-        <p style="font-size:12px;color:var(--ink2);margin-top:2px">${withGoal.length+justMet.length} of ${stu.length} active Level 3 students have a goal set${rows.length?' · soonest deadline first':''}</p></div>
+        <p style="font-size:12px;color:var(--ink2);margin-top:2px">${withGoal.length+justMet.length} of ${stu.length} active Level 3 students have a goal set${metAllTime?` · ${metAllTime} met all-time`:''}</p></div>
         ${rows.length?`<button class="btn btn-o btn-sm no-print" id="tgRosterPrint">🖨 Print</button>`:''}
       </div>
-      ${justMet.length?`<div class="notice info" style="margin:10px 0 0">🍩 <div><b>${justMet.length} student${justMet.length>1?'s':''} just met their goal — time to treat Level 3!</b> ${justMet.map(s=>esc(s.name)).join(', ')}.
+      ${nc && dueByNextClass?`<p style="font-size:12px;color:var(--ink2);margin-top:6px">🕌 <b>${dueByNextClass} goal${dueByNextClass>1?'s':''}</b> due by your next class (${fmtDate(nc)})</p>`:''}
+      ${rows.length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <span class="tag tag-gold">${dueWeek.length} due this week</span>
+        <span class="tag tag-dim">${onTrack.length} on track</span>
+        ${recentMissed.length?`<span class="tag tag-red">${recentMissed.length} recently missed</span>`:''}
+      </div>`:''}
+      ${justMet.length?`<div class="notice info" style="margin:10px 0 0">🍩 <div><b>${justMet.length} student${justMet.length>1?'s':''} just met their goal — time to treat Level 3!</b>
         ${allergyReminderHTML()}
-        <p style="font-size:11.5px;color:var(--ink3);margin-top:6px">Mark celebrated from each student's own profile once the donuts are delivered.</p></div></div>`:''}
-      ${rows.length?`<div class="wlist" style="max-height:440px;overflow-y:auto;margin-top:10px">${rows.map(({s,g,jp,daysLeft})=>`
-        <div class="wrow" data-go="#/students/${s.id}">
-          <span class="t" style="flex:1;min-width:120px">${esc(s.name)}</span>
-          <span class="m" style="min-width:150px;font-size:12px">Juzʼ ${g.juz} · ${jp.done}/${jp.tot}p</span>
-          <span class="tag ${daysLeft!=null&&daysLeft<0?'tag-red':daysLeft!=null&&daysLeft<=7?'tag-gold':'tag-dim'}" style="min-width:92px;text-align:center">${daysLeft==null?'no deadline':daysLeft<0?Math.abs(daysLeft)+'d overdue':daysLeft===0?'due today':daysLeft+'d left'}</span>
-        </div>`).join('')}</div>`
+        <div class="wlist" style="margin-top:8px">${justMet.map(s=>`<div class="wrow" style="cursor:default;gap:8px">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><button class="btn btn-p btn-sm no-print" data-celebrate="${s.id}">✅ Mark celebrated</button></div>`).join('')}</div></div></div>`:''}
+      ${recentMissed.length?`<div class="notice" style="margin:10px 0 0;border-left:3px solid var(--bad)">🔁 <div><b>${recentMissed.length} goal${recentMissed.length>1?'s':''} recently missed.</b> Recorded honestly — set a new target from each student's own profile when ready.
+        <div class="wlist" style="margin-top:8px">${recentMissed.map(({s,h})=>`<div class="wrow" data-go="#/students/${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><span class="m">Juzʼ ${h.juz} · missed ${fmtDate(h.resolvedDate)}</span></div>`).join('')}</div></div></div>`:''}
+      ${rows.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px" class="no-print">
+        <button class="chip ${filt==='all'?'on':''}" data-treatfilter="all">All ${rows.length}</button>
+        ${dueWeek.length?`<button class="chip ${filt==='week'?'on':''}" data-treatfilter="week">This week ${dueWeek.length}</button>`:''}
+        ${onTrack.length?`<button class="chip ${filt==='ontrack'?'on':''}" data-treatfilter="ontrack">On track ${onTrack.length}</button>`:''}
+      </div><div style="max-height:460px;overflow-y:auto">${listHTML}</div>`
       :(justMet.length?'':`<p style="font-size:13px;color:var(--ink2);margin-top:10px">No goals set yet — open a Level 3 student's profile → Ḥifẓ section → Class Treat Goal to set one.</p>`)}
       ${noGoal.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">${noGoal.length} student${noGoal.length>1?'s':''} without a goal yet</summary>
-        <div class="wlist" style="margin-top:6px">${noGoal.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span class="t">${esc(s.name)}</span></div>`).join('')}</div></details>`:''}
+        <div class="wlist" style="margin-top:6px">${noGoal.map(s=>`<div class="wrow" data-go="#/students/${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t">${esc(s.name)}</span></div>`).join('')}</div></details>`:''}
     </div>`;
   },
   printTreatGoalsRoster(){
     const d = DB.data;
-    const stu = d.students.filter(s=>s.active!==false && s.level==='Level 3' && s.hifzGoal);
+    const stu3 = d.students.filter(s=>s.active!==false && s.level==='Level 3');
+    const stu = stu3.filter(s=>s.hifzGoal);
     const rows = stu.map(s=>{ const g=s.hifzGoal, jp=juzProgress(s,g.juz); return {s,g,jp}; })
       .sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
+    const cutoff30 = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    const recentMissed = stu3.flatMap(s=>(s.hifzGoalHistory||[]).filter(h=>h.status==='missed' && h.resolvedDate>=cutoff30).map(h=>({s,h})))
+      .sort((a,b)=>b.h.resolvedDate.localeCompare(a.h.resolvedDate));
     printWindow('AMAN — Class Treat Goals Roster',
       `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111;line-height:1.55}
        h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}
+       h2{font-size:15px;color:#1a4a35;margin-top:26px}
        .meta{font-size:12px;color:#555;margin-bottom:18px}
        table{width:100%;border-collapse:collapse;font-size:13px}
        th{text-align:left;background:#f4ead6;padding:7px 9px;border-bottom:2px solid #1a4a35;font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:#1a4a35}
@@ -5359,9 +5427,12 @@ const Teacher = {
        <div class="meta">Al-Madrasatu An-Nuriyyah (AMAN) · Level 3 — Ḥifẓ · prepared ${new Date().toLocaleDateString()} · ${rows.length} active goal${rows.length===1?'':'s'}</div>
        <table><thead><tr><th>Student</th><th>Target Juzʼ</th><th>Progress</th><th>Deadline</th></tr></thead><tbody>
        ${rows.map(({s,g,jp})=>{ const daysLeft=g.deadline?Math.round((new Date(g.deadline)-new Date(today()))/864e5):null;
-         return `<tr><td>${esc(s.name)}</td><td>Juzʼ ${g.juz}</td><td>${jp.done}/${jp.tot} pages</td><td${daysLeft!=null&&daysLeft<0?' class="od"':''}>${fmtDate(g.deadline)}${daysLeft!=null&&daysLeft<0?' (overdue)':''}</td></tr>`;
+         return `<tr><td>${esc(s.name)}</td><td>Juzʼ ${g.juz}</td><td>${jp.done}/${jp.tot} pages</td><td${daysLeft!=null&&daysLeft<=2?' class="od"':''}>${fmtDate(g.deadline)}${daysLeft!=null&&daysLeft<0?' (past due — resolves next visit)':''}</td></tr>`;
        }).join('')}
-       </tbody></table>`);
+       </tbody></table>
+       ${recentMissed.length?`<h2>Recently missed (last 30 days)</h2><table><thead><tr><th>Student</th><th>Target Juzʼ</th><th>Missed</th></tr></thead><tbody>
+       ${recentMissed.map(({s,h})=>`<tr><td>${esc(s.name)}</td><td>Juzʼ ${h.juz}</td><td>${fmtDate(h.resolvedDate)}</td></tr>`).join('')}
+       </tbody></table>`:''}`);
   }
 };
 function simpleJournal(el, key, title, ph){
