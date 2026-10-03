@@ -4120,28 +4120,49 @@ render(v){
 
   const W = {};
   // — NEEDS ATTENTION: the auto-generated daily checklist —
+  // Every item here is recomputed fresh on each render from live rules —
+  // nothing is stored as its own record — so "mark done" can't flip a
+  // stored flag on the item itself. Instead each item gets a stable `key`
+  // (built from what it's actually about: whose, which record, which
+  // month) and d.settings.focusDone remembers which keys were dismissed
+  // TODAY only (date-scoped, so it resets itself every new day rather
+  // than a stray dismiss permanently hiding a real recurring risk — this
+  // matches the widget's own "daily checklist" framing). An item behind a
+  // normal data change (take attendance, log a memorization check, pay
+  // tuition, change a resource's status) still clears itself the usual
+  // way the moment that happens; "mark done" is only for the items that
+  // need a manual decision with no single data field to flip — a photo
+  // you've already asked a parent for and are waiting on, a planned
+  // resource you've deliberately deferred, a birthday you've already
+  // wished in person.
   W.focus = ()=>{
     const items=[];
     stu.filter(s=>s.level==='Level 3').forEach(s=>(s.hifzGoalHistory||[]).filter(g=>g.status==='met'&&!g.celebrated).forEach(g=>
-      items.push({i:'🍩',t:s.name+' reached the Juzʼ '+g.juz+' goal — treat Level 3 to donuts!', go:'#/students/'+s.id, tag:'treat!', why:'Ḥifẓ goal (Juzʼ '+g.juz+', deadline '+fmtDate(g.deadline)+') completed on '+fmtDate(g.resolvedDate)})));
+      items.push({i:'🍩',t:s.name+' reached the Juzʼ '+g.juz+' goal — treat Level 3 to donuts!', go:'#/students/'+s.id, tag:'treat!', why:'Ḥifẓ goal (Juzʼ '+g.juz+', deadline '+fmtDate(g.deadline)+') completed on '+fmtDate(g.resolvedDate), key:'treat_'+s.id+'_'+g.juz+'_'+g.resolvedDate})));
     if(daysTo===0 && stu.length && !Object.keys(todayRec).length)
-      items.push({i:'✅',t:'Attendance not taken yet for today’s class', go:'#/students/attendance', tag:'now', why:'today is a scheduled class day and no attendance is recorded yet'});
-    openTasks.filter(t=>t.due&&t.due<tdy).forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed'}));
-    openTasks.filter(t=>!t.due||t.due>=tdy).slice(0,3-Math.min(2,items.length)).forEach(t=>items.push({i:'☐',t:t.text, go:'#/admin/tasks', tag:t.due?fmtDate(t.due):'task', why:'open task on your list'+(t.due?', due '+fmtDate(t.due):', no due date set')}));
-    res.filter(r=>r.status==='Missing — Re-upload').forEach(r=>items.push({i:'📎',t:r.title+' — file needs re-linking', go:'#/resource/'+r.id, tag:'missing', why:'resource status = "Missing — Re-upload"'}));
-    res.filter(r=>r.status==='Draft').forEach(r=>items.push({i:'✏️',t:r.title+' — decision pending', go:'#/resource/'+r.id, tag:'draft', why:'resource status = "Draft"'}));
-    behind.slice(0,3).forEach(s=>items.push({i:'📖',t:s.name+' — no memorization entry in 14+ days', go:'#/students/'+s.id, tag:'check', why:'Level 3, no Qur’ān entry logged in the last 14 days'}));
-    concerns.slice(0,3).forEach(s=>items.push({i:'⚠️',t:s.name+' — '+last4.filter(day=>d.attendance[day][s.id]==='A').length+' absences in last '+last4.length+' sessions', go:'#/students/'+s.id, tag:'attendance', why:last4.filter(day=>d.attendance[day][s.id]==='A').length+' of the last '+last4.length+' sessions marked absent (rule fires at 2+)'}));
-    bdays.slice(0,2).forEach(b=>items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d'), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days'}));
-    res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet'}));
-    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM}));
+      items.push({i:'✅',t:'Attendance not taken yet for today’s class', go:'#/students/attendance', tag:'now', why:'today is a scheduled class day and no attendance is recorded yet', key:'att_'+tdy});
+    openTasks.filter(t=>t.due&&t.due<tdy).forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed', key:'task_'+t.id}));
+    openTasks.filter(t=>!t.due||t.due>=tdy).slice(0,3-Math.min(2,items.length)).forEach(t=>items.push({i:'☐',t:t.text, go:'#/admin/tasks', tag:t.due?fmtDate(t.due):'task', why:'open task on your list'+(t.due?', due '+fmtDate(t.due):', no due date set'), key:'task_'+t.id}));
+    res.filter(r=>r.status==='Missing — Re-upload').forEach(r=>items.push({i:'📎',t:r.title+' — file needs re-linking', go:'#/resource/'+r.id, tag:'missing', why:'resource status = "Missing — Re-upload"', key:'res_'+r.id+'_missing'}));
+    res.filter(r=>r.status==='Draft').forEach(r=>items.push({i:'✏️',t:r.title+' — decision pending', go:'#/resource/'+r.id, tag:'draft', why:'resource status = "Draft"', key:'res_'+r.id+'_draft'}));
+    behind.slice(0,3).forEach(s=>items.push({i:'📖',t:s.name+' — no memorization entry in 14+ days', go:'#/students/'+s.id, tag:'check', why:'Level 3, no Qur’ān entry logged in the last 14 days', key:'behind_'+s.id}));
+    concerns.slice(0,3).forEach(s=>items.push({i:'⚠️',t:s.name+' — '+last4.filter(day=>d.attendance[day][s.id]==='A').length+' absences in last '+last4.length+' sessions', go:'#/students/'+s.id, tag:'attendance', why:last4.filter(day=>d.attendance[day][s.id]==='A').length+' of the last '+last4.length+' sessions marked absent (rule fires at 2+)', key:'conc_'+s.id}));
+    bdays.slice(0,2).forEach(b=>{ const turning=ageFromDob(b.s.dob)+(b.in===0?0:1);
+      items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d')+(turning?' · turning '+turning:''), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days', key:'bday_'+b.s.id, photo:b.s}); });
+    res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet', key:'res_'+r.id+'_planned'}));
+    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM, key:'tuition_'+f.key+'_'+nowYM}));
     const lastBk=d.settings.lastBackupAt;
     const bkDays=lastBk? Math.floor((Date.now()-new Date(lastBk))/864e5) : null;
     if(bkDays==null || bkDays>14)
-      items.push({i:'🛟',t: bkDays==null?'No backup has ever been exported':'Backup overdue — last export '+bkDays+'d ago', go:'#/settings', tag:'backup', why:'everything here lives in this browser only — rule fires past 14 days since last export'});
-    return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
-     ${items.length? `<div class="wlist">${items.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div>`
-     : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}`;
+      items.push({i:'🛟',t: bkDays==null?'No backup has ever been exported':'Backup overdue — last export '+bkDays+'d ago', go:'#/settings', tag:'backup', why:'everything here lives in this browser only — rule fires past 14 days since last export', key:'backup'});
+    const doneKeys = (d.settings.focusDone && d.settings.focusDone.date===tdy) ? d.settings.focusDone.keys : [];
+    const visible = items.filter(x=>!doneKeys.includes(x.key));
+    const doneToday = items.length - visible.length;
+    const rowIcon = x => x.photo ? avatarHTML(x.photo,'width:22px;height:22px;border-radius:50%;font-size:8.5px;flex-shrink:0') : `<span>${x.i}</span>`;
+    return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${visible.length?'tag-gold':'tag-green'}">${visible.length||'all clear'}</span></div>
+     ${visible.length? `<div class="wlist">${visible.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}">${rowIcon(x)}<span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span><button class="btn btn-ghost btn-sm no-print" data-focusdone="${esc(x.key)}" title="Mark done for today">✓</button></div>`).join('')}</div>`
+     : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}
+     ${doneToday? `<p class="no-print" style="font-size:11px;color:var(--ink3);margin-top:8px">${doneToday} item${doneToday>1?'s':''} marked done today · <button class="btn btn-ghost btn-sm" id="focusUndo" style="padding:1px 6px;font-size:11px">undo</button></p>`:''}`;
   };
   W.momentum = ()=>{
     const cutoffD = new Date(Date.now()-30*864e5);
@@ -4257,6 +4278,18 @@ render(v){
   wireCommon(v);
   $('#tuitionBannerDraft',v) && ($('#tuitionBannerDraft',v).onclick=()=>{ d.settings.lastTuitionCheckMonth=nowYM; DB.save(); Tuition.draftAllReminders(); Router.render(); });
   $('#tuitionBannerDismiss',v) && ($('#tuitionBannerDismiss',v).onclick=()=>{ d.settings.lastTuitionCheckMonth=nowYM; DB.save(); toast('Dismissed — will check again next month'); Router.render(); });
+  $$('[data-focusdone]',v).forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation();
+    const key=b.dataset.focusdone;
+    const fd = (d.settings.focusDone && d.settings.focusDone.date===tdy) ? d.settings.focusDone.keys.slice() : [];
+    if(!fd.includes(key)) fd.push(key);
+    d.settings.focusDone = {date:tdy, keys:fd};
+    DB.save(); toast('Marked done for today'); Router.render();
+  }));
+  (()=>{ const focusUndo=$('#focusUndo',v); if(focusUndo) focusUndo.addEventListener('click', e=>{
+    e.stopPropagation();
+    d.settings.focusDone = {date:tdy, keys:[]}; DB.save(); toast('Restored'); Router.render();
+  }); })();
   // live clock — clearInterval before creating a new one so rapid
   // dashboard revisits (within the 15s tick window) can't orphan a
   // previous interval that keeps firing in the background indefinitely
@@ -4908,6 +4941,17 @@ function nextClassDate(){
   }
   return null;
 }
+// The one lesson dated today, when there's exactly one — used to
+// auto-tag the Class Day cockpit's two quick-entry journal widgets
+// (Classroom note, 60-second Reflection) with the lesson they're
+// actually about, the same link the dedicated Teaching Notes/
+// Reflections tabs let you pick by hand. Deliberately only auto-tags
+// when unambiguous (one lesson today); with 0 or 2+, it leaves the
+// entry untagged rather than guessing wrong.
+function todaysLessonId(){
+  const matches = DB.data.lessons.filter(L=>L.date===today());
+  return matches.length===1 ? matches[0].id : null;
+}
 const Teacher = {
   /* ---------- CLASS DAY COCKPIT ---------- */
   cockpit(el){
@@ -4941,7 +4985,7 @@ const Teacher = {
       <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>Upcoming lessons</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">All →</button></div>
         <div class="wlist">${upLessons.length?upLessons.map(L=>`<div class="wrow" data-go="#/teacher/lessons"><span class="t">${esc(L.title)}</span><span class="m">${fmtDate(L.date)}${L.est?' · '+L.est+'m':''}</span></div>`).join(''):'<div class="wrow" style="cursor:default;color:var(--ink3)">No lesson plans scheduled</div>'}</div></div>
       <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>Materials checklist</h3></div>
-        ${mats.length?`<div class="wlist">${mats.map((x,gi)=>`<div class="wrow" style="cursor:default"><input type="checkbox" data-mat="${x.L.id}_${x.i}" ${(x.L.matDone||[]).includes(x.i)?'checked':''} style="width:auto"><span class="t" style="white-space:normal">${esc(x.m)}</span></div>`).join('')}</div>`
+        ${mats.length?`<div class="wlist">${mats.map((x,gi)=>`<div class="wrow" style="cursor:default"><input type="checkbox" data-mat="${x.L.id}_${x.i}" ${(x.L.matDone||[]).includes(x.i)?'checked':''} style="width:auto"><span class="t" style="white-space:normal">${upLessons.length>1?`<span style="color:var(--ink3);font-size:11px">${esc(x.L.title)} — </span>`:''}${esc(x.m)}</span></div>`).join('')}</div>`
         :'<p style="font-size:13px;color:var(--ink2)">Add materials to lesson plans and check them off here before class.</p>'}</div>
       <div class="widget" style="border-top:3px solid ${(behind.length||hwOpen.length||dueTasks.length)?'var(--warn)':'var(--ok)'}"><div class="whead"><h3>Prep radar</h3></div><div class="wlist">
         ${behind.length?`<div class="wrow" data-act="quran"><span>📖</span><span class="t">${behind.length} student${behind.length>1?'s':''} due a memorization check</span></div>`:''}
@@ -4999,6 +5043,27 @@ const Teacher = {
       const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated);
       if(g) g.celebrated=true; DB.save(); toast('🍩 Enjoy the celebration!'); Router.render();
     });
+    // Class Treat Goals roster's inline "current sūrah" quick-editor — both
+    // controls sit inside a data-go row (clicking the row opens the
+    // student's profile), so stop the click from bubbling there before the
+    // dropdown even opens / the number field gets focus.
+    $$('[data-hzsur]',el).forEach(sel=>{
+      sel.onclick=e=>e.stopPropagation();
+      sel.onchange=e=>{ e.stopPropagation();
+        const s=d.students.find(x=>x.id===sel.dataset.hzsur); if(!s) return;
+        updateHifzPosition(s,{cur:+sel.value});
+        DB.log(s.name+' — current sūrah updated to '+QS[s.hifz.cur].name+' (Class Treat Goals roster)');
+        DB.save(); toast(s.name+' updated'); Router.render();
+      };
+    });
+    $$('[data-hzpage]',el).forEach(inp=>{
+      inp.onclick=e=>e.stopPropagation();
+      inp.onchange=e=>{ e.stopPropagation();
+        const s=d.students.find(x=>x.id===inp.dataset.hzpage); if(!s) return;
+        updateHifzPosition(s,{curPage:+inp.value||null});
+        DB.save(); toast(s.name+' updated'); Router.render();
+      };
+    });
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $$('[data-act=quran]',el).forEach(b=>b.onclick=()=>Teacher.quickQuran());
     $$('[data-act=behavior]',el).forEach(b=>b.onclick=()=>Teacher.quickStudent('Behavior note','behavior'));
@@ -5008,12 +5073,12 @@ const Teacher = {
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
       $('[data-x=c]',o).onclick=()=>o.remove();
       $('[data-x=s]',o).onclick=()=>{ const t=$('#cn-t',o).value.trim(); if(!t)return;
-        (DB.data.planner['notes_teach']=DB.data.planner['notes_teach']||[]).unshift({d:new Date().toISOString(), t}); DB.save(); o.remove(); toast('Noted'); };});
+        (DB.data.planner['notes_teach']=DB.data.planner['notes_teach']||[]).unshift({d:new Date().toISOString(), t, lid:todaysLessonId()}); DB.save(); o.remove(); toast('Noted'); };});
     $$('[data-act=hw]',el).forEach(b=>b.onclick=()=>Teacher.hwForm());
     $$('input[data-mat]',el).forEach(c=>c.onchange=()=>{ const [lid,i]=c.dataset.mat.split('_'); const L=d.lessons.find(x=>x.id===lid);
       L.matDone=L.matDone||[]; c.checked? L.matDone.push(+i) : L.matDone=L.matDone.filter(x=>x!==+i); DB.save(); });
     $('#ckRefSave',el).onclick=()=>{ const t=$('#ckRef',el).value.trim(); if(!t)return;
-      (d.planner['notes_reflect']=d.planner['notes_reflect']||[]).unshift({d:new Date().toISOString(), t}); DB.save(); $('#ckRef',el).value=''; toast('Reflection saved'); };
+      (d.planner['notes_reflect']=d.planner['notes_reflect']||[]).unshift({d:new Date().toISOString(), t, lid:todaysLessonId()}); DB.save(); $('#ckRef',el).value=''; toast('Reflection saved'); };
     $$('button[data-timer]',el).forEach(b=>b.onclick=()=>{
       const k=b.dataset.timer;
       if(k==='stop'){ clearInterval(TT.iv); TT.end=null; const e=$('#ttDisp'); if(e)e.textContent='--:--'; return; }
@@ -5236,16 +5301,26 @@ const Teacher = {
     const d=DB.data, wk = d.planner;
     const days = ['Saturday','Sunday'];
     const slots = ['Qur’an / Ḥifẓ block','Arabic block','Islamic Studies block','Closing / Homework'];
+    // The first 3 blocks map straight onto LESSON_SUBJECTS (same wording,
+    // minus " block") — the 4th, Closing/Homework, isn't a lesson subject
+    // and gets no lesson-plan link. This is the one remaining spot a block
+    // sketched here had no path into a real Lesson Plan without retyping
+    // it from scratch.
     el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px;border-left:3px solid var(--info)">📅 <div>Weekend planner — four blocks per day, autosaves as you type, mirrored on the Dashboard and Class Day cockpit.</div></div>
      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">${days.map(day=>`
       <div class="card" style="border-top:3px solid ${day==='Saturday'?'var(--green)':'var(--info)'}"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:12px">${day==='Saturday'?'🕌':'📗'} ${day}</h3>
-       ${slots.map((s,i)=>`<div class="field"><label>${s}</label><textarea data-pl="${day}_${i}" placeholder="Lesson, resources, students to check on…">${esc(wk['pl_'+day+'_'+i]||'')}</textarea></div>`).join('')}
+       ${slots.map((s,i)=>{ const val=wk['pl_'+day+'_'+i]||''; return `<div class="field"><label>${s}</label><textarea data-pl="${day}_${i}" placeholder="Lesson, resources, students to check on…">${esc(val)}</textarea>
+        ${i<LESSON_SUBJECTS.length?`<button class="btn btn-ghost btn-sm no-print" data-mkls="${day}_${i}" style="margin-top:4px;${val.trim()?'':'display:none'}">📝 Turn into a full lesson plan →</button>`:''}</div>`; }).join('')}
       </div>`).join('')}</div>
      <div style="display:flex;gap:9px;margin-top:14px;flex-wrap:wrap" class="no-print">
       <button class="btn btn-o" id="plPrint">🖨 Print week — binder sheet</button>
       <button class="btn btn-o" id="plCopy">Copy Saturday → Sunday</button>
       <button class="btn btn-danger btn-sm" id="plClear">Clear week</button></div>`;
-    $$('textarea[data-pl]',el).forEach(t=>t.oninput=()=>{ d.planner['pl_'+t.dataset.pl]=t.value; DB.save(); });
+    $$('textarea[data-pl]',el).forEach(t=>t.oninput=()=>{ d.planner['pl_'+t.dataset.pl]=t.value; DB.save();
+      const btn=t.parentElement.querySelector('[data-mkls]'); if(btn) btn.style.display=t.value.trim()?'':'none'; });
+    $$('[data-mkls]',el).forEach(b=>b.onclick=()=>{ const [,i]=b.dataset.mkls.split('_');
+      const ta=el.querySelector(`textarea[data-pl="${b.dataset.mkls}"]`);
+      Teacher.lessonForm(null, {subject:LESSON_SUBJECTS[+i], plan:ta.value}); });
     $('#plPrint',el).onclick=()=>Teacher.printWeek(days,slots,wk);
     $('#plCopy',el).onclick=()=>{ slots.forEach((s,i)=>{ d.planner['pl_Sunday_'+i]=d.planner['pl_Saturday_'+i]||''; }); DB.save(); Router.render(); toast('Copied to Sunday'); };
     $('#plClear',el).onclick=()=>confirmBox('Clear both days of the planner?',()=>{ days.forEach(day=>slots.forEach((s,i)=>delete d.planner['pl_'+day+'_'+i])); DB.save(); Router.render(); });
@@ -5273,7 +5348,7 @@ const Teacher = {
       return `<div class="card" style="border-left:3px solid ${L.taught?'var(--ok)':'var(--gold)'};${L.taught?'opacity:.6':''}"><div style="display:flex;justify-content:space-between;gap:8px"><div>
          <div class="eyebrow">${esc(L.subject)} · ${fmtDate(L.date)}${L.est?' · ~'+L.est+' min':''}</div>
          <h3 style="font-family:var(--f-display);font-size:17px;margin:3px 0 7px">${esc(L.title)}</h3></div>
-         <div style="display:flex;gap:5px">${L.taught?'':`<button class="btn btn-o btn-sm" data-taught="${L.id}">✓ Taught</button>`}<button class="btn btn-danger btn-sm" data-del="${L.id}">✕</button></div></div>
+         <div style="display:flex;gap:5px">${L.taught?'':`<button class="btn btn-o btn-sm" data-taught="${L.id}">✓ Taught</button>`}<button class="btn btn-ghost btn-sm" data-edit="${L.id}" title="Edit">✎</button><button class="btn btn-danger btn-sm" data-del="${L.id}">✕</button></div></div>
         ${L.objective?`<p style="font-family:var(--f-body);font-size:14.5px;margin-bottom:8px"><b>Objective:</b> ${esc(L.objective)}</p>`:''}
         ${L.plan?`<p style="font-family:var(--f-body);font-size:14.5px;white-space:pre-wrap">${esc(L.plan)}</p>`:''}
         ${(L.materials||[]).length?`<div style="margin-top:9px"><b style="font-size:11px;letter-spacing:.07em;color:var(--ink3)">MATERIALS</b><div class="wlist">${L.materials.map((m,i)=>`<div class="wrow" style="cursor:default;padding:3px 6px"><input type="checkbox" data-mat="${L.id}_${i}" ${(L.matDone||[]).includes(i)?'checked':''} style="width:auto"><span class="t" style="font-weight:400">${esc(m)}</span></div>`).join('')}</div></div>`:''}
@@ -5298,29 +5373,45 @@ const Teacher = {
       DB.log('Taught: '+L.title); DB.save(); toast('Marked taught — bāraka Allāhu fīk'); Router.render(); });
     $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this lesson plan?',()=>{ d.lessons=d.lessons.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render(); }));
     $$('[data-reflect]',el).forEach(b=>b.onclick=()=>{ _teacherReflectPrefill=b.dataset.reflect; Router.go('#/teacher/reflect'); });
-    $('#lsAdd',el).onclick=()=>{
-      const o=overlay(`<div class="modal"><h3>New lesson plan</h3>
-       <div class="field"><label>Title</label><input id="L-t" placeholder="e.g., Al-Ghafūr — the One who covers sins"></div>
-       <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
-        <div class="field"><label>Subject</label><select id="L-s">${LESSON_SUBJECTS.map(s=>`<option ${filt!=='all'&&s===filt?'selected':''}>${s}</option>`).join('')}</select></div>
-        <div class="field"><label>Date</label><input id="L-d" type="date" value="${today()}"></div>
-        <div class="field"><label>Est. minutes</label><input id="L-e" type="number" min="5" max="240" placeholder="45"></div></div>
-       <div class="field"><label>Objective</label><input id="L-o" placeholder="What will students walk out knowing?"></div>
-       <div class="field"><label>Plan</label><textarea id="L-p" style="min-height:110px" placeholder="Opening · teaching · practice · closing"></textarea></div>
-       <div class="field"><label>Materials checklist (one per line)</label><textarea id="L-m" placeholder="Whiteboard markers&#10;Printed flashcards&#10;Green Books"></textarea></div>
-       <div class="field"><label>Attach resources</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DB.data.resources.filter(r=>r.status==='Active').map(r=>`<button class="chip" data-r="${r.id}">${esc(r.title.slice(0,28))}</button>`).join('')}</div></div>
-       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save lesson</button></div></div>`, true);
-      const picked=new Set();
-      $$('button[data-r]',o).forEach(b=>b.onclick=()=>{ b.classList.toggle('on'); b.classList.contains('on')?picked.add(b.dataset.r):picked.delete(b.dataset.r); });
-      $('[data-x=c]',o).onclick=()=>o.remove();
-      $('[data-x=s]',o).onclick=()=>{
-        const t=$('#L-t',o).value.trim(); if(!t){toast('Title required');return;}
-        d.lessons.unshift({id:uid(), title:t, subject:$('#L-s',o).value, date:$('#L-d',o).value, est:+($('#L-e',o).value||0)||null,
-          objective:$('#L-o',o).value.trim(), plan:$('#L-p',o).value.trim(),
-          materials:$('#L-m',o).value.split('\n').map(s=>s.trim()).filter(Boolean), matDone:[],
-          resources:[...picked], taught:false});
-        DB.log('New lesson plan: '+t); DB.save(); o.remove(); toast('Lesson saved'); Router.render();
-      };
+    $$('[data-edit]',el).forEach(b=>b.onclick=()=>Teacher.lessonForm(d.lessons.find(x=>x.id===b.dataset.edit)));
+    $('#lsAdd',el).onclick=()=>Teacher.lessonForm(null, filt!=='all'?{subject:filt}:null);
+  },
+  // existing: the lesson being edited, or null/undefined for a new one.
+  // prefill (new-lesson only): {subject, plan} to seed the form — used by
+  // the active subject filter chip and by the Weekly Planner's "Turn into
+  // a full lesson plan" link, so starting a lesson from either place
+  // doesn't mean retyping what's already known.
+  lessonForm(existing, prefill){
+    const isNew = !existing;
+    const p = prefill||{};
+    const o=overlay(`<div class="modal"><h3>${isNew?'New lesson plan':'Edit lesson plan'}</h3>
+     <div class="field"><label>Title</label><input id="L-t" placeholder="e.g., Al-Ghafūr — the One who covers sins" value="${existing?esc(existing.title):''}"></div>
+     <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="field"><label>Subject</label><select id="L-s">${LESSON_SUBJECTS.map(s=>`<option ${(existing?existing.subject:p.subject)===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Date</label><input id="L-d" type="date" value="${existing?existing.date:today()}"></div>
+      <div class="field"><label>Est. minutes</label><input id="L-e" type="number" min="5" max="240" placeholder="45" value="${existing&&existing.est?existing.est:''}"></div></div>
+     <div class="field"><label>Objective</label><input id="L-o" placeholder="What will students walk out knowing?" value="${existing?esc(existing.objective||''):''}"></div>
+     <div class="field"><label>Plan</label><textarea id="L-p" style="min-height:110px" placeholder="Opening · teaching · practice · closing">${existing?esc(existing.plan||''):esc(p.plan||'')}</textarea></div>
+     <div class="field"><label>Materials checklist (one per line)</label><textarea id="L-m" placeholder="Whiteboard markers&#10;Printed flashcards&#10;Green Books">${existing?esc((existing.materials||[]).join('\n')):''}</textarea></div>
+     <div class="field"><label>Attach resources</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DB.data.resources.filter(r=>r.status==='Active').map(r=>`<button class="chip ${existing&&(existing.resources||[]).includes(r.id)?'on':''}" data-r="${r.id}">${esc(r.title.slice(0,28))}</button>`).join('')}</div></div>
+     <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Save lesson':'Save'}</button></div></div>`, true);
+    const picked=new Set(existing?(existing.resources||[]):[]);
+    $$('button[data-r]',o).forEach(b=>b.onclick=()=>{ b.classList.toggle('on'); b.classList.contains('on')?picked.add(b.dataset.r):picked.delete(b.dataset.r); });
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
+      const t=$('#L-t',o).value.trim(); if(!t){toast('Title required');return;}
+      const fields = { title:t, subject:$('#L-s',o).value, date:$('#L-d',o).value, est:+($('#L-e',o).value||0)||null,
+        objective:$('#L-o',o).value.trim(), plan:$('#L-p',o).value.trim(),
+        materials:$('#L-m',o).value.split('\n').map(s=>s.trim()).filter(Boolean),
+        resources:[...picked] };
+      if(isNew){
+        DB.data.lessons.unshift({id:uid(), matDone:[], taught:false, ...fields});
+        DB.log('New lesson plan: '+t);
+      } else {
+        Object.assign(existing, fields);
+        DB.log('Lesson plan updated: '+t);
+      }
+      DB.save(); o.remove(); toast(isNew?'Lesson saved':'Saved'); Router.render();
     };
   },
   // Rebuilt the same way as Homework above: a quiz built here IS a
@@ -5515,6 +5606,20 @@ const Teacher = {
     const nc = nextClassDate();
     const dueByNextClass = nc? rows.filter(r=>r.g.deadline && r.g.deadline<=nc).length : 0;
     const filt = ['all','week','ontrack'].includes(TreatUI.filter)?TreatUI.filter:'all';
+    // Inline "current sūrah" quick-editor — a select pre-set to the
+    // student's real position (same ordering/options as the profile's own
+    // Ḥifẓ picker) plus an optional page-within-sūrah number, so updating
+    // where a student is after class doesn't mean opening their profile.
+    // Both commit through the shared updateHifzPosition() the instant they
+    // change, exactly like the profile's own controls. Lives inside a
+    // data-go row, so both controls stopPropagation on click — otherwise
+    // just opening the dropdown would navigate to the profile first.
+    const hzQuickEdit = s=>{ const st=hifzStats(s);
+      return `<div style="display:flex;align-items:center;gap:6px;margin-left:34px;flex-wrap:wrap" class="no-print">
+        <span style="font-size:10.5px;color:var(--ink3)">On:</span>
+        <select data-hzsur="${s.id}" style="font-size:11.5px;padding:3px 6px;max-width:168px">${st.order.map(n=>`<option value="${n}" ${n===st.cur?'selected':''}>${esc(QS[n].name)}</option>`).join('')}</select>
+        <input type="number" data-hzpage="${s.id}" min="${QS[st.cur].p}" max="604" value="${s.hifz&&s.hifz.curPage?s.hifz.curPage:''}" placeholder="p.${QS[st.cur].p}" title="Current page within this sūrah (optional)" style="width:58px;font-size:11.5px;padding:3px 4px">
+      </div>`; };
     const rowHTML = ({s,g,jp,daysLeft})=>{
       const tagCls = daysLeft!=null&&daysLeft<=2?'tag-red':daysLeft!=null&&daysLeft<=7?'tag-gold':'tag-dim';
       const tagTxt = daysLeft==null?'no deadline':daysLeft===0?'due today':daysLeft+'d left';
@@ -5526,6 +5631,7 @@ const Teacher = {
           <span class="tag ${tagCls}" style="flex-shrink:0">${tagTxt}</span>
         </div>
         <div class="bar" style="height:5px;margin-left:34px"><i style="width:${jp.pct}%"></i></div>
+        ${hzQuickEdit(s)}
       </div>`;
     };
     const section = (title,list,tagCls)=> list.length? `<div style="margin-top:12px">
@@ -5559,7 +5665,10 @@ const Teacher = {
       </div><div style="max-height:460px;overflow-y:auto">${listHTML}</div>`
       :(justMet.length?'':`<p style="font-size:13px;color:var(--ink2);margin-top:10px">No goals set yet — open a Level 3 student's profile → Ḥifẓ section → Class Treat Goal to set one.</p>`)}
       ${noGoal.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">${noGoal.length} student${noGoal.length>1?'s':''} without a goal yet</summary>
-        <div class="wlist" style="margin-top:6px">${noGoal.map(s=>`<div class="wrow" data-go="#/students/${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t">${esc(s.name)}</span></div>`).join('')}</div></details>`:''}
+        <div class="wlist" style="margin-top:6px">${noGoal.map(s=>`<div class="wrow" data-go="#/students/${s.id}" style="flex-direction:column;align-items:stretch;gap:5px">
+          <div style="display:flex;align-items:center;gap:8px">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t">${esc(s.name)}</span></div>
+          ${hzQuickEdit(s)}
+        </div>`).join('')}</div></details>`:''}
     </div>`;
   },
   printTreatGoalsRoster(){
@@ -5725,6 +5834,27 @@ function checkHifzGoal(s){
     s.hifzGoal = null; return true;
   }
   return false;
+}
+// Moves a student's current Ḥifẓ position (sūrah and/or page) and keeps
+// everything downstream of it in sync — today's progress snapshot
+// (hifzLog, what the pace/ETA projection reads), any active Class Treat
+// Goal (resolved immediately if this update just finished it), and the
+// position fields themselves. Passing `cur` (a sūrah number) resets
+// curPage to that sūrah's own start, matching "picked a new sūrah, page
+// position restarts" — the same behavior the student profile's own
+// picker always had. Caller still owns DB.save()/Router.render().
+// Used by BOTH the student profile's Ḥifẓ section and the Class Treat
+// Goals roster's quick-update control, so updating a student's position
+// is one real place, not two copies that could quietly drift apart.
+function updateHifzPosition(s, {cur, curPage}={}){
+  s.hifz = s.hifz || {path:'standard', cur:114, curPage:null, goalWeekly:0, strengths:'', improve:''};
+  if(cur!=null){ s.hifz.cur = cur; s.hifz.curPage = null; }
+  else if(curPage!==undefined){ s.hifz.curPage = curPage!=null ? Math.max(QS[s.hifz.cur].p, Math.min(604, curPage)) : null; }
+  s.hifzLog = s.hifzLog || [];
+  const pages = hifzStats(s).pages;
+  const todayEntry = s.hifzLog.find(x=>x.date===today());
+  if(todayEntry) todayEntry.pages = pages; else s.hifzLog.push({date:today(), pages});
+  checkHifzGoal(s);
 }
 // Scans every active Level 3 student for a goal that's just been resolved
 // — called from the Dashboard so a goal met between visits to that
@@ -6862,9 +6992,9 @@ const Students = {
     const snapshotHifz=()=>{ const pages=hifzStats(s).pages; const t=s.hifzLog.find(x=>x.date===today()); if(t) t.pages=pages; else s.hifzLog.push({date:today(), pages}); };
     const saveH=()=>{ snapshotHifz(); DB.save(); Router.render(); };
     $('#hz-path',el).onchange=e=>{ h.path=e.target.value; const ord=HIFZ_PATHS[h.path].order(); if(!ord.includes(h.cur)) h.cur=ord[0]; h.curPage=null; DB.log(s.name+' → '+HIFZ_PATHS[h.path].name); saveH(); };
-    $('#hz-sur',el).onchange=e=>{ h.cur=+e.target.value; h.curPage=null; saveH(); };
+    $('#hz-sur',el).onchange=e=>{ updateHifzPosition(s,{cur:+e.target.value}); DB.save(); Router.render(); };
     const hifzCert=$('#hifzCertBtn',el); if(hifzCert) hifzCert.onclick=()=>printHTMLDocument(renderHifzCertificate({name:s.name}));
-    $('#hz-page',el).onchange=e=>{ const p=+e.target.value||null; h.curPage=p?Math.max(QS[h.cur].p,Math.min(604,p)):null; saveH(); };
+    $('#hz-page',el).onchange=e=>{ updateHifzPosition(s,{curPage:+e.target.value||null}); DB.save(); Router.render(); };
     $('#hz-goal',el).onchange=e=>{ h.goalWeekly=+e.target.value||0; saveH(); };
     const hzGoalSet=$('#hzGoalSet',el); if(hzGoalSet) hzGoalSet.onclick=()=>{
       const juz=+$('#hzGoalJuz',el).value, deadline=$('#hzGoalDeadline',el).value;
