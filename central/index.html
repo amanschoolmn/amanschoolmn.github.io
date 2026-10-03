@@ -715,6 +715,13 @@ const rel = iso => { if(!iso) return ''; const s=(Date.now()-new Date(iso))/1e3;
 const TYPE_ICON = {html:'🗂️', app:'⚙️', pdf:'📕', doc:'📄', slides:'📽️', sheet:'📊', image:'🖼️', video:'🎬', audio:'🎧', prompt:'🤖', book:'📖', web:'🌐', md:'📝'};
 const DIFFS = ['Foundational','Intermediate','Advanced','All Levels'];
 const SUBJECTS = ['Islamic Studies','Arabic','Qur’an','Administration','Brand & Marketing','School Operations','Recognition','Cross-Subject'];
+// A lesson plan's "subject" names which weekend class block it belongs to,
+// so it stays matched to the school's real teaching structure (the same
+// three blocks the Weekly Planner and Class Day cockpit use) — not the
+// Resource Library's broader tagging taxonomy above, which mixes in
+// non-teaching categories (Administration, Brand & Marketing, …) that
+// never made sense as a lesson's subject.
+const LESSON_SUBJECTS = ['Qur’an / Ḥifẓ','Arabic','Islamic Studies'];
 const GRADES = ['Level 1 — Green Book','Level 2 — Reading','Level 3 — Ḥifẓ','All Levels','Staff / Admin','Parents'];
 const STATUSES = ['Active','Draft','Needs Update','Missing — Re-upload','Planned','Archived'];
 
@@ -3809,6 +3816,13 @@ const Router = {
       check(); t.addEventListener('scroll', check, {passive:true});
       if(!t.getAttribute('role')) t.setAttribute('role','tablist');
       $$('button',t).forEach(b=>{ b.setAttribute('role','tab'); b.setAttribute('aria-selected', b.classList.contains('on')?'true':'false'); });
+      // On a narrow screen a tab bar with many tabs (e.g. Teacher
+      // Workspace's 8) scrolls horizontally — without this, landing
+      // directly on a later tab (a deep link, or just reopening the app)
+      // can leave the ACTIVE tab itself scrolled off-screen with no hint
+      // which one is selected. Bring it into view every render.
+      const on = t.querySelector('button.on');
+      if(on) on.scrollIntoView({block:'nearest', inline:'nearest'});
     });
   }
 };
@@ -4874,6 +4888,12 @@ render(v,param){
 }});
 const TT = {end:null, iv:null}; // class timer survives navigation
 const TreatUI = {filter:'all'}; // Class Treat Goals roster filter chip, survives re-render
+const LessonUI = {filter:'all'}; // Lesson Plans subject filter chip, survives re-render
+// Hand-off from a Lesson Plans card's "Reflect →" quick action to the
+// Reflections tab, so marking a lesson taught can flow straight into
+// writing the reflection on it instead of the two tabs being unrelated —
+// read once by Teacher.reflect() and cleared immediately after.
+let _teacherReflectPrefill = null;
 // Next real class day (Sat/Sun) from today, skipping anything in
 // DB.data.closures — used to frame Class Treat Goal deadlines against
 // "your next class" instead of a raw day count, which is what actually
@@ -4903,7 +4923,7 @@ const Teacher = {
     const behind=d.quran.length? d.students.filter(s=>s.active!==false&&s.level==='Level 3'&&(!lastQ[s.id]||lastQ[s.id]<cutoff)):[];
     const upLessons=d.lessons.filter(L=>!L.taught&&L.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
     const dueTasks=d.tasks.filter(t=>!t.done&&t.due&&t.due<=tdy);
-    const hwOpen=(d.homework||[]).filter(h=>!h.reviewed);
+    const hwOpen=gbUngradedAssignments('hw');
     // toolkit: teaching materials, most-used first
     const kit=d.resources.filter(r=>['Lesson Slides','Teacher Resources','Assessments','Student Resources'].includes(r.category)&&r.status==='Active')
       .sort((a,b)=>b.opens-a.opens).slice(0,8);
@@ -4959,7 +4979,8 @@ const Teacher = {
           <button class="chip" data-ai="Summarize today: ${present} present of ${d.students.length}, ${qToday.length} Quran entries. Suggest what to focus on next session.">✨ AI class summary</button>
           <button class="chip" data-ai="Draft a warm WhatsApp message to parents summarizing today’s class (${present} present, topics from my planner) and reminding about homework.">✨ Parent message draft</button></div></div>
       <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>Assign homework</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/homework">All →</button></div>
-        ${(d.homework||[]).slice(0,3).map(h=>`<div class="wrow" data-go="#/teacher/homework"><span>${h.reviewed?'✅':'📥'}</span><span class="t">${esc(h.title)}</span><span class="m">${h.due?fmtDate(h.due):''}</span></div>`).join('')||'<p style="font-size:13px;color:var(--ink2)">Nothing assigned yet.</p>'}
+        ${[...gbAssignmentsOfType('hw')].reverse().slice(0,3).map(h=>{ const u=DB.data.gbUnits.find(x=>x.id===h.unitId); const st=gbStudentsFor(u); const full=st.length>0&&gbGradedCount(h,st)===st.length;
+          return `<div class="wrow" data-go="#/teacher/homework"><span>${full?'✅':'📥'}</span><span class="t">${esc(h.title)}</span><span class="m">${h.date?fmtDate(h.date):''}</span></div>`; }).join('')||'<p style="font-size:13px;color:var(--ink2)">Nothing assigned yet.</p>'}
         <button class="btn btn-p btn-sm" data-act="hw" style="margin-top:9px">＋ Assign homework</button></div>
       <div class="widget" style="border-top:3px solid #7B4FA0"><div class="whead"><h3>Reflection — 60 seconds</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/reflect">All →</button></div>
         <textarea id="ckRef" placeholder="What landed today? What flopped? One change for next time…"></textarea>
@@ -5115,51 +5136,100 @@ const Teacher = {
     $('[data-x=next]',o).onclick=()=>{ if(save()) { $('#qs-t',o).value=''; $('#qs-t',o).focus(); } };
   },
   /* ---------- HOMEWORK ---------- */
-  hwForm(){
-    const d=DB.data;
-    const o=overlay(`<div class="modal"><h3>Assign homework</h3>
-      <div class="field"><label>Title</label><input id="hw-t" placeholder="e.g., Madinah L3 exercises + memorize Al-Fīl"></div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field"><label>Level</label><select id="hw-l"><option>All Levels</option><option>Level 1</option><option>Level 2</option><option>Level 3</option></select></div>
-        <div class="field"><label>Due</label><input id="hw-d" type="date"></div></div>
-      <div class="field"><label>Instructions</label><textarea id="hw-n"></textarea></div>
-      <div class="field"><label>Attach resources</label><div style="display:flex;gap:6px;flex-wrap:wrap">${d.resources.filter(r=>r.status==='Active').slice(0,40).map(r=>`<button class="chip" data-r="${r.id}">${esc(r.title.slice(0,26))}</button>`).join('')}</div></div>
-      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Assign</button></div></div>`,true);
-    const picked=new Set();
+  // Rebuilt to read/write the SAME records the Islamic Studies Gradebook
+  // grades (gbAssignments, type:'hw') instead of a second, disconnected
+  // DB.data.homework list — previously this tab and the Gradebook's own
+  // "Homework" category shared a name and nothing else: a homework sheet
+  // built here never showed up as a gradeable assignment there, and the
+  // Gradebook's real homework assignments never showed up here. "Print" and
+  // "attach resources/instructions" (the one thing the old tool did that a
+  // gradebook record doesn't need) move onto the assignment itself as
+  // optional fields (instructions/resources), so one record now serves
+  // both jobs.
+  hwForm(existing){
+    const subject = DB.data.gbSubjects[0];
+    if(!DB.data.gbUnits.length){ toast('Add a unit in the Islamic Studies Gradebook first'); return; }
+    const isNew = !existing;
+    const unitId = existing ? existing.unitId : DB.data.gbUnits[0].id;
+    const o=overlay(`<div class="modal"><h3>${isNew?'Assign homework':'Edit homework'}</h3>
+      <div class="field"><label>Title</label><input id="hw-t" placeholder="e.g., Tawḥīd Homework 5 — Shirk Scenarios" value="${existing?esc(existing.title):''}"></div>
+      <div class="grid" style="grid-template-columns:${DB.data.gbUnits.length>1?'1fr 1fr 1fr':'1fr 1fr'};gap:12px">
+        ${DB.data.gbUnits.length>1?`<div class="field"><label>Unit</label><select id="hw-u">${DB.data.gbUnits.map(u=>`<option value="${u.id}" ${u.id===unitId?'selected':''}>${esc(u.name)}</option>`).join('')}</select></div>`:''}
+        <div class="field"><label>Due</label><input id="hw-d" type="date" value="${existing?existing.date:today()}"></div>
+        <div class="field"><label>Out of (points)</label><input id="hw-pt" type="number" min="1" value="${existing?existing.possible:100}"></div>
+      </div>
+      <div class="field"><label>Instructions</label><textarea id="hw-n">${existing?esc(existing.instructions||''):''}</textarea></div>
+      <div class="field"><label>Attach resources</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DB.data.resources.filter(r=>r.status==='Active').slice(0,40).map(r=>`<button class="chip ${existing&&(existing.resources||[]).includes(r.id)?'on':''}" data-r="${r.id}">${esc(r.title.slice(0,26))}</button>`).join('')}</div></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Assign':'Save'}</button></div></div>`,true);
+    const picked=new Set(existing?(existing.resources||[]):[]);
     $$('button[data-r]',o).forEach(b=>b.onclick=()=>{ b.classList.toggle('on'); b.classList.contains('on')?picked.add(b.dataset.r):picked.delete(b.dataset.r); });
     $('[data-x=c]',o).onclick=()=>o.remove();
-    $('[data-x=s]',o).onclick=()=>{ const t=$('#hw-t',o).value.trim(); if(!t){toast('Title required');return;}
-      d.homework.unshift({id:uid(), title:t, level:$('#hw-l',o).value, due:$('#hw-d',o).value, notes:$('#hw-n',o).value.trim(), resources:[...picked], assigned:today(), reviewed:false});
-      DB.log('Homework assigned: '+t); DB.save(); o.remove(); toast('Assigned'); if(Router.parse().id==='teacher')Router.render(); };
+    $('[data-x=s]',o).onclick=()=>{
+      const t=$('#hw-t',o).value.trim(); if(!t){toast('Title required');return;}
+      const possible=Number($('#hw-pt',o).value)||100;
+      const uId = $('#hw-u',o) ? $('#hw-u',o).value : unitId;
+      const date = $('#hw-d',o).value || today();
+      const instructions = $('#hw-n',o).value.trim();
+      if(isNew){
+        DB.data.gbAssignments.push({id:uid(), subjectId:subject.id, unitId:uId, type:'hw', title:t, possible, date, scores:{}, instructions, resources:[...picked]});
+        DB.log('Homework assigned: '+t);
+      } else {
+        existing.title=t; existing.unitId=uId; existing.date=date; existing.possible=possible; existing.instructions=instructions; existing.resources=[...picked];
+        DB.log('Homework updated: '+t);
+      }
+      DB.save(); o.remove(); toast(isNew?'Assigned':'Saved'); Router.render();
+    };
   },
   homework(el){
-    const d=DB.data; d.homework=d.homework||[];
-    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px" class="no-print">
-      <span style="font-size:13.5px;color:var(--ink2)">${d.homework.length} assignment${d.homework.length===1?'':'s'} — assign after class, print sheets, tick reviewed when collected</span>
+    const items = gbAssignmentsOfType('hw');
+    const unitName = uId=>{ const u=DB.data.gbUnits.find(x=>x.id===uId); return u?u.name:'—'; };
+    const card = a=>{
+      const u = DB.data.gbUnits.find(x=>x.id===a.unitId);
+      const students = gbStudentsFor(u);
+      const graded = gbGradedCount(a, students);
+      const fullyGraded = students.length>0 && graded===students.length;
+      return `<div class="card" style="border-top:3px solid var(--info)">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <div><div class="eyebrow">${esc(unitName(a.unitId))} · due ${a.date?fmtDate(a.date):'—'}</div>
+          <h3 style="font-family:var(--f-display);font-size:16.5px;margin:3px 0 6px">${esc(a.title)}</h3></div>
+          <div style="display:flex;gap:5px;flex-shrink:0">
+            <button class="btn btn-ghost btn-sm" data-edit="${a.id}" title="Edit">✎</button>
+            <button class="btn btn-o btn-sm" data-print="${a.id}">Print</button>
+            <button class="btn btn-danger btn-sm" data-del="${a.id}">✕</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin:2px 0 8px;flex-wrap:wrap">
+          <span class="tag tag-dim" style="font-size:10px">${a.possible} pts</span>
+          <span class="tag ${fullyGraded?'tag-dim':'tag-gold'}" style="font-size:10px">${fullyGraded?'✓ fully graded':(students.length-graded)+' ungraded'}</span>
+          <button class="btn btn-ghost btn-sm" data-grade="${a.id}" style="padding:2px 8px;font-size:11px;margin-left:auto">📊 Grade →</button>
+        </div>
+        ${a.instructions?`<p style="font-family:var(--f-body);font-size:14px;white-space:pre-wrap;margin-bottom:8px">${esc(a.instructions)}</p>`:''}
+        ${(a.resources||[]).length?`<div style="display:flex;gap:6px;flex-wrap:wrap">${a.resources.map(rid=>{const r=DB.res(rid);return r?`<button class="chip" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.slice(0,26))}</button>`:'';}).join('')}</div>`:''}
+      </div>`;
+    };
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px;border-left:3px solid var(--info)">📥 <div>Every assignment here is the exact one graded in the <button data-go="#/students/gradebook" style="background:none;border:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit">Islamic Studies Gradebook</button> — build or print it from here, grade it there or here.</div></div>
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px" class="no-print">
+      <span style="font-size:13.5px;color:var(--ink2)">${items.length} assignment${items.length===1?'':'s'}</span>
       <button class="btn btn-p btn-sm" id="hwAdd">＋ Assign homework</button></div>
-     ${d.homework.length? `<div class="grid g2">${d.homework.map(h=>`
-       <div class="card" style="border-left:3px solid ${h.reviewed?'var(--ok)':'var(--gold)'};${h.reviewed?'opacity:.55':''}"><div style="display:flex;justify-content:space-between;gap:8px">
-        <div><div class="eyebrow">${esc(h.level)} · assigned ${fmtDate(h.assigned)}${h.due?' · due '+fmtDate(h.due):''}</div>
-        <h3 style="font-family:var(--f-display);font-size:16.5px;margin:3px 0 6px">${esc(h.title)}</h3></div>
-        <div style="display:flex;gap:5px"><button class="btn btn-o btn-sm" data-print="${h.id}">Print</button><button class="btn btn-danger btn-sm" data-del="${h.id}">✕</button></div></div>
-        ${h.notes?`<p style="font-family:var(--f-body);font-size:14px;white-space:pre-wrap;margin-bottom:8px">${esc(h.notes)}</p>`:''}
-        ${h.resources.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${h.resources.map(rid=>{const r=DB.res(rid);return r?`<button class="chip" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.slice(0,26))}</button>`:'';}).join('')}</div>`:''}
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" data-rev="${h.id}" ${h.reviewed?'checked':''} style="width:auto">Reviewed / collected</label>
-       </div>`).join('')}</div>`
-     : `<div class="empty"><div class="big">📥</div><h3>No homework yet</h3><p>Assign from here or straight from the Class Day cockpit after class.</p></div>`}`;
+     ${items.length? `<div class="grid g2">${items.map(card).join('')}</div>`
+     : `<div class="empty"><div class="big">📥</div><h3>No homework yet</h3><p>Assign from here or straight from the Class Day cockpit after class — it shows up gradeable in the Gradebook automatically.</p></div>`}`;
     wireCommon(el);
     $('#hwAdd',el).onclick=()=>Teacher.hwForm();
-    $$('input[data-rev]',el).forEach(c=>c.onchange=()=>{ const h=d.homework.find(x=>x.id===c.dataset.rev); h.reviewed=c.checked; DB.save(); Router.render(); });
-    $$('button[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this assignment?',()=>{ d.homework=d.homework.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render(); }));
-    $$('button[data-print]',el).forEach(b=>b.onclick=()=>{
-      const h=d.homework.find(x=>x.id===b.dataset.print);
-      printWindow('Homework — '+h.title,
-        `body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.6}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}p{font-size:15px}.blank{border-bottom:1px solid #999;display:inline-block;min-width:200px}`,
-        `<h1>Homework — ${esc(h.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(h.level)} · ${h.due?'Due '+fmtDate(h.due):''} · Name: <span class="blank"></span></div>
-         ${h.notes?`<p>${esc(h.notes).replace(/\n/g,'<br>')}</p>`:''}
-         ${h.resources.length?`<p><b>Materials:</b> ${h.resources.map(rid=>{const r=DB.res(rid);return r?esc(r.title):''}).filter(Boolean).join(' · ')}</p>`:''}
-         <p style="margin-top:40px">Parent signature: <span class="blank"></span></p>`);
-    });
+    $$('[data-edit]',el).forEach(b=>b.onclick=()=>Teacher.hwForm(DB.data.gbAssignments.find(x=>x.id===b.dataset.edit)));
+    $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this homework assignment and every grade recorded for it?',()=>{
+      DB.data.gbAssignments=DB.data.gbAssignments.filter(x=>x.id!==b.dataset.del); DB.log('Deleted homework assignment'); DB.save(); toast('Deleted'); Router.render();
+    }));
+    $$('[data-grade]',el).forEach(b=>b.onclick=()=>{ const a=DB.data.gbAssignments.find(x=>x.id===b.dataset.grade); Gradebook._unitId=a.unitId; Gradebook._assignmentId=a.id; Router.go('#/students/gradebook'); });
+    $$('[data-print]',el).forEach(b=>b.onclick=()=>Teacher.printHomework(DB.data.gbAssignments.find(x=>x.id===b.dataset.print)));
+  },
+  printHomework(a){
+    const u = DB.data.gbUnits.find(x=>x.id===a.unitId);
+    printWindow('Homework — '+a.title,
+      `body{font-family:Georgia,serif;max-width:700px;margin:36px auto;padding:0 20px;color:#111;line-height:1.6}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}p{font-size:15px}.blank{border-bottom:1px solid #999;display:inline-block;min-width:200px}`,
+      `<h1>Homework — ${esc(a.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(u?u.name:'')} · ${a.date?'Due '+fmtDate(a.date):''} · Name: <span class="blank"></span></div>
+       ${a.instructions?`<p>${esc(a.instructions).replace(/\n/g,'<br>')}</p>`:''}
+       ${(a.resources||[]).length?`<p><b>Materials:</b> ${a.resources.map(rid=>{const r=DB.res(rid);return r?esc(r.title):''}).filter(Boolean).join(' · ')}</p>`:''}
+       <p style="margin-top:40px">Parent signature: <span class="blank"></span></p>`);
   },
   /* ---------- PLANNER (preserved, + copy-forward) ---------- */
   planner(el){
@@ -5194,7 +5264,10 @@ const Teacher = {
   /* ---------- LESSON PLANS (upgraded: materials, time, taught-state, auto-related) ---------- */
   lessons(el){
     const d=DB.data;
-    const up=d.lessons.filter(L=>!L.taught), done=d.lessons.filter(L=>L.taught);
+    const filt = LESSON_SUBJECTS.includes(LessonUI.filter) ? LessonUI.filter : 'all';
+    const bySubj = L => filt==='all' || L.subject===filt;
+    const allUp=d.lessons.filter(L=>!L.taught), allDone=d.lessons.filter(L=>L.taught);
+    const up=allUp.filter(bySubj), done=allDone.filter(bySubj);
     const card = L=>{
       const autoRel = [...new Set((L.resources||[]).flatMap(rid=>Graph.related(rid,3).map(r=>r.id)))].filter(x=>!(L.resources||[]).includes(x)).slice(0,4);
       return `<div class="card" style="border-left:3px solid ${L.taught?'var(--ok)':'var(--gold)'};${L.taught?'opacity:.6':''}"><div style="display:flex;justify-content:space-between;gap:8px"><div>
@@ -5206,23 +5279,30 @@ const Teacher = {
         ${(L.materials||[]).length?`<div style="margin-top:9px"><b style="font-size:11px;letter-spacing:.07em;color:var(--ink3)">MATERIALS</b><div class="wlist">${L.materials.map((m,i)=>`<div class="wrow" style="cursor:default;padding:3px 6px"><input type="checkbox" data-mat="${L.id}_${i}" ${(L.matDone||[]).includes(i)?'checked':''} style="width:auto"><span class="t" style="font-weight:400">${esc(m)}</span></div>`).join('')}</div></div>`:''}
         ${(L.resources||[]).length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px">${L.resources.map(rid=>{const r=DB.res(rid); return r?`<button class="chip on" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.slice(0,28))}</button>`:''}).join('')}</div>`:''}
         ${autoRel.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><span style="font-size:10.5px;color:var(--ink3);align-self:center">also related:</span>${autoRel.map(rid=>{const r=DB.res(rid); return r?`<button class="chip" data-go="#/resource/${r.id}">${esc(r.title.slice(0,24))}</button>`:''}).join('')}</div>`:''}
+        ${L.taught?`<div style="margin-top:9px"><button class="btn btn-ghost btn-sm" data-reflect="${L.id}">📝 Reflect on this lesson →</button></div>`:''}
        </div>`; };
-    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px" class="no-print">
-      <span style="font-size:13.5px;color:var(--ink2)">${up.length} upcoming · ${done.length} taught</span>
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px" class="no-print">
+      <span style="font-size:13.5px;color:var(--ink2)">${up.length} upcoming · ${done.length} taught${filt!=='all'?' · filtered':''}</span>
       <button class="btn btn-p btn-sm" id="lsAdd">＋ New lesson plan</button></div>
-     ${up.length? `<div class="grid g2">${up.map(card).join('')}</div>` : `<div class="empty"><div class="big">📝</div><h3>No upcoming lessons</h3><p>Plan one — it links resources, carries a materials checklist into the cockpit, and shows auto-related materials.</p></div>`}
+     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" class="no-print">
+      <button class="chip ${filt==='all'?'on':''}" data-lsf="all">All ${allUp.length+allDone.length}</button>
+      ${LESSON_SUBJECTS.map(s=>{ const n=d.lessons.filter(L=>L.subject===s).length; return n?`<button class="chip ${filt===s?'on':''}" data-lsf="${esc(s)}">${esc(s)} ${n}</button>`:''; }).join('')}
+     </div>
+     ${up.length? `<div class="grid g2">${up.map(card).join('')}</div>` : `<div class="empty"><div class="big">📝</div><h3>No upcoming lessons${filt!=='all'?' in '+esc(filt):''}</h3><p>Plan one — it links resources, carries a materials checklist into the cockpit, and shows auto-related materials.</p></div>`}
      ${done.length? `<div class="sect">✓ Taught<span class="rule"></span></div><div class="grid g2">${done.slice(0,6).map(card).join('')}</div>`:''}`;
     wireCommon(el);
+    $$('[data-lsf]',el).forEach(b=>b.onclick=()=>{ LessonUI.filter=b.dataset.lsf; Router.render(); });
     $$('input[data-mat]',el).forEach(c=>c.onchange=()=>{ const [lid,i]=c.dataset.mat.split('_'); const L=d.lessons.find(x=>x.id===lid);
       L.matDone=L.matDone||[]; c.checked? L.matDone.push(+i) : L.matDone=L.matDone.filter(x=>x!==+i); DB.save(); });
     $$('[data-taught]',el).forEach(b=>b.onclick=()=>{ const L=d.lessons.find(x=>x.id===b.dataset.taught); L.taught=true;
       DB.log('Taught: '+L.title); DB.save(); toast('Marked taught — bāraka Allāhu fīk'); Router.render(); });
     $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this lesson plan?',()=>{ d.lessons=d.lessons.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render(); }));
+    $$('[data-reflect]',el).forEach(b=>b.onclick=()=>{ _teacherReflectPrefill=b.dataset.reflect; Router.go('#/teacher/reflect'); });
     $('#lsAdd',el).onclick=()=>{
       const o=overlay(`<div class="modal"><h3>New lesson plan</h3>
        <div class="field"><label>Title</label><input id="L-t" placeholder="e.g., Al-Ghafūr — the One who covers sins"></div>
        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
-        <div class="field"><label>Subject</label><select id="L-s">${SUBJECTS.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Subject</label><select id="L-s">${LESSON_SUBJECTS.map(s=>`<option ${filt!=='all'&&s===filt?'selected':''}>${s}</option>`).join('')}</select></div>
         <div class="field"><label>Date</label><input id="L-d" type="date" value="${today()}"></div>
         <div class="field"><label>Est. minutes</label><input id="L-e" type="number" min="5" max="240" placeholder="45"></div></div>
        <div class="field"><label>Objective</label><input id="L-o" placeholder="What will students walk out knowing?"></div>
@@ -5243,82 +5323,159 @@ const Teacher = {
       };
     };
   },
-  quiz(el){
-    const d=DB.data;
-    d.planner.qzFilter = d.planner.qzFilter || 'All';
-    const subjs = ['All', ...new Set(d.quizzes.map(q=>q.subject))];
-    const shown = d.planner.qzFilter==='All'? d.quizzes : d.quizzes.filter(q=>q.subject===d.planner.qzFilter);
-    const totalQs = d.quizzes.reduce((a,q)=>a+q.qs.length,0);
-    const totalPts = d.quizzes.reduce((a,q)=>a+q.qs.reduce((x,y)=>x+(+y.pts||0),0),0);
-    el.innerHTML = `<div class="kpis" style="margin-bottom:16px">${[
-       ['🧪',d.quizzes.length,'Quizzes','var(--gold)'],['❓',totalQs,'Total questions','var(--info)'],['🏆',totalPts,'Total points','var(--ok)']]
-       .map(([i,val,lab,cv])=>`<div class="kpi-card" style="cursor:default;border-top:3px solid ${cv}"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
-     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap" class="no-print">
-      ${subjs.length>2?`<div style="display:flex;gap:6px;flex-wrap:wrap">${subjs.map(s=>`<button class="chip${d.planner.qzFilter===s?' on':''}" data-qf="${esc(s)}">${esc(s)}</button>`).join('')}</div>`:'<span></span>'}
-      <button class="btn btn-p btn-sm" id="qzAdd">＋ New quiz</button></div>
-     ${shown.length? `<div class="grid g2">${shown.map(Q=>`
-      <div class="card" style="border-top:3px solid var(--gold)"><div style="display:flex;justify-content:space-between"><h3 style="font-family:var(--f-display);font-size:17px">${esc(Q.title)}</h3>
-       <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-print="${Q.id}">Print</button><button class="btn btn-danger btn-sm" data-del="${Q.id}">✕</button></div></div>
-       <p style="font-size:12.5px;color:var(--ink2);margin:4px 0 10px">${esc(Q.subject)} · ${Q.qs.length} question${Q.qs.length===1?'':'s'} · ${Q.qs.reduce((a,q)=>a+(+q.pts||0),0)} pts</p>
-       <ol style="font-family:var(--f-body);font-size:14.5px;padding-left:20px;display:flex;flex-direction:column;gap:5px">${Q.qs.slice(0,4).map(q=>`<li>${esc(q.q)}</li>`).join('')}${Q.qs.length>4?'<li style="list-style:none;color:var(--ink3)">…</li>':''}</ol>
-      </div>`).join('')}</div>`
-     : d.quizzes.length? `<div class="empty"><div class="big">🔍</div><h3>No quizzes in ${esc(d.planner.qzFilter)}</h3></div>`
-     : `<div class="empty"><div class="big">🧪</div><h3>No quizzes yet</h3><p>Build a quiz with per-question points; print produces a student sheet and a separate answer key.</p></div>`}`;
-    $$('button[data-qf]',el).forEach(b=>b.onclick=()=>{ d.planner.qzFilter=b.dataset.qf; DB.save(); Router.render(); });
-    $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this quiz?',()=>{ d.quizzes=d.quizzes.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render();}));
-    $$('[data-print]',el).forEach(b=>b.onclick=()=>{
-      const Q=d.quizzes.find(x=>x.id===b.dataset.print);
-      printWindow(Q.title,
-        `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:16px;margin-top:34px;color:#1a4a35}.meta{font-size:12px;color:#555}li{margin:14px 0}.ans{page-break-before:always}.blank{border-bottom:1px solid #999;display:inline-block;min-width:220px}`,
-        `<h1>${esc(Q.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(Q.subject)} · Name: <span class="blank"></span> · Date: ______</div>
-         <ol>${Q.qs.map(q=>`<li>${esc(q.q)} <b>(${esc(q.pts)} pts)</b><br><br><span class="blank" style="min-width:96%">&nbsp;</span></li>`).join('')}</ol>
-         <div class="ans"><h2>Answer Key — teacher copy</h2><ol>${Q.qs.map(q=>`<li>${esc(q.q)}<br><b>→ ${esc(q.a||'—')}</b></li>`).join('')}</ol></div>`);
-    });
-    $('#qzAdd',el).onclick=()=>{
-      const qs=[];
-      const o=overlay(`<div class="modal"><h3>New quiz</h3>
+  // Rebuilt the same way as Homework above: a quiz built here IS a
+  // gbAssignments row (type:'qz'), so it's gradeable in the Gradebook the
+  // moment it's saved — the old DB.data.quizzes list never connected to
+  // anything gradeable at all. The per-question bank (question/answer/
+  // points) moves onto the assignment as an optional `questions` field,
+  // used for the print sheet + answer key; a quiz with no question bank
+  // yet still grades fine off its point total alone.
+  qzForm(existing){
+    const subject = DB.data.gbSubjects[0];
+    if(!DB.data.gbUnits.length){ toast('Add a unit in the Islamic Studies Gradebook first'); return; }
+    const isNew = !existing;
+    const unitId = existing ? existing.unitId : DB.data.gbUnits[0].id;
+    const qs = existing ? (existing.questions||[]).map(q=>({...q})) : [];
+    const o=overlay(`<div class="modal"><h3>${isNew?'New quiz':'Edit quiz'}</h3>
+      <div class="grid" style="grid-template-columns:${DB.data.gbUnits.length>1?'2fr 1fr':'1fr'};gap:12px">
+        <div class="field"><label>Title</label><input id="Q-t" placeholder="e.g., Tawḥīd Quiz 5" value="${existing?esc(existing.title):''}"></div>
+        ${DB.data.gbUnits.length>1?`<div class="field"><label>Unit</label><select id="Q-u">${DB.data.gbUnits.map(u=>`<option value="${u.id}" ${u.id===unitId?'selected':''}>${esc(u.name)}</option>`).join('')}</select></div>`:''}
+      </div>
+      <div class="field"><label>Date</label><input id="Q-d" type="date" value="${existing?existing.date:today()}"></div>
+      <div id="Q-list" class="wlist" style="margin-bottom:10px"></div>
+      <div class="card" style="background:var(--surface2)">
+        <div class="field"><label>Question</label><input id="Q-q"></div>
         <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px">
-         <div class="field"><label>Title</label><input id="Q-t" placeholder="e.g., Tawhid Quiz 5"></div>
-         <div class="field"><label>Subject</label><select id="Q-s">${SUBJECTS.map(s=>`<option>${s}</option>`).join('')}</select></div></div>
-        <div id="Q-list" class="wlist" style="margin-bottom:10px"></div>
-        <div class="card" style="background:var(--surface2)">
-          <div class="field"><label>Question</label><input id="Q-q"></div>
-          <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px">
-            <div class="field"><label>Answer (key)</label><input id="Q-a"></div>
-            <div class="field"><label>Points</label><input id="Q-p" type="number" value="5" min="1"></div></div>
-          <button class="btn btn-o btn-sm" id="Q-add">＋ Add question</button></div>
-        <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save quiz</button></div></div>`, true);
-      const paint=()=>{ $('#Q-list',o).innerHTML = qs.map((q,i)=>`<div class="wrow" style="cursor:default"><span class="t">${i+1}. ${esc(q.q)}</span><span class="m">${q.pts}pts</span><button class="btn btn-ghost btn-sm" data-qd="${i}">✕</button></div>`).join('')||'<div class="wrow" style="color:var(--ink3);cursor:default">No questions yet</div>';
-        $$('button[data-qd]',o).forEach(b=>b.onclick=()=>{qs.splice(+b.dataset.qd,1);paint();}); };
-      paint();
-      $('#Q-add',o).onclick=()=>{ const q=$('#Q-q',o).value.trim(); if(!q){toast('Write the question first');return;}
-        qs.push({q, a:$('#Q-a',o).value.trim(), pts:$('#Q-p',o).value||5}); $('#Q-q',o).value='';$('#Q-a',o).value=''; paint(); $('#Q-q',o).focus(); };
-      $('[data-x=c]',o).onclick=()=>o.remove();
-      $('[data-x=s]',o).onclick=()=>{ const t=$('#Q-t',o).value.trim();
-        if(!t){toast('Title required');return;} if(!qs.length){toast('Add at least one question');return;}
-        d.quizzes.unshift({id:uid(), title:t, subject:$('#Q-s',o).value, qs:[...qs]});
-        DB.log('Built quiz: '+t); DB.save(); o.remove(); toast('Quiz saved'); Router.render(); };
+          <div class="field"><label>Answer (key)</label><input id="Q-a"></div>
+          <div class="field"><label>Points</label><input id="Q-p" type="number" value="5" min="1"></div></div>
+        <button class="btn btn-o btn-sm" id="Q-add">＋ Add question</button></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Save quiz':'Save'}</button></div></div>`, true);
+    const paint=()=>{ $('#Q-list',o).innerHTML = qs.map((q,i)=>`<div class="wrow" style="cursor:default"><span class="t">${i+1}. ${esc(q.q)}</span><span class="m">${q.pts}pts</span><button class="btn btn-ghost btn-sm" data-qd="${i}">✕</button></div>`).join('')||'<div class="wrow" style="color:var(--ink3);cursor:default">No questions yet — a quiz can also be graded as one block without them.</div>';
+      $$('button[data-qd]',o).forEach(b=>b.onclick=()=>{qs.splice(+b.dataset.qd,1);paint();}); };
+    paint();
+    $('#Q-add',o).onclick=()=>{ const q=$('#Q-q',o).value.trim(); if(!q){toast('Write the question first');return;}
+      qs.push({q, a:$('#Q-a',o).value.trim(), pts:Number($('#Q-p',o).value)||5}); $('#Q-q',o).value='';$('#Q-a',o).value=''; paint(); $('#Q-q',o).focus(); };
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
+      const t=$('#Q-t',o).value.trim(); if(!t){toast('Title required');return;}
+      const uId = $('#Q-u',o) ? $('#Q-u',o).value : unitId;
+      const date = $('#Q-d',o).value || today();
+      const possible = qs.length ? qs.reduce((a,q)=>a+(Number(q.pts)||0),0) : (existing?existing.possible:100);
+      if(isNew){
+        DB.data.gbAssignments.push({id:uid(), subjectId:subject.id, unitId:uId, type:'qz', title:t, possible, date, scores:{}, questions:[...qs]});
+        DB.log('Built quiz: '+t);
+      } else {
+        existing.title=t; existing.unitId=uId; existing.date=date; existing.possible=possible; existing.questions=[...qs];
+        DB.log('Quiz updated: '+t);
+      }
+      DB.save(); o.remove(); toast(isNew?'Quiz saved':'Saved'); Router.render();
     };
   },
-  notes(el){ simpleJournal(el, 'notes_teach', 'Teaching notes', 'Observations, ideas, things to try next session…'); },
-  reflect(el){ simpleJournal(el, 'notes_reflect', 'Lesson reflections', 'What landed? What flopped? What will you change?'); },
+  quiz(el){
+    const items = gbAssignmentsOfType('qz');
+    const withQs = items.filter(a=>(a.questions||[]).length).length;
+    const ungraded = gbUngradedAssignments('qz').length;
+    const unitName = uId=>{ const u=DB.data.gbUnits.find(x=>x.id===uId); return u?u.name:'—'; };
+    const card = a=>{
+      const u = DB.data.gbUnits.find(x=>x.id===a.unitId);
+      const students = gbStudentsFor(u);
+      const graded = gbGradedCount(a, students);
+      const fullyGraded = students.length>0 && graded===students.length;
+      const qs = a.questions||[];
+      return `<div class="card" style="border-top:3px solid var(--gold)">
+       <div style="display:flex;justify-content:space-between;gap:8px">
+        <div><div class="eyebrow">${esc(unitName(a.unitId))} · ${a.date?fmtDate(a.date):'—'}</div>
+        <h3 style="font-family:var(--f-display);font-size:16.5px;margin:3px 0 6px">${esc(a.title)}</h3></div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm" data-edit="${a.id}" title="Edit / add questions">✎</button>
+          <button class="btn btn-o btn-sm" data-print="${a.id}" ${qs.length?'':'disabled title="Add questions to print a sheet" style="opacity:.45;cursor:not-allowed"'}>Print</button>
+          <button class="btn btn-danger btn-sm" data-del="${a.id}">✕</button>
+        </div>
+       </div>
+       <div style="display:flex;align-items:center;gap:8px;margin:2px 0 8px;flex-wrap:wrap">
+        <span class="tag tag-dim" style="font-size:10px">${a.possible} pts</span>
+        <span class="tag tag-dim" style="font-size:10px">${qs.length} question${qs.length===1?'':'s'}</span>
+        <span class="tag ${fullyGraded?'tag-dim':'tag-gold'}" style="font-size:10px">${fullyGraded?'✓ fully graded':(students.length-graded)+' ungraded'}</span>
+        <button class="btn btn-ghost btn-sm" data-grade="${a.id}" style="padding:2px 8px;font-size:11px;margin-left:auto">📊 Grade →</button>
+       </div>
+       ${qs.length?`<ol style="font-family:var(--f-body);font-size:14.5px;padding-left:20px;display:flex;flex-direction:column;gap:5px">${qs.slice(0,4).map(q=>`<li>${esc(q.q)}</li>`).join('')}${qs.length>4?'<li style="list-style:none;color:var(--ink3)">…</li>':''}</ol>`
+        :'<p style="font-size:12.5px;color:var(--ink3)">No question bank attached yet — grading still works from just the point total.</p>'}
+      </div>`;
+    };
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:14px;border-left:3px solid var(--info)">🧪 <div>Every quiz here is the exact one graded in the <button data-go="#/students/gradebook" style="background:none;border:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit">Islamic Studies Gradebook</button> — build the question bank here, grade it there or here.</div></div>
+     <div class="kpis" style="margin-bottom:16px">${[
+       ['🧪',items.length,'Quizzes','var(--gold)'],['📝',withQs,'With question banks','var(--info)'],['⏳',ungraded,'Need grading','var(--warn)']]
+       .map(([i,val,lab,cv])=>`<div class="kpi-card" style="cursor:default;border-top:3px solid ${cv}"><span class="ki">${i}</span><b style="font-size:18px">${val}</b><span>${lab}</span></div>`).join('')}</div>
+     <div style="display:flex;justify-content:flex-end;margin-bottom:14px" class="no-print"><button class="btn btn-p btn-sm" id="qzAdd">＋ New quiz</button></div>
+     ${items.length? `<div class="grid g2">${items.map(card).join('')}</div>`
+     : `<div class="empty"><div class="big">🧪</div><h3>No quizzes yet</h3><p>Build a quiz with per-question points; print produces a student sheet and a separate answer key — and it's gradeable the moment it's saved.</p></div>`}`;
+    wireCommon(el);
+    $('#qzAdd',el).onclick=()=>Teacher.qzForm();
+    $$('[data-edit]',el).forEach(b=>b.onclick=()=>Teacher.qzForm(DB.data.gbAssignments.find(x=>x.id===b.dataset.edit)));
+    $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this quiz and every grade recorded for it?',()=>{
+      DB.data.gbAssignments=DB.data.gbAssignments.filter(x=>x.id!==b.dataset.del); DB.log('Deleted quiz'); DB.save(); toast('Deleted'); Router.render();
+    }));
+    $$('[data-grade]',el).forEach(b=>b.onclick=()=>{ const a=DB.data.gbAssignments.find(x=>x.id===b.dataset.grade); Gradebook._unitId=a.unitId; Gradebook._assignmentId=a.id; Router.go('#/students/gradebook'); });
+    $$('[data-print]',el).forEach(b=>b.onclick=()=>{
+      const a=DB.data.gbAssignments.find(x=>x.id===b.dataset.print);
+      if(!(a.questions||[]).length) return;
+      const u = DB.data.gbUnits.find(x=>x.id===a.unitId);
+      printWindow(a.title,
+        `body{font-family:Georgia,serif;max-width:720px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:22px;border-bottom:2px solid #1a4a35;padding-bottom:8px}h2{font-size:16px;margin-top:34px;color:#1a4a35}.meta{font-size:12px;color:#555}li{margin:14px 0}.ans{page-break-before:always}.blank{border-bottom:1px solid #999;display:inline-block;min-width:220px}`,
+        `<h1>${esc(a.title)}</h1><div class="meta">Al-Madrasatu An-Nuriyyah · ${esc(u?u.name:'')} · Name: <span class="blank"></span> · Date: ______</div>
+         <ol>${a.questions.map(q=>`<li>${esc(q.q)} <b>(${esc(q.pts)} pts)</b><br><br><span class="blank" style="min-width:96%">&nbsp;</span></li>`).join('')}</ol>
+         <div class="ans"><h2>Answer Key — teacher copy</h2><ol>${a.questions.map(q=>`<li>${esc(q.q)}<br><b>→ ${esc(q.a||'—')}</b></li>`).join('')}</ol></div>`);
+    });
+  },
+  notes(el){ simpleJournal(el, 'notes_teach', 'Teaching notes', 'Observations, ideas, things to try next session…', null, true); },
+  reflect(el){
+    const pre = _teacherReflectPrefill; _teacherReflectPrefill=null;
+    simpleJournal(el, 'notes_reflect', 'Lesson reflections', 'What landed? What flopped? What will you change?', pre, true);
+  },
   curriculum(el){
-    const rows = [['na','📿','Names & Attributes of Allah','9 units · 30 lessons','var(--gold)'],['tawhid','☪️','Tawhid (Taʿlīm al-Ṣibyān)','9 lessons · 49 slides','var(--green)'],['mad','🖋️','Madinah Arabic Book 1','10 lessons','var(--info)']];
-    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px;border-left:3px solid var(--info)">ℹ️ <div>These percentages are self-reported — you set them, nothing computes them automatically. They feed Analytics, the Board Report, and the AI Assistant's summaries, so keep them honest and current.</div></div>
-     <div class="grid g2">${rows.map(([k,ic,t,sub,cv])=>{
+    const d = DB.data;
+    // lsub links a row to the Lesson Plans subject that covers it, and
+    // gbMatch links it to its real Gradebook unit (by name) when one
+    // exists — the two real, computed signals that replace this tab's old
+    // total disconnection from everything else in the app.
+    const rows = [
+      ['na','📿','Names & Attributes of Allah','9 units · 30 lessons','var(--gold)','Islamic Studies',/names|attribut/i],
+      ['tawhid','☪️','Tawhid (Taʿlīm al-Ṣibyān)','9 lessons · 49 slides','var(--green)','Islamic Studies',/tawh/i],
+      ['mad','🖋️','Madinah Arabic Book 1','10 lessons','var(--info)','Arabic',/madinah|arabic/i],
+    ];
+    el.innerHTML = `<div class="notice info no-print" style="margin-bottom:16px;border-left:3px solid var(--info)">ℹ️ <div>Completion % below is self-reported — you set it, nothing computes it automatically. The lesson and Gradebook counts next to each bar <i>are</i> real, pulled from Lesson Plans and the Islamic Studies Gradebook, so you have an actual check against the self-report. These feed Analytics, the Board Report, and the AI Assistant's summaries, so keep them honest and current.</div></div>
+     <div class="grid g2">${rows.map(([k,ic,t,sub,cv,lsub,unitRx])=>{
       const p = unitsPct(k);
       const upd = DB.data.planner['progU_'+k];
+      const taughtL = d.lessons.filter(L=>L.subject===lsub && L.taught);
+      const totalL = d.lessons.filter(L=>L.subject===lsub);
+      // Fold diacritics before matching — a real unit name like "Aqeedah
+      // — Tawḥīd" uses the dotted-ḥ letter (a distinct Unicode codepoint),
+      // which a plain /tawh/i never matches literally even though it
+      // reads as "Tawhid" to the eye. Without this fold, the one unit
+      // that actually exists in the Gradebook would silently fail to
+      // link up — exactly the kind of invisible disconnection this pass
+      // is meant to catch.
+      const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+      const gbUnit = d.gbUnits.find(u=>unitRx.test(fold(u.name)));
+      const asnCount = gbUnit ? gbAssignmentsFor(gbUnit.id).length : 0;
+      const avg = gbUnit ? gbUnitClassAvg(gbUnit) : null;
       return `<div class="card" style="border-top:3px solid ${cv}"><h3 style="font-family:var(--f-display);font-size:17px">${ic} ${t}</h3>
        <p style="font-size:12.5px;color:var(--ink2);margin:2px 0 12px">${sub}</p>
        <div class="bar" style="margin-bottom:10px"><i style="width:${p}%"></i></div>
        <label>Completion — ${p}%</label>
        <input type="range" min="0" max="100" value="${p}" data-prog="${k}" style="padding:0">
        <div class="prog-upd" style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin-top:8px">${upd?'updated '+rel(upd):'never updated — showing default'}</div>
+       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        ${totalL.length?`<span class="tag tag-dim" style="font-size:10px;cursor:pointer" data-go="#/teacher/lessons">📝 ${taughtL.length}/${totalL.length} ${esc(lsub)} lessons taught</span>`:`<span class="tag tag-dim" style="font-size:10px;cursor:pointer" data-go="#/teacher/lessons">📝 no ${esc(lsub)} lesson plans yet</span>`}
+        ${gbUnit?`<span class="tag ${avg!=null?'tag-gold':'tag-dim'}" style="font-size:10px;cursor:pointer" data-gbunitlink="${gbUnit.id}">📊 ${asnCount} assignment${asnCount===1?'':'s'}${avg!=null?' · class avg '+avg.toFixed(0)+'%':''} — Gradebook →</span>`:''}
+       </div>
       </div>`;}).join('')}
       <div class="card" style="border-top:3px solid #7B4FA0"><h3 style="font-family:var(--f-display);font-size:17px">📖 Qur’an — Ḥifẓ</h3>
       <p style="font-family:var(--f-body);font-size:14.5px;color:var(--ink2);margin-top:6px">Per-student pace lives in the Ḥifẓ Tracker spreadsheet and each student’s profile → Qur’an log. This card intentionally doesn’t duplicate it.</p>
       <button class="btn btn-o btn-sm" style="margin-top:10px" data-go="#/resource/xls-hifdh">Open Ḥifẓ Tracker entry</button></div></div>`;
     wireCommon(el);
+    $$('[data-gbunitlink]',el).forEach(s=>s.onclick=()=>{ Gradebook._unitId=s.dataset.gbunitlink; Gradebook._assignmentId=null; Router.go('#/students/gradebook'); });
     $$('input[data-prog]',el).forEach(r=>r.oninput=()=>{ DB.data.planner['prog_'+r.dataset.prog]=+r.value; DB.data.planner['progU_'+r.dataset.prog]=new Date().toISOString(); DB.save();
       r.closest('.card').querySelector('label').textContent='Completion — '+r.value+'%';
       r.closest('.card').querySelector('.bar i').style.width=r.value+'%';
@@ -5435,20 +5592,31 @@ const Teacher = {
        </tbody></table>`:''}`);
   }
 };
-function simpleJournal(el, key, title, ph){
+// prefillLessonId (optional): a lesson id to preselect in the "which lesson
+// is this about" picker — set when the entry was opened via a lesson
+// plan's "Reflect on this lesson →" button, so that hop actually lands on
+// the right lesson instead of a blank form. Linking an entry to a lesson
+// is optional either way — a quick general observation needs no lesson.
+function simpleJournal(el, key, title, ph, prefillLessonId, withLessonLink){
   const d=DB.data; d.planner[key]=d.planner[key]||[];
   const list=d.planner[key];
   const q=(d.planner['q_'+key]||'').toLowerCase();
   const shown = q? list.filter(n=>n.t.toLowerCase().includes(q)) : list;
+  const recentLessons = withLessonLink ? [...d.lessons].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,25) : [];
+  const lessonTitle = lid => { const L=d.lessons.find(x=>x.id===lid); return L?L.title:null; };
   el.innerHTML = `<div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><label>📝 ${title} — new entry</label>
     <textarea id="j-in" placeholder="${ph}"></textarea>
+    ${recentLessons.length?`<div class="field" style="margin-top:8px"><label>Which lesson is this about? (optional)</label>
+      <select id="j-lesson"><option value="">— general, no specific lesson —</option>${recentLessons.map(L=>`<option value="${L.id}" ${L.id===prefillLessonId?'selected':''}>${fmtDate(L.date)} · ${esc(L.title)}</option>`).join('')}</select></div>`:''}
     <div style="display:flex;justify-content:flex-end;margin-top:9px"><button class="btn btn-p btn-sm" id="j-add">Save entry</button></div></div>
    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px" class="no-print">
      <span style="font-size:12.5px;color:var(--ink2)">${list.length} entr${list.length===1?'y':'ies'}${q?', '+shown.length+' matching':''}</span>
      ${list.length>3?`<input id="j-q" placeholder="Search entries…" value="${esc(d.planner['q_'+key]||'')}" style="max-width:200px">`:''}</div>
-   <div class="wlist">${shown.map(n=>{ const i=list.indexOf(n); return `<div class="card" style="margin-bottom:10px;border-left:3px solid var(--green-soft)"><div style="display:flex;justify-content:space-between;gap:8px"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span><button class="btn btn-ghost btn-sm" data-jd="${i}">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`; }).join('')||(q?`<div class="empty"><p>No entries match "${esc(q)}".</p></div>`:'<div class="empty"><p>No entries yet.</p></div>')}</div>`;
+   <div class="wlist">${shown.map(n=>{ const i=list.indexOf(n); const lt=n.lid?lessonTitle(n.lid):null; return `<div class="card" style="margin-bottom:10px;border-left:3px solid var(--green-soft)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span>${lt?`<span class="tag tag-dim" style="font-size:10px" data-go="#/teacher/lessons">📝 ${esc(lt)}</span>`:''}<button class="btn btn-ghost btn-sm" data-jd="${i}" style="margin-left:auto">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`; }).join('')||(q?`<div class="empty"><p>No entries match "${esc(q)}".</p></div>`:'<div class="empty"><p>No entries yet.</p></div>')}</div>`;
+  wireCommon(el);
   $('#j-add',el).onclick=()=>{ const t=$('#j-in',el).value.trim(); if(!t)return;
-    list.unshift({d:new Date().toISOString(), t}); DB.save(); Router.render(); toast('Saved'); };
+    const lsel=$('#j-lesson',el);
+    list.unshift({d:new Date().toISOString(), t, lid: lsel&&lsel.value ? lsel.value : null}); DB.save(); Router.render(); toast('Saved'); };
   const qi=$('#j-q',el); if(qi) qi.oninput=()=>{ d.planner['q_'+key]=qi.value; DB.save();
     clearTimeout(simpleJournal._t); simpleJournal._t=setTimeout(()=>Router.render(),200); };
   $$('button[data-jd]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this entry?',()=>{ list.splice(+b.dataset.jd,1); DB.save(); Router.render(); }));
@@ -6835,8 +7003,8 @@ function avatarHTML(s, style){ return `<div class="avatar" style="${style||''}">
    nothing else in the app needs to change. Qur'an-reading-check/HW/CW are new
    per-session fields in DB.data.progress, since those questions ("did today's
    reading check pass", "did the 3 HW pages come back") aren't the same as the
-   existing d.quran ḥifẓ-portion log or d.homework assignment sheets — both of
-   those stay untouched and keep meaning what they already mean. */
+   existing d.quran ḥifẓ-portion log or the Gradebook's own Homework-type
+   assignments — both stay untouched and keep meaning what they already mean. */
 const PT_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 // Every real Saturday+Sunday for ANY given year — computed live rather than
 // hardcoded, so the app keeps working correctly every future season without
@@ -7966,6 +8134,25 @@ function gbAssignmentsFor(unitId){ return DB.data.gbAssignments.filter(a=>a.unit
 // exceptions each way, so this only ever reads the explicit per-student
 // flag (defaulted at migration time, never re-derived from level here).
 function gbIsEnrolled(s){ return s.gbEnrolled!=null ? s.gbEnrolled : s.level==='Level 3'; }
+// The students a given gbAssignment's row of scores actually applies to —
+// shared by every screen that needs a "graded N of M" count for one
+// assignment (Gradebook's own unit view, and the Teacher Workspace
+// Quizzes/Homework tabs below, which read the SAME gbAssignments rather
+// than keeping a second, disconnected list).
+function gbStudentsFor(unit){ return DB.data.students.filter(s=>s.active!==false && (!unit||gbUnitAppliesTo(unit,s.level)) && gbIsEnrolled(s)); }
+function gbGradedCount(a, students){ return (students||gbStudentsFor(DB.data.gbUnits.find(u=>u.id===a.unitId))).filter(s=>a.scores&&a.scores[s.id]!=null&&a.scores[s.id]!=='').length; }
+// Every assignment of one type across every unit/subject — this is what
+// backs the Teacher Workspace Quizzes/Homework tabs, so "a quiz" means
+// exactly the same record whether you're building it, printing it, or
+// grading it in the Gradebook; there is no second quiz/homework list.
+function gbAssignmentsOfType(type){ return DB.data.gbAssignments.filter(a=>a.type===type).sort((a,b)=>(a.date||'').localeCompare(b.date||'')); }
+function gbUngradedAssignments(type){
+  return gbAssignmentsOfType(type).filter(a=>{
+    const u = DB.data.gbUnits.find(x=>x.id===a.unitId);
+    const students = gbStudentsFor(u);
+    return gbGradedCount(a, students) < students.length;
+  });
+}
 // range, when given, is {from,to} inclusive 'YYYY-MM-DD' strings and scopes
 // this to assignments DATED in that window — used by the combined Student
 // of the Month (a monthly figure) so it doesn't compare a specific month's
@@ -7995,6 +8182,18 @@ function gbUnitGrade(subject, unitId, student, range){
     if(st && st.pct!=null && w>0){ total+=st.pct*w; wsum+=w; }
   });
   return wsum>0 ? total/wsum : null;
+}
+// A unit's class-wide average grade — the Teacher Workspace Curriculum tab's
+// real-data check on a self-reported completion slider (so that card isn't
+// disconnected from the Gradebook the way the old Quizzes/Homework tabs were
+// disconnected from it). null when the unit has no matching subject or no
+// enrolled student has a grade in it yet.
+function gbUnitClassAvg(u){
+  if(!u) return null;
+  const subject = DB.data.gbSubjects.find(x=>x.id===u.subjectId);
+  if(!subject) return null;
+  const grades = gbStudentsFor(u).map(s=>gbUnitGrade(subject,u.id,s)).filter(g=>g!=null);
+  return grades.length ? grades.reduce((a,b)=>a+b,0)/grades.length : null;
 }
 // Overall subject grade — simple average of every unit grade the student
 // has any data in, restricted to units that apply to their level (each
@@ -8694,7 +8893,7 @@ const Gradebook = {
          <table class="tbl"><thead><tr><th>Student</th>${activeTypes.map(([,l])=>`<th style="text-align:right">${l}</th>`).join('')}<th style="text-align:right">Unit grade</th></tr></thead>
          <tbody>${g.map(s=>{
            const grade = gbUnitGrade(subject, u.id, s);
-           return `<tr><td dir="rtl">${esc(s.name)}</td>${activeTypes.map(([t])=>{ const st=gbCategoryStats(u.id,s.id,t); return `<td style="text-align:right;font-family:var(--f-mono);font-size:12.5px">${st&&st.pct!=null?st.pct.toFixed(0)+'%':'—'}</td>`; }).join('')}
+           return `<tr><td><div style="display:flex;align-items:center;gap:8px">${avatarHTML(s,'width:28px;height:28px;font-size:10.5px;border-radius:50%;flex-shrink:0')}<span dir="rtl">${esc(s.name)}</span></div></td>${activeTypes.map(([t])=>{ const st=gbCategoryStats(u.id,s.id,t); return `<td style="text-align:right;font-family:var(--f-mono);font-size:12.5px">${st&&st.pct!=null?st.pct.toFixed(0)+'%':'—'}</td>`; }).join('')}
            <td style="text-align:right;font-family:var(--f-mono);font-weight:700">${grade!=null?grade.toFixed(1):'—'}</td></tr>`;
          }).join('')}</tbody></table>
        </div>`; }).join('')}`;
@@ -11068,7 +11267,7 @@ UPCOMING EVENTS:
 ${events||'none'}
 UPCOMING LESSON PLANS:
 ${lessons||'none'}
-HOMEWORK: ${(d.homework||[]).filter(h=>!h.reviewed).length} open assignments.
+HOMEWORK: ${gbUngradedAssignments('hw').length} open assignments.
 KNOWLEDGE BASE (${d.resources.length} resources):
 ${resIdx}`;
 }
@@ -11152,7 +11351,7 @@ function aiParentClassMessage(){
   const rec=d.attendance[tdy]||{};
   const present=Object.values(rec).filter(x=>x==='P').length;
   const total=d.students.filter(s=>s.active!==false).length;
-  const hwOpen=(d.homework||[]).filter(h=>!h.reviewed).length;
+  const hwOpen=gbUngradedAssignments('hw').length;
   const dayName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
   const msg=`As-salāmu ʿalaykum wa raḥmatullāh,\n\nJazākumullāhu khayran for a great class today (${dayName}) — ${present} of ${total} students present, al-ḥamdu lillāh.${hwOpen?' Homework was assigned — please check in with your child this week.':''}\n\nBārak Allāhu fīkum,\nUstādh Nur\nAl-Madrasatu An-Nuriyyah`;
   return aiCopyBox(msg);
