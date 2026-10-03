@@ -8005,6 +8005,47 @@ function gbSubjectGrade(subject, student, range){
   const grades = gbUnitsFor(subject.id).filter(u=>gbUnitAppliesTo(u,student.level)).map(u=>gbUnitGrade(subject,u.id,student,range)).filter(g=>g!=null);
   return grades.length ? grades.reduce((a,b)=>a+b,0)/grades.length : null;
 }
+// ---- Unit-view grouping (catalog/syllabus layout) ----------------------
+// The Tawhid seed titles follow "Tawhid <Type> N — <descriptor>", where the
+// descriptor is almost always "Lesson X · topic" (Classwork/Homework/Quiz
+// track lesson-by-lesson) or mentions "The Poem", or — for Tests/Exams,
+// which intentionally span several lessons at once ("Lessons 0-2", "Fully
+// Comprehensive") — neither, so they fall into one shared "Cumulative &
+// Capstone" bucket rather than being forced under a single lesson they
+// don't belong to. This is deliberately generic rather than hardcoded to
+// the 1-55 seed items: any future assignment titled "… Lesson N · …" groups
+// itself automatically, and anything that doesn't still renders (just
+// ungrouped, in that one fallback bucket) instead of being dropped.
+const TAWHID_LESSON_TOPICS = {0:'Introduction', 1:'Who is Your Lord?', 2:'His Signs', 3:'Purpose & Ibādah', 4:'Shirk', 5:'Ṭāghūt', 6:'Islām & Īmān', 7:'The Messenger ﷺ'};
+function gbGroupLabel(title){
+  const m = title.match(/\bLesson\s+(\d+)\b/);
+  if(m){ const n = Number(m[1]); return 'Lesson '+n+(TAWHID_LESSON_TOPICS[n]?' — '+TAWHID_LESSON_TOPICS[n]:''); }
+  if(/The Poem/i.test(title)) return 'The Poem — Manẓūmah';
+  return 'Cumulative & Capstone';
+}
+function gbGroupSortKey(label){
+  const m = label.match(/^Lesson (\d+)/);
+  if(m) return Number(m[1]);
+  if(label.indexOf('The Poem')===0) return 100;
+  return 101;
+}
+// Strips the "Tawhid <Type> N — " housekeeping prefix for display inside a
+// group that already names the lesson/topic — every seed title uses " — "
+// exactly once to separate that prefix from its real descriptor, so this
+// is a plain split rather than a type-specific parse. Titles without that
+// separator (none today, but a hand-added assignment might omit it) are
+// shown in full rather than mangled.
+function gbShortTitle(title){
+  let t = title;
+  const i = t.indexOf(' — ');
+  if(i>=0) t = t.slice(i+3).trim();
+  // Whatever's left that starts with "Lesson N · …" restates exactly what
+  // gbGroupLabel already put in that row's group header a moment ago — drop
+  // it here so the row itself reads as the lesson's own description, not a
+  // repeat of the heading above it.
+  return t.replace(/^Lesson\s+\d+\s*[·—]\s*/,'').trim() || t;
+}
+function gbAsnNumber(title){ const m = title.match(/\s(\d+)\s*—/); return m ? m[1] : null; }
 // Combined "Overall Student of the Month" — Qur'an Progress blended with
 // Islamic Studies, separate from the Qur'an-only panel above. Two accuracy
 // points this depends on:
@@ -8477,11 +8518,14 @@ const Gradebook = {
     const students = DB.data.students.filter(s=>s.active!==false && gbUnitAppliesTo(u,s.level) && gbIsEnrolled(s));
     const grades = students.map(s=>gbUnitGrade(subject,u.id,s)).filter(g=>g!=null);
     const avg = grades.length ? grades.reduce((a,b)=>a+b,0)/grades.length : null;
-    const asnCount = gbAssignmentsFor(u.id).length;
+    const asns = gbAssignmentsFor(u.id);
+    const asnCount = asns.length;
+    const byType = GB_TYPES.map(([t,l])=>({t,l,n:asns.filter(a=>a.type===t).length})).filter(x=>x.n);
     return `<div class="card" data-gbunit="${u.id}" style="cursor:pointer;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px">
       <div style="min-width:0">
         <b style="font-family:var(--f-display);font-size:15px">${esc(u.name)}</b>${u.level?` <span class="tag ${ptLevelTag(u.level)}" style="font-size:10px">${esc(u.level)} only</span>`:''}
-        <div style="font-size:11.5px;color:var(--ink3);margin-top:2px">${asnCount} assignment${asnCount!==1?'s':''} · ${grades.length} of ${students.length} students with a grade</div>
+        <div style="font-size:11.5px;color:var(--ink3);margin-top:3px">${grades.length} of ${students.length} students with a grade</div>
+        ${byType.length?`<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">${byType.map(x=>`<span class="tag ${GB_TAG_CLASS[x.t]}" style="font-size:9.5px">${x.n} ${esc(x.l)}</span>`).join('')}</div>`:`<div style="font-size:11.5px;color:var(--ink3);margin-top:2px">${asnCount} assignment${asnCount!==1?'s':''}</div>`}
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
         <b style="font-family:var(--f-mono);font-size:16px;color:var(--green);min-width:44px;text-align:right">${avg!=null?avg.toFixed(1):'—'}</b>
@@ -8562,6 +8606,51 @@ const Gradebook = {
     };
   },
 
+  // One collapsible, catalog-styled section per assignment TYPE (Classwork,
+  // Homework, Quiz, Test, Exam) — the fix for "every assignment in just one
+  // tab": instead of one 55-row table, Nur opens exactly the category he
+  // wants. Inside a type, assignments sub-group by lesson/topic (via
+  // gbGroupLabel) when that structure exists; Tests and Exams, which
+  // intentionally span several lessons at once, collapse to one shared
+  // "Cumulative & Capstone" bucket and render as a single table with no
+  // redundant sub-header repeating the section's own name.
+  _typeSectionHTML(type, label, allAssignments, students){
+    const items = allAssignments.filter(a=>a.type===type);
+    if(!items.length) return '';
+    const gradedCells = items.reduce((a,x)=>a+students.filter(s=>x.scores&&x.scores[s.id]!=null&&x.scores[s.id]!=='').length,0);
+    const possibleCells = items.length*students.length;
+    const fullyGraded = possibleCells>0 && gradedCells===possibleCells;
+    const groups = {};
+    items.forEach(a=>{ const g=gbGroupLabel(a.title); (groups[g]=groups[g]||[]).push(a); });
+    const groupKeys = Object.keys(groups).sort((x,y)=>gbGroupSortKey(x)-gbGroupSortKey(y));
+    const tableFor = list => `<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+       <table class="tbl"><thead><tr><th>Assignment</th><th style="text-align:right">Out of</th><th style="text-align:right">Graded</th><th>Date</th><th class="no-print"></th></tr></thead>
+       <tbody>${list.map(a=>{
+         const gc = students.filter(s=>a.scores&&a.scores[s.id]!=null&&a.scores[s.id]!=='').length;
+         const num = gbAsnNumber(a.title);
+         return `<tr data-gbasn="${a.id}" style="cursor:pointer" title="${esc(a.title)}">
+           <td>${num?`<span class="tag tag-dim" style="margin-right:7px;font-size:10px">No. ${num.padStart(2,'0')}</span>`:''}<b>${esc(gbShortTitle(a.title))}</b></td>
+           <td style="text-align:right;font-family:var(--f-mono)">${a.possible}</td>
+           <td style="text-align:right;font-family:var(--f-mono)">${gc}/${students.length}</td>
+           <td style="font-family:var(--f-mono);font-size:12px">${fmtDate(a.date)}</td>
+           <td class="no-print"><button class="btn btn-ghost btn-sm" data-gbasndel="${a.id}" title="Delete" style="color:var(--bad)">🗑</button></td>
+         </tr>`; }).join('')}</tbody></table>
+     </div>`;
+    const body = groupKeys.length<=1
+      ? tableFor(items)
+      : groupKeys.map(g=>`<div class="sect" style="font-size:12.5px;margin:14px 0 6px;color:var(--ink2)">${esc(g)}<span class="rule"></span></div>${tableFor(groups[g])}`).join('');
+    return `<details class="card dtl" style="margin-bottom:10px;padding:16px 18px">
+      <summary style="cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="kb-chevron">▸</span>
+        <span class="tag ${GB_TAG_CLASS[type]}" style="font-size:11px">${esc(label)}</span>
+        <b style="font-family:var(--f-display);font-size:15px">${esc(label)}</b>
+        <span style="font-size:11.5px;color:var(--ink3)">${items.length} assignment${items.length!==1?'s':''}</span>
+        ${fullyGraded?`<span class="tag tag-dim" style="margin-left:auto">✓ fully graded</span>`:`<span class="tag tag-gold" style="margin-left:auto">${possibleCells-gradedCells} ungraded</span>`}
+      </summary>
+      <div style="margin-top:12px">${body}</div>
+    </details>`;
+  },
+
   unitView(v, subject){
     const u = DB.data.gbUnits.find(x=>x.id===this._unitId);
     if(!u){ this._unitId=null; return this.render(v); }
@@ -8574,22 +8663,27 @@ const Gradebook = {
     const students = ptSortStudents(DB.data.students.filter(s=>s.active!==false && gbUnitAppliesTo(u,s.level) && gbIsEnrolled(s)), 'name');
     const levelGroups = {}; LEVELS.forEach(L=>{ levelGroups[L]=students.filter(s=>s.level===L); });
 
+    // Catalog strip — a syllabus-at-a-glance line (assignment count, roster
+    // size, % of all possible grades actually entered, running class
+    // average) rather than making Nur infer any of it from the sectioned
+    // tables below.
+    const gradedCells = assignments.reduce((a,x)=>a+students.filter(s=>x.scores&&x.scores[s.id]!=null&&x.scores[s.id]!=='').length,0);
+    const possibleCells = assignments.length*students.length;
+    const gradedPct = possibleCells ? Math.round(gradedCells/possibleCells*100) : 0;
+    const classGrades = students.map(s=>gbUnitGrade(subject,u.id,s)).filter(g=>g!=null);
+    const classAvg = classGrades.length ? classGrades.reduce((a,b)=>a+b,0)/classGrades.length : null;
+    const catalogStat = (label,val)=>`<div><div class="eyebrow">${esc(label)}</div><b style="font-family:var(--f-display);font-size:21px">${val}</b></div>`;
+
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" id="gbBack">← ${esc(subject.name)} Gradebook</button>
      <div style="margin-top:12px">${moduleHeroHTML(subject.name, u.name, (u.level?u.level+' only. ':'')+'Assignments and grades for this unit.', '📗')}</div>
-     <div class="filters no-print"><button class="btn btn-p btn-sm" id="gbAddAsn">＋ Add assignment</button></div>
-     <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">
-       ${assignments.length ? `<table class="tbl"><thead><tr><th>Assignment</th><th>Type</th><th style="text-align:right">Out of</th><th style="text-align:right">Graded</th><th>Date</th><th class="no-print"></th></tr></thead>
-         <tbody>${assignments.map(a=>{
-           const gradedCount = students.filter(s=>a.scores&&a.scores[s.id]!=null&&a.scores[s.id]!=='').length;
-           return `<tr data-gbasn="${a.id}" style="cursor:pointer">
-             <td><b>${esc(a.title)}</b></td>
-             <td><span class="tag ${GB_TAG_CLASS[a.type]}">${GB_TYPE_LABEL[a.type]}</span></td>
-             <td style="text-align:right;font-family:var(--f-mono)">${a.possible}</td>
-             <td style="text-align:right;font-family:var(--f-mono)">${gradedCount}/${students.length}</td>
-             <td style="font-family:var(--f-mono);font-size:12px">${fmtDate(a.date)}</td>
-             <td class="no-print"><button class="btn btn-ghost btn-sm" data-gbasndel="${a.id}" title="Delete" style="color:var(--bad)">🗑</button></td>
-           </tr>`; }).join('')}</tbody></table>` : '<p style="padding:16px;color:var(--ink2);font-size:13.5px">No assignments yet — add one above.</p>'}
+     <div class="card" style="margin-bottom:16px;display:flex;gap:26px;flex-wrap:wrap">
+       ${catalogStat('Assignments', assignments.length)}
+       ${catalogStat('Students', students.length)}
+       ${catalogStat('Graded', gradedPct+'%')}
+       ${catalogStat('Class average', classAvg!=null?classAvg.toFixed(1):'—')}
      </div>
+     <div class="filters no-print"><button class="btn btn-p btn-sm" id="gbAddAsn">＋ Add assignment</button></div>
+     ${assignments.length ? GB_TYPES.map(([type,label])=>this._typeSectionHTML(type,label,assignments,students)).join('') : '<div class="empty"><p>No assignments yet — add one above.</p></div>'}
      <div class="sect">📊 Grades this unit<span class="rule"></span></div>
      ${LEVELS.map(L=>{ const g=levelGroups[L]; if(!g.length) return '';
        // Each level shows only ITS OWN weighted categories — a column of
