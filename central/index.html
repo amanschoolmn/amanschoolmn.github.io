@@ -4261,17 +4261,34 @@ render(v){
     const lvl3 = stu.filter(s=>s.level==='Level 3');
     if(!lvl3.length) return `<div class="whead"><h3>📖 Qurʼān progress map</h3></div><p style="font-size:13.5px;color:var(--ink2)">No active Level 3 students yet.</p>`;
     const rows = lvl3.map(s=>({s, pct:hifzStats(s).pct, fj:furthestJuzDone(s), behind:behind.includes(s)})).sort((a,b)=>b.pct-a.pct);
-    const row = r=>`<div class="frow" data-go="#/students/${r.s.id}" style="display:flex;align-items:center;gap:8px;padding:2px 4px;border-radius:6px;cursor:pointer">
+    // Marker = avatar + a live "X%" label riding the leading edge of the
+    // fill, like a slider thumb with its own readout — reuses the app's
+    // standard .bar/.bar-i progress-bar gradient so this reads as the same
+    // visual language as every other progress bar, not a one-off style.
+    // Near the very start of the bar there's no room to the marker's left
+    // for the label, so it swaps sides (avatar first, label trailing)
+    // rather than clipping off the track.
+    const row = r=>{
+      const ringColor = r.behind ? 'var(--warn)' : 'var(--ok)';
+      const pctNum = r.pct.toFixed(0);
+      const nearStart = r.pct < 14;
+      const avatarEl = avatarHTML(r.s, `width:20px;height:20px;border-radius:50%;font-size:8px;border:2px solid ${ringColor};flex-shrink:0`);
+      const labelEl = `<span style="font-family:var(--f-mono);font-size:9.5px;font-weight:800;color:${r.behind?'var(--warn)':'var(--ink)'}">${pctNum}%</span>`;
+      const marker = nearStart ? avatarEl+labelEl : labelEl+avatarEl;
+      const markerOffset = nearStart ? '6px' : 'calc(-100% - 6px)';
+      return `<div class="frow" data-go="#/students/${r.s.id}" style="display:flex;align-items:center;gap:8px;padding:2px 4px;border-radius:6px;cursor:pointer">
        <span style="width:112px;flex-shrink:0;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.s.name)}">${esc(r.s.name)}</span>
-       <div style="position:relative;flex:1;height:22px;background:linear-gradient(to right,var(--line) 1px,transparent 1px) 0 0/25% 100%">
-         <div style="position:absolute;left:calc(${r.pct.toFixed(1)}% - 10px);top:0" title="${esc(r.s.name)} — ${r.pct.toFixed(0)}% of path memorized · Juzʼ ${r.fj} of 30 complete">${avatarHTML(r.s, `width:20px;height:20px;border-radius:50%;font-size:8px;border:2px solid ${r.behind?'var(--warn)':'var(--ok)'}`)}</div>
+       <div class="bar" style="position:relative;flex:1;height:24px;border-radius:12px">
+         <i style="width:${r.pct.toFixed(1)}%;border-radius:12px"></i>
+         <div style="position:absolute;top:50%;left:${r.pct.toFixed(1)}%;transform:translate(${markerOffset},-50%);display:flex;align-items:center;gap:3px;white-space:nowrap" title="${esc(r.s.name)} — ${pctNum}% of path memorized · Juzʼ ${r.fj} of 30 complete">${marker}</div>
        </div>
        <span style="width:62px;flex-shrink:0;text-align:right;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">Juzʼ ${r.fj}/30</span>
      </div>`;
+    };
     return `<div class="whead"><h3>📖 Qurʼān progress map</h3><span class="tag tag-dim">${lvl3.length} in Ḥifẓ</span></div>
-     <div style="display:flex;flex-direction:column;gap:3px">${rows.map(row).join('')}</div>
-     <div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="width:112px;flex-shrink:0"></span><div style="flex:1;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;color:var(--ink3)"><span>Start</span><span>25%</span><span>50%</span><span>75%</span><span>Finished</span></div><span style="width:62px;flex-shrink:0"></span></div>
-     <p style="font-size:10.5px;color:var(--ink3);margin-top:6px">Position = % of their own Ḥifẓ path memorized so far. Amber ring = no entry logged in 14+ days.</p>`;
+     <div style="display:flex;flex-direction:column;gap:5px">${rows.map(row).join('')}</div>
+     <div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="width:112px;flex-shrink:0"></span><div style="flex:1;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;color:var(--ink3)"><span>Juzʼ 1</span><span>Juzʼ 8</span><span>Juzʼ 15</span><span>Juzʼ 23</span><span>Juzʼ 30</span></div><span style="width:62px;flex-shrink:0"></span></div>
+     <p style="font-size:10.5px;color:var(--ink3);margin-top:6px">Position = % of their own Ḥifẓ path memorized so far — the bar fill and the Juzʼ ruler below both track that same %. Amber ring/label = no entry logged in 14+ days. Juzʼ milestones on the ruler follow the standard order; a student on the reverse order (Al-Baqarah → An-Nās) still lands at the right %, but their own real current Juzʼ is the number on the right of their row, not the ruler.</p>`;
   };
   W.atttrend = ()=>{
     if(sessDates.length<2) return `<div class="whead"><h3>Attendance trend</h3></div><p style="font-size:13.5px;color:var(--ink2)">Take attendance across two or more sessions and the trend chart appears here.</p>`;
