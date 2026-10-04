@@ -682,6 +682,20 @@ const $ = (s,el=document)=>el.querySelector(s);
 const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid = ()=> 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+// Whether a short-answer application-form field (allergy, health
+// conditions, medications) actually holds real information. These fields
+// come back from the website's application form as short yes/no-style
+// phrases — "No allergies", "N/A", "Na", "None" — not blank, so a plain
+// "is this empty?" check isn't enough: those phrases were slipping past
+// the allergy warnings on the Substitute Plan and the Admissions review as
+// if they were real answers. Found while building the Emergency & medical
+// quick-reference card, which surfaces all three of these fields.
+function hasRealAnswer(text){
+  const t=(text||'').trim();
+  if(!t) return false;
+  return !/^(n\/a|na|none|no|no allergies|no known allergies|not applicable)\.?$/i.test(t);
+}
+const isAllergyPositive = hasRealAnswer; // alias kept at allergy-specific call sites for readability
 // Parses a "YYYY-MM-DD" date-only string as LOCAL midnight. `new
 // Date("2026-08-08")` — no time component — is parsed as UTC per the
 // ECMAScript date-time string spec, while `new Date(2026,7,8)` (numeric
@@ -3432,7 +3446,7 @@ const DB = {
       gbUnits:[{id:'tawhid-unit-seed', subjectId:'islamic-studies', name:'Aqeedah — Tawḥīd', order:0}],
       gbAssignments: TAWHID_SEED_ITEMS.map(it=>({id:uid(), subjectId:'islamic-studies', unitId:'tawhid-unit-seed', type:it.type, title:it.title, possible:it.pts, date:(typeof today==='function'?today():new Date().toISOString().slice(0,10)), scores:{}})),
       comboSomWeights: {quran:50, islamic:50},
-      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'', updateCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=update', updateLastSync:'', lastTuitionCheckMonth:'' }
+      settings:{ theme:'light', widgets:null, tuitionNote:'', defaultTuitionRate:90, admissionsCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=aman', admissionsLastSync:'', amaanahCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=amaanah', amaanahLastSync:'', agreementCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=agreement', agreementLastSync:'', updateCsvUrl:'https://script.google.com/macros/s/AKfycbymorlaFjdYAYZgKumF4dxoVr3wBPvay8lgSR7EVkn7n5rakzAxGdUblQFNy96t8SZkAg/exec?sheet=update', updateLastSync:'', lastTuitionCheckMonth:'', termGoals:[] }
     };
   },
   load(){
@@ -4036,7 +4050,12 @@ const WIDGETS = [
  {id:'week', name:'This Week’s Plan'},
  {id:'schedule', name:'Calendar & Upcoming'},
  {id:'memo', name:'Memorization'},
+ {id:'qmap', name:'Qurʼān Progress Map'},
  {id:'atttrend', name:'Attendance Trend'},
+ {id:'attheat', name:'Attendance Heatmap'},
+ {id:'streaks', name:'Streaks'},
+ {id:'termgoals', name:'Term Goals'},
+ {id:'digest', name:'Weekly Parent Update'},
  {id:'progress', name:'Curriculum'},
  {id:'fresh', name:'Fresh in Library'},
  {id:'recognitions', name:'Recent Recognitions'},
@@ -4055,7 +4074,8 @@ const REMINDERS = [
 // wrapper's border/background entirely).
 const WIDGET_ACCENT = {
   focus:'var(--gold)', momentum:'var(--ok)', quick:'var(--info)', week:'var(--green)',
-  schedule:'var(--info)', memo:'var(--green)', atttrend:'var(--ok)', progress:'var(--gold)',
+  schedule:'var(--info)', memo:'var(--green)', qmap:'#7B4FA0', atttrend:'var(--ok)', attheat:'var(--ok)',
+  streaks:'var(--gold)', termgoals:'var(--green)', digest:'var(--info)', progress:'var(--gold)',
   fresh:'var(--info)', recognitions:'var(--gold)', ai:'#7B4FA0', activity:'var(--ink3)', tuition:'var(--gold)'
 };
 Registry.register({ id:'dashboard', name:'Dashboard', icon:'home', group:'Command Center',
@@ -4229,6 +4249,30 @@ render(v){
      <div class="wlist" style="margin-top:8px">${recent.map(q=>{ const s=stu.find(x=>x.id===q.sid); return s?`<div class="wrow" data-go="#/students/${s.id}"><span class="t">${esc(s.name)} — ${esc(q.what)}</span><span class="m">${q.date.slice(5)}</span></div>`:''; }).join('')}</div>
      ${behind.length?`<button class="btn btn-o btn-sm" data-go="#/students" style="margin-top:6px">${behind.length} student${behind.length>1?'s':''} need a check →</button>`:''}`;
   };
+  // — QURʼĀN PROGRESS MAP: every active Level 3 student's position plotted
+  // on one shared 0–100% axis (% of their OWN path memorized — normalizes
+  // the standard and reverse paths onto the same axis, since a raw Juzʼ
+  // number travels in opposite directions for each) rather than 27
+  // separate per-student bars. Sorted furthest-along first; the amber ring
+  // reuses the same `behind` rule (no entry in 14+ days) that already
+  // drives Needs Attention and the Memorization widget, so "who needs a
+  // check" reads the same way everywhere in this app.
+  W.qmap = ()=>{
+    const lvl3 = stu.filter(s=>s.level==='Level 3');
+    if(!lvl3.length) return `<div class="whead"><h3>📖 Qurʼān progress map</h3></div><p style="font-size:13.5px;color:var(--ink2)">No active Level 3 students yet.</p>`;
+    const rows = lvl3.map(s=>({s, pct:hifzStats(s).pct, fj:furthestJuzDone(s), behind:behind.includes(s)})).sort((a,b)=>b.pct-a.pct);
+    const row = r=>`<div class="frow" data-go="#/students/${r.s.id}" style="display:flex;align-items:center;gap:8px;padding:2px 4px;border-radius:6px;cursor:pointer">
+       <span style="width:112px;flex-shrink:0;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.s.name)}">${esc(r.s.name)}</span>
+       <div style="position:relative;flex:1;height:22px;background:linear-gradient(to right,var(--line) 1px,transparent 1px) 0 0/25% 100%">
+         <div style="position:absolute;left:calc(${r.pct.toFixed(1)}% - 10px);top:0" title="${esc(r.s.name)} — ${r.pct.toFixed(0)}% of path memorized · Juzʼ ${r.fj} of 30 complete">${avatarHTML(r.s, `width:20px;height:20px;border-radius:50%;font-size:8px;border:2px solid ${r.behind?'var(--warn)':'var(--ok)'}`)}</div>
+       </div>
+       <span style="width:62px;flex-shrink:0;text-align:right;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">Juzʼ ${r.fj}/30</span>
+     </div>`;
+    return `<div class="whead"><h3>📖 Qurʼān progress map</h3><span class="tag tag-dim">${lvl3.length} in Ḥifẓ</span></div>
+     <div style="display:flex;flex-direction:column;gap:3px">${rows.map(row).join('')}</div>
+     <div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="width:112px;flex-shrink:0"></span><div style="flex:1;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;color:var(--ink3)"><span>Start</span><span>25%</span><span>50%</span><span>75%</span><span>Finished</span></div><span style="width:62px;flex-shrink:0"></span></div>
+     <p style="font-size:10.5px;color:var(--ink3);margin-top:6px">Position = % of their own Ḥifẓ path memorized so far. Amber ring = no entry logged in 14+ days.</p>`;
+  };
   W.atttrend = ()=>{
     if(sessDates.length<2) return `<div class="whead"><h3>Attendance trend</h3></div><p style="font-size:13.5px;color:var(--ink2)">Take attendance across two or more sessions and the trend chart appears here.</p>`;
     const pts = sessDates.slice(-8).map(day=>{ const rec=d.attendance[day]; const vals=Object.values(rec);
@@ -4237,6 +4281,70 @@ render(v){
      ${spark(pts,'% present · last '+pts.length+' sessions', 100)}
      <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3);margin-top:4px"><span>${sessDates.slice(-8)[0].slice(5)}</span><span>${sessDates.slice(-1)[0].slice(5)}</span></div>`;
   };
+  // — ATTENDANCE HEATMAP: every session as one small square, colored by
+  // that day's present rate — a GitHub-style view across the whole
+  // history (not just the last 8 sessions atttrend shows), so a seasonal
+  // dip or a single rough stretch is visible as a pattern of squares
+  // rather than buried in a scrolled-off trend line.
+  W.attheat = ()=>{
+    if(!sessDates.length) return `<div class="whead"><h3>🗓 Attendance heatmap</h3></div><p style="font-size:13.5px;color:var(--ink2)">Take attendance and a session-by-session heatmap builds itself here.</p>`;
+    const cells = sessDates.map(day=>{ const rec=d.attendance[day]; const vals=Object.values(rec); const tot=vals.length;
+      const p=vals.filter(x=>x==='P').length; const rate = tot? p/tot*100 : 0;
+      const color = rate>=90?'var(--ok)':rate>=75?'var(--gold)':'var(--bad)';
+      return `<div data-go="#/students/attendance" title="${fmtDate(day)} — ${Math.round(rate)}% present (${p}/${tot})" style="width:15px;height:15px;border-radius:3px;background:${color};opacity:${(0.3+rate/100*0.7).toFixed(2)};cursor:pointer"></div>`; }).join('');
+    return `<div class="whead"><h3>🗓 Attendance heatmap</h3><button class="btn-sm btn btn-ghost" data-go="#/students/attendance">Take →</button></div>
+     <div style="display:flex;flex-wrap:wrap;gap:3px">${cells}</div>
+     <div style="display:flex;gap:12px;align-items:center;margin-top:8px;font-size:10.5px;color:var(--ink3)"><span>${sessDates.length} session${sessDates.length===1?'':'s'}</span><span style="display:flex;align-items:center;gap:4px">less <span style="width:11px;height:11px;border-radius:2px;background:var(--bad);opacity:.45;display:inline-block"></span><span style="width:11px;height:11px;border-radius:2px;background:var(--ok);display:inline-block"></span> more present</span></div>`;
+  };
+  // — STREAKS: cheap, motivating signals already fully derivable from
+  // attendance + lessons/journal data — no new records needed. Attendance
+  // streak counts back from the most recent session until the first
+  // non-Present; the teaching streak does the same against "a lesson was
+  // taught OR a teaching note/reflection was logged" that session date.
+  W.streaks = ()=>{
+    const streakFor = sid=>{ let n=0; for(let i=sessDates.length-1;i>=0;i--){ if(d.attendance[sessDates[i]][sid]==='P') n++; else break; } return n; };
+    const attStreaks = stu.map(s=>({s, n:streakFor(s.id)})).filter(x=>x.n>=3).sort((a,b)=>b.n-a.n).slice(0,5);
+    const teachDays = new Set(d.lessons.filter(L=>L.taught).map(L=>L.date));
+    (d.planner.notes_teach||[]).forEach(n=>teachDays.add((n.d||'').slice(0,10)));
+    (d.planner.notes_reflect||[]).forEach(n=>teachDays.add((n.d||'').slice(0,10)));
+    let teachStreak=0; for(let i=sessDates.length-1;i>=0;i--){ if(teachDays.has(sessDates[i])) teachStreak++; else break; }
+    return `<div class="whead"><h3>🔥 Streaks</h3></div>
+     ${attStreaks.length?`<div style="margin-bottom:10px"><b style="font-size:11px;letter-spacing:.06em;color:var(--gold-text)">PERFECT ATTENDANCE</b>
+      <div class="wlist">${attStreaks.map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span class="m">${x.n} session${x.n>1?'s':''} straight</span></div>`).join('')}</div></div>`
+     :'<p style="font-size:12.5px;color:var(--ink2);margin-bottom:10px">No 3+ session attendance streaks yet.</p>'}
+     <div><b style="font-size:11px;letter-spacing:.06em;color:var(--gold-text)">YOUR TEACHING CONSISTENCY</b>
+      <div class="wrow" style="cursor:default"><span class="t">${teachStreak? teachStreak+' session'+(teachStreak>1?'s':'')+' straight with a lesson taught or note logged' : 'Log a taught lesson or a note after your next class to start a streak'}</span></div></div>`;
+  };
+  // — TERM GOALS: distinct from a per-student Class Treat Goal — a
+  // school-wide target Nur sets once a term (d.settings.termGoals). The
+  // 'juz' type is fully computed from real data (same isJuzComplete used
+  // by the treat-goal system); 'custom' falls back to the same honest
+  // self-report pattern the Curriculum tab already uses for anything with
+  // no single data field to check it against.
+  W.termgoals = ()=>{
+    const goals = d.settings.termGoals||[];
+    const lvl3 = stu.filter(s=>s.level==='Level 3');
+    const calc = g=> g.type==='juz' ? (lvl3.length? lvl3.filter(s=>isJuzComplete(s,g.juz)).length/lvl3.length*100 : 0) : (g.pct||0);
+    const row = g=>{ const pct=calc(g); const target=g.targetPct||100; const overdue = g.due && today()>g.due && pct<target;
+      const color = pct>=target?'var(--ok)':overdue?'var(--bad)':'var(--gold)';
+      return `<div class="card" style="margin-bottom:8px;padding:10px 12px;border-left:3px solid ${color}">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+          <div style="flex:1"><b style="font-size:13px">${esc(g.text)}</b>${g.due?`<div style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin-top:2px">by ${fmtDate(g.due)}${overdue?' — past due':''}</div>`:''}</div>
+          <button class="btn btn-ghost btn-sm no-print" data-gdel="${g.id}" title="Remove goal">✕</button></div>
+        <div class="bar" style="margin-top:7px"><i style="width:${Math.min(100,pct)}%;background:${color}"></i></div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3);margin-top:3px"><span>${pct.toFixed(0)}%${g.type==='custom'?' · self-reported':''}</span><span>target ${target}%</span></div>
+        ${g.type==='custom'?`<input type="range" min="0" max="100" value="${g.pct||0}" data-gpct="${g.id}" class="no-print" style="padding:0;margin-top:6px">`:''}
+      </div>`; };
+    return `<div class="whead"><h3>🎯 Term goals</h3><button class="btn-sm btn btn-ghost no-print" id="tgAdd">＋ Add goal</button></div>
+     ${goals.length?goals.map(row).join(''):'<p style="font-size:13px;color:var(--ink2)">No term goals set yet — e.g., "80% of Level 3 finish Juzʼ 30 by December."</p>'}`;
+  };
+  // — WEEKLY PARENT UPDATE: pulls what's already logged (taught Lesson
+  // Plans, resolved Ḥifẓ goals, SOTM recognitions, upcoming events) into
+  // one draft, editable before copying — the data never otherwise leaves
+  // the app outward to families.
+  W.digest = ()=> `<div class="whead"><h3>📨 Weekly parent update</h3></div>
+    <p style="font-size:12.5px;color:var(--ink2);margin-bottom:10px">Draft a shareable recap of this week — lessons taught, Ḥifẓ wins, upcoming dates — ready to copy into WhatsApp or email.</p>
+    <button class="btn btn-p btn-sm no-print" id="digestGo">✨ Generate this week's update</button>`;
   W.progress = ()=>{
     const rows=[['Names & Attributes', unitsPct('na'), '#/teacher/curriculum'],['Tawhid unit', unitsPct('tawhid'), '#/teacher/curriculum'],['Madinah Book 1', unitsPct('mad'), '#/teacher/curriculum']];
     const gaps = res.filter(r=>r.status==='Planned');
@@ -4272,7 +4380,7 @@ render(v){
   W.tuition = ()=> `<div class="whead"><h3>Tuition note</h3></div>
      <textarea id="tuitionNote" placeholder="Fee status, reminders, notes for Br. Abdallah… saved automatically.">${esc(d.settings.tuitionNote||'')}</textarea>`;
 
-  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${W[wid]()}</div>`; }
+  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'||wid==='qmap'||wid==='attheat'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${W[wid]()}</div>`; }
   h += `</div>`;
   v.innerHTML = h;
   wireCommon(v);
@@ -4290,6 +4398,60 @@ render(v){
     e.stopPropagation();
     d.settings.focusDone = {date:tdy, keys:[]}; DB.save(); toast('Restored'); Router.render();
   }); })();
+  // Term goals — add/remove/self-report
+  $('#tgAdd',v) && ($('#tgAdd',v).onclick=()=>{
+    const o=overlay(`<div class="modal"><h3>Add a term goal</h3>
+     <div class="field"><label>Goal</label><input id="tg-t" placeholder="e.g., 80% of Level 3 finish Juzʼ 30"></div>
+     <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Type</label><select id="tg-type"><option value="juz">% of Level 3 who complete a Juzʼ</option><option value="custom">Self-reported progress</option></select></div>
+      <div class="field" id="tg-juzwrap"><label>Juzʼ</label><select id="tg-juz">${[...Array(30)].map((_,i)=>`<option value="${i+1}">Juzʼ ${i+1}</option>`).join('')}</select></div>
+     </div>
+     <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Target %</label><input id="tg-target" type="number" min="1" max="100" value="80"></div>
+      <div class="field"><label>Due date (optional)</label><input id="tg-due" type="date"></div>
+     </div>
+     <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save goal</button></div></div>`, true);
+    const typeSel=$('#tg-type',o), juzWrap=$('#tg-juzwrap',o);
+    const syncType=()=>{ juzWrap.style.display = typeSel.value==='juz'?'':'none'; };
+    typeSel.onchange=syncType; syncType();
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{
+      const t=$('#tg-t',o).value.trim(); if(!t){toast('Describe the goal first');return;}
+      const type=typeSel.value;
+      const g={id:uid(), text:t, type, targetPct:+($('#tg-target',o).value||100)||100, due:$('#tg-due',o).value||null};
+      if(type==='juz') g.juz=+$('#tg-juz',o).value; else g.pct=0;
+      d.settings.termGoals = [...(d.settings.termGoals||[]), g];
+      DB.log('Term goal set: '+t); DB.save(); o.remove(); toast('Goal added'); Router.render();
+    };
+  });
+  $$('[data-gdel]',v).forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
+    confirmBox('Remove this term goal?',()=>{ d.settings.termGoals=(d.settings.termGoals||[]).filter(g=>g.id!==b.dataset.gdel); DB.save(); Router.render(); });
+  }));
+  $$('[data-gpct]',v).forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
+    inp.oninput=()=>{ const g=(d.settings.termGoals||[]).find(x=>x.id===inp.dataset.gpct); if(!g) return; g.pct=+inp.value; DB.save(); };
+  });
+  // Weekly parent update — draft generator
+  $('#digestGo',v) && ($('#digestGo',v).onclick=()=>{
+    const since = new Date(Date.now()-7*864e5).toISOString().slice(0,10);
+    const taught = d.lessons.filter(L=>L.taught && L.date>=since).sort((a,b)=>a.date.localeCompare(b.date));
+    const wins = [];
+    stu.forEach(s=>(s.hifzGoalHistory||[]).forEach(g=>{ if((g.status==='met'||g.status==='met-late') && g.resolvedDate>=since) wins.push(s.name+' completed Juzʼ '+g.juz+' of Ḥifẓ'); }));
+    const sotm = d.achievements.filter(a=>a.type==='sotm' && a.date>=since).map(a=>{ const s=stu.find(x=>x.id===a.sid); return s? s.name+' — '+a.text.replace('🌟 Student of the Month — ',''):null; }).filter(Boolean);
+    const upcoming = d.events.filter(e=>e.date>=tdy && e.date<=new Date(Date.now()+14*864e5).toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date));
+    let msg = 'As-salāmu ʿalaykum AMAN families,\n\nHere’s what we covered this week:\n';
+    if(taught.length) taught.forEach(L=>{ msg += '• '+L.subject+': '+L.title+'\n'; }); else msg += '• (add this week’s lessons in Lesson Plans to include them here)\n';
+    if(wins.length){ msg += '\n🍩 Ḥifẓ wins:\n'; wins.forEach(w=>msg+='• '+w+'\n'); }
+    if(sotm.length){ msg += '\n🌟 Recognitions:\n'; sotm.forEach(w=>msg+='• '+w+'\n'); }
+    if(upcoming.length){ msg += '\nUpcoming:\n'; upcoming.forEach(e=>msg+='• '+fmtDate(e.date)+' — '+e.title+'\n'); }
+    msg += '\nBārak Allāhu fīkum,\nUstāth Nur\nAl-Madrasatu An-Nuriyyah';
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3>This week's parent update</h3>
+      <textarea id="digestText" style="min-height:260px;font-family:var(--f-mono);font-size:12.5px">${esc(msg)}</textarea>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" id="digestCopy">📋 Copy</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#digestCopy',o).onclick=()=>{ const ta=$('#digestText',o);
+      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(()=>toast('Copied to clipboard')).catch(()=>toast('Could not copy — select the text manually'));
+      else toast('Could not copy — select the text manually'); };
+  });
   // live clock — clearInterval before creating a new one so rapid
   // dashboard revisits (within the 15s tick window) can't orphan a
   // previous interval that keeps firing in the background indefinitely
@@ -4968,14 +5130,20 @@ const Teacher = {
     const upLessons=d.lessons.filter(L=>!L.taught&&L.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
     const dueTasks=d.tasks.filter(t=>!t.done&&t.due&&t.due<=tdy);
     const hwOpen=gbUngradedAssignments('hw');
+    // last completed session's absentees — the one real gap Prep radar and
+    // the Materials checklist didn't already cover: who might need a
+    // quick catch-up/makeup conversation before today's class.
+    const sessDatesAll = Object.keys(d.attendance).sort();
+    const lastSession = sessDatesAll.filter(x=>x<tdy).slice(-1)[0];
+    const lastAbsent = lastSession ? d.students.filter(s=>s.active!==false && d.attendance[lastSession][s.id]==='A') : [];
     // toolkit: teaching materials, most-used first
     const kit=d.resources.filter(r=>['Lesson Slides','Teacher Resources','Assessments','Student Resources'].includes(r.category)&&r.status==='Active')
       .sort((a,b)=>b.opens-a.opens).slice(0,8);
     // materials checklist across upcoming lessons
     const mats=upLessons.flatMap(L=>(L.materials||[]).map((m,i)=>({L,m,i})));
     el.innerHTML = `
-    ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><button class="btn btn-p btn-sm no-print" id="enterClassMode" style="flex-shrink:0">🖥 Class Mode</button></div>`
-      :`<div class="no-print" style="margin-bottom:16px"><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
+    ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><div style="display:flex;gap:7px;flex-shrink:0" class="no-print"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-p btn-sm" id="enterClassMode">🖥 Class Mode</button></div></div>`
+      :`<div class="no-print" style="margin-bottom:16px;display:flex;gap:7px"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
     ${Teacher.treatGoalsRosterHTML()}
     <div class="sect">1 · Before class<span class="rule"></span></div>
     <div class="grid g2">
@@ -4987,11 +5155,12 @@ const Teacher = {
       <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>Materials checklist</h3></div>
         ${mats.length?`<div class="wlist">${mats.map((x,gi)=>`<div class="wrow" style="cursor:default"><input type="checkbox" data-mat="${x.L.id}_${x.i}" ${(x.L.matDone||[]).includes(x.i)?'checked':''} style="width:auto"><span class="t" style="white-space:normal">${upLessons.length>1?`<span style="color:var(--ink3);font-size:11px">${esc(x.L.title)} — </span>`:''}${esc(x.m)}</span></div>`).join('')}</div>`
         :'<p style="font-size:13px;color:var(--ink2)">Add materials to lesson plans and check them off here before class.</p>'}</div>
-      <div class="widget" style="border-top:3px solid ${(behind.length||hwOpen.length||dueTasks.length)?'var(--warn)':'var(--ok)'}"><div class="whead"><h3>Prep radar</h3></div><div class="wlist">
+      <div class="widget" style="border-top:3px solid ${(behind.length||hwOpen.length||dueTasks.length||lastAbsent.length)?'var(--warn)':'var(--ok)'}"><div class="whead"><h3>Prep radar</h3></div><div class="wlist">
+        ${lastAbsent.length?`<div class="wrow" data-go="#/students/attendance"><span>🙋</span><span class="t">${lastAbsent.length} student${lastAbsent.length>1?'s':''} missed ${fmtDate(lastSession)} — may need a catch-up: ${lastAbsent.map(s=>esc(s.name)).join(', ')}</span></div>`:''}
         ${behind.length?`<div class="wrow" data-act="quran"><span>📖</span><span class="t">${behind.length} student${behind.length>1?'s':''} due a memorization check</span></div>`:''}
         ${hwOpen.length?`<div class="wrow" data-go="#/teacher/homework"><span>📥</span><span class="t">${hwOpen.length} homework assignment${hwOpen.length>1?'s':''} to review</span></div>`:''}
         ${dueTasks.length?`<div class="wrow" data-go="#/admin/tasks"><span>⏰</span><span class="t">${dueTasks.length} task${dueTasks.length>1?'s':''} due</span></div>`:''}
-        ${!behind.length&&!hwOpen.length&&!dueTasks.length?'<div class="wrow" style="cursor:default;color:var(--ok)">Fully prepped ✓</div>':''}</div>
+        ${!behind.length&&!hwOpen.length&&!dueTasks.length&&!lastAbsent.length?'<div class="wrow" style="cursor:default;color:var(--ok)">Fully prepped ✓</div>':''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${['Build a lesson from where the curriculum left off','Give me 3 warm-up activities for today','Simplify today’s topic for the youngest students'].map(c=>`<button class="chip" data-ai="${esc(c)}">✨ ${esc(c)}</button>`).join('')}</div></div>
     </div>
     <div class="sect">2 · During class<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">every action ≤ 2 taps</span></div>
@@ -5086,6 +5255,53 @@ const Teacher = {
       if(!min) return; Teacher.startTimer(min);
     });
     const cmBtn=$('#enterClassMode',el); if(cmBtn) cmBtn.onclick=()=>Teacher.openClassMode();
+    const subBtn=$('#subPlanBtn',el); if(subBtn) subBtn.onclick=()=>Teacher.printSubPlan();
+  },
+  // ---- Substitute / emergency coverage plan: one printable page with
+  // everything someone covering class would need — today's (or the next
+  // scheduled) plan, the roster with photos for a quick face-match, the
+  // materials checklist, and anyone who needs a special check-in (behind
+  // on Ḥifẓ, an allergy on file). Sole-teacher schools have no "ask a
+  // colleague" fallback, so this closes a real coverage gap rather than
+  // being a nice-to-have.
+  printSubPlan(){
+    const d=DB.data, tdy=today(), dow=new Date().getDay();
+    const classDay = dow===6?'Saturday':dow===0?'Sunday':null;
+    const prepDay = classDay||'Saturday';
+    const slots=['Qur’an / Ḥifẓ','Arabic','Islamic Studies','Closing'];
+    const nc = nextClassDate();
+    const upLessons = d.lessons.filter(L=>!L.taught && L.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
+    const mats = upLessons.flatMap(L=>(L.materials||[]));
+    const roster = d.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));
+    const lastQ={}; d.quran.forEach(q=>{ if(!lastQ[q.sid]||q.date>lastQ[q.sid]) lastQ[q.sid]=q.date; });
+    const cutoff=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+    const behindNow = d.students.filter(s=>s.active!==false&&s.level==='Level 3'&&(!lastQ[s.id]||lastQ[s.id]<cutoff));
+    const allergies = d.students.filter(s=>s.active!==false && s.application && isAllergyPositive(s.application.allergy));
+    const crestImg = (document.querySelector('.crest img')||{}).src || '';
+    printWindow('AMAN — Substitute Coverage Plan',
+      `*{box-sizing:border-box}body{font-family:'Crimson Pro',Georgia,serif;max-width:760px;margin:30px auto;padding:0 22px;color:#20261f;line-height:1.55}
+       .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a4a35;padding-bottom:14px;margin-bottom:16px}
+       .head img{width:56px;height:56px}
+       h1{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#123626;margin:0}
+       .meta{font-size:12.5px;color:#5c665a}
+       h2{font-size:14px;color:#1a4a35;margin:22px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px}
+       table{width:100%;border-collapse:collapse;font-size:12.5px}
+       td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left}
+       .rphoto{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px}
+       .warn{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:10px 14px;font-size:13px;margin:10px 0}
+       ul{padding-left:18px;font-size:13.5px}
+       @media print{@page{margin:0.4in}}`,
+      `<div class="head">${crestImg?`<img src="${crestImg}" alt="">`:''}<div><h1>Substitute / Emergency Coverage Plan</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared ${fmtDate(tdy)}${nc?' · next class '+fmtDate(nc):''}</div></div></div>
+       <p style="font-size:13.5px">If you're covering a class for Ustāth Nur, jazākumullāhu khayran — everything you need is below. For anything urgent, reach Br. Abdallah bin Abdirahman at (612) 444-2609.</p>
+       <h2>${prepDay}'s plan</h2>
+       <table>${slots.map((s,i)=>{ const t=d.planner['pl_'+prepDay+'_'+i]||''; return `<tr><td style="width:120px;font-weight:700">${esc(s)}</td><td>${esc(t)||'<span style="color:#999">— not planned —</span>'}</td></tr>`; }).join('')}</table>
+       ${upLessons.length?`<h2>Upcoming lesson plans</h2><ul>${upLessons.map(L=>`<li><b>${esc(L.title)}</b> — ${esc(L.subject)}${L.objective?' · '+esc(L.objective):''}</li>`).join('')}</ul>`:''}
+       ${mats.length?`<h2>Materials checklist</h2><ul>${[...new Set(mats)].map(m=>`<li>☐ ${esc(m)}</li>`).join('')}</ul>`:''}
+       ${allergies.length?`<div class="warn">⚠ Allergy on file — ${allergies.map(s=>esc(s.name)+' ('+esc(s.application.allergy)+')').join('; ')}</div>`:''}
+       ${behindNow.length?`<div class="warn">📖 No memorization entry in 14+ days — ${behindNow.map(s=>esc(s.name)).join(', ')}</div>`:''}
+       <h2>Roster — ${roster.length} active students</h2>
+       <table>${roster.map(s=>`<tr><td>${s.photo?`<img class="rphoto" src="${esc(s.photo)}">`:''}${esc(s.preferredName||s.name)}</td><td>${esc(s.level)}</td><td style="width:70px">☐ P &nbsp;☐ A</td></tr>`).join('')}</table>`);
+    DB.log('Substitute coverage plan printed');
   },
   startTimer(min){
     clearInterval(TT.iv); TT.end=Date.now()+min*60000;
@@ -5348,7 +5564,7 @@ const Teacher = {
       return `<div class="card" style="border-left:3px solid ${L.taught?'var(--ok)':'var(--gold)'};${L.taught?'opacity:.6':''}"><div style="display:flex;justify-content:space-between;gap:8px"><div>
          <div class="eyebrow">${esc(L.subject)} · ${fmtDate(L.date)}${L.est?' · ~'+L.est+' min':''}</div>
          <h3 style="font-family:var(--f-display);font-size:17px;margin:3px 0 7px">${esc(L.title)}</h3></div>
-         <div style="display:flex;gap:5px">${L.taught?'':`<button class="btn btn-o btn-sm" data-taught="${L.id}">✓ Taught</button>`}<button class="btn btn-ghost btn-sm" data-edit="${L.id}" title="Edit">✎</button><button class="btn btn-danger btn-sm" data-del="${L.id}">✕</button></div></div>
+         <div style="display:flex;gap:5px">${L.taught?'':`<button class="btn btn-o btn-sm" data-taught="${L.id}">✓ Taught</button>`}<button class="btn btn-ghost btn-sm" data-edit="${L.id}" title="Edit">✎</button><button class="btn btn-ghost btn-sm" data-dup="${L.id}" title="Duplicate as a new lesson">⧉</button><button class="btn btn-danger btn-sm" data-del="${L.id}">✕</button></div></div>
         ${L.objective?`<p style="font-family:var(--f-body);font-size:14.5px;margin-bottom:8px"><b>Objective:</b> ${esc(L.objective)}</p>`:''}
         ${L.plan?`<p style="font-family:var(--f-body);font-size:14.5px;white-space:pre-wrap">${esc(L.plan)}</p>`:''}
         ${(L.materials||[]).length?`<div style="margin-top:9px"><b style="font-size:11px;letter-spacing:.07em;color:var(--ink3)">MATERIALS</b><div class="wlist">${L.materials.map((m,i)=>`<div class="wrow" style="cursor:default;padding:3px 6px"><input type="checkbox" data-mat="${L.id}_${i}" ${(L.matDone||[]).includes(i)?'checked':''} style="width:auto"><span class="t" style="font-weight:400">${esc(m)}</span></div>`).join('')}</div></div>`:''}
@@ -5374,28 +5590,33 @@ const Teacher = {
     $$('[data-del]',el).forEach(b=>b.onclick=()=>confirmBox('Delete this lesson plan?',()=>{ d.lessons=d.lessons.filter(x=>x.id!==b.dataset.del); DB.save(); Router.render(); }));
     $$('[data-reflect]',el).forEach(b=>b.onclick=()=>{ _teacherReflectPrefill=b.dataset.reflect; Router.go('#/teacher/reflect'); });
     $$('[data-edit]',el).forEach(b=>b.onclick=()=>Teacher.lessonForm(d.lessons.find(x=>x.id===b.dataset.edit)));
+    $$('[data-dup]',el).forEach(b=>b.onclick=()=>{ const L=d.lessons.find(x=>x.id===b.dataset.dup); if(!L) return;
+      Teacher.lessonForm(null, {title:L.title+' (copy)', subject:L.subject, objective:L.objective, plan:L.plan, materials:L.materials, resources:L.resources, est:L.est}); });
     $('#lsAdd',el).onclick=()=>Teacher.lessonForm(null, filt!=='all'?{subject:filt}:null);
   },
   // existing: the lesson being edited, or null/undefined for a new one.
-  // prefill (new-lesson only): {subject, plan} to seed the form — used by
-  // the active subject filter chip and by the Weekly Planner's "Turn into
-  // a full lesson plan" link, so starting a lesson from either place
-  // doesn't mean retyping what's already known.
+  // prefill (new-lesson only): seeds the form for a new lesson — either a
+  // partial {subject, plan} (the active subject filter chip, the Weekly
+  // Planner's "Turn into a full lesson plan" link) or a FULL lesson's
+  // fields (title/objective/materials/resources/est too) when duplicating
+  // an existing lesson via the card's ⧉ button, so a repeated weekend
+  // structure doesn't mean retyping it from scratch. Either way the date
+  // always defaults to today, never the source lesson's own date.
   lessonForm(existing, prefill){
     const isNew = !existing;
     const p = prefill||{};
     const o=overlay(`<div class="modal"><h3>${isNew?'New lesson plan':'Edit lesson plan'}</h3>
-     <div class="field"><label>Title</label><input id="L-t" placeholder="e.g., Al-Ghafūr — the One who covers sins" value="${existing?esc(existing.title):''}"></div>
+     <div class="field"><label>Title</label><input id="L-t" placeholder="e.g., Al-Ghafūr — the One who covers sins" value="${existing?esc(existing.title):esc(p.title||'')}"></div>
      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
       <div class="field"><label>Subject</label><select id="L-s">${LESSON_SUBJECTS.map(s=>`<option ${(existing?existing.subject:p.subject)===s?'selected':''}>${s}</option>`).join('')}</select></div>
       <div class="field"><label>Date</label><input id="L-d" type="date" value="${existing?existing.date:today()}"></div>
-      <div class="field"><label>Est. minutes</label><input id="L-e" type="number" min="5" max="240" placeholder="45" value="${existing&&existing.est?existing.est:''}"></div></div>
-     <div class="field"><label>Objective</label><input id="L-o" placeholder="What will students walk out knowing?" value="${existing?esc(existing.objective||''):''}"></div>
+      <div class="field"><label>Est. minutes</label><input id="L-e" type="number" min="5" max="240" placeholder="45" value="${existing&&existing.est?existing.est:(p.est||'')}"></div></div>
+     <div class="field"><label>Objective</label><input id="L-o" placeholder="What will students walk out knowing?" value="${existing?esc(existing.objective||''):esc(p.objective||'')}"></div>
      <div class="field"><label>Plan</label><textarea id="L-p" style="min-height:110px" placeholder="Opening · teaching · practice · closing">${existing?esc(existing.plan||''):esc(p.plan||'')}</textarea></div>
-     <div class="field"><label>Materials checklist (one per line)</label><textarea id="L-m" placeholder="Whiteboard markers&#10;Printed flashcards&#10;Green Books">${existing?esc((existing.materials||[]).join('\n')):''}</textarea></div>
-     <div class="field"><label>Attach resources</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DB.data.resources.filter(r=>r.status==='Active').map(r=>`<button class="chip ${existing&&(existing.resources||[]).includes(r.id)?'on':''}" data-r="${r.id}">${esc(r.title.slice(0,28))}</button>`).join('')}</div></div>
+     <div class="field"><label>Materials checklist (one per line)</label><textarea id="L-m" placeholder="Whiteboard markers&#10;Printed flashcards&#10;Green Books">${existing?esc((existing.materials||[]).join('\n')):esc((p.materials||[]).join('\n'))}</textarea></div>
+     <div class="field"><label>Attach resources</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DB.data.resources.filter(r=>r.status==='Active').map(r=>`<button class="chip ${(existing?(existing.resources||[]):(p.resources||[])).includes(r.id)?'on':''}" data-r="${r.id}">${esc(r.title.slice(0,28))}</button>`).join('')}</div></div>
      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Save lesson':'Save'}</button></div></div>`, true);
-    const picked=new Set(existing?(existing.resources||[]):[]);
+    const picked=new Set(existing?(existing.resources||[]):(p.resources||[]));
     $$('button[data-r]',o).forEach(b=>b.onclick=()=>{ b.classList.toggle('on'); b.classList.contains('on')?picked.add(b.dataset.r):picked.delete(b.dataset.r); });
     $('[data-x=c]',o).onclick=()=>o.remove();
     $('[data-x=s]',o).onclick=()=>{
@@ -5521,7 +5742,7 @@ const Teacher = {
   notes(el){ simpleJournal(el, 'notes_teach', 'Teaching notes', 'Observations, ideas, things to try next session…', null, true); },
   reflect(el){
     const pre = _teacherReflectPrefill; _teacherReflectPrefill=null;
-    simpleJournal(el, 'notes_reflect', 'Lesson reflections', 'What landed? What flopped? What will you change?', pre, true);
+    simpleJournal(el, 'notes_reflect', 'Lesson reflections', 'What landed well today…', pre, true, true);
   },
   curriculum(el){
     const d = DB.data;
@@ -5540,6 +5761,20 @@ const Teacher = {
       const upd = DB.data.planner['progU_'+k];
       const taughtL = d.lessons.filter(L=>L.subject===lsub && L.taught);
       const totalL = d.lessons.filter(L=>L.subject===lsub);
+      // Pacing: a subject's own historical cadence, not a fixed term
+      // calendar (none is modeled) — average gap between its taught
+      // lessons vs. days since the last one. Self-calibrating, so a
+      // naturally slower subject doesn't get unfairly flagged against a
+      // faster one; needs 2+ taught lessons to have a cadence to compare.
+      let paceTag = '';
+      if(taughtL.length>=2){
+        const dates = [...taughtL].map(L=>L.date).sort();
+        let gaps=0; for(let i=1;i<dates.length;i++) gaps += (new Date(dates[i])-new Date(dates[i-1]))/864e5;
+        const avgGap = gaps/(dates.length-1);
+        const sinceLast = (new Date(today())-new Date(dates[dates.length-1]))/864e5;
+        const behindPace = sinceLast > avgGap*1.5;
+        paceTag = `<span class="tag ${behindPace?'tag-gold':'tag-dim'}" style="font-size:10px" data-go="#/teacher/lessons" title="Usual gap between taught lessons: ~${Math.round(avgGap)}d">⏱ last taught ${Math.round(sinceLast)}d ago${behindPace?' — behind your usual pace':''}</span>`;
+      }
       // Fold diacritics before matching — a real unit name like "Aqeedah
       // — Tawḥīd" uses the dotted-ḥ letter (a distinct Unicode codepoint),
       // which a plain /tawh/i never matches literally even though it
@@ -5559,6 +5794,7 @@ const Teacher = {
        <div class="prog-upd" style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin-top:8px">${upd?'updated '+rel(upd):'never updated — showing default'}</div>
        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
         ${totalL.length?`<span class="tag tag-dim" style="font-size:10px;cursor:pointer" data-go="#/teacher/lessons">📝 ${taughtL.length}/${totalL.length} ${esc(lsub)} lessons taught</span>`:`<span class="tag tag-dim" style="font-size:10px;cursor:pointer" data-go="#/teacher/lessons">📝 no ${esc(lsub)} lesson plans yet</span>`}
+        ${paceTag}
         ${gbUnit?`<span class="tag ${avg!=null?'tag-gold':'tag-dim'}" style="font-size:10px;cursor:pointer" data-gbunitlink="${gbUnit.id}">📊 ${asnCount} assignment${asnCount===1?'':'s'}${avg!=null?' · class avg '+avg.toFixed(0)+'%':''} — Gradebook →</span>`:''}
        </div>
       </div>`;}).join('')}
@@ -5706,15 +5942,26 @@ const Teacher = {
 // plan's "Reflect on this lesson →" button, so that hop actually lands on
 // the right lesson instead of a blank form. Linking an entry to a lesson
 // is optional either way — a quick general observation needs no lesson.
-function simpleJournal(el, key, title, ph, prefillLessonId, withLessonLink){
+// structured (optional, Reflections only — Teaching Notes stays freeform):
+// swaps the single textarea for 3 short prompts (what worked / what to
+// adjust / flag a student) that get joined into one saved entry on save —
+// the stored shape (one {d,t,lid} string per entry) never changes, so
+// search, the lesson-link chip, and old freeform entries all keep working
+// exactly as before; only the INPUT form gets the scaffolding.
+function simpleJournal(el, key, title, ph, prefillLessonId, withLessonLink, structured){
   const d=DB.data; d.planner[key]=d.planner[key]||[];
   const list=d.planner[key];
   const q=(d.planner['q_'+key]||'').toLowerCase();
   const shown = q? list.filter(n=>n.t.toLowerCase().includes(q)) : list;
   const recentLessons = withLessonLink ? [...d.lessons].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,25) : [];
   const lessonTitle = lid => { const L=d.lessons.find(x=>x.id===lid); return L?L.title:null; };
+  const inputHTML = structured
+    ? `<div class="field"><label>What worked?</label><textarea id="j-worked" style="min-height:52px" placeholder="${ph}"></textarea></div>
+       <div class="field" style="margin-top:8px"><label>What to adjust next time?</label><textarea id="j-adjust" style="min-height:52px" placeholder="Pacing, material, a different approach…"></textarea></div>
+       <div class="field" style="margin-top:8px"><label>Flag a student? (optional)</label><textarea id="j-flag" style="min-height:40px" placeholder="Anyone who needs a follow-up or extra support…"></textarea></div>`
+    : `<textarea id="j-in" placeholder="${ph}"></textarea>`;
   el.innerHTML = `<div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><label>📝 ${title} — new entry</label>
-    <textarea id="j-in" placeholder="${ph}"></textarea>
+    ${inputHTML}
     ${recentLessons.length?`<div class="field" style="margin-top:8px"><label>Which lesson is this about? (optional)</label>
       <select id="j-lesson"><option value="">— general, no specific lesson —</option>${recentLessons.map(L=>`<option value="${L.id}" ${L.id===prefillLessonId?'selected':''}>${fmtDate(L.date)} · ${esc(L.title)}</option>`).join('')}</select></div>`:''}
     <div style="display:flex;justify-content:flex-end;margin-top:9px"><button class="btn btn-p btn-sm" id="j-add">Save entry</button></div></div>
@@ -5723,7 +5970,13 @@ function simpleJournal(el, key, title, ph, prefillLessonId, withLessonLink){
      ${list.length>3?`<input id="j-q" placeholder="Search entries…" value="${esc(d.planner['q_'+key]||'')}" style="max-width:200px">`:''}</div>
    <div class="wlist">${shown.map(n=>{ const i=list.indexOf(n); const lt=n.lid?lessonTitle(n.lid):null; return `<div class="card" style="margin-bottom:10px;border-left:3px solid var(--green-soft)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${fmtDate(n.d)} · ${rel(n.d)}</span>${lt?`<span class="tag tag-dim" style="font-size:10px" data-go="#/teacher/lessons">📝 ${esc(lt)}</span>`:''}<button class="btn btn-ghost btn-sm" data-jd="${i}" style="margin-left:auto">✕</button></div><p style="font-family:var(--f-body);font-size:15px;white-space:pre-wrap;margin-top:5px">${esc(n.t)}</p></div>`; }).join('')||(q?`<div class="empty"><p>No entries match "${esc(q)}".</p></div>`:'<div class="empty"><p>No entries yet.</p></div>')}</div>`;
   wireCommon(el);
-  $('#j-add',el).onclick=()=>{ const t=$('#j-in',el).value.trim(); if(!t)return;
+  $('#j-add',el).onclick=()=>{
+    let t;
+    if(structured){
+      const worked=$('#j-worked',el).value.trim(), adjust=$('#j-adjust',el).value.trim(), flag=$('#j-flag',el).value.trim();
+      if(!worked&&!adjust&&!flag) return;
+      t = [worked?'What worked: '+worked:'', adjust?'What to adjust: '+adjust:'', flag?'Flag a student: '+flag:''].filter(Boolean).join('\n');
+    } else { t = $('#j-in',el).value.trim(); if(!t) return; }
     const lsel=$('#j-lesson',el);
     list.unshift({d:new Date().toISOString(), t, lid: lsel&&lsel.value ? lsel.value : null}); DB.save(); Router.render(); toast('Saved'); };
   const qi=$('#j-q',el); if(qi) qi.oninput=()=>{ d.planner['q_'+key]=qi.value; DB.save();
@@ -5870,7 +6123,7 @@ function resolveAllHifzGoals(d){
 // field's health-flag display elsewhere in this app.
 function allergyReminderHTML(){
   const flagged = DB.data.students.filter(s=>s.active!==false && s.level==='Level 3'
-    && s.application && s.application.allergy && !/^(n\/a|none|no)$/i.test(s.application.allergy.trim()));
+    && s.application && isAllergyPositive(s.application.allergy));
   if(!flagged.length) return '';
   return `<p style="font-size:11.5px;margin-top:6px">⚠ Allergy on file for: ${flagged.map(s=>esc(s.name)).join(', ')} — bring an alternative.</p>`;
 }
@@ -6069,6 +6322,7 @@ const Students = {
        }).join('')}</div>
      </details>`; })()}
      <div class="filters no-print" style="margin-top:-6px">
+       <button class="btn btn-ghost btn-sm" id="stEmerCard">🆘 Emergency card</button>
        <button class="btn btn-ghost btn-sm" id="stExport">⬇ CSV</button>
        <button class="btn btn-ghost btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select'}</button>
        ${d.students.length?`<input type="search" id="stFind" placeholder="Find student…" value="${esc(Students._find||'')}" style="max-width:190px">`:''}
@@ -6094,6 +6348,7 @@ const Students = {
     $('#stImport',v)&&($('#stImport',v).onclick=imp); $('#stImport2',v)&&($('#stImport2',v).onclick=imp);
     $('#stShare',v)&&($('#stShare',v).onclick=()=>Students.sharePanel());
     $('#stExport',v).onclick=()=>Students.exportCSV();
+    $('#stEmerCard',v).onclick=()=>Students.printEmergencyCard();
     $('#stFav',v).onclick=()=>{ Students._favOnly=!favOnly; Router.render(); };
     $('#stLvl',v).onchange=e=>{ Students._levelFilter=e.target.value; Router.render(); };
     $('#stStatus',v).onchange=e=>{ Students._statusFilter=e.target.value; Router.render(); };
@@ -6334,10 +6589,17 @@ const Students = {
   /* ---------- FORM (adds emergency contact) ---------- */
   form(s){
     const isNew=!s; const d = s||{id:uid(), name:'', preferredName:'', level:'Level 1', gender:'', dob:'', notes:'', photo:'', medical:'', favorite:false, guardians:[], emergencyContacts:[]};
+    let stagedPhoto = d.photo||''; // not written to d until Save, so Cancel never half-applies a picked file
     const o=overlay(`<div class="modal" style="max-width:470px"><h3>${isNew?'Add student':'Edit student'}</h3>
       <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:4px">
         <div id="S-photo-preview" style="flex-shrink:0">${avatarHTML(d, 'width:56px;height:56px;font-size:18px')}</div>
-        <div class="field" style="flex:1;margin-bottom:0"><label>Photo URL (optional)</label><input id="S-photo" value="${esc(d.photo||'')}" placeholder="https://amanschoolmn.org/central/files/students/student_37.jpg"></div>
+        <div class="field" style="flex:1;margin-bottom:0"><label>Photo</label>
+          <input id="S-photo-file" type="file" accept="image/*">
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+            <span id="S-photo-status" style="font-size:11.5px;color:var(--ink3)">${stagedPhoto?'Photo on file':'No photo yet — initials shown instead'}</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="S-photo-clear" style="padding:2px 8px;${stagedPhoto?'':'display:none'}">Remove</button>
+          </div>
+        </div>
       </div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
        <div class="field"><label>Full name</label><input id="S-n" value="${esc(d.name)}"></div>
@@ -6353,11 +6615,24 @@ const Students = {
       <div class="field"><label>Notes</label><textarea id="S-no">${esc(d.notes)}</textarea></div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${isNew?'Add student':'Save'}</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
-    $('#S-photo',o).oninput=()=>{ $('#S-photo-preview',o).innerHTML = avatarHTML({name:d.name, photo:$('#S-photo',o).value.trim()}, 'width:56px;height:56px;font-size:18px'); };
+    const refreshPhotoUI=()=>{
+      $('#S-photo-preview',o).innerHTML = avatarHTML({name:$('#S-n',o).value.trim()||d.name, photo:stagedPhoto}, 'width:56px;height:56px;font-size:18px');
+      $('#S-photo-status',o).textContent = stagedPhoto?'Photo on file':'No photo yet — initials shown instead';
+      $('#S-photo-clear',o).style.display = stagedPhoto?'':'none';
+    };
+    $('#S-photo-file',o).onchange=async e=>{
+      const file=e.target.files&&e.target.files[0]; if(!file) return;
+      if(!file.type.startsWith('image/')){ toast('Please choose an image file'); e.target.value=''; return; }
+      $('#S-photo-status',o).textContent='Processing…';
+      try{ stagedPhoto = await resizeImageToDataURL(file); refreshPhotoUI(); }
+      catch(err){ toast('Could not use that image'); }
+      e.target.value='';
+    };
+    $('#S-photo-clear',o).onclick=()=>{ stagedPhoto=''; refreshPhotoUI(); };
     $('[data-x=s]',o).onclick=()=>{
       const n=$('#S-n',o).value.trim(); if(!n){toast('Name required');return;}
       if(isNew && DB.data.students.some(x=>x.name.toLowerCase()===n.toLowerCase())){toast('A student with this name already exists');return;}
-      Object.assign(d,{name:n, preferredName:$('#S-pn',o).value.trim(), level:$('#S-l',o).value, active:$('#S-a',o).value==='1', gender:$('#S-g',o).value, dob:$('#S-d',o).value, medical:$('#S-med',o).value.trim(), trialEnds:$('#S-tr',o).value, notes:$('#S-no',o).value.trim(), photo:$('#S-photo',o).value.trim()});
+      Object.assign(d,{name:n, preferredName:$('#S-pn',o).value.trim(), level:$('#S-l',o).value, active:$('#S-a',o).value==='1', gender:$('#S-g',o).value, dob:$('#S-d',o).value, medical:$('#S-med',o).value.trim(), trialEnds:$('#S-tr',o).value, notes:$('#S-no',o).value.trim(), photo:stagedPhoto});
       if(isNew){
         const used=new Set(DB.data.students.map(x=>x.studentNo).filter(Boolean)); let next=1; while(used.has(next)) next++;
         d.studentNo=next;
@@ -6470,6 +6745,12 @@ const Students = {
   printJourney(s, ctx){
     const {tot,P,qlog,ach,age,sidFmt} = ctx;
     const L1=s.level==='Level 1', L2=s.level==='Level 2';
+    // Islamic Studies Gradebook grade — the one real figure this report
+    // didn't already carry (attendance, achievements, and level-specific
+    // pace were already here); null when nothing's graded yet rather than
+    // showing a misleading 0%.
+    const gbSubject = DB.data.gbSubjects[0];
+    const isGrade = gbSubject ? gbSubjectGrade(gbSubject, s) : null;
     let progVals=[], progLabel='', progNow='';
     if(L1){ const glog=[...(s.gbLog||[])].sort((a,b)=>a.date.localeCompare(b.date)); progVals=glog.slice(-8).map(x=>x.page);
       progLabel='Green Book progress'; progNow=((s.gb&&s.gb.page)||0)+' of 160 pages'; }
@@ -6507,6 +6788,7 @@ const Students = {
         ${stat(tot?Math.round(P/tot*100)+'%':'—','Attendance')}
         ${stat(ach.length,'Achievements')}
         ${stat(progNow,progLabel.split(' ')[0]+' status')}
+        ${isGrade!=null?stat(isGrade.toFixed(0)+'%','Islamic Studies'):''}
       </div>
       <h2>${esc(progLabel)}</h2>
       ${bars(progVals)}
@@ -6612,6 +6894,69 @@ const Students = {
       </div>`);
     DB.log('Absence notice ('+p.title+') printed for '+s.name);
   },
+  /* ---------- EMERGENCY / MEDICAL QUICK-REFERENCE CARD ----------
+     A printable one-pager for fast physical reference during class — every
+     active student's best available contact plus medical/allergy notes,
+     all on one page instead of having to open one profile at a time.
+     Unlike the existing allergyReminderHTML()/printSubPlan() allergy
+     warnings (which only check s.application.allergy), this pulls from
+     BOTH that field and the simpler s.medical free-text field, since a
+     student's only medical note might live in either one. */
+  printEmergencyCard(){
+    const d=DB.data;
+    const roster = d.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));
+    const medText = s=>{
+      const ap=s.application||{}; const parts=[];
+      if((s.medical||'').trim()) parts.push(s.medical.trim());
+      const allergy=(ap.allergy||'').trim(), allergyDetail=(ap.allergyDetail||'').trim();
+      // The application form's allergy field is usually just a yes/no flag
+      // ("Has allergies"/"No allergies") with the real info in allergyDetail
+      // — so a bare "Has allergies" is skipped in favor of the detail, but
+      // anything more specific (an allergen name entered directly) is kept
+      // alongside the detail rather than discarded.
+      if(isAllergyPositive(allergy)){
+        const label = /^has allerg(y|ies)$/i.test(allergy) ? '' : allergy;
+        parts.push('Allergy: '+([label, allergyDetail].filter(Boolean).join(' — ')||'on file — no detail given'));
+      }
+      if(hasRealAnswer(ap.healthConditions)) parts.push(ap.healthConditions.trim());
+      if(hasRealAnswer(ap.meds)) parts.push('Meds: '+ap.meds.trim());
+      return parts.join(' · ');
+    };
+    const contactFor = s=>{
+      const ec=(s.emergencyContacts||[])[0];
+      if(ec) return {name:ec.name, relation:ec.relation, phone:ec.phone, guardian:false};
+      const g=(s.guardians||[])[0];
+      if(g) return {name:g.name, relation:g.relation||'Guardian', phone:g.phone, guardian:true};
+      return null;
+    };
+    const flagged = roster.filter(s=>medText(s));
+    const crestImg = (document.querySelector('.crest img')||{}).src || '';
+    printWindow('AMAN — Emergency & Medical Quick Reference',
+      `*{box-sizing:border-box}body{font-family:'Crimson Pro',Georgia,serif;max-width:860px;margin:26px auto;padding:0 20px;color:#20261f;line-height:1.45}
+       .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a4a35;padding-bottom:12px;margin-bottom:14px}
+       .head img{width:50px;height:50px}
+       h1{font-family:'Playfair Display',Georgia,serif;font-size:19px;color:#123626;margin:0}
+       .meta{font-size:12px;color:#5c665a}
+       h2{font-size:13px;color:#1a4a35;margin:16px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px}
+       table{width:100%;border-collapse:collapse;font-size:12px}
+       td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+       th{font-size:10px;text-transform:uppercase;color:#5c665a;letter-spacing:.03em}
+       .warn{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:8px 12px;font-size:12px;margin:4px 0 12px}
+       .flagrow{background:#fdf3e8}
+       .med{color:#8a3b1f;font-weight:600}
+       .gtag{color:#999;font-size:10.5px}
+       @media print{@page{margin:0.5in} thead{display:table-header-group} tr{page-break-inside:avoid}}`,
+      `<div class="head">${crestImg?`<img src="${crestImg}" alt="">`:''}<div><h1>Emergency &amp; Medical Quick Reference</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared ${fmtDate(today())} · ${roster.length} active students</div></div></div>
+       <p style="font-size:12px">For fast reference during class or in an emergency. Keep up to date from each student's profile page — emergency contacts, guardians, and the Medical field.</p>
+       ${flagged.length?`<div class="warn">⚠ ${flagged.length} student${flagged.length===1?'':'s'} with allergy/medical notes on file — highlighted below.</div>`:''}
+       <h2>Roster — ${roster.length} active students</h2>
+       <table><thead><tr><th style="width:150px">Student</th><th style="width:65px">Level</th><th style="width:210px">Emergency contact</th><th>Allergy / medical notes</th></tr></thead><tbody>
+       ${roster.map(s=>{ const c=contactFor(s); const mt=medText(s);
+         const contactStr = c? `${esc(c.name||'(unnamed)')}${c.relation?' ('+esc(c.relation)+')':''}${c.phone?' — '+esc(c.phone):''}${c.guardian?' <span class="gtag">[guardian on file]</span>':''}` : '<span style="color:#b33">— none on file —</span>';
+         return `<tr class="${mt?'flagrow':''}"><td><b>${esc(s.preferredName||s.name)}</b></td><td>${esc(s.level)}</td><td>${contactStr}</td><td class="${mt?'med':''}">${mt?esc(mt):'<span style="color:#999">—</span>'}</td></tr>`;
+       }).join('')}</tbody></table>`);
+    DB.log('Emergency & medical quick-reference card printed');
+  },
   /* ---------- LEVEL-AWARE PROFILE ---------- */
   profile(v,id){
     const s=DB.data.students.find(x=>x.id===id); const d=DB.data;
@@ -6699,6 +7044,30 @@ const Students = {
           <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-ghost btn-sm" data-ecedit="${g.id}">Edit</button><button class="btn btn-ghost btn-sm" data-ecdel="${g.id}" style="color:var(--bad)">Remove</button></div>
          </div>`).join('') : '<p style="color:var(--ink2);font-size:13.5px" class="no-print">None on file.</p>'}
      </details>
+     ${(()=>{ // Family cross-link — siblings + tuition status at a glance, reusing
+       // Tuition's own famList()/famFinance() rather than re-deriving family
+       // membership or re-computing balances here.
+       const fam = famList().find(f=>f.members.some(m=>m.id===s.id));
+       if(!fam) return '';
+       const sibs = fam.members.filter(m=>m.id!==s.id).sort((a,b)=>a.name.localeCompare(b.name));
+       const fin = !fam.solo ? famFinance(fam.key) : null;
+       const worthShowing = sibs.length || (fin && (fin.monthly>0 || fin.paid>0 || fin.balance>0));
+       if(!worthShowing) return '';
+       return `<details class="no-print dtl" open style="margin-bottom:16px">
+       <summary class="sect" style="cursor:pointer;margin:0 0 8px"><span class="kb-chevron">▸</span>👪 Family<span class="rule"></span></summary>
+       <div class="card no-print">
+         ${sibs.length? `<div style="font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Siblings at AMAN</div>
+           <div style="display:flex;flex-direction:column;gap:8px${fin?';margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)':''}">${sibs.map(sib=>`<div data-go="#/students/${sib.id}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+             ${avatarHTML(sib,'width:32px;height:32px;font-size:12px')}
+             <span style="flex:1;min-width:0"><b>${esc(sib.preferredName||sib.name)}</b> <span style="font-size:12px;color:var(--ink3)">· ${esc(sib.level)}${sib.active===false?' · left AMAN':''}</span></span>
+           </div>`).join('')}</div>`
+           : `<p style="color:var(--ink2);font-size:13.5px${fin?';margin-bottom:12px':''}">No siblings currently linked.</p>`}
+         ${fin? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+             <span style="font-size:12.5px;color:var(--ink3)">Family tuition (${esc(fam.key)}):</span>${famStatusBadge(fin.monthStatus)}${fin.balance?`<span style="font-size:12.5px;font-weight:600;color:var(--bad)">$${fin.balance} owed</span>`:''}
+             <button class="btn btn-ghost btn-sm" data-openfamtui="${esc(fam.key)}" style="margin-left:auto">Open in Tuition →</button>
+           </div>` : ''}
+       </div>
+     </details>`; })()}
      <div style="display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 16px" class="no-print">
        <button class="chip" data-go="#/students/attendance">✅ Attendance</button>
        ${L3||L2?`<button class="chip" id="qAdd">📖 ${L3?'Record memorization':'Record recitation'}</button>`:''}
@@ -6798,6 +7167,7 @@ const Students = {
     $('#ecAdd',v) && $('#ecAdd',v).addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); Students.contactForm(s,'emergencyContacts',null,false); });
     $$('[data-ecedit]',v).forEach(b=>b.onclick=()=>Students.contactForm(s,'emergencyContacts', s.emergencyContacts.find(g=>g.id===b.dataset.ecedit), false));
     $$('[data-ecdel]',v).forEach(b=>b.onclick=()=>confirmBox('Remove this emergency contact?', ()=>{ s.emergencyContacts=s.emergencyContacts.filter(g=>g.id!==b.dataset.ecdel); DB.save(); toast('Removed'); Router.render(); }));
+    $$('[data-openfamtui]',v).forEach(b=>b.onclick=()=>{ Tuition._openFam=b.dataset.openfamtui; Router.go('#/tuition/families'); });
     const auto=(el,fn)=>{ if(el) el.onchange=()=>{ fn(el.value); DB.save(); }; };
     auto($('#subjA',v), val=>{ s.subj=s.subj||{}; s.subj.arabic=val.trim(); });
     auto($('#subjI',v), val=>{ s.subj=s.subj||{}; s.subj.islamic=val.trim(); });
@@ -7126,6 +7496,35 @@ const Students = {
 };
 function initials(n){ return n.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase(); }
 function avatarHTML(s, style){ return `<div class="avatar" style="${style||''}">${s.photo?`<img src="${s.photo}" alt="" loading="lazy">`:esc(initials(s.name))}</div>`; }
+// Turns a picked image file into a compressed data: URI sized for an avatar —
+// stored directly in s.photo (same field avatarHTML() already reads), so
+// nothing downstream needs to know a file was ever involved. Resized to
+// maxDim on the long edge and re-encoded as JPEG well below full quality:
+// a phone photo straight off a camera can be several MB, and this is
+// localStorage-backed with 30-40 students' worth of photos to hold, so
+// keeping each one to tens of KB instead matters.
+function resizeImageToDataURL(file, maxDim, quality){
+  maxDim = maxDim||480; quality = quality==null?0.82:quality;
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error('Could not read file'));
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('Not a readable image'));
+      img.onload = ()=>{
+        let w=img.naturalWidth, h=img.naturalHeight;
+        if(w>maxDim || h>maxDim){ if(w>=h){ h=Math.round(h*maxDim/w); w=maxDim; } else { w=Math.round(w*maxDim/h); h=maxDim; } }
+        const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); // flattens transparency (e.g. PNG) onto white before JPEG encoding
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 /* ================= MODULE: PROGRESS TRACKER (attendance/Qur'an/HW/CW) =================
    Session-by-session tracker layered on top of the existing roster.
    Attendance reuses DB.data.attendance/attendanceReasons as-is (same P/A/L/E
@@ -8549,16 +8948,37 @@ function autoCreditLinkedFamilies(sponsorFam, payDate, method){
   });
   return credited;
 }
-// Shared visual identity for the Tuition module — families don't have
-// photos the way students do, so a deterministic colored initial fills
-// that role everywhere a family shows up (Matrix's frozen column,
-// Families cards, Owe's action cards, Overview's "behind" mini-cards):
-// same family, same color, every time, so it reads as one identity as
-// you move between tabs rather than four differently-styled lists.
+// Shared visual identity for the Tuition module — everywhere a family
+// shows up (Matrix's frozen column, Families cards, Owe's action cards,
+// Overview's "behind" mini-cards), same family, same icon, so it reads as
+// one identity as you move between tabs rather than four differently-
+// styled lists. Prefers the oldest active student's real photo (now that
+// students can have one — see Students.form's photo upload) since a face
+// is faster to recognize at a glance than an initial; falls back to the
+// deterministic colored initial when that student has no photo on file
+// (never substitutes a younger sibling's photo instead — "oldest" stays
+// literal and predictable rather than changing identity as photos trickle in).
 const FAM_PALETTE = ['#1a4a35','#b8872a','#33607e','#7d5ba6','#a13a2e','#2c5f45','#835916','#4a6fa5'];
 function famColor(key){ let h=0; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))>>>0; return FAM_PALETTE[h%FAM_PALETTE.length]; }
+function famOldestMember(key){
+  const fam = famList().find(f=>f.key===key);
+  if(!fam || !fam.members.length) return null;
+  const pool = fam.members.some(s=>s.active!==false) ? fam.members.filter(s=>s.active!==false) : fam.members;
+  // Earlier date of birth = older; undated students sort last so a missing
+  // DOB can never accidentally win "oldest."
+  return pool.slice().sort((a,b)=>{
+    if(!a.dob && !b.dob) return 0;
+    if(!a.dob) return 1;
+    if(!b.dob) return -1;
+    return a.dob.localeCompare(b.dob);
+  })[0];
+}
 function famAvatarHTML(key, size){
   size = size||40;
+  const oldest = famOldestMember(key);
+  if(oldest && oldest.photo){
+    return `<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--surface2)"><img src="${oldest.photo}" alt="" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"></div>`;
+  }
   const initial = (key.trim()[0]||'؟').toUpperCase();
   return `<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;background:${famColor(key)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${Math.round(size*0.4)}px;font-family:var(--f-display);flex-shrink:0">${esc(initial)}</div>`;
 }
@@ -10058,7 +10478,7 @@ function admCard(a){
   const initial = (a.studentName||'?').trim().charAt(0).toUpperCase() || '?';
   const meta = [a.studentAge?a.studentAge+' yrs':'', a.studentGender||'', a.parentName?'Parent: '+a.parentName:''].filter(Boolean).join(' · ');
   const healthNote = (a.health && !/^(n\/a|none)$/i.test(a.health.trim())) ? 'Health: '+a.health : '';
-  const allergyNote = (a.allergy && !/^(n\/a|none|no)$/i.test(a.allergy.trim())) ? 'Allergies: '+a.allergy+(a.allergyDetail?' ('+a.allergyDetail+')':'') : '';
+  const allergyNote = isAllergyPositive(a.allergy) ? 'Allergies: '+a.allergy+(a.allergyDetail?' ('+a.allergyDetail+')':'') : '';
   const healthFlagText = [healthNote, allergyNote].filter(Boolean).join(' · ');
   return `<div class="card${justMoved?' just-moved':''}" data-phase="${phase}" style="display:flex;flex-direction:column;gap:8px">
     <div style="cursor:pointer;display:flex;gap:10px;align-items:flex-start" data-go="#/admissions/${a.id}">
@@ -10687,7 +11107,7 @@ const Admissions = {
     const suggestLevel = /memoriz|Ḥāfi/i.test(a.quranLevel)? 'Level 3' : /fluent|slowly/i.test(a.quranLevel)? 'Level 2' : 'Level 1';
     const suggestGender = a.studentGender==='Male'?'Brother':a.studentGender==='Female'?'Sister':'';
     const healthNote = (a.health && !/^(n\/a|none)$/i.test(a.health.trim())) ? 'Health: '+a.health : '';
-    const allergyNote = (a.allergy && !/^(n\/a|none|no)$/i.test(a.allergy.trim())) ? 'Allergies: '+a.allergy+(a.allergyDetail?' ('+a.allergyDetail+')':'') : '';
+    const allergyNote = isAllergyPositive(a.allergy) ? 'Allergies: '+a.allergy+(a.allergyDetail?' ('+a.allergyDetail+')':'') : '';
     const mo = new Date().getMonth();
     const suggestTerm = (mo>=8||mo<=0) ? 'Fall '+new Date().getFullYear() : (mo>=1&&mo<=4) ? 'Winter/Spring '+new Date().getFullYear() : 'Summer '+new Date().getFullYear();
     const o = overlay(`<div class="modal" style="max-width:480px"><h3>Enroll ${esc(a.studentName)}</h3>
