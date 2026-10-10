@@ -706,6 +706,48 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
 .pr-status-picker button.on[data-v="overdue"]{background:#fd3219;color:#fff;border-color:transparent}
 .pr-status-picker button.on[data-v="final"]{background:#8f0f06;color:#fff;border-color:transparent}
 .pr-status-picker button.on[data-sz]{background:var(--green);color:#fff;border-color:transparent}
+
+/* ===== Assistant v2 ===== */
+.ai-sub{font-size:12px;color:var(--ink3);font-family:var(--f-ui)}
+.ai-row{margin:4px 0;font-family:var(--f-ui);font-size:13.5px;line-height:1.5}
+.ai-list{margin:8px 0;max-height:340px;overflow:auto}
+.ai-acts{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 4px}
+.chip-hot{background:var(--green);color:#fff;border-color:var(--green)}
+.msg.ai .rlink.chip{display:inline-flex}
+.ai-sec{margin:12px 0 4px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface2)}
+.ai-sech{font:700 13px var(--f-ui);letter-spacing:.02em;margin-bottom:5px}
+.ai-why{margin-top:10px;font-family:var(--f-ui);font-size:12.5px}
+.ai-why summary{cursor:pointer;color:var(--info);font-weight:600}
+.ai-why-b{margin-top:6px;padding:8px 12px;border-left:2px solid var(--gold);background:var(--surface2);border-radius:0 8px 8px 0;color:var(--ink2)}
+.ai-why-b ul{margin:4px 0 8px 18px;padding:0}
+.ai-bl{display:flex;gap:9px;margin:9px 0}
+.ai-bi{font-size:17px;line-height:1.3}
+.ai-bb{flex:1;min-width:0;font-family:var(--f-ui);font-size:14px}
+.ai-bacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.ai-ok{opacity:.7}
+.ai-studio{margin-top:10px;display:grid;gap:8px}
+.ai-srow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:560px){.ai-srow{grid-template-columns:1fr}}
+.ai-studio textarea,.ai-qi textarea{width:100%;font-family:var(--f-body);font-size:14px}
+.ai-q{max-height:60vh;overflow:auto;display:grid;gap:10px}
+.ai-qi{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--surface)}
+.ai-qh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.ai-qd{display:none;margin-left:auto;color:var(--ok);font:600 12px var(--f-ui)}
+.ai-qi.done{opacity:.6}.ai-qi.done .ai-qd{display:inline}
+.ai-qa{display:flex;gap:7px;align-items:center;margin-top:7px}
+
+/* ===== Tuition v16 ===== */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:14px}
+.kpi-sub{font-size:12.5px;color:var(--ink2);margin-top:6px}
+.kpi-why{color:var(--info);text-decoration:underline;white-space:nowrap}
+.tcc-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr))}
+.tcc{display:flex;flex-direction:column;gap:9px;border-left:3px solid var(--tcc,var(--bad))}
+.tcc-head{display:flex;gap:11px;align-items:center;cursor:pointer}
+.tcc-amt{margin-left:auto;text-align:right;flex-shrink:0}
+.tcc-amt b{font:700 22px var(--f-display);color:var(--tcc)}
+.tcc-lines{display:flex;flex-direction:column;gap:5px}
+.tcc-line{display:flex;gap:8px;font-size:12.5px;color:var(--ink2);line-height:1.4}
+.tcc-acts{display:flex;flex-wrap:wrap;gap:6px}
 </style>
 </head>
 <body>
@@ -9422,7 +9464,8 @@ function famFinance(key){
   const excusedThisMonth=excusedMonths.has(nowM);
   const monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
   return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance,
-    monthStatus, paidThisMonth, monthly, activeCount, excusedMonths};
+    monthStatus, paidThisMonth, monthly, activeCount, excusedMonths,
+    tuitionExpected, tuitionPaid, regExpected, regPaid};
 }
 const TUITION_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function famMonthMatrix(key, year){
@@ -10177,66 +10220,201 @@ render(v,param){
 }});
 /* shared by Tuition.owe() and Tuition.draftAllReminders() so the wording
    never drifts between the one-at-a-time and batch paths. */
-function tuitionReminderMsg(famKey, fin, nowM, rec){
-  const to = rec&&rec.sponsorName ? rec.sponsorName+' — on behalf of the '+famKey+' family' : famKey+' family';
-  return `As-sal\u0101mu \u02bfalaykum ${to} \u2014 friendly reminder: $${Math.max(0,fin.monthly-fin.paidThisMonth)} is due for ${nowM} at AMAN (balance $${fin.balance}). Jaz\u0101kAllahu khayran!`;
+function tuitionReminderMsg(famKey, fin, nowM, rec){ return tuitionMsgFor(famKey,'auto'); }
+/* ================= TUITION COLLECTIONS: debt, reminders, promises, chart =================
+   Everything the Overview's "Behind this month" cards and the Who Owes Now tab
+   share, so both screens always tell the same story. Debt is allocated
+   oldest-month-first (FIFO), which reproduces famFinance's cumulative tuition
+   balance exactly while also saying WHICH months are still open. */
+function daysBetweenISO(a,b){ return Math.round((new Date(b)-new Date(a))/864e5); }
+function ymLabel(ym){ const [y,m]=ym.split('-'); return TUITION_MONTHS[+m-1]+' '+y; }
+function famDebt(key){
+  const p=famPlan(key), fin=famFinance(key), nowM=today().slice(0,7);
+  const out={months:[], total:0, oldestYm:null, ageDays:0};
+  if(!p.start) return out;
+  let paid=fin.tuitionPaid;
+  const [sy,sm]=p.start.split('-').map(Number), [ny,nm]=nowM.split('-').map(Number);
+  for(let idx=sy*12+sm; idx<=ny*12+nm; idx++){
+    const y=Math.floor((idx-1)/12), m=((idx-1)%12)+1, ym=y+'-'+String(m).padStart(2,'0');
+    if(fin.excusedMonths.has(ym)) continue;
+    const exp=famMonthlyForYm(key,ym); if(exp<=0) continue;
+    const applied=Math.min(paid,exp); paid-=applied;
+    if(exp-applied>0) out.months.push({ym, owed:exp-applied});
+  }
+  out.total=out.months.reduce((a,x)=>a+x.owed,0);
+  if(out.months.length){ out.oldestYm=out.months[0].ym; out.ageDays=Math.max(0,daysBetweenISO(out.oldestYm+'-01',today())); }
+  return out;
 }
+function famContactPhone(key){
+  const rec=famRec(key); if(rec.sponsorPhone) return rec.sponsorPhone; if(rec.phone) return rec.phone;
+  const g=DB.data.students.filter(s=>s.active!==false && famKey(s)===key).flatMap(s=>s.guardians||[]).find(g=>g.phone);
+  return g? g.phone : '';
+}
+function famLastPayment(fin){ return fin.pays.find(x=>x.kind!=='excused' && (+x.amount||0)>0) || null; }
+// A promise is 'kept' once payments dated on/after it was made add up to what was promised.
+function famPromiseState(key){
+  const pr=famRec(key).promise; if(!pr) return null;
+  const paidSince=DB.data.finance.payments.filter(x=>x.fam===key && x.date>=pr.madeOn && x.kind!=='excused' && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0);
+  if(paidSince>=pr.amount) return {k:'kept', pr};
+  if(pr.date<today()) return {k:'broken', pr, days:daysBetweenISO(pr.date,today())};
+  return {k:'active', pr, days:daysBetweenISO(today(),pr.date)};
+}
+function famCollectRank(x){ const s=famPromiseState(x.f.key); return s&&s.k==='broken'?0 : s&&s.k==='active'?2 : 1; }
+function famCollectSort(a,b){
+  return famCollectRank(a)-famCollectRank(b) || famDebt(b.f.key).ageDays-famDebt(a.f.key).ageDays || b.fin.balance-a.fin.balance;
+}
+const TUITION_TONES = {gentle:'🤍 Gentle', clear:'⚖️ Clear', plan:'🤝 Offer a plan'};
+function tuitionAutoTone(key){ const d=famDebt(key); return (d.months.length>=2 || d.ageDays>=30)?'clear':'gentle'; }
+// One wording source for the composer, "Draft all", and the Dashboard banner.
+function tuitionMsgFor(key, tone){
+  const rec=famRec(key), fin=famFinance(key), debt=famDebt(key);
+  tone = (!tone||tone==='auto') ? tuitionAutoTone(key) : tone;
+  const to = rec.sponsorName ? rec.sponsorName+' — on behalf of the '+key+' family' : key+' family';
+  const regB = Math.max(0, fin.regExpected-fin.regPaid);
+  const what = debt.months.length ? 'tuition for '+(debt.months.length===1 ? ymLabel(debt.months[0].ym) : ymLabel(debt.months[0].ym)+' – '+ymLabel(debt.months[debt.months.length-1].ym))
+    : regB>0 ? 'the registration fee' : 'tuition';
+  const total=fin.balance;
+  const pay='Zelle (amanschool.mn@gmail.com), CashApp ($amanschoolmn), or in person';
+  const hi='As-salāmu ʿalaykum '+to+'. ';
+  if(tone==='plan') return hi+'I noticed '+what+' ($'+total+') is still open. I understand things can get tight — if it would help, we can split it into smaller payments. Just reply with what works for you. Jazākumullāhu khayran. — AMAN';
+  if(tone==='clear') return hi+'Our records show $'+total+' outstanding for '+what+' at AMAN. Could you let me know when you’re able to settle it? You can pay by '+pay+'. Jazākumullāhu khayran. — AMAN';
+  return hi+'I hope you and the children are well. A gentle reminder that '+what+' at AMAN is still open ($'+total+'). When convenient, you can pay by '+pay+'. Jazākumullāhu khayran for your support of the school. — AMAN';
+}
+function famCollectCardHTML(f, fin, rec, o){
+  o=o||{};
+  const key=f.key, debt=famDebt(key), last=famLastPayment(fin), pr=famPromiseState(key), rm=(rec.reminders||[])[0];
+  const phone=famContactPhone(key), digits=(phone||'').replace(/[^0-9+]/g,'');
+  const cv = fin.monthStatus==='Partial' ? '--warn' : '--bad';
+  const regB = Math.max(0, fin.regExpected-fin.regPaid), nM=debt.months.length;
+  const ageCls = debt.ageDays>=60?'tag-red':debt.ageDays>=30?'tag-gold':'tag-dim';
+  const span = nM? (nM===1? ymLabel(debt.months[0].ym) : ymLabel(debt.months[0].ym)+' – '+ymLabel(debt.months[nM-1].ym)) : '';
+  const line=(ico,html)=>`<div class="tcc-line"><span aria-hidden="true">${ico}</span><span style="min-width:0;overflow-wrap:anywhere">${html}</span></div>`;
+  const lines=[
+    nM? line('📅', `<b>${nM} month${nM===1?'':'s'} behind</b> · ${esc(span)}${debt.ageDays>=1?` <span class="tag ${ageCls}" style="margin-left:4px">${debt.ageDays}d overdue</span>`:''}`) : '',
+    regB>0? line('🧾', `Registration fee $${regB} unpaid`) : '',
+    line('💳', last? `Last paid <b>$${+last.amount}</b> · ${esc(fmtDate(last.date))}${last.method?' · '+esc(last.method):''} <span style="color:var(--ink3)">(${daysBetweenISO(last.date,today())}d ago)</span>` : '<span style="color:var(--bad)">No payments recorded yet</span>'),
+    pr? (pr.k==='broken' ? line('⚠️', `<b style="color:var(--bad)">Promise missed</b> — $${pr.pr.amount} was due ${esc(fmtDate(pr.pr.date))} (${pr.days}d ago)`)
+        : pr.k==='active' ? line('🤝', `Promised <b>$${pr.pr.amount}</b> by ${esc(fmtDate(pr.pr.date))} <span style="color:var(--ink3)">(${pr.days===0?'today':'in '+pr.days+'d'})</span>`)
+        : line('✅', `<span style="color:var(--ok)">Promise kept</span> — $${pr.pr.amount} paid`)) : '',
+    line('🔔', rm? `Reminded ${daysBetweenISO(rm.date,today())===0?'today':daysBetweenISO(rm.date,today())+'d ago'} <span style="color:var(--ink3)">(${esc(TUITION_TONES[rm.tone]||rm.tone||'reminder')} · ${(rec.reminders||[]).length} total)</span>` : 'Not reminded yet'),
+    rec.sponsorName? line('🤝', `<span style="color:var(--gold);font-weight:600">Sponsored by ${esc(rec.sponsorName)}</span>`) : '',
+  ].join('');
+  const owedNow=Math.max(0,fin.monthly-fin.paidThisMonth);
+  return `<div class="card tcc" style="--tcc:var(${cv})">
+    <div class="tcc-head" data-opfam="${esc(key)}" title="Open ${esc(key)} in Families">
+      ${famAvatarHTML(key,44)}
+      <div style="min-width:0;flex:1"><b style="display:block;font-family:var(--f-display);font-size:16px;overflow-wrap:anywhere">${esc(key)}</b><div style="margin-top:3px">${famStatusBadge(fin.monthStatus)}</div></div>
+      <div class="tcc-amt"><b>$${fin.balance}</b><div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">total owed</div>${owedNow&&owedNow!==fin.balance?`<div style="font-size:11px;color:var(--ink3)">$${owedNow} this month</div>`:''}</div>
+    </div>
+    <div class="tcc-lines">${lines}</div>
+    <div class="tcc-acts no-print">
+      ${digits?`<a class="btn btn-ghost btn-sm" href="tel:${esc(digits)}">📞 Call</a>`:''}
+      <button class="btn btn-p btn-sm" data-tremind="${esc(key)}" title="Draft a reminder, then text or copy it">🔔 Remind</button>
+      <button class="btn btn-o btn-sm" data-tpromise="${esc(key)}">🤝 Promise</button>
+      <button class="btn btn-o btn-sm" data-pay="${esc(key)}">＋ Pay</button>
+      ${o.more?`<button class="chip" data-flyer="${esc(key)}">🎫 Flyer</button><button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(key)}: monthly $${fin.monthly}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">✨ Longer draft</button>`:''}
+    </div>
+    ${!digits?`<div style="font-size:11.5px;color:var(--ink3)" class="no-print">No phone on file — add one under Families to enable Call/Text.</div>`:''}
+  </div>`;
+}
+function wireCollectCards(el){
+  $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
+  $$('[data-tremind]',el).forEach(b=>b.onclick=()=>Tuition.remindForm(b.dataset.tremind));
+  $$('[data-tpromise]',el).forEach(b=>b.onclick=()=>Tuition.promiseForm(b.dataset.tpromise));
+  $$('[data-flyer]',el).forEach(b=>b.onclick=()=>Tuition.flyerForm(b.dataset.flyer));
+  $$('[data-opfam]',el).forEach(b=>b.onclick=()=>{ Tuition._openFam=b.dataset.opfam; Router.go('#/tuition/families'); });
+  $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
+}
+// Cash received per month vs what that month's tuition was. Catch-up payments
+// land in the month they're paid, so a month can exceed 100% — said on-chart.
+function tuitionChartHTML(series, nowM){
+  if(!series.length) return '';
+  const W=720,H=210,pl=44,pr=10,pt=24,pb=44, ih=H-pt-pb;
+  const max=Math.max(...series.flatMap(s=>[s.exp,s.col]),1), top=Math.max(500,Math.ceil(max/500)*500);
+  const cw=(W-pl-pr)/series.length, bw=Math.min(40,cw*0.32), y=v=>pt+ih-(v/top)*ih;
+  const grid=[0,.5,1].map(t=>{ const v=Math.round(top*t); return `<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)" stroke-dasharray="${t?'3 4':'0'}"/><text x="${pl-6}" y="${y(v)+3.5}" text-anchor="end" style="fill:var(--ink3);font:10px var(--f-mono)">$${v}</text>`; }).join('');
+  const bars=series.map((s,i)=>{
+    const cx=pl+cw*i+cw/2, cur=s.ym===nowM, lab=TUITION_MONTHS[+s.ym.slice(5)-1]+(s.ym.slice(5)==='01'||i===0?" '"+s.ym.slice(2,4):'');
+    const rate = s.exp>0? Math.round(s.col/s.exp*100)+'%' : (s.col>0?'—':'');
+    const tip=`${ymLabel(s.ym)}: $${s.col} received of $${s.exp} due${cur?' (month in progress)':''}`;
+    return `<g><title>${esc(tip)}</title>
+      ${s.exp>0?`<rect x="${cx-bw-2}" y="${y(s.exp)}" width="${bw}" height="${y(0)-y(s.exp)}" rx="3" style="fill:var(--surface2);stroke:var(--ink3)" stroke-dasharray="3 3"/>`:''}
+      ${s.col>0?`<rect x="${cx+2}" y="${y(s.col)}" width="${bw}" height="${y(0)-y(s.col)}" rx="3" style="fill:${s.exp>0&&s.col>=s.exp?'var(--ok)':'var(--gold)'}"/><text x="${cx+2+bw/2}" y="${y(s.col)-5}" text-anchor="middle" style="fill:var(--ink);font:600 10.5px var(--f-mono)">$${s.col}</text>`:''}
+      ${s.exp<=0&&s.col<=0?`<text x="${cx}" y="${y(0)-6}" text-anchor="middle" style="fill:var(--ink3);font:11px var(--f-mono)">—</text>`:''}
+      <text x="${cx}" y="${H-24}" text-anchor="middle" style="fill:var(--ink2);font:600 11.5px var(--f-ui)">${esc(lab)}</text>
+      <text x="${cx}" y="${H-9}" text-anchor="middle" style="fill:${cur?'var(--info)':'var(--ink3)'};font:10.5px var(--f-mono)">${cur?'so far':rate}</text></g>`; }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-height:260px" role="img" aria-label="Tuition received versus due, by month">${grid}${bars}</svg>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:11.5px;color:var(--ink2);margin-top:4px">
+      <span><i style="display:inline-block;width:10px;height:10px;border:1px dashed var(--ink3);border-radius:2px;background:var(--surface2);margin-right:5px"></i>Due that month</span>
+      <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--gold);margin-right:5px"></i>Received</span>
+      <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--ok);margin-right:5px"></i>Received in full</span>
+      <span style="color:var(--ink3)">Catch-up payments count in the month they’re paid, so a month can pass 100%.</span></div>`;
+}
+
 const Tuition = {
   /* ---------- OVERVIEW ---------- */
   overview(el){
     const d=DB.data;
     const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
-    const fins=fams.map(f=>({f, fin:famFinance(f.key)}));
+    const fins=fams.map(f=>({f, fin:famFinance(f.key), rec:famRec(f.key)}));
     const expected=fins.reduce((a,x)=>a+x.fin.expected,0);
     const collected=fins.reduce((a,x)=>a+x.fin.paid,0);
     const outstanding=fins.reduce((a,x)=>a+x.fin.balance,0);
-    const rate=expected>0? Math.round(collected/expected*100) : 0;
+    // Share of what was due that is no longer owed. (The old "collected ÷ expected" let
+    // one family's prepayment hide another's debt, and counted registration fees.)
+    const rate=expected>0? Math.max(0,Math.min(100,Math.round((expected-outstanding)/expected*100))) : 0;
     const dueNow=fins.filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused');
     const nowM=today().slice(0,7);
-    const expectedThisMonth=fins.reduce((a,x)=>a+(x.fin.monthly>0?x.fin.monthly:0),0);
+    const expectedThisMonth=fins.reduce((a,x)=>a+(x.fin.monthly>0 && !x.fin.excusedMonths.has(nowM)?x.fin.monthly:0),0);
     const collectedThisMonth=fins.reduce((a,x)=>a+x.fin.paidThisMonth,0);
     const thisMonthPct=expectedThisMonth>0? Math.min(100,Math.round(collectedThisMonth/expectedThisMonth*100)) : 0;
-    const statusVar={Paid:'--ok', Partial:'--warn', Due:'--bad', Excused:'--info'};
     const noPlan=fams.filter(f=>{ const p=DB.data.finance.plans[f.key]; return !p || !p.start; })
       .map(f=>({f, maxNo:Math.max(0,...f.members.map(s=>s.studentNo||0))})).sort((a,b)=>b.maxNo-a.maxNo).slice(0,2).map(x=>x.f);
     const months12=[...Array(12)].map((_,i)=>{ const dt=new Date(); dt.setDate(1); dt.setMonth(dt.getMonth()-(11-i)); return dt.toISOString().slice(0,7); });
-    const rateTrend = months12.map(ym=>{
+    let series=months12.map(ym=>{
       let exp=0, col=0;
-      fams.forEach(f=>{ const p=famPlan(f.key), monthly=famMonthlyForYm(f.key, ym); // that month's own rate, not today's headcount
-        if(monthly>0 && p.start && ym>=p.start) exp+=monthly;
-        col += DB.data.finance.payments.filter(x=>x.fam===f.key && x.date.slice(0,7)===ym && x.kind!=='excused' && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0); });
-      return exp>0? Math.round(Math.min(100,col/exp*100)) : (col>0?100:0);
+      fins.forEach(({f,fin})=>{ const p=fin.plan, monthly=famMonthlyForYm(f.key, ym);
+        if(monthly>0 && p.start && ym>=p.start && !fin.excusedMonths.has(ym)) exp+=monthly;
+        col += d.finance.payments.filter(x=>x.fam===f.key && x.date.slice(0,7)===ym && x.kind!=='excused' && x.kind!=='registration').reduce((a,x)=>a+(+x.amount||0),0); });
+      return {ym, exp, col};
     });
+    while(series.length>4 && series[0].exp<=0 && series[0].col<=0) series.shift();
+    const sorted=dueNow.slice().sort(famCollectSort);
+    const behindTotal=sorted.reduce((a,x)=>a+x.fin.balance,0);
+    const broken=sorted.filter(x=>{const s=famPromiseState(x.f.key); return s&&s.k==='broken';}).length;
+    const stale=sorted.filter(x=>{const r=(x.rec.reminders||[])[0]; return !r || daysBetweenISO(r.date,today())>=14;}).length;
     el.innerHTML = `
-     <div class="grid g3" style="margin-bottom:8px">
+     <div class="kpi-row">
        <div class="widget" style="border-top:3px solid var(--green)">
          <div class="whead"><h3>Collected to date</h3><span style="font-size:17px">💰</span></div>
-         <div class="kpi">$${collected}<small>of $${expected} expected</small></div>
+         <div class="kpi">$${collected}</div><div class="kpi-sub">of $${expected} expected</div>
        </div>
        <div class="widget" style="border-top:3px solid var(--info)">
-         <div class="whead"><h3>Collected this month</h3><span style="font-size:17px">📅</span></div>
-         <div class="kpi">$${collectedThisMonth}<small>of $${expectedThisMonth} due · ${nowM}</small></div>
+         <div class="whead"><h3>This month</h3><span style="font-size:17px">📅</span></div>
+         <div class="kpi">$${collectedThisMonth}</div><div class="kpi-sub">of $${expectedThisMonth} due · ${nowM}</div>
+         <div class="bar" style="height:7px;margin-top:9px"><i style="width:${thisMonthPct}%;background:linear-gradient(90deg,var(--green),var(--gold))"></i></div>
        </div>
        <div class="widget" style="border-top:3px solid ${outstanding?'var(--bad)':'var(--ok)'}">
          <div class="whead"><h3>Outstanding</h3><span style="font-size:17px">${outstanding?'⚠️':'✅'}</span></div>
-         <div class="kpi" style="${outstanding?'color:var(--bad)':''}">$${outstanding}<small>${dueNow.length} famil${dueNow.length===1?'y':'ies'} behind</small></div>
+         <div class="kpi" style="${outstanding?'color:var(--bad)':''}">$${outstanding}</div><div class="kpi-sub">${dueNow.length} famil${dueNow.length===1?'y':'ies'} behind · <a href="#" id="tuWhy" class="kpi-why">Why not $${Math.max(0,expected-collected)}?</a></div>
        </div>
        <div class="widget" style="border-top:3px solid var(--gold)">
          <div class="whead"><h3>Collection rate</h3><span style="font-size:17px">📊</span></div>
-         <div class="kpi">${rate}%<small>${fams.length} active famil${fams.length===1?'y':'ies'}</small></div>
+         <div class="kpi">${rate}%</div><div class="kpi-sub">${fams.length} active famil${fams.length===1?'y':'ies'}</div>
        </div>
      </div>
-     <div class="widget" style="margin-bottom:18px;border-top:3px solid var(--green-soft)">${spark(rateTrend,'Collection rate % · last 12 months',100)}</div>
-     ${expectedThisMonth>0?`<div class="card" style="margin-bottom:18px">
-       <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink2);margin-bottom:8px"><span style="font-weight:700;color:var(--ink)">📈 This month's collection progress</span><b style="font-family:var(--f-mono);color:var(--green)">${thisMonthPct}%</b></div>
-       <div class="bar" style="height:11px"><i style="width:${thisMonthPct}%;background:linear-gradient(90deg,var(--green) 0%,var(--gold) 100%)"></i></div></div>`:''}
+     <div class="widget" style="margin-bottom:18px;border-top:3px solid var(--green-soft)">
+       <div class="whead"><h3>Received vs due · by month</h3></div>
+       ${tuitionChartHTML(series, nowM)}
+     </div>
      ${noPlan.length?`<div class="notice info no-print" style="margin-bottom:16px">⚡ <div>${noPlan.map(f=>esc(f.key)).join(' and ')} — recently added, no tuition plan yet. <button class="btn btn-p btn-sm" id="quickSetup2" style="margin-left:6px">Set $100/student, start this month</button></div></div>`:''}
-     ${dueNow.length?`<div class="sect">📞 Behind this month (${nowM})<span class="rule"></span><button class="btn btn-ghost btn-sm" data-go="#/tuition/owe" style="margin-left:auto">See all →</button></div>
-      <div class="grid g3">${dueNow.slice(0,6).map(({f,fin})=>{ const cv=statusVar[fin.monthStatus];
-        return `<div class="card" style="cursor:pointer;display:flex;align-items:center;gap:11px;background:color-mix(in srgb,var(${cv}) 8%,var(--surface));border-left:3px solid var(${cv})" data-go="#/tuition/owe">${famAvatarHTML(f.key,36)}<div style="min-width:0;flex:1"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-display)">${esc(f.key)}</b><div style="margin-top:4px">${famStatusBadge(fin.monthStatus)} ${fin.balance?`<span style="font-size:12px;color:var(--ink2);margin-left:4px">$${fin.balance}</span>`:''}</div></div></div>`; }).join('')}</div>`
-      :'<div class="empty"><div class="big">✅</div><h3>Everyone\u2019s current</h3><p>No family owes anything for this month, al-\u1e25amdulill\u0101h.</p></div>'}
+     ${sorted.length?`<div class="sect">📞 Behind (${nowM})<span class="rule"></span><button class="btn btn-ghost btn-sm" data-go="#/tuition/owe" style="margin-left:auto">Full list →</button></div>
+      <p class="page-sub" style="margin:-4px 0 12px">${sorted.length} famil${sorted.length===1?'y':'ies'} · <b>$${behindTotal}</b> outstanding${broken?` · <b style="color:var(--bad)">${broken} missed promise${broken===1?'':'s'}</b>`:''}${stale?` · ${stale} not reminded in 14+ days`:''}. Most urgent first.</p>
+      <div class="tcc-grid">${sorted.map(({f,fin,rec})=>famCollectCardHTML(f,fin,rec)).join('')}</div>`
+      :'<div class="empty"><div class="big">✅</div><h3>Everyone’s current</h3><p>No family owes anything for this month, al-ḥamdulillāh.</p></div>'}
     `;
-    wireCommon(el);
+    wireCommon(el); wireCollectCards(el);
+    $('#tuWhy',el)&&($('#tuWhy',el).onclick=e=>{ e.preventDefault(); Tuition.explainOutstanding(); });
     $('#quickSetup2',el)&&($('#quickSetup2',el).onclick=()=>{
       const names=noPlan.map(f=>f.key).join(' and ');
       confirmBox('Set $100/student, tracking from '+nowM+', for: '+names+'?', ()=>{
@@ -10245,6 +10423,73 @@ const Tuition = {
         DB.save(); toast('Applied to '+noPlan.length+' famil'+(noPlan.length===1?'y':'ies')); Router.render();
       });
     });
+  },
+  explainOutstanding(){
+    const fams=famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false));
+    const fins=fams.map(f=>({f,fin:famFinance(f.key)}));
+    const expected=fins.reduce((a,x)=>a+x.fin.expected,0), collected=fins.reduce((a,x)=>a+x.fin.paid,0), outstanding=fins.reduce((a,x)=>a+x.fin.balance,0);
+    const gap=expected-collected;
+    const ahead=fins.map(x=>({f:x.f, v:Math.max(0,x.fin.tuitionPaid-x.fin.tuitionExpected)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    const aheadT=ahead.reduce((a,x)=>a+x.v,0);
+    const regOver=fins.reduce((a,x)=>a+Math.max(0,x.fin.regPaid-x.fin.regExpected),0);
+    const row=(l,v,st)=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);${st||''}"><span>${l}</span><b style="font-family:var(--f-mono)">${v}</b></div>`;
+    const o=overlay(`<div class="modal" style="max-width:460px"><h3>Why is Outstanding $${outstanding}?</h3>
+      <p style="font-size:13px;color:var(--ink2)">Outstanding adds up what each family still owes. A family that is ahead can’t cancel out a family that is behind, so it is bigger than <i>expected − collected</i>.</p>
+      ${row('Expected so far','$'+expected)}${row('Collected so far','− $'+collected)}${row('Gap (expected − collected)','$'+gap,'font-weight:600')}
+      ${row('＋ Paid ahead by '+ahead.length+' famil'+(ahead.length===1?'y':'ies'),'$'+aheadT)}
+      ${ahead.length?`<div style="font-size:12px;color:var(--ink3);padding:4px 0 6px">${ahead.map(x=>esc(x.f.key)+' $'+x.v).join(' · ')}</div>`:''}
+      ${regOver?row('＋ Registration fees received (not in “expected”)','$'+regOver):''}
+      ${row('= Outstanding','$'+outstanding,'color:var(--bad);border-bottom:0;font-size:15px')}
+      <p style="font-size:12px;color:var(--ink3);margin-top:10px"><b>Collection rate</b> = (expected − outstanding) ÷ expected, i.e. the share of what was due that is no longer owed.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+  },
+  remindForm(key){
+    const rec=famRec(key), fin=famFinance(key), phone=famContactPhone(key), digits=(phone||'').replace(/[^0-9+]/g,'');
+    let tone=tuitionAutoTone(key);
+    const last=(rec.reminders||[])[0], ago=last?daysBetweenISO(last.date,today()):null;
+    const o=overlay(`<div class="modal" style="max-width:500px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">${famAvatarHTML(key,32)}<h3 style="margin:0">Remind ${esc(key)} family</h3></div>
+      ${ago!==null&&ago<=7?`<div class="notice info" style="margin-bottom:10px">🔔 Reminded ${ago===0?'today':ago+' day'+(ago===1?'':'s')+' ago'} — a gentle pause is kinder.</div>`:''}
+      <div class="chips" id="rmTones" style="margin-bottom:8px">${Object.entries(TUITION_TONES).map(([k,l])=>`<button class="chip" data-tone="${k}">${l}</button>`).join('')}</div>
+      <textarea id="rmText" rows="7" style="width:100%"></textarea>
+      <p style="font-size:12px;color:var(--ink3);margin:6px 0 0">${digits?'Texting opens your Messages app to '+esc(phone)+'.':'No phone on file — you can still copy it for WhatsApp.'} Logged once you tap Text or Copy.</p>
+      <div class="mfoot" style="flex-wrap:wrap"><button class="btn btn-o" data-x="c">Close</button>
+        <button class="chip" id="rmFlyer">🎫 Flyer</button><button class="chip" id="rmCopy">📋 Copy</button>
+        ${digits?`<a class="btn btn-p" id="rmSms" href="#">💬 Text</a>`:''}</div></div>`, true);
+    const ta=$('#rmText',o);
+    const setTone=t=>{ tone=t; ta.value=tuitionMsgFor(key,t); $$('#rmTones .chip',o).forEach(c=>c.classList.toggle('on',c.dataset.tone===t)); const a=$('#rmSms',o); if(a) a.href=`sms:${digits}?&body=${encodeURIComponent(ta.value)}`; };
+    $$('#rmTones .chip',o).forEach(c=>c.onclick=()=>setTone(c.dataset.tone));
+    ta.oninput=()=>{ const a=$('#rmSms',o); if(a) a.href=`sms:${digits}?&body=${encodeURIComponent(ta.value)}`; };
+    setTone(tone);
+    const logIt=via=>{ rec.reminders=rec.reminders||[]; rec.reminders.unshift({date:today(),tone,via}); rec.reminders=rec.reminders.slice(0,30); DB.log('Reminder ('+via+') — '+key); DB.save(); };
+    $('#rmCopy',o).onclick=()=>{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(()=>toast('Copied')).catch(()=>toast('Could not copy — select the text manually')); logIt('copy'); o.remove(); Router.render(); };
+    $('#rmSms',o)&&($('#rmSms',o).addEventListener('click',()=>{ logIt('text'); setTimeout(()=>{o.remove(); Router.render();},300); }));
+    $('#rmFlyer',o).onclick=()=>{ o.remove(); Tuition.flyerForm(key); };
+    $('[data-x=c]',o).onclick=()=>o.remove();
+  },
+  promiseForm(key){
+    const rec=famRec(key), fin=famFinance(key), debt=famDebt(key), cur=rec.promise;
+    const dt=new Date(); dt.setDate(dt.getDate()+7); const d7=dt.toISOString().slice(0,10);
+    const def=cur? cur.amount : (Math.max(0,fin.monthly-fin.paidThisMonth)||fin.balance);
+    const hist=(rec.promiseHistory||[]);
+    const o=overlay(`<div class="modal" style="max-width:420px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">${famAvatarHTML(key,32)}<h3 style="margin:0">Payment promise</h3></div>
+      <p style="font-size:12.5px;color:var(--ink3);margin:0 0 12px">${esc(key)} owes $${fin.balance}. Record what they told you; the card will show if it’s kept or missed.</p>
+      <div class="field"><label>Promised amount ($)</label><input id="prAmt" type="number" min="1" value="${def}"></div>
+      <div class="field"><label>By when</label><input id="prDate" type="date" value="${cur?cur.date:d7}"></div>
+      <div class="field"><label>Note (optional)</label><input id="prNote" value="${esc(cur?cur.note||'':'')}" placeholder="e.g. after payday on the 15th"></div>
+      ${hist.length?`<div style="font-size:12px;color:var(--ink3)">Past promises: ${hist.filter(h=>h.outcome==='kept').length} kept · ${hist.filter(h=>h.outcome!=='kept').length} missed/replaced</div>`:''}
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button>${cur?'<button class="btn btn-o" id="prClear">Clear</button>':''}<button class="btn btn-p" id="prSave">Save promise</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const archive=()=>{ if(rec.promise){ const s=famPromiseState(key); rec.promiseHistory=[{...rec.promise,outcome:s?(s.k==='active'?'replaced':s.k):'replaced'},...(rec.promiseHistory||[])].slice(0,30); } };
+    $('#prClear',o)&&($('#prClear',o).onclick=()=>{ archive(); delete rec.promise; DB.save(); o.remove(); Router.render(); });
+    $('#prSave',o).onclick=()=>{
+      const amount=+$('#prAmt',o).value, date=$('#prDate',o).value;
+      if(!(amount>0)||!date){ toast('Enter an amount and a date'); return; }
+      archive(); rec.promise={amount,date,note:$('#prNote',o).value.trim(),madeOn:today()};
+      DB.log('Payment promise — '+key+' $'+amount+' by '+date); DB.save(); o.remove(); toast('Promise recorded'); Router.render();
+    };
   },
   /* ---------- MATRIX: month-by-month, year at a glance ---------- */
   matrix(el){
@@ -10440,38 +10685,10 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
     const nowM=today().slice(0,7);
     const owing=fams.map(f=>({f, fin:famFinance(f.key), rec:famRec(f.key)}))
       .filter(x=>x.fin.monthly>0 && x.fin.monthStatus!=='Paid' && x.fin.monthStatus!=='Excused')
-      .sort((a,b)=>b.fin.balance-a.fin.balance);
-    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">📞 Families not yet paid for ${nowM} \u2014 sorted by balance owed.${owing.length?' <button class="chip no-print" id="tuDraftAll" style="margin-left:6px">\u2709\ufe0f Draft all reminders</button>':''}</p>
-     ${owing.length? owing.map(({f,fin,rec})=>{
-        const shortMsg = tuitionReminderMsg(f.key, fin, nowM, rec);
-        const contactPhone = rec.sponsorPhone || rec.phone;
-        const digits = contactPhone? contactPhone.replace(/[^0-9+]/g,'') : '';
-        const owedNow = Math.max(0,fin.monthly-fin.paidThisMonth);
-        const cv = fin.monthStatus==='Partial' ? '--warn' : '--bad';
-        return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:9px;border-left:3px solid var(${cv})">
-        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:220px">
-          ${famAvatarHTML(f.key,40)}
-          <div style="min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-family:var(--f-display);font-size:15.5px">${esc(f.key)}</b>${famStatusBadge(fin.monthStatus)}</div>
-            <div style="font-size:12.5px;color:var(--ink2);margin-top:4px">$${fin.balance} total balance${contactPhone?' · '+esc(contactPhone):''}</div>
-            ${rec.sponsorName?`<div style="font-size:11.5px;color:var(--gold);margin-top:2px;font-weight:600">🤝 Sponsored by ${esc(rec.sponsorName)}</div>`:''}
-          </div>
-          <div style="margin-left:auto;text-align:right;padding-left:8px">
-            <div style="font-family:var(--f-display);font-size:22px;font-weight:700;color:var(${cv})">$${owedNow}</div>
-            <div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">owed now</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap" class="no-print">
-          ${digits?`<a class="btn btn-ghost btn-sm" href="tel:${esc(digits)}">\ud83d\udcde Call</a><a class="btn btn-ghost btn-sm" href="sms:${esc(digits)}?&body=${encodeURIComponent(shortMsg)}">\ud83d\udcac Text reminder</a>`:''}
-          <button class="chip" data-copy="${esc(shortMsg)}">\ud83d\udccb Copy reminder</button>
-          <button class="chip" data-flyer="${esc(f.key)}">\ud83c\udfab Generate flyer</button>
-          <button class="chip" data-ai="Draft a warm, respectful tuition reminder in simple English for family ${esc(f.key)}: monthly $${fin.monthly}, status ${fin.monthStatus}, outstanding balance $${fin.balance}. Keep it brief for WhatsApp.">\u2728 Longer draft</button>
-          <button class="btn btn-o btn-sm" data-pay="${esc(f.key)}">\uff0b Record payment</button>
-        </div></div>`; }).join('') : '<div class="empty"><div class="big">\u2705</div><h3>Everyone\u2019s current</h3><p>No outstanding balances this month, al-\u1e25amdulill\u0101h.</p></div>'}`;
-    wireCommon(el);
-    $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
-    $$('[data-pay]',el).forEach(b=>b.onclick=()=>Tuition.payForm(b.dataset.pay));
-    $$('[data-flyer]',el).forEach(b=>b.onclick=()=>Tuition.flyerForm(b.dataset.flyer));
+      .sort(famCollectSort);
+    el.innerHTML = `<p class="page-sub" style="margin-bottom:14px">📞 Families not yet paid for ${nowM} — broken promises first, then longest overdue.${owing.length?' <button class="chip no-print" id="tuDraftAll" style="margin-left:6px">✉️ Draft all reminders</button>':''}</p>
+     ${owing.length? `<div class="tcc-grid">${owing.map(({f,fin,rec})=>famCollectCardHTML(f,fin,rec,{more:true})).join('')}</div>` : '<div class="empty"><div class="big">✅</div><h3>Everyone’s current</h3><p>No outstanding balances this month, al-ḥamdulillāh.</p></div>'}`;
+    wireCommon(el); wireCollectCards(el);
     $('#tuDraftAll',el) && ($('#tuDraftAll',el).onclick=()=>Tuition.draftAllReminders());
   },
   /* ---------- draft every overdue family's reminder in one place — the
@@ -12496,7 +12713,8 @@ render(v){
    <p class="page-sub">Every answer here is computed live from your school's data, right on this device — nothing is sent anywhere. Ask a question or tap a shortcut.</p>
    <div class="ai-wrap"><div class="ai-msgs" id="aiMsgs"></div>
     <div class="ai-chips no-print" id="aiChips">
-     ${['Build this weekend’s lesson plan','Who needs memorization review, and why?','Who is ready for promotion?','Draft a parent announcement','Which families need tuition follow-up?','Generate homework for Level 1','Summarize this month’s progress','What should I prioritize this week?'].map(c=>`<button class="chip" data-chip="${esc(c)}">${esc(c)}</button>`).join('')}
+     ${AI2.chips().map(c=>`<button class="chip chip-hot" data-chip="${esc(c.q)}">${esc(c.l)}</button>`).join('')}
+     <button class="chip" id="aiMore">⋯ More</button><span id="aiMoreBox" style="display:none">${['Build this weekend’s lesson plan','Who needs memorization review, and why?','Who is ready for promotion?','Draft a parent announcement','Which families need tuition follow-up?','Generate homework for Level 1','Summarize this month’s progress','What should I prioritize this week?'].map(c=>`<button class="chip" data-chip="${esc(c)}">${esc(c)}</button>`).join('')}</span>
      <button class="chip" id="aiNew" style="margin-left:auto">🗑 New chat</button></div>
     <div class="ai-input no-print"><input id="aiQ" placeholder="Ask about students, tuition, tasks, or curriculum…"><button class="btn btn-p" id="aiSend">Send</button></div></div>`;
   const msgs=$('#aiMsgs',v), q=$('#aiQ',v);
@@ -12508,6 +12726,7 @@ render(v){
   } else {
     AIx.wire(add('ai', AIx.briefing()));
   }
+  AIx.send=text=>send(text);
   function send(text){
     if(!text.trim()) return;
     add('user', esc(text)); q.value='';
@@ -12525,8 +12744,442 @@ render(v){
   q.onkeydown=e=>{ if(e.key==='Enter') send(q.value); };
   $$('button[data-chip]',v).forEach(b=>b.onclick=()=>send(b.dataset.chip));
   $('#aiNew',v).onclick=()=>{ AIx.history=[]; Router.render(); };
+  $('#aiMore',v).onclick=()=>{ const bx=$('#aiMoreBox',v); const on=bx.style.display==='none'; bx.style.display=on?'contents':'none'; $('#aiMore',v).textContent=on?'− Less':'⋯ More'; };
   const pre=sessionStorage.getItem('ai_q'); if(pre){ sessionStorage.removeItem('ai_q'); send(pre); } else q.focus();
 }});
+/* ================= AI ASSISTANT v2 =================
+   Still offline and rule-based — nothing here is generated by a language model.
+   What's new: it can answer filtered questions in plain language, show the rule
+   behind every answer, propose changes you confirm, plan your class day, report
+   what changed, and fill message templates with real data. */
+const AI2 = {
+  MONTHS:['january','february','march','april','may','june','july','august','september','october','november','december'],
+  DAYS:['sunday','monday','tuesday','wednesday','thursday','friday','saturday'],
+  iso(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); },
+  addDays(iso,n){ const [y,m,d]=iso.split('-').map(Number); return AI2.iso(new Date(y,m-1,d+n)); },
+  dow(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).getDay(); },
+  daysTo(a,b){ const p=s=>{const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d);}; return Math.round((p(b)-p(a))/864e5); },
+  parseDate(s){
+    s=(s||'').toLowerCase(); const t=today(); let m;
+    if((m=s.match(/\d{4}-\d{2}-\d{2}/))) return m[0];
+    if(/\btoday\b/.test(s)) return t; if(/\btomorrow\b/.test(s)) return AI2.addDays(t,1); if(/\byesterday\b/.test(s)) return AI2.addDays(t,-1);
+    if((m=s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b/))){
+      const mi=AI2.MONTHS.findIndex(x=>x.startsWith(m[1])); const y=+t.slice(0,4);
+      return y+'-'+String(mi+1).padStart(2,'0')+'-'+String(+m[2]).padStart(2,'0'); }
+    if((m=s.match(/\b(next |this )?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/))){
+      const want=AI2.DAYS.indexOf(m[2]); let n=(want-AI2.dow(t)+7)%7; if(n===0 && m[1]==='next ') n=7; return AI2.addDays(t,n); }
+    return null;
+  },
+  stuName(s){ return s.preferredName||s.name; },
+  stuPhone(s){ return s.phone || ((s.guardians||[]).find(g=>g.phone)||{}).phone || ''; },
+  stuEmail(s){ return ((s.guardians||[]).find(g=>g.email)||{}).email || ''; },
+  stuParent(s){ const g=(s.guardians||[])[0]; return (g&&g.name)||s.guardian||''; },
+  digits(p){ return (p||'').replace(/[^0-9+]/g,''); },
+  act(){ return DB.data.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>today())); },
+  sessions(){ const a=DB.data.attendance; return Object.keys(a).filter(k=>Object.keys(a[k]).length).sort(); },
+  attRate(s,from){ let p=0,n=0; AI2.sessions().filter(day=>!from||day>=from).forEach(day=>{ const v=DB.data.attendance[day][s.id]; if(v){ n++; if(v==='P'||v==='L') p++; } }); return n? Math.round(p/n*100) : null; },
+  missed(s,from){ return AI2.sessions().filter(day=>(!from||day>=from) && ['A','E'].includes(DB.data.attendance[day][s.id])); },
+  lastSession(s){ const ss=AI2.sessions(); for(let i=ss.length-1;i>=0;i--){ const v=DB.data.attendance[ss[i]][s.id]; if(v) return {day:ss[i], v}; } return null; },
+  famRows(){
+    return famList().filter(f=>!f.solo && f.members.some(s=>s.active!==false)).map(f=>{
+      const fin=famFinance(f.key), rec=famRec(f.key);
+      return {f, key:f.key, fin, rec, debt:famDebt(f.key), last:famLastPayment(fin), pr:famPromiseState(f.key), rem:(rec.reminders||[])[0]||null};
+    });
+  },
+  money(n){ return '$'+n; },
+  /* ---------- "show me why" ---------- */
+  why(rules, facts){
+    return `<details class="ai-why"><summary>🔍 Show me why</summary><div class="ai-why-b"><b>Rule${rules.length>1?'s':''} applied</b><ul>${rules.map(r=>`<li>${r}</li>`).join('')}</ul>${facts&&facts.length?`<b>Numbers behind it</b><ul>${facts.map(r=>`<li>${r}</li>`).join('')}</ul>`:''}<span style="color:var(--ink3)">Computed live from this device's data — nothing is guessed.</span></div></details>`;
+  },
+  sec(ico,title,body){ return `<div class="ai-sec"><div class="ai-sech">${ico} ${title}</div>${body}</div>`; },
+  btn(label,attrs,cls){ return `<button class="chip ${cls||''}" ${attrs}>${label}</button>`; },
+  jattr(o){ return `data-j="${esc(JSON.stringify(o))}"`; },
+  sBtn(s,extra){ return `<button class="rlink" data-s="${s.id}">🎓 ${esc(s.name)}</button>${extra?` <span class="ai-sub">${extra}</span>`:''}`; },
+  fBtn(key,extra){ return `<button class="rlink" data-aiopenfam="${esc(key)}">👪 ${esc(key)}</button>${extra?` <span class="ai-sub">${extra}</span>`:''}`; },
+
+  /* ============ 2. plain-language questions ============ */
+  famQuery(t){
+    const rules=[], tests=[]; let m, count=0, money=false;
+    const NUM='(\\d+|one|two|three|four|five|six)';
+    const num=w=>({one:1,two:2,three:3,four:4,five:5,six:6}[w]||+w);
+    if((m=t.match(new RegExp(NUM+'\\s*\\+?\\s*(?:or more\\s*)?months?')))&&/behind|overdue|late|owe|unpaid|haven|not paid|arrears/.test(t)){
+      const n=num(m[1]); tests.push(r=>r.debt.months.length>=n); rules.push(`${n}+ months of tuition unpaid (oldest-month-first allocation of payments)`); count++; money=true; }
+    if((m=t.match(/(?:more than|over|above|at least|greater than|>=?)\s*\$?\s*(\d+)(?!\s*(?:months?|days?|%))/))){
+      const n=+m[1]; tests.push(r=>r.fin.balance>n); rules.push(`total balance above $${n}`); count++; money=true; }
+    if((m=t.match(/(?:less than|under|below|<)\s*\$?\s*(\d+)(?!\s*(?:months?|days?|%))/))){
+      const n=+m[1]; tests.push(r=>r.fin.balance<n); rules.push(`total balance below $${n}`); count++; money=true; }
+    if((m=t.match(/since\s+(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*/))){
+      const mi=AI2.MONTHS.findIndex(x=>x.startsWith(m[1].slice(0,3))); const ty=+today().slice(0,4), tm=+today().slice(5,7);
+      const y=(mi+1>tm)? ty-1 : ty; const b=y+'-'+String(mi+1).padStart(2,'0')+'-01';
+      tests.push(r=>{ const lp=r.fin.pays.find(x=>x.kind!=='excused'&&x.kind!=='registration'&&(+x.amount||0)>0); return !lp || lp.date<b; });
+      rules.push(`no tuition payment on or after ${fmtDate(b)}`); count++; money=true; }
+    if(/promise/.test(t)){
+      const k=/miss|broke|broken|late|failed/.test(t)?'broken':/kept|fulfil/.test(t)?'kept':null;
+      tests.push(r=>k? (r.pr&&r.pr.k===k) : (r.pr&&r.pr.k!=='kept')); rules.push(k==='kept'?'promise made and kept':k==='broken'?'promised a payment date that has passed without the money':'has an open or missed payment promise'); count++; }
+    if(/(?:not|never|haven.?t|hasn.?t|no)\s*(?:been\s*)?(?:reminded|nudged|contacted)|unreminded/.test(t)){
+      tests.push(r=>!r.rem || AI2.daysTo(r.rem.date,today())>=14); rules.push('never reminded, or last reminder 14+ days ago (from the reminder log)'); count++; money=true; }
+    if(/sponsor/.test(t)){ tests.push(r=>!!r.rec.sponsorName); rules.push('has a sponsor / billing contact'); count++; }
+    if(/(?:no|without|missing)\s*(?:a\s*)?phone/.test(t)){ tests.push(r=>!famContactPhone(r.key)); rules.push('no phone number on file'); count++; }
+    if(!count) return null;
+    if(money){ tests.unshift(r=>r.fin.balance>0); rules.unshift('currently owes a balance'); }
+    return {rules, tests};
+  },
+  stuQuery(t){
+    const rules=[], tests=[], facts=[]; let m, count=0, msg=false; const all=AI2.act();
+    const from60=AI2.addDays(today(),-60);
+    if((m=t.match(/level\s*([123])/))){ const L='Level '+m[1]; tests.push(s=>s.level===L); rules.push(`enrolled in ${L}`); count++; }
+    if(/behind|struggl|falling/.test(t)){ const ids=new Map(aiBehindList().map(x=>[x.s.id,x.flags.map(f=>f[1]).join('; ')]));
+      tests.push(s=>ids.has(s.id)); rules.push('flagged “behind” in the last 30 days: attendance under 70%, no Qurʼān entry for 14+ days (Level 3), or half+ entries marked needs-review'); facts.push(s=>ids.get(s.id)); count++; }
+    if(/(absent|missed|skipp|didn.?t (come|attend|show)|no.?show)/.test(t)){
+      if((m=t.match(/(\d+)\+?\s*(?:times|absences|sessions|classes)/))){ const n=+m[1]; tests.push(s=>AI2.missed(s,from60).length>=n); rules.push(`missed (absent or excused) ${n}+ sessions in the last 60 days`); facts.push(s=>AI2.missed(s,from60).length+' missed since '+fmtDate(from60)); }
+      else { const ss=AI2.sessions(); const last=ss[ss.length-1]; tests.push(s=>last && ['A','E'].includes((DB.data.attendance[last]||{})[s.id])); rules.push(`marked absent or excused at the most recent session${last?' ('+fmtDate(last)+')':''}`); facts.push(s=>{ const v=(DB.data.attendance[last]||{})[s.id]; return v==='A'?'absent':'excused'; }); }
+      count++; }
+    if((m=t.match(/attendance\s*(?:below|under|less than|<)\s*(\d+)/))){ const n=+m[1]; tests.push(s=>{ const r=AI2.attRate(s); return r!=null && r<n; }); rules.push(`overall attendance (present or late) below ${n}%`); facts.push(s=>AI2.attRate(s)+'% attendance'); count++; }
+    if((m=t.match(/(?:no|not|haven.?t|without).{0,14}(?:revis|review|murajaa).{0,16}?(\d+)\s*days/))){ const n=+m[1], cut=AI2.addDays(today(),-n);
+      tests.push(s=>s.level==='Level 3' && Rev.juzList(s).length && !(s.revHistory||[]).some(h=>h.date>=cut)); rules.push(`Level 3 with memorized Juzʼ but no revision logged in ${n} days`); facts.push(s=>{ const l=(s.revHistory||[])[0]; return l?'last revised '+fmtDate(l.date):'no revision ever logged'; }); count++; }
+    else if(/revision|revise|murajaa|review(s)?\s+(is |are )?(due|overdue)|due for (a )?review/.test(t)){
+      tests.push(s=>s.level==='Level 3' && Rev.summary(s).c.due>0); rules.push('Level 3 with at least one Juzʼ past its revision interval (Strong 35d · Shaky 14d · Forgot = always due)'); facts.push(s=>{ const sm=Rev.summary(s); return sm.list.filter(j=>j.k==='due').map(j=>'Juzʼ '+j.n+' ('+Rev.text(j)+')').slice(0,3).join(', '); }); count++; }
+    if(/stuck|no progress|not (moved|progress)|stalled|plateau|hasn.?t moved/.test(t)){
+      const cut=AI2.addDays(today(),-21);
+      tests.push(s=>{ if(s.level!=='Level 3') return false; const l=(s.hifzLog||[]); const last=l.length?l[l.length-1].date:null; return !last || last<cut; });
+      rules.push('Level 3 with no Ḥifẓ position snapshot in the last 21 days'); facts.push(s=>{ const l=s.hifzLog||[]; return l.length?'last moved '+fmtDate(l[l.length-1].date):'no position history'; }); count++; }
+    if(/allerg|medical|health condition/.test(t)){
+      tests.push(s=>(s.application&&(hasRealAnswer(s.application.allergy)||hasRealAnswer(s.application.healthConditions)||hasRealAnswer(s.application.meds)))||hasRealAnswer(s.medical)); rules.push('has a real allergy, health, or medication note (answers like “No allergies” are ignored)');
+      facts.push(s=>[s.application&&hasRealAnswer(s.application.allergy)?(s.application.allergyDetail||'allergy'):'', s.application&&hasRealAnswer(s.application.healthConditions)?s.application.healthConditions:'', s.medical].filter(x=>x&&hasRealAnswer(x)).join(' · ')); count++; }
+    if(/birthday/.test(t)){ const win=/this month/.test(t)?null:30;
+      const dl=s=>{ if(!s.dob) return null; const [y,mo,d]=s.dob.split('-').map(Number); const n=new Date(); let nx=new Date(n.getFullYear(),mo-1,d); if(nx<new Date(n.getFullYear(),n.getMonth(),n.getDate())) nx=new Date(n.getFullYear()+1,mo-1,d); return Math.round((nx-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5); };
+      tests.push(s=>{ const x=dl(s); return x!=null && (win? x<=win : s.dob.slice(5,7)===today().slice(5,7)); }); rules.push(win?'birthday within the next 30 days':'birthday falls this month'); facts.push(s=>{ const x=dl(s); const [,mo,dd]=s.dob.split('-'); const md=AI2.MONTHS[+mo-1].slice(0,3).replace(/^./,c=>c.toUpperCase())+' '+(+dd); return x===0?'today! ('+md+')':(win? 'in '+x+' days · '+md : md); }); count++; }
+    if(/missing (info|data|details)|incomplete|no photo|no phone|no emergency/.test(t)){
+      tests.push(s=>regComplete(s).length>0); rules.push('record is missing DOB, guardian, phone, emergency contact, or photo'); facts.push(s=>'missing '+regComplete(s).join(', ')); count++; }
+    if(!count) return null;
+    msg=/behind|struggl|falling|absent|missed|skipp|attendance|revis|review|murajaa|stuck|progress|stalled|plateau/.test(t);
+    return {rules, tests, facts, all, msg};
+  },
+  query(text){
+    const t=text.toLowerCase();
+    if(t.length>160) return null;
+    if(/generate|homework|lesson|announce|draft|write|build|create|summar|recommend|progress|simple english/.test(t)) return null;
+    const famSubj=/famil|parent|owe|paid|pay\b|tuition|balance|promise|sponsor|remind/.test(t);
+    const stuSubj=/student|kids|children|who|level|boys|girls|birthday|allerg/.test(t);
+    if(famSubj && !/student/.test(t)){
+      const q=AI2.famQuery(t);
+      if(q){ const rows=AI2.famRows().filter(r=>q.tests.every(f=>f(r))).sort((a,b)=>b.debt.ageDays-a.debt.ageDays||b.fin.balance-a.fin.balance);
+        return AI2.famResult(rows,q.rules,/remind|nudge|text/.test(t)); } }
+    if(stuSubj){
+      const q=AI2.stuQuery(t);
+      if(q){ const rows=q.all.filter(s=>q.tests.every(f=>f(s)));
+        return AI2.stuResult(rows,q,t); } }
+    return null;
+  },
+  famResult(rows,rules,wantRemind){
+    if(!rows.length) return `No family matches.${AI2.why(rules,[])}`;
+    const tot=rows.reduce((a,r)=>a+r.fin.balance,0);
+    const keys=rows.map(r=>r.key);
+    const list=rows.slice(0,25).map(r=>`<div class="ai-row">${AI2.fBtn(r.key, `<b>$${r.fin.balance}</b> owed${r.debt.months.length?` · ${r.debt.months.length} mo${r.debt.ageDays?` · ${r.debt.ageDays}d overdue`:''}`:''}${r.last?` · last paid ${fmtDate(r.last.date)}`:' · never paid'}${r.pr?` · promise ${r.pr.k}`:''}`)}</div>`).join('');
+    const copy=rows.map(r=>r.key+' — $'+r.fin.balance).join('\n');
+    return `<b>${rows.length} famil${rows.length===1?'y':'ies'}</b> · $${tot} combined${wantRemind?' <span class="tag tag-gold">preview — nothing is sent until you tap each message</span>':''}<div class="ai-list">${list}</div>${rows.length>25?`<div class="ai-sub">…and ${rows.length-25} more (use the copy button for the full list)</div>`:''}
+      <div class="ai-acts">${AI2.btn('🔔 Remind these '+rows.length,`data-aiact="remindq" ${AI2.jattr({keys})}`,'chip-hot')}${AI2.btn('📋 Copy list',`data-copy="${esc(copy)}"`)}</div>
+      ${AI2.why(rules,rows.slice(0,6).map(r=>`${esc(r.key)}: $${r.fin.balance} owed; unpaid months ${r.debt.months.map(x=>ymLabel(x.ym)).join(', ')||'—'}`))}`;
+  },
+  stuResult(rows,q,t){
+    if(!rows.length) return `No student matches.${AI2.why(q.rules,[])}`;
+    const list=rows.slice(0,30).map(s=>`<div class="ai-row">${AI2.sBtn(s, q.facts.map(f=>esc(f(s)||'')).filter(Boolean).join(' · '))}</div>`).join('');
+    const copy=rows.map(s=>s.name).join('\n');
+    const kind=/absent|missed|skipp/.test(t)?'absence':'progress';
+    return `<b>${rows.length} student${rows.length===1?'':'s'}</b>${rows.length>30?' (showing 30)':''}<div class="ai-list">${list}</div>
+      <div class="ai-acts">${q.msg?AI2.btn('✉️ Message parents ('+rows.length+')',`data-aiact="stumsgq" ${AI2.jattr({ids:rows.map(s=>s.id),kind})}`,'chip-hot'):''}${AI2.btn('📋 Copy names',`data-copy="${esc(copy)}"`)}</div>
+      ${AI2.why(q.rules,rows.slice(0,6).map(s=>esc(s.name)+': '+esc(q.facts.map(f=>f(s)||'').filter(Boolean).join(' · ')||'matches')))}`;
+  },
+
+  /* ============ 4. proposals you confirm ============ */
+  command(text,t){
+    let m;
+    if(/^(mark|log|set|record|put)\b.*\b(everyone|all|class|students)\b.*\bpresent\b/.test(t) || /^(mark|log|record)\b.*\battendance\b.*\bpresent\b/.test(t)){
+      const date=AI2.parseDate(t)||nextClassDate()||today(); const rec=DB.data.attendance[date]||{};
+      const todo=AI2.act().filter(s=>!rec[s.id]); const have=AI2.act().length-todo.length;
+      return `Preview — nothing changed yet:<div class="ai-act">📋 <span>Mark <b>${todo.length}</b> active student${todo.length===1?'':'s'} <b>Present</b> on <b>${fmtDate(date)}</b>${have?` <span class="ai-sub">(${have} already marked — left untouched)</span>`:''}</span>${todo.length?`<button class="btn btn-p btn-sm" data-aiact="attconfirm" ${AI2.jattr({date,ids:todo.map(s=>s.id)})}>Confirm</button>`:''}</div><div class="ai-sub">You can undo right after. Fix any absences afterward in Attendance.</div>`;
+    }
+    if(/^(add|create|make)\b.*\btask\b/.test(t) || /^remind me to\b/.test(t)){
+      let body=text.replace(/^(add|create|make)\s+(a |an )?(new )?task\s*(to|:|-)?\s*/i,'').replace(/^remind me to\s*/i,'');
+      let due=''; const dm=body.match(/\s*(?:,|—|-)?\s*(?:due|by|on)\s+(.+)$/i);
+      if(dm){ const p=AI2.parseDate(dm[1]); if(p){ due=p; body=body.slice(0,dm.index); } }
+      body=body.trim().replace(/^[\s:,-]+|[\s.]+$/g,''); if(!body) return null; body=body[0].toUpperCase()+body.slice(1);
+      return `Preview — tap Add to save it:<div class="ai-act" data-act="task" data-a="${esc(body)}" data-b="${esc(due)}">☐ <span><b>Task:</b> ${esc(body)}${due?' · due '+fmtDate(due):' · no due date'}</span><button class="btn btn-p btn-sm">Add</button></div>`;
+    }
+    if(/^(add|create|schedule)\b.*\bevent\b/.test(t)){
+      const date=AI2.parseDate(t); if(!date) return `I need a date for that — try “add an event Parent meeting on Oct 24”.`;
+      let title=text.replace(/^(add|create|schedule)\s+(a |an )?(new )?event\s*(called|named|:|-)?\s*/i,'').replace(/\s*(?:on|for)\s+(?:next |this )?(?:\d{4}-\d{2}-\d{2}|[a-z]+day|today|tomorrow|[a-z]{3,9}\.?\s+\d{1,2}).*$/i,'').trim().replace(/[\s.]+$/,'');
+      if(!title) return `What should the event be called? Try “add an event Parent meeting on Oct 24”.`;
+      title=title[0].toUpperCase()+title.slice(1);
+      return `Preview — tap Add to save it:<div class="ai-act" data-act="event" data-a="${esc(date)}" data-b="${esc(title)}">🗓️ <span><b>Event:</b> ${esc(title)} · ${fmtDate(date)}</span><button class="btn btn-p btn-sm">Add</button></div>`;
+    }
+    if(/promis/.test(t) && /\$\s*\d+/.test(t)){
+      const rows=AI2.famRows(); const fam=rows.find(r=>text.includes(r.key)) || rows.find(r=>r.f.members.some(s=>text.includes(s.name)||(s.preferredName&&text.includes(s.preferredName))));
+      if(!fam) return `Which family? Include their name exactly as it appears in Tuition (e.g. “${esc((rows[0]||{key:'كمال'}).key)} promised $100 by Friday”).`;
+      const amount=+(text.match(/\$\s*(\d+)/)[1]); const date=AI2.parseDate(t)||AI2.addDays(today(),7);
+      return `Preview — nothing saved yet:<div class="ai-act">🤝 <span><b>${esc(fam.key)}</b> promised <b>$${amount}</b> by <b>${fmtDate(date)}</b> <span class="ai-sub">(owes $${fam.fin.balance})</span></span><button class="btn btn-p btn-sm" data-aiact="promiseconfirm" ${AI2.jattr({key:fam.key,amount,date})}>Record</button></div>`;
+    }
+    if(/(set|create|start).{0,12}(treat )?goal/.test(t)) return `Treat goals are set per student in <b>Teacher Workspace → Class Day</b> (and each Level 3 profile) — I can't safely guess a target Juzʼ and deadline for you.<br><button class="btn btn-o btn-sm" data-go="#/teacher">Open Teacher Workspace →</button>`;
+    return null;
+  },
+  run(b){
+    const k=b.dataset.aiact, j=b.dataset.j? JSON.parse(b.dataset.j):{}; const d=DB.data;
+    if(k==='remindq') return AI2.remindQueue(j.keys);
+    if(k==='stumsgq') return AI2.stuQueue(j.ids,j.kind);
+    if(k==='attconfirm'){
+      d.attendance[j.date]=d.attendance[j.date]||{}; j.ids.forEach(id=>{ if(!d.attendance[j.date][id]) d.attendance[j.date][id]='P'; });
+      DB.log('Attendance via Assistant — '+j.ids.length+' marked Present on '+j.date); DB.save();
+      const pe=b.parentElement; pe.innerHTML=`✅ <span>Marked ${j.ids.length} Present on ${fmtDate(j.date)}.</span><button class="btn btn-o btn-sm" data-aiact="attundo" ${AI2.jattr(j)}>Undo</button>`;
+      AI2.wire(pe); toast('Attendance saved'); return; }
+    if(k==='attundo'){
+      j.ids.forEach(id=>{ if(d.attendance[j.date]&&d.attendance[j.date][id]==='P') delete d.attendance[j.date][id]; });
+      if(d.attendance[j.date]&&!Object.keys(d.attendance[j.date]).length) delete d.attendance[j.date];
+      DB.log('Attendance via Assistant undone — '+j.date); DB.save(); b.parentElement.innerHTML='↩️ <span>Undone — attendance restored to how it was.</span>'; toast('Undone'); return; }
+    if(k==='promiseconfirm'){
+      const rec=famRec(j.key); if(rec.promise){ const s=famPromiseState(j.key); rec.promiseHistory=[{...rec.promise,outcome:s?(s.k==='active'?'replaced':s.k):'replaced'},...(rec.promiseHistory||[])].slice(0,30); }
+      rec.promise={amount:j.amount,date:j.date,note:'',madeOn:today()}; DB.log('Payment promise via Assistant — '+j.key+' $'+j.amount+' by '+j.date); DB.save();
+      b.parentElement.innerHTML=`✅ <span>Promise recorded for ${esc(j.key)}.</span>`; toast('Promise recorded'); return; }
+    if(k==='studio') return;
+  },
+
+  /* ---------- message queue: one tap per family/student, you stay in control ---------- */
+  queue(title,items,onSend){
+    const o=overlay(`<div class="modal" style="max-width:560px"><h3>${esc(title)}</h3>
+      <p style="font-size:12.5px;color:var(--ink2);margin:0 0 10px">Tap <b>Text</b> to open Messages with the note ready, or <b>Copy</b> for WhatsApp. Edit any message first. Nothing is sent from here.</p>
+      <div class="ai-q">${items.map((it,i)=>`<div class="ai-qi" data-i="${i}"><div class="ai-qh"><b>${esc(it.label)}</b><span class="ai-sub">${esc(it.sub||'')}</span><span class="ai-qd">✓ done</span></div>
+        <textarea rows="4">${esc(it.text)}</textarea>
+        <div class="ai-qa">${it.phone?`<a class="btn btn-p btn-sm" href="#" data-q="text">💬 Text</a>`:`<span class="ai-sub">No phone on file</span>`}<button class="chip" data-q="copy">📋 Copy</button></div></div>`).join('')}</div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $$('.ai-qi',o).forEach(row=>{ const it=items[+row.dataset.i], ta=$('textarea',row);
+      const done=via=>{ if(row.classList.contains('done')) {} else { row.classList.add('done'); onSend&&onSend(it,via,ta.value); } };
+      const a=$('[data-q=text]',row); if(a){ a.addEventListener('click',()=>{ a.href='sms:'+AI2.digits(it.phone)+'?&body='+encodeURIComponent(ta.value); done('text'); }); }
+      $('[data-q=copy]',row).onclick=()=>{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(()=>toast('Copied')).catch(()=>toast('Could not copy — select the text manually')); done('copy'); };
+    });
+  },
+  remindQueue(keys){
+    const items=keys.map(k=>{ const fin=famFinance(k), debt=famDebt(k), rem=(famRec(k).reminders||[])[0]; const ph=famContactPhone(k);
+      return {key:k, label:k+' family', sub:'$'+fin.balance+' owed'+(rem?' · reminded '+AI2.daysTo(rem.date,today())+'d ago':''), phone:ph, text:tuitionMsgFor(k,'auto')}; });
+    AI2.queue('Tuition reminders — '+items.length,items,(it,via)=>{ const rec=famRec(it.key); rec.reminders=rec.reminders||[]; rec.reminders.unshift({date:today(),tone:tuitionAutoTone(it.key),via}); rec.reminders=rec.reminders.slice(0,30); DB.log('Reminder ('+via+') — '+it.key); DB.save(); });
+  },
+  stuQueue(ids,kind){
+    const items=ids.map(id=>DB.data.students.find(s=>s.id===id)).filter(Boolean).map(s=>({s, label:AI2.stuName(s), sub:AI2.stuParent(s)||'no parent name', phone:AI2.stuPhone(s), text:AI2.msgFor(kind||'progress',s).text}));
+    AI2.queue('Parent messages — '+items.length,items,(it,via)=>{ DB.log('Parent message ('+via+') — '+it.s.name); DB.save(); });
+  },
+
+  /* ============ 7. message studio (templates filled with real data) ============ */
+  KINDS:{progress:'Progress update', absence:'Missed-class check-in', milestone:'Milestone congratulations', welcome:'Welcome new family', tuition:'Tuition reminder', event:'Upcoming event'},
+  msgFor(kind,s){
+    const sign='\n\n— Ustādh Nur\nAl-Madrasatu An-Nuriyyah';
+    const nm=AI2.stuName(s), par=AI2.stuParent(s), hi='As-salāmu ʿalaykum'+(par?' '+par:'')+', ';
+    if(kind==='absence'){
+      const miss=AI2.missed(s), last=miss[miss.length-1], recent=AI2.missed(s,AI2.addDays(today(),-60)), tot=AI2.sessions().filter(d=>d>=AI2.addDays(today(),-60)&&DB.data.attendance[d][s.id]).length;
+      return {text:hi+'we missed '+nm+(last?' in class on '+fmtDate(last):' recently')+'. I hope everything is well, in shā’ Allāh.'+(recent.length>=3?' (That’s '+recent.length+' of the last '+tot+' sessions, so I wanted to check in.)':'')+' If it helps, I’m happy to share what we covered so '+nm+' doesn’t fall behind. Just let me know.'+sign, note:last?'Based on the last logged absence/excuse.':'No absence on record — edit before sending.'};
+    }
+    if(kind==='milestone'){
+      let what=''; if(s.level==='Level 3'){ const done=Rev.juzList(s).filter(j=>j.complete); if(done.length) what='completing Juzʼ '+done[done.length-1].n+' (that’s '+done.length+' full Juzʼ memorized)'; }
+      else if(s.level==='Level 1' && s.gb && s.gb.page>=GB_TOTAL) what='finishing the entire Green Book';
+      else if(s.level==='Level 2'){ const log=[...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3); if(log.length>=3&&log.every(x=>x.fluency==='Strong')) what='three Strong Muṣḥaf readings in a row'; }
+      if(!what) return {text:hi+'mā shā’ Allāh — I wanted to share how proud I am of '+nm+'’s effort at AMAN. [Add the specific achievement here]'+sign, note:'I found no completed milestone on record for this student — add the specific achievement yourself.'};
+      return {text:hi+'mā shā’ Allāh, al-ḥamdu lillāh — '+nm+' has reached a real milestone: '+what+'. Please congratulate them at home and keep encouraging the daily effort. Bārak Allāhu fīkum.'+sign, note:'Milestone computed from the real record.'};
+    }
+    if(kind==='welcome') return {text:hi+'welcome to AMAN! We’re so happy to have '+nm+' with us, in shā’ Allāh. Class runs Saturday and Sunday, 9:00 AM–2:00 PM. The first few weeks are a trial and adjustment period for every child, so please don’t worry if it takes some time to settle. Reach out any time with questions.'+sign, note:'Standard welcome — hours and trial-period wording come from AMAN’s process.'};
+    // progress
+    const att=AI2.attRate(s,AI2.addDays(today(),-60)); const lines=[];
+    if(s.level==='Level 1' && s.gb) lines.push('Green Book: page '+(s.gb.page||0)+' of '+GB_TOTAL);
+    if(s.level==='Level 2' && s.mus) lines.push('Muṣḥaf reading: page '+(s.mus.page||0));
+    if(s.level==='Level 3'){ const st=hifzStats(s); const full=Rev.juzList(s).filter(j=>j.complete).length; lines.push('Ḥifẓ: '+Math.round(st.pct)+'% of the path'+(full?' ('+full+' full Juzʼ)':'')); const dueN=Rev.summary(s).c.due; if(dueN) lines.push(dueN+' Juzʼ are due for revision — about 10 minutes a day at home helps a lot'); }
+    if(att!=null) lines.push('Attendance: '+att+'% over the last 60 days');
+    const h=s.hifz||{}; if(h.strengths&&String(h.strengths).trim()) lines.push('Strength: '+String(h.strengths).trim()); if(h.improve&&String(h.improve).trim()) lines.push('Next focus: '+String(h.improve).trim());
+    return {text:hi+'a quick update on '+nm+' at AMAN, in shā’ Allāh:\n\n'+(lines.length?lines.map(l=>'• '+l).join('\n'):'• [No tracked data yet — add your own notes]')+'\n\nJazākumullāhu khayran for your support at home.'+sign, note:'Every line comes from the real record; lines with no data are left out.'};
+  },
+  studio(){
+    const stu=AI2.act().sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+    return `Message studio — pick a kind and who it's for. Templates are filled with real data (no invented facts):
+      <div class="ai-studio"><div class="ai-srow"><select data-st="kind">${Object.entries(AI2.KINDS).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select>
+      <select data-st="target">${stu.map(s=>`<option value="s:${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+      <textarea data-st="text" rows="8"></textarea><div class="ai-sub" data-st="note"></div>
+      <div class="ai-acts"><a class="btn btn-p btn-sm" href="#" data-st="sms">💬 Text</a><a class="btn btn-o btn-sm" href="#" data-st="mail">✉️ Email</a><button class="chip" data-st="copy">📋 Copy</button></div></div>`;
+  },
+  wireStudio(el){
+    $$('.ai-studio',el).forEach(box=>{
+      const kind=$('[data-st=kind]',box), tgt=$('[data-st=target]',box), ta=$('[data-st=text]',box), note=$('[data-st=note]',box), sms=$('[data-st=sms]',box), mail=$('[data-st=mail]',box);
+      const fams=AI2.famRows().map(r=>r.key);
+      const fill=()=>{
+        if(kind.value==='tuition' && !tgt.value.startsWith('f:')){ tgt.innerHTML=fams.map(k=>`<option value="f:${esc(k)}">${esc(k)} family</option>`).join(''); }
+        if(kind.value==='event'){ tgt.innerHTML='<option value="e:">All families</option>'; }
+        if(!['tuition','event'].includes(kind.value) && !tgt.value.startsWith('s:')){ tgt.innerHTML=AI2.act().sort((a,b)=>a.name.localeCompare(b.name,'ar')).map(s=>`<option value="s:${s.id}">${esc(s.name)}</option>`).join(''); }
+        const [ty,id]=[tgt.value.slice(0,1), tgt.value.slice(2)]; let text='', phone='', email='', n='';
+        if(ty==='s'){ const s=DB.data.students.find(x=>x.id===id); if(s){ const r=AI2.msgFor(kind.value,s); text=r.text; n=r.note; phone=AI2.stuPhone(s); email=AI2.stuEmail(s); } }
+        else if(ty==='f'){ text=tuitionMsgFor(id,'auto'); phone=famContactPhone(id); n='Same wording as the Tuition reminder composer.'; }
+        else { const ev=DB.data.events.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
+          text='As-salāmu ʿalaykum, a reminder from AMAN: '+(ev?ev.title+' is on '+fmtDate(ev.date)+'.':'[add the event]')+' Jazākumullāhu khayran.\n\n— Ustādh Nur'; n=ev?'Uses your next calendar event.':'No upcoming event on the calendar — edit the text.'; }
+        ta.value=text; note.textContent=n; sms.style.display=phone?'':'none'; mail.style.display=email||ty!=='s'?'':'none'; box._phone=phone; box._email=email;
+      };
+      kind.onchange=()=>{ fill(); }; tgt.onchange=fill; fill();
+      sms.onclick=()=>{ sms.href='sms:'+AI2.digits(box._phone)+'?&body='+encodeURIComponent(ta.value); };
+      mail.onclick=()=>{ mail.href='mailto:'+(box._email||'')+'?subject='+encodeURIComponent('AMAN')+'&body='+encodeURIComponent(ta.value); };
+      $('[data-st=copy]',box).onclick=()=>{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(()=>toast('Copied')).catch(()=>toast('Could not copy — select the text manually')); };
+    });
+  },
+
+  /* ============ 5. plan my class day ============ */
+  plan(){
+    const d=DB.data, t=today(); const cd=nextClassDate()||AI2.addDays(t,(6-AI2.dow(t)+7)%7);
+    const away=AI2.daysTo(t,cd); const ev=d.events.find(e=>e.date===cd);
+    const fams=AI2.famRows(); const text=[];
+    const heading=`${away===0?'Today':away===1?'Tomorrow':'In '+away+' days'} · <b>${fmtDate(cd)}</b>${ev?' · '+esc(ev.title):''}`;
+    // 1 recite
+    const behind=aiBehindList(); const bIds=new Set(behind.map(x=>x.s.id));
+    const stuck=AI2.act().filter(s=>s.level==='Level 3' && !bIds.has(s.id) && (()=>{ const l=s.hifzLog||[]; const last=l.length?l[l.length-1].date:null; return !last||last<AI2.addDays(t,-21); })());
+    const rec=[...behind.map(x=>({s:x.s,why:x.flags.map(f=>f[1]).join('; ')})), ...stuck.map(s=>({s,why:'no Ḥifẓ movement in 21+ days'}))].slice(0,8);
+    // 2 revise
+    const rev=AI2.act().filter(s=>s.level==='Level 3').map(s=>({s,sm:Rev.summary(s)})).filter(x=>x.sm.c.due>0).sort((a,b)=>b.sm.c.due-a.sm.c.due).slice(0,6);
+    // 3 calls
+    const calls=fams.filter(r=>r.fin.balance>0 && ((r.pr&&r.pr.k==='broken') || (r.debt.months.length>=2 && (!r.rem||AI2.daysTo(r.rem.date,t)>=7)))).sort((a,b)=>b.debt.ageDays-a.debt.ageDays).slice(0,6);
+    // 4 prep
+    const lessons=d.lessons.filter(l=>!l.taught && l.date<=AI2.addDays(cd,7)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+    const allergy=AI2.act().filter(s=>s.application&&hasRealAnswer(s.application.allergy));
+    const bdays=AI2.act().filter(s=>{ if(!s.dob) return false; const [y,m,dd]=s.dob.split('-').map(Number); const yy=+cd.slice(0,4); const x=yy+'-'+String(m).padStart(2,'0')+'-'+String(dd).padStart(2,'0'); const n=AI2.daysTo(cd,x); return n>=0&&n<=7; });
+    const events=d.events.filter(e=>e.date>cd&&e.date<=AI2.addDays(cd,14)&&e.kind!=='class').slice(0,2);
+    const overT=d.tasks.filter(x=>!x.done&&x.due&&x.due<=cd);
+    // 5 admissions
+    const adm=(d.admissions||[]).filter(a=>a.stage&&/review|interview|waiting/i.test(a.stage)).length;
+    let out=`📅 <b>Class-day plan</b> — ${heading}`;
+    out+=AI2.sec('📖','Hear recite first',rec.length? rec.map(x=>`<div class="ai-row">${AI2.sBtn(x.s,esc(x.why))}</div>`).join('') : '<div class="ai-sub">Nobody is flagged — hear students in your usual order.</div>');
+    out+=AI2.sec('🔁','Revise (murājaʿah)',rev.length? rev.map(x=>`<div class="ai-row">${AI2.sBtn(x.s,x.sm.c.due+' Juzʼ due: '+x.sm.list.filter(j=>j.k==='due').slice(0,3).map(j=>'Juzʼ '+j.n+(j.rating==='forgot'?' (forgot)':'')).join(', '))}</div>`).join('') : '<div class="ai-sub">No revision overdue (or none logged yet — log ratings from a student’s profile).</div>');
+    out+=AI2.sec('📞','Calls & texts before class',calls.length? calls.map(r=>`<div class="ai-row">${AI2.fBtn(r.key,`$${r.fin.balance}${r.pr&&r.pr.k==='broken'?' · promise missed':` · ${r.debt.months.length} months behind`}`)}</div>`).join('')+`<div class="ai-acts">${AI2.btn('🔔 Open reminder queue',`data-aiact="remindq" ${AI2.jattr({keys:calls.map(r=>r.key)})}`,'chip-hot')}</div>` : '<div class="ai-sub">No urgent tuition follow-ups.</div>');
+    const prep=[];
+    if(lessons.length) prep.push(`📝 ${lessons.length} lesson${lessons.length>1?'s':''} queued: ${lessons.map(l=>esc(l.title)+' ('+fmtDate(l.date)+')').join('; ')}`); else prep.push('📝 No lesson plan queued — <button class="rlink" data-aiq="Build this weekend’s lesson plan">build one</button>');
+    if(allergy.length) prep.push(`⚠️ Allergy flags: ${allergy.map(s=>esc(AI2.stuName(s))).join(', ')}`);
+    if(bdays.length) prep.push(`🎂 Birthday${bdays.length>1?'s':''} within a week: ${bdays.map(s=>esc(AI2.stuName(s))).join(', ')}`);
+    if(events.length) prep.push(`🗓️ Coming up: ${events.map(e=>esc(e.title)+' ('+fmtDate(e.date)+')').join('; ')}`);
+    if(overT.length) prep.push(`⏰ ${overT.length} task${overT.length>1?'s':''} due by then — oldest: ${esc(overT[0].text)}`);
+    out+=AI2.sec('🧰','Prep',prep.map(p=>`<div class="ai-row">${p}</div>`).join(''));
+    if(adm) out+=AI2.sec('📥','Admissions',`<div class="ai-row">${adm} application${adm>1?'s':''} in review/waiting <button class="chip" data-go="#/admissions">Open →</button></div>`);
+    const plain=['Class-day plan — '+fmtDate(cd), '', 'Recite: '+(rec.map(x=>x.s.name).join(', ')||'usual order'), 'Revise: '+(rev.map(x=>x.s.name).join(', ')||'none due'), 'Calls: '+(calls.map(r=>r.key).join(', ')||'none'), 'Lessons: '+(lessons.map(l=>l.title).join('; ')||'none queued')].join('\n');
+    out+=`<div class="ai-acts">${AI2.btn('📋 Copy plan',`data-copy="${esc(plain)}"`)}${AI2.btn('🧑‍🏫 Open Class Day','data-go="#/teacher"')}</div>`;
+    out+=AI2.why(['“Recite first” = students flagged behind (attendance <70%, no Qurʼān entry in 14+ days, half+ entries need review) plus Level 3 with no Ḥifẓ movement in 21 days','“Revise” = Juzʼ past their interval (Strong 35d · Shaky 14d · Forgot always due)','“Calls” = missed payment promise, or 2+ months behind and not reminded in 7+ days'],[`${behind.length} flagged behind · ${stuck.length} stalled · ${rev.length} with revision due · ${calls.length} families to contact`]);
+    return out;
+  },
+
+  /* ============ 6. what changed ============ */
+  snapshot(){
+    const d=DB.data, rows=AI2.famRows(), famBal={}; rows.forEach(r=>famBal[r.key]=r.fin.balance);
+    return {ts:Date.now(), payIds:d.finance.payments.map(p=>p.id).slice(-400), famBal, broken:rows.filter(r=>r.pr&&r.pr.k==='broken').map(r=>r.key),
+      behind:aiBehindList().map(x=>x.s.id), admIds:(d.admissions||[]).map(a=>a.id).slice(-300), overdue:d.tasks.filter(t=>!t.done&&t.due&&t.due<today()).map(t=>t.id),
+      qn:d.quran.length, revN:d.students.reduce((a,s)=>a+(s.revHistory||[]).length,0), promo:aiPromoList().map(x=>x.s.id), taught:d.lessons.filter(l=>l.taught).length};
+  },
+  seen(){
+    const st=DB.data.settings, now=Date.now(), cur=AI2.snapshot(); let a=st.aiSeen;
+    if(!a) a={base:null,cur,curTs:now};
+    else if(now-a.curTs>4*3600e3) a={base:a.cur,cur,curTs:now};
+    else { a.cur=cur; a.curTs=now; }
+    st.aiSeen=a; DB.save(); return a;
+  },
+  diff(){
+    const a=AI2.seen(); if(!a.base) return {first:true, lines:[]};
+    const b=a.base, c=a.cur, d=DB.data, L=[]; const sName=id=>{ const s=d.students.find(x=>x.id===id); return s?esc(s.name):'?'; };
+    const known=new Set(b.payIds||[]); const np=d.finance.payments.filter(p=>!known.has(p.id)&&p.kind!=='excused');
+    if(np.length){ const sum=np.reduce((x,p)=>x+(+p.amount||0),0); L.push({ico:'💵',html:`<b>${np.length} new payment${np.length>1?'s':''}</b> — $${sum} from ${[...new Set(np.map(p=>esc(p.fam)))].slice(0,4).join(', ')}`}); }
+    const cleared=Object.keys(c.famBal).filter(k=>(b.famBal[k]||0)>0 && c.famBal[k]===0);
+    if(cleared.length) L.push({ico:'✅',html:`<b>${cleared.length} famil${cleared.length>1?'ies':'y'} fully paid up</b> — ${cleared.slice(0,4).map(esc).join(', ')}`});
+    const nowBehind=Object.keys(c.famBal).filter(k=>c.famBal[k]>0 && !(b.famBal[k]>0) && k in b.famBal);
+    if(nowBehind.length) L.push({ico:'📉',html:`<b>${nowBehind.length} newly behind</b> on tuition — ${nowBehind.slice(0,4).map(esc).join(', ')}`,q:'Which families need tuition follow-up?'});
+    const nb=c.broken.filter(k=>!(b.broken||[]).includes(k)); if(nb.length) L.push({ico:'⚠️',html:`<b>${nb.length} newly missed payment promise${nb.length>1?'s':''}</b> — ${nb.map(esc).join(', ')}`,q:'Which families have a missed promise?'});
+    const ns=c.behind.filter(id=>!(b.behind||[]).includes(id)); if(ns.length) L.push({ico:'📖',html:`<b>${ns.length} student${ns.length>1?'s':''} newly flagged behind</b> — ${ns.slice(0,4).map(sName).join(', ')}`});
+    const ok=(b.behind||[]).filter(id=>!c.behind.includes(id)); if(ok.length) L.push({ico:'🌱',html:`<b>${ok.length} student${ok.length>1?'s':''} no longer flagged behind</b> — ${ok.slice(0,4).map(sName).join(', ')}`});
+    const na=(d.admissions||[]).filter(x=>!(b.admIds||[]).includes(x.id)); if(na.length) L.push({ico:'📥',html:`<b>${na.length} new application${na.length>1?'s':''}</b> — ${na.slice(0,3).map(x=>esc(x.studentName||'applicant')).join(', ')}`});
+    const no=c.overdue.filter(id=>!(b.overdue||[]).includes(id)); if(no.length) L.push({ico:'⏰',html:`<b>${no.length} task${no.length>1?'s':''} became overdue</b>`});
+    if(c.qn>b.qn) L.push({ico:'📗',html:`<b>${c.qn-b.qn}</b> new Qurʼān log entr${c.qn-b.qn>1?'ies':'y'}`});
+    if(c.revN>b.revN) L.push({ico:'🔁',html:`<b>${c.revN-b.revN}</b> Juzʼ revision${c.revN-b.revN>1?'s':''} logged`});
+    const np2=c.promo.filter(id=>!(b.promo||[]).includes(id)); if(np2.length) L.push({ico:'🎉',html:`<b>${np2.length} newly ready for promotion</b> — ${np2.map(sName).join(', ')}`});
+    if(c.taught>b.taught) L.push({ico:'📝',html:`<b>${c.taught-b.taught}</b> lesson${c.taught-b.taught>1?'s':''} marked taught`});
+    return {first:false, lines:L, since:b.ts};
+  },
+  changed(){
+    const df=AI2.diff();
+    if(df.first) return `I've started tracking changes — from your next visit on, I'll show what's new (payments, missed promises, newly-behind students, applications, and more).`;
+    const when=new Date(df.since).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    if(!df.lines.length) return `🆕 Nothing has changed since your last visit (${when}).`;
+    return `🆕 <b>Since your last visit (${when})</b>${df.lines.map(l=>`<div class="ai-row">${l.ico} ${l.html}</div>`).join('')}${AI2.why(['Compares today’s numbers against a snapshot saved on this device at your last visit (more than 4 hours ago)'],[`${df.lines.length} difference${df.lines.length>1?'s':''} found`])}`;
+  },
+
+  /* ============ 8. digest ============ */
+  digest(kind){
+    const d=DB.data, t=today(), from=AI2.addDays(t,kind==='daily'?-1:-7), inR=x=>x>from&&x<=t;
+    const ss=AI2.sessions().filter(inR); let p=0,n=0; ss.forEach(day=>Object.values(d.attendance[day]).forEach(v=>{ n++; if(v==='P'||v==='L') p++; }));
+    const pays=d.finance.payments.filter(x=>inR(x.date)&&x.kind!=='excused'); const sum=pays.reduce((a,x)=>a+(+x.amount||0),0);
+    const rows=AI2.famRows(), owing=rows.filter(r=>r.fin.balance>0 && r.fin.monthly>0), owed=owing.reduce((a,r)=>a+r.fin.balance,0), broken=rows.filter(r=>r.pr&&r.pr.k==='broken').length;
+    const taught=d.lessons.filter(l=>l.taught&&inR(l.date)).length, qn=d.quran.filter(x=>inR(x.date)).length, rv=d.students.reduce((a,s)=>a+(s.revHistory||[]).filter(h=>inR(h.date)).length,0);
+    const newAdm=(d.admissions||[]).filter(a=>{ const x=new Date(a.submitted); return !isNaN(x) && AI2.iso(x)>from; }).length;
+    const behind=aiBehindList().length, promo=aiPromoList().length, ev=d.events.filter(e=>e.date>=t&&e.kind!=='class').sort((a,b)=>a.date.localeCompare(b.date))[0];
+    const lines=[
+      ss.length? `Attendance: ${n?Math.round(p/n*100):0}% across ${ss.length} session${ss.length>1?'s':''}` : 'Attendance: no sessions logged',
+      `Tuition received: $${sum} (${pays.length} payment${pays.length===1?'':'s'}) · ${owing.length} famil${owing.length===1?'y':'ies'} still owe $${owed}${broken?` · ${broken} missed promise${broken>1?'s':''}`:''}`,
+      `Teaching: ${taught} lesson${taught===1?'':'s'} taught · ${qn} Qurʼān entr${qn===1?'y':'ies'} · ${rv} revision${rv===1?'':'s'} logged`,
+      `Students: ${behind} flagged behind${promo?` · ${promo} ready for promotion`:''}`,
+      newAdm? `Admissions: ${newAdm} new application${newAdm>1?'s':''}` : '',
+      ev? `Next event: ${ev.title} · ${fmtDate(ev.date)}` : ''].filter(Boolean);
+    const title=(kind==='daily'?'AMAN daily digest — ':'AMAN weekly digest — ')+fmtDate(t);
+    const body='As-salāmu ʿalaykum,\n\n'+title+'\n\n'+lines.map(l=>'• '+l).join('\n')+'\n\nJazākumullāhu khayran.\n— Ustādh Nur';
+    return `📰 <b>${esc(title)}</b>${lines.map(l=>`<div class="ai-row">• ${esc(l)}</div>`).join('')}<div class="ai-acts">${AI2.btn('📋 Copy',`data-copy="${esc(body)}"`)}<a class="btn btn-o btn-sm" href="mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}">✉️ Email</a><a class="btn btn-o btn-sm" href="sms:?&body=${encodeURIComponent(body)}">💬 Text</a></div>
+      ${AI2.why([`Covers ${fmtDate(AI2.addDays(from,1))} – ${fmtDate(t)}`,'Attendance counts Present or Late; payments exclude excused months'],[`${n} attendance marks · ${pays.length} payments · ${ss.length} sessions`])}`;
+  },
+
+  /* ============ 9. teaching coach ============ */
+  coach(){
+    const t=today(), ins=[]; const L3=AI2.act().filter(s=>s.level==='Level 3');
+    const noRev=L3.filter(s=>{ const sm=Rev.summary(s); return sm.total>=2 && (sm.c.due+sm.c.none)>=sm.total*0.75 && !(s.revHistory||[]).some(h=>h.date>=AI2.addDays(t,-35)); });
+    const used=L3.filter(s=>(s.revHistory||[]).length).length;
+    if(used<3 && L3.length) ins.push({ico:'🔁',h:'Retention is invisible so far',b:`Only ${used} of ${L3.length} Level 3 students have any revision rating logged, so I can't tell who is retaining what. Rate a Juzʼ (Strong / Shaky / Forgot) from a student's profile, or the Class Day “Revision due” card, and the retention patterns appear here.`,rows:[]});
+    if(used>=3 && noRev.length) ins.push({ico:'🔁',h:'Memorizing, but not revising',b:`${noRev.length} Level 3 student${noRev.length>1?'s have':' has'} 2+ memorized Juzʼ yet nothing logged in 35 days (or ever). New memorization fades without review.`,rows:noRev.slice(0,6).map(s=>AI2.sBtn(s,Rev.summary(s).total+' Juzʼ · '+((s.revHistory||[])[0]?'last revised '+fmtDate(s.revHistory[0].date):'never logged'))),q:'Which students have had no revision in 35 days?',ql:'See full list'});
+    const stalled=L3.filter(s=>{ const a=AI2.attRate(s,AI2.addDays(t,-60)); const l=s.hifzLog||[]; const last=l.length?l[l.length-1].date:null; return a!=null&&a>=80 && last && last<AI2.addDays(t,-21); });
+    if(stalled.length) ins.push({ico:'🧱',h:'Attending but not advancing',b:`${stalled.length} student${stalled.length>1?'s':''} attend 80%+ yet haven't moved in Ḥifẓ for 3+ weeks — attendance isn't the problem; look at pacing, a weak foundation, or home practice.`,rows:stalled.slice(0,6).map(s=>AI2.sBtn(s,AI2.attRate(s,AI2.addDays(t,-60))+'% attendance · last moved '+fmtDate(s.hifzLog[s.hifzLog.length-1].date))),q:'Which students are stuck with no progress?',ql:'See full list'});
+    const ss=AI2.sessions(); const slide=[]; if(ss.length>=8){ const rc=ss.slice(-3), ea=ss.slice(-8,-3);
+      AI2.act().forEach(s=>{ const f=days=>{ let p=0,n=0; days.forEach(day=>{ const v=DB.data.attendance[day][s.id]; if(v){ n++; if(v==='P'||v==='L')p++; } }); return n>=2? p/n*100:null; }; const a=f(rc), b=f(ea); if(a!=null&&b!=null&&b-a>=40) slide.push({s,a:Math.round(a),b:Math.round(b)}); }); }
+    if(slide.length) ins.push({ico:'📉',h:'Attendance is sliding',b:`${slide.length} student${slide.length>1?'s':''} came regularly earlier but have dropped sharply in the last 3 sessions — a quiet check-in now is easier than a catch-up later.`,rows:slide.slice(0,6).map(x=>AI2.sBtn(x.s,x.b+'% → '+x.a+'%')),act:AI2.btn('✉️ Check-in messages',`data-aiact="stumsgq" ${AI2.jattr({ids:slide.map(x=>x.s.id),kind:'absence'})}`,'chip-hot')});
+    const repeat=AI2.act().filter(s=>{ const h=(s.revHistory||[]).filter(x=>x.rating!=='strong'); const by={}; h.forEach(x=>by[x.juz]=(by[x.juz]||0)+1); return Object.values(by).some(v=>v>=2); });
+    if(repeat.length) ins.push({ico:'♻️',h:'Same Juzʼ keeps slipping',b:`${repeat.length} student${repeat.length>1?'s have':' has'} rated Shaky/Forgot twice or more on the same Juzʼ — repeating the same review isn't sticking; try shorter, more frequent passes on that Juzʼ.`,rows:repeat.slice(0,6).map(s=>{ const by={}; (s.revHistory||[]).filter(x=>x.rating!=='strong').forEach(x=>by[x.juz]=(by[x.juz]||0)+1); const j=Object.entries(by).sort((a,b)=>b[1]-a[1])[0]; return AI2.sBtn(s,'Juzʼ '+j[0]+' · '+j[1]+'×'); })});
+    const late=AI2.famRows().filter(r=>{ const tp=r.fin.pays.filter(x=>x.kind==='tuition'||!x.kind); if(tp.length<3) return false; const days=tp.map(x=>+x.date.slice(8,10)).sort((a,b)=>a-b); return days[Math.floor(days.length/2)]>=15; });
+    if(late.length) ins.push({ico:'⏳',h:'Families that pay late, every time',b:`${late.length} famil${late.length>1?'ies':'y'} usually pay after the 15th. A reminder around the 10th would likely land better than one after the due date.`,rows:late.slice(0,6).map(r=>AI2.fBtn(r.key,'median payment day '+(r.fin.pays.map(x=>+x.date.slice(8,10)).sort((a,b)=>a-b)[Math.floor(r.fin.pays.length/2)]))) });
+    if(!ins.length) return `🧠 I looked for patterns (unrevised memorization, stalls, attendance slides, repeat forgetting, habitually-late payers) and found none worth flagging right now. Either things are healthy, or there isn't enough logged data yet — revision ratings and attendance are what feed these.`;
+    return `🧠 <b>${ins.length} pattern${ins.length>1?'s':''} in your records</b> <span class="ai-sub">— observations from your data, not diagnoses</span>`+ins.map(i=>AI2.sec(i.ico,i.h,`<div class="ai-sub" style="margin:0 0 6px;font-size:13px;color:var(--ink2)">${i.b}</div>${i.rows.map(r=>`<div class="ai-row">${r}</div>`).join('')}${i.act?`<div class="ai-acts">${i.act}</div>`:i.q?`<div class="ai-acts">${AI2.btn(i.ql,`data-aiq="${esc(i.q)}"`)}</div>`:''}`)).join('')+AI2.why(['Each pattern has a fixed threshold shown in its description (e.g. 35 days, 80% attendance, 21 days, 40-point drop, median payment day ≥ 15th)'],[`${L3.length} Level 3 students · ${ss.length} sessions logged`]);
+  },
+
+  /* ============ 10. smart chips ============ */
+  chips(){
+    const t=today(), dow=AI2.dow(t), out=[]; const rows=AI2.famRows();
+    const classDay=dow===6||dow===0;
+    out.push(classDay? {l:'🧑‍🏫 Run today’s class',q:'Plan my class day'} : dow>=4? {l:'📅 Prep for the weekend',q:'Prep for the weekend'} : {l:'📅 Plan my Saturday',q:'Plan my Saturday'});
+    out.push({l:'🆕 What changed?',q:'What changed since my last visit?'});
+    if(rows.some(r=>r.pr&&r.pr.k==='broken')) out.push({l:'⚠️ Missed promises',q:'Which families have a missed promise?'});
+    const dueRev=AI2.act().some(s=>s.level==='Level 3' && Rev.summary(s).c.due>0); if(dueRev) out.push({l:'🔁 Who needs revision?',q:'Who is due for revision?'});
+    if(rows.some(r=>r.debt.months.length>=2)) out.push({l:'💵 2+ months behind',q:'Families 2+ months behind'});
+    if(+t.slice(8,10)>=25 || dow===5) out.push({l:'📰 Weekly digest',q:'Weekly digest'});
+    out.push({l:'🧠 Coach me',q:'Coach me'}); out.push({l:'✉️ Parent messages',q:'Message studio'});
+    return out.slice(0,7);
+  },
+  wire(el){
+    $$('[data-aiq]',el).forEach(b=>b.onclick=()=>AIx.send&&AIx.send(b.dataset.aiq));
+    $$('[data-aiact]',el).forEach(b=>b.onclick=()=>AI2.run(b));
+    $$('[data-aiopenfam]',el).forEach(b=>b.onclick=()=>{ Tuition._openFam=b.dataset.aiopenfam; Router.go('#/tuition/families'); });
+    $$('[data-aidone]',el).forEach(b=>b.onclick=()=>{ const st=DB.data.settings; if(!st.aiDone||st.aiDone.date!==today()) st.aiDone={date:today(),keys:[]}; st.aiDone.keys.push(b.dataset.aidone); DB.save(); Router.render(); });
+    $$('[data-aiundone]',el).forEach(b=>b.onclick=()=>{ DB.data.settings.aiDone={date:today(),keys:[]}; DB.save(); Router.render(); });
+    AI2.wireStudio(el);
+  },
+  answer(text){
+    const t=text.toLowerCase().trim();
+    let out=AI2.command(text,t); if(out) return out;
+    if(/plan (my |the |this |our )?(saturday|sunday|weekend|class day|class)\b|(saturday|weekend|class.?day|today.?s class) plan|run today.?s class|prep(are)? (for )?(the |this )?(saturday|weekend|class)/.test(t)) return AI2.plan();
+    if(/what.?s? (has )?changed|what.?s new|since (i|my|you).{0,14}(last|were)|anything new|catch me up/.test(t)) return AI2.changed();
+    if(/digest|week in review|weekly (summary|report|update)|daily (summary|brief)/.test(t)) return AI2.digest(/daily/.test(t)?'daily':'weekly');
+    if(/\bcoach\b|insights?\b|patterns?\b|what am i missing|blind spot/.test(t)) return AI2.coach();
+    if(/message studio|(draft|write|compose|prepare).{0,25}(message|text|note|update).{0,20}(parent|famil|guardian)|parent messages?|message (a |the )?parents?/.test(t) && !/announcement|tuition reminder|simple english|concrete recommendations/.test(t)) return AI2.studio();
+    return AI2.query(text);
+  },
+};
+
 const AIx = {
   history:[],
   /* ---- wire: entity/action buttons on any message bubble (briefing, rule answers, restored history) ---- */
@@ -12548,42 +13201,48 @@ const AIx = {
         if(k==='event'){ DB.data.events.push({id:uid(), date:a, title:b, kind:'event', checklist:[]}); DB.log('Event added via Assistant: '+b); }
         if(k==='lesson'){ DB.data.lessons.unshift({id:uid(), title:b, subject:'Islamic Studies', date:a, est:null, objective:c, plan:'', materials:[], matDone:[], resources:[], taught:false}); DB.log('Lesson added via Assistant: '+b); }
         DB.save(); btn.textContent='Added ✓'; btn.disabled=true; btn.classList.remove('btn-p'); btn.classList.add('btn-o'); toast('Added to '+(k==='task'?'Tasks':k==='event'?'Calendar':'Lesson Plans')); };});
+    AI2.wire(el);
   },
   /* ---- answer: rule dispatcher — every branch is computed from DB.data, nothing invented ---- */
   answer(text){
+    const v2=AI2.answer(text); if(v2) return v2;
     for(const [re,fn] of AI_PATTERNS){
       if(re.test(text)){ const out=fn(text); if(out) return out; }
     }
     const hits=Search.run(text,5);
     return hits.length? `Nothing rule-based matches that yet — closest from your Knowledge Base:<br>${hits.map(r=>`<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`).join('')}` : `No rule covers that yet, and nothing close in the Knowledge Base either. This assistant answers from computed data — try a shortcut above, or ask about students, tuition, tasks, or curriculum directly.`;
   },
-  /* ---- proactive briefing: local rules, instant, transparent ---- */
+  /* ---- proactive briefing: actionable, dismissible per day ---- */
   briefing(){
     const d=DB.data, tdy=today();
-    const act=d.students.filter(s=>s.active!==false);
-    const a30=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
-    const flags=stuFlags(a30,tdy);
-    const behind=flags.filter(x=>x.flags.some(f=>f[0]==='behind'));
-    // promotion-ready (same rules as Students module)
-    const promo=[];
-    act.forEach(s=>{ if(s.level==='Level 1' && s.gb && s.gb.page>=GB_TOTAL) promo.push({s, why:'Green Book complete ('+s.gb.page+'/160)'});
-      if(s.level==='Level 2'){ const log=[...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
-        if(log.length>=3 && log.every(x=>x.fluency==='Strong')) promo.push({s, why:'3 consecutive Strong readings'}); }});
-    const fams=famList().filter(f=>!f.solo);
-    const due=fams.filter(f=>{const fin=famFinance(f.key); return fin.plan.monthly>0&&fin.monthStatus!=='Paid';});
+    const done=(d.settings.aiDone&&d.settings.aiDone.date===tdy)? d.settings.aiDone.keys : [];
+    const promo=aiPromoList(), behind=aiBehindList(), due=aiFamsDue(), rows=AI2.famRows();
+    const broken=rows.filter(r=>r.pr&&r.pr.k==='broken');
     const overT=d.tasks.filter(t=>!t.done&&t.due&&t.due<tdy);
-    const nextEv=d.events.filter(e=>e.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    const nextEv=d.events.filter(e=>e.date>=tdy&&e.kind!=='class').sort((a,b)=>a.date.localeCompare(b.date))[0];
     const gaps=d.resources.filter(r=>r.status==='Planned');
-    const line=(i,txt)=>`<div style="margin:5px 0">${i} ${txt}</div>`;
-    let h=`As-salāmu ʿalaykum, Ustāth. Here's the state of the school before you ask:<br>`;
-    if(nextEv) h+=line('🗓️',`Next: <b>${esc(nextEv.title)}</b> · ${fmtDate(nextEv.date)}`);
-    if(promo.length) h+=line('🎉',`<b>Ready for promotion:</b> ${promo.map(p=>`<button class="rlink" data-s="${p.s.id}" style="display:inline;margin:2px 4px 2px 0">🎓 ${esc(p.s.name)}</button> <span style="font-size:12px;color:var(--ink3)">(${esc(p.why)})</span>`).join(' ')}`);
-    if(behind.length) h+=line('📖',`<b>${behind.length} student${behind.length>1?'s':''} behind</b> — ${behind.slice(0,3).map(x=>`<button class="rlink" data-s="${x.s.id}" style="display:inline;margin:2px 4px 2px 0">${esc(x.s.name)}</button> <span style="font-size:12px;color:var(--ink3)">(${esc(x.flags.map(f=>f[1]).join('; '))})</span>`).join(' ')}${behind.length>3?' +'+(behind.length-3)+' more':''}`);
-    if(due.length) h+=line('💵',`<b>${due.length} famil${due.length>1?'ies':'y'}</b> not fully paid this month`);
-    if(overT.length) h+=line('⏰',`<b>${overT.length} overdue task${overT.length>1?'s':''}</b> — oldest: ${esc(overT[0].text)}`);
-    if(gaps.length) h+=line('🧩',`Curriculum gaps: ${gaps.map(g=>esc(g.title.split('—')[0].trim())).join(' · ')}`);
-    if(!promo.length&&!behind.length&&!due.length&&!overT.length) h+=line('✅','Nothing urgent, al-ḥamdu lillāh.');
-    h+=`<br><span style="font-size:12px;color:var(--ink3)">Every item above shows the rule that fired. Ask me anything — I'll answer from live data and explain with the numbers.</span>`;
+    const revDue=AI2.act().filter(s=>s.level==='Level 3' && Rev.summary(s).c.due>0);
+    const df=AI2.diff();
+    const items=[]; let hidden=0;
+    const add=(k,ico,html,acts)=>{ if(done.includes(k)){ hidden++; return; } items.push(`<div class="ai-bl"><span class="ai-bi">${ico}</span><div class="ai-bb">${html}<div class="ai-bacts no-print">${acts||''}<button class="chip ai-ok" data-aidone="${k}" title="Hide until tomorrow">✓ Handled</button></div></div></div>`); };
+    const chip=(l,q,hot)=>AI2.btn(l,`data-aiq="${esc(q)}"`,hot?'chip-hot':'');
+    if(df.lines.length) add('changed','🆕',`<b>${df.lines.length} thing${df.lines.length>1?'s':''} changed since your last visit</b> — ${df.lines.slice(0,3).map(l=>l.html.replace(/<\/?b>/g,'')).join(' · ')}`, chip('See all changes','What changed since my last visit?',true));
+    if(nextEv){ const n=AI2.daysTo(tdy,nextEv.date); add('event:'+nextEv.id,'🗓️',`Next: <b>${esc(nextEv.title)}</b> · ${fmtDate(nextEv.date)} <span class="ai-sub">(${n===0?'today':'in '+n+' day'+(n===1?'':'s')})</span>`,''); }
+    if(promo.length) add('promo','🎉',`<b>Ready for promotion:</b> ${promo.map(p=>`<button class="rlink" data-s="${p.s.id}" style="display:inline-flex">🎓 ${esc(p.s.name)}</button> <span class="ai-sub">(${esc(p.why)})</span>`).join(' ')}`,'');
+    if(behind.length) add('behind','📖',`<b>${behind.length} student${behind.length>1?'s':''} behind</b> — ${behind.slice(0,3).map(x=>`<button class="rlink" data-s="${x.s.id}" style="display:inline-flex">${esc(x.s.name)}</button> <span class="ai-sub">(${esc(x.flags.map(f=>f[1]).join('; '))})</span>`).join(' ')}${behind.length>3?` <span class="ai-sub">+${behind.length-3} more</span>`:''}`,
+      chip('Show all & why','Who needs memorization review, and why?',true)+AI2.btn('✉️ Message parents',`data-aiact="stumsgq" ${AI2.jattr({ids:behind.map(x=>x.s.id),kind:'progress'})}`));
+    if(broken.length) add('broken','⚠️',`<b>${broken.length} missed payment promise${broken.length>1?'s':''}</b> — ${broken.slice(0,3).map(r=>`${AI2.fBtn(r.key,'$'+r.pr.pr.amount+' · '+r.pr.days+'d late')}`).join(' ')}`,AI2.btn('🔔 Remind them',`data-aiact="remindq" ${AI2.jattr({keys:broken.map(r=>r.key)})}`,'chip-hot'));
+    if(due.length){ const todo=due.filter(x=>{ const r=(famRec(x.f.key).reminders||[])[0]; return !r||AI2.daysTo(r.date,tdy)>6; }).map(x=>x.f.key);
+      add('tuition','💵',`<b>${due.length} famil${due.length>1?'ies':'y'}</b> not fully paid this month <span class="ai-sub">· ${todo.length} not reminded in the last week</span>`,
+        (todo.length?AI2.btn('🔔 Remind ('+todo.length+')',`data-aiact="remindq" ${AI2.jattr({keys:todo})}`,'chip-hot'):'')+AI2.btn('Open Tuition →','data-go="#/tuition"')); }
+    if(revDue.length) add('rev','🔁',`<b>${revDue.length} student${revDue.length>1?'s':''}</b> have Juzʼ due for revision`,chip('Who & which Juzʼ','Who is due for revision?',true));
+    if(overT.length) add('tasks','⏰',`<b>${overT.length} overdue task${overT.length>1?'s':''}</b> — oldest: ${esc(overT[0].text)}`,AI2.btn('Open tasks →','data-go="#/admin/tasks"'));
+    if(gaps.length) add('gaps','🧩',`Curriculum gaps: ${gaps.map(g=>esc(g.title.split('—')[0].trim())).join(' · ')}`,'');
+    if(!items.length) items.push(`<div class="ai-bl"><span class="ai-bi">✅</span><div class="ai-bb">${hidden?'Everything is handled for today, al-ḥamdu lillāh.':'Nothing urgent, al-ḥamdu lillāh.'}</div></div>`);
+    let h=`As-salāmu ʿalaykum, Ustāth. Here's the state of the school before you ask:<br>`+items.join('');
+    if(hidden) h+=`<div class="ai-sub" style="margin-top:6px">${hidden} handled today · <button class="rlink" data-aiundone="1" style="display:inline;padding:0;border:0;text-decoration:underline">undo</button></div>`;
+    h+=`<div class="ai-acts no-print">${chip('📅 Plan my class day','Plan my class day')}${chip('📰 Weekly digest','Weekly digest')}${chip('🧠 Coach me','Coach me')}${chip('✉️ Parent messages','Message studio')}</div>`;
+    h+=`<span class="ai-sub">Every item shows the rule behind it — ask “why”, or tap ✓ Handled to hide it until tomorrow.</span>`;
     return h;
   },
 };
