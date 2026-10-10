@@ -256,6 +256,85 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .adm-healthflag{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;
   background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);font-size:12px;font-weight:700;
   cursor:help;flex-shrink:0}
+/* ---- Admissions card v2: full names, stage stepper, quick-contact ---- */
+.adm-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr))}
+.adm-card{gap:10px!important}
+.adm-head{display:flex;gap:12px;align-items:flex-start}
+.adm-avatar.lg{width:46px;height:46px;font-size:18px}
+.adm-name{font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.adm-sub{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.adm-tags{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.adm-steps{display:flex;gap:3px}
+.adm-steps i{flex:1;height:5px;border-radius:99px;background:var(--surface2);border:1px solid var(--line)}
+.adm-steps i.on{background:var(--sc);border-color:var(--sc)}
+.adm-steps i.cur{box-shadow:0 0 0 2px color-mix(in srgb,var(--sc) 28%,transparent)}
+.adm-steplbl{font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin-top:4px}
+.adm-details{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--ink2)}
+.adm-row{display:flex;gap:7px;align-items:flex-start;line-height:1.4}
+.adm-ico{width:16px;flex-shrink:0;text-align:center}
+.adm-sib{display:inline-block;padding:1px 8px;margin:1px 3px 1px 0;border-radius:99px;border:1px solid var(--line);background:var(--surface2);font-size:11.5px;color:var(--ink);cursor:pointer}
+.adm-sib:hover{border-color:var(--gold)}
+.adm-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.adm-contact{display:flex;gap:6px;flex-wrap:wrap;padding-top:9px;border-top:1px dashed var(--line)}
+.adm-contact a{text-decoration:none}
+.adm-compact .adm-details,.adm-compact .adm-steps,.adm-compact .adm-steplbl,.adm-compact .adm-contact{display:none}
+.adm-seats{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;margin:2px 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.adm-seatbar{flex:1;min-width:140px;max-width:320px;height:8px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.adm-seatbar i{display:block;height:100%;background:linear-gradient(90deg,var(--green-soft),var(--gold))}
+/* ---- Revision tracker + Qurʼān Journey ---- */
+.rev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}
+.rev-cell{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);cursor:pointer;font-family:var(--f-ui)}
+.rev-cell b{font-family:var(--f-mono);font-size:14px}
+.rev-cell small{font-size:10px;color:var(--ink3)}
+.rev-cell.fresh{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.rev-cell.soon{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,var(--surface))}
+.rev-cell.due{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.rev-cell.none{border-style:dashed}
+.rev-cell.part{border-style:dotted}
+.rev-chip{display:inline-flex;flex-direction:column;align-items:flex-start;padding:3px 9px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);font:600 12px var(--f-ui);cursor:pointer;line-height:1.25;text-align:left}
+.rev-chip small{font-weight:400;font-size:10px;color:var(--ink3)}
+.rev-chip.due{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.rev-chip.none{border-style:dashed}
+.rev-fill{display:flex;height:100%;border-radius:12px;overflow:hidden}
+.rev-fill span{height:100%;border-right:1px solid color-mix(in srgb,var(--surface) 70%,transparent)}
+.rev-fill .fresh,.rev-legend .fresh{background:var(--ok)}
+.rev-fill .soon,.rev-legend .soon{background:var(--warn)}
+.rev-fill .due,.rev-legend .due{background:var(--bad)}
+.rev-fill .none,.rev-legend .none{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--ink3) 50%,transparent) 0 3px,var(--surface2) 3px 6px)}
+.rev-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--ink2);margin-top:6px}
+.rev-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.qj{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.qj-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--surface)}
+.qj-title{font-family:var(--f-display);font-weight:700;font-size:20px}
+.qj-sub{font-size:12.5px;color:var(--ink2)}
+.qj-ctl{display:flex;gap:6px;flex-wrap:wrap}
+.qj-stage{flex:1;min-height:0;overflow:auto;padding:10px}
+.qj-map{position:relative;margin:0 auto}
+.qj-layer{position:absolute;inset:0}
+.qj-node{position:absolute;border-radius:50%;background:var(--gold);border:2px solid var(--surface)}
+.qj-node.big{background:var(--green)}
+.qj-mlabel,.qj-flag,.qj-avg{position:absolute}
+.qj-mlabel{font:700 10.5px var(--f-mono);color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:1px 7px;white-space:nowrap}
+.qj-flag{text-align:center;font-family:var(--f-ar);font-size:18px;color:var(--green);line-height:1.15;background:var(--surface);border:1px solid var(--gold);border-radius:12px;padding:3px 9px;white-space:nowrap}
+.qj-flag small{display:block;font:600 9.5px var(--f-mono);color:var(--ink3)}
+.qj-flag.fin{color:var(--gold);font-size:20px}
+.qj-avg{width:4px;border-radius:3px;background:var(--gold);box-shadow:0 0 0 2px var(--surface);opacity:.9}
+.qj-av{position:absolute;border-radius:50%;border:3px solid var(--ok);background:var(--green);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:var(--f-display);transition:transform .15s ease}
+.qj-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.qj-av.behind{border-color:var(--warn)}
+.qj-av.sel{transform:scale(1.35);z-index:5;box-shadow:0 0 0 3px var(--gold),0 4px 12px rgba(0,0,0,.35)}
+.qj-av.anon{cursor:default;background:var(--green-soft)}
+.qj-badge,.qj-badge-demo{min-width:16px;height:16px;padding:0 3px;border-radius:99px;background:var(--bad);color:#fff;font:700 10px/16px var(--f-mono);text-align:center;border:1.5px solid var(--surface);font-style:normal;display:inline-block}
+.qj-badge{position:absolute;right:-7px;bottom:-7px}
+.qj-badge-demo{margin-right:5px}
+.qj-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.qj-tick{display:inline-block;width:4px;height:12px;border-radius:3px;background:var(--gold);margin-right:6px;vertical-align:-2px}
+.qj-dot.ok{background:var(--ok)}.qj-dot.warn{background:var(--warn)}
+.qj-panel{border-top:1px solid var(--line);padding:10px 18px;height:min(220px,34vh);overflow:auto;display:flex;align-items:flex-start;background:var(--surface);flex-shrink:0}
+.qj-card{display:flex;gap:12px;align-items:flex-start;width:100%;flex-wrap:wrap}
+.qj-legend{display:flex;gap:16px;flex-wrap:wrap;padding:6px 18px calc(8px + env(safe-area-inset-bottom));font-size:11px;color:var(--ink3);background:var(--surface)}
+.qmap-seg{display:inline-flex;gap:4px}
+@media print{.qj{display:none!important}}
 .page-wm{position:relative}
 .page-wm::before{content:'\0646\0648\0631';position:absolute;top:-10px;right:-4%;font-family:var(--f-ar);
   font-size:min(30vw,320px);color:color-mix(in srgb,var(--gold) 5%,transparent);line-height:1;
@@ -490,6 +569,12 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
 .widget[draggable="true"]{cursor:grab}
 .widget[draggable="true"]:active{cursor:grabbing}
 @media (max-width:900px){ .hclock{text-align:left} .hero .hrow{flex-direction:column} .widget[draggable]{cursor:auto} }
+@media (max-width:560px){
+  .qmap-row{flex-wrap:wrap}
+  .qmap-row .qmap-name{order:1;width:auto;flex:1;min-width:0}
+  .qmap-row .qmap-juz{order:2;width:auto}
+  .qmap-row .qmap-track{order:3;flex-basis:100%;width:100%;margin-top:2px}
+}
 
 @media print{
   .sidebar,.topbar,.no-print,#toasts{display:none!important}
@@ -4276,16 +4361,22 @@ render(v){
       const labelEl = `<span style="font-family:var(--f-mono);font-size:9.5px;font-weight:800;color:${r.behind?'var(--warn)':'var(--ink)'}">${pctNum}%</span>`;
       const marker = nearStart ? avatarEl+labelEl : labelEl+avatarEl;
       const markerOffset = nearStart ? '6px' : 'calc(-100% - 6px)';
-      return `<div class="frow" data-go="#/students/${r.s.id}" style="display:flex;align-items:center;gap:8px;padding:2px 4px;border-radius:6px;cursor:pointer">
-       <span style="width:112px;flex-shrink:0;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.s.name)}">${esc(r.s.name)}</span>
-       <div class="bar" style="position:relative;flex:1;height:24px;border-radius:12px">
-         <i style="width:${r.pct.toFixed(1)}%;border-radius:12px"></i>
-         <div style="position:absolute;top:50%;left:${r.pct.toFixed(1)}%;transform:translate(${markerOffset},-50%);display:flex;align-items:center;gap:3px;white-space:nowrap" title="${esc(r.s.name)} — ${pctNum}% of path memorized · Juzʼ ${r.fj} of 30 complete">${marker}</div>
+      return `<div class="frow qmap-row" data-go="#/students/${r.s.id}" style="display:flex;align-items:center;gap:8px;padding:2px 4px;border-radius:6px;cursor:pointer">
+       <span class="qmap-name" style="width:112px;flex-shrink:0;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.s.name)}">${esc(r.s.name)}</span>
+       <div class="qmap-track" style="position:relative;flex:1;height:24px">
+         <div class="bar" style="height:24px;border-radius:12px">
+           ${QMapUI.mode==='retention' ? Rev.fillHTML(r.s, r.pct) : `<i style="width:${r.pct.toFixed(1)}%;border-radius:12px"></i>`}
+         </div>
+         <div style="position:absolute;top:50%;left:${r.pct.toFixed(1)}%;transform:translate(${markerOffset},-50%);display:flex;align-items:center;gap:3px;white-space:nowrap;pointer-events:none" title="${esc(r.s.name)} — ${pctNum}% of path memorized · Juzʼ ${r.fj} of 30 complete">${marker}</div>
        </div>
-       <span style="width:62px;flex-shrink:0;text-align:right;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">Juzʼ ${r.fj}/30</span>
+       <span class="qmap-juz" style="width:62px;flex-shrink:0;text-align:right;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">Juzʼ ${r.fj}/30</span>
      </div>`;
     };
-    return `<div class="whead"><h3>📖 Qurʼān progress map</h3><span class="tag tag-dim">${lvl3.length} in Ḥifẓ</span></div>
+    const anyLogged = lvl3.some(s=>s.revision && Object.keys(s.revision).length);
+    return `<div class="whead"><h3>📖 Qurʼān progress map</h3><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap" class="no-print">
+      <span class="qmap-seg"><button class="chip ${QMapUI.mode!=='retention'?'on':''}" data-qmapmode="progress">Progress</button><button class="chip ${QMapUI.mode==='retention'?'on':''}" data-qmapmode="retention" title="Colour each memorized Juzʼ by how fresh it is">Retention</button></span>
+      <button class="btn btn-o btn-sm" data-qjourney title="Full-screen class journey">🗺 Journey</button><span class="tag tag-dim">${lvl3.length} in Ḥifẓ</span></span></div>
+     ${QMapUI.mode==='retention' ? Rev.legendHTML()+(anyLogged?'':`<p style="font-size:11.5px;color:var(--ink2);margin:4px 0 8px">No revision logged yet, so every Juzʼ shows hatched. Rate Juzʼ from Teacher Workspace → Revision due, or a student's profile — each rating colours its segment.</p>`) : ''}
      <div style="display:flex;flex-direction:column;gap:5px">${rows.map(row).join('')}</div>
      <div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="width:112px;flex-shrink:0"></span><div style="flex:1;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;color:var(--ink3)"><span>Juzʼ 1</span><span>Juzʼ 8</span><span>Juzʼ 15</span><span>Juzʼ 23</span><span>Juzʼ 30</span></div><span style="width:62px;flex-shrink:0"></span></div>
      <p style="font-size:10.5px;color:var(--ink3);margin-top:6px">Position = % of their own Ḥifẓ path memorized so far — the bar fill and the Juzʼ ruler below both track that same %. Amber ring/label = no entry logged in 14+ days. Juzʼ milestones on the ruler follow the standard order; a student on the reverse order (Al-Baqarah → An-Nās) still lands at the right %, but their own real current Juzʼ is the number on the right of their row, not the ruler.</p>`;
@@ -5162,6 +5253,7 @@ const Teacher = {
     ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><div style="display:flex;gap:7px;flex-shrink:0" class="no-print"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-p btn-sm" id="enterClassMode">🖥 Class Mode</button></div></div>`
       :`<div class="no-print" style="margin-bottom:16px;display:flex;gap:7px"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
     ${Teacher.treatGoalsRosterHTML()}
+    ${Rev.dueCardHTML()}
     <div class="sect">1 · Before class<span class="rule"></span></div>
     <div class="grid g2">
       <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>${prepDay}’s plan</h3><button class="btn btn-ghost btn-sm" data-go="#/teacher/planner">Edit →</button></div>
@@ -6144,6 +6236,247 @@ function allergyReminderHTML(){
   if(!flagged.length) return '';
   return `<p style="font-size:11.5px;margin-top:6px">⚠ Allergy on file for: ${flagged.map(s=>esc(s.name)).join(', ')} — bring an alternative.</p>`;
 }
+/* ================= ḤIFẒ REVISION (MURĀJAʿAH) TRACKER =================
+   The app already tracked NEW memorization; this tracks how fresh each
+   already-memorized Juzʼ is. Per student: s.revision = {<juz>:{date,rating}}
+   (latest only) and s.revHistory (capped). Freshness is relative to the
+   rating: Strong is due again after 35 days, Shaky after 14, "Forgot parts"
+   stays due until it's re-rated. A Juzʼ never logged is "not logged" (grey
+   hatched) — deliberately NOT treated as overdue, since there is no data
+   yet. Every log also writes a normal 'Review' entry to the existing Qurʼān
+   log so the 14-day "behind" rule and the 30-day review counts stay in sync. */
+const REV_INTERVAL = {strong:35, shaky:14, forgot:0};
+const REV_LABEL = {strong:'Strong', shaky:'Shaky', forgot:'Forgot parts'};
+const QMapUI = {mode:'progress'};
+const Rev = {
+  juzList(s){
+    const pid = HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard';
+    const seq = pid==='standard' ? [...Array(30)].map((_,i)=>30-i) : [...Array(30)].map((_,i)=>i+1);
+    const out=[];
+    for(const N of seq){
+      const jp=juzProgress(s,N);
+      const done = N===1? jp.done-1 : jp.done, tot = N===1? jp.tot-1 : jp.tot; // page 1 (Fātiḥah) sits outside the path
+      if(done>0) out.push({n:N, done, tot, complete:done>=tot});
+    }
+    return out;
+  },
+  state(s,N){
+    const r=(s.revision||{})[N]; if(!r) return {k:'none'};
+    const days=Math.max(0,Math.round((new Date(today())-new Date(r.date))/864e5));
+    const iv=REV_INTERVAL[r.rating]; const ratio = iv? days/iv : 99;
+    return {k: ratio>=1?'due':ratio>=0.6?'soon':'fresh', days, rating:r.rating, iv, overdue:Math.max(0,days-iv), date:r.date};
+  },
+  summary(s){
+    const list=Rev.juzList(s).map(j=>Object.assign(j, Rev.state(s,j.n)));
+    const c={due:0,soon:0,fresh:0,none:0}; list.forEach(j=>c[j.k]++);
+    return {list, c, total:list.length};
+  },
+  text(j){
+    if(j.k==='none') return 'not logged yet';
+    const base = REV_LABEL[j.rating]+' · '+(j.days===0?'today':j.days+'d ago');
+    return j.k==='due' ? base+(j.rating==='forgot'?' · needs re-learning':' · overdue by '+j.overdue+'d') : j.k==='soon' ? base+' · due soon' : base;
+  },
+  log(s,N,rating,date){
+    date = date||today(); s.revision=s.revision||{}; s.revHistory=s.revHistory||[];
+    const cur=s.revision[N]; if(!cur || date>=cur.date) s.revision[N]={date,rating};
+    s.revHistory.unshift({date,juz:N,rating}); if(s.revHistory.length>120) s.revHistory.length=120;
+    DB.data.quran.push({sid:s.id, what:'Juzʼ '+N+' revision'+(rating==='forgot'?' — forgot parts':rating==='shaky'?' — shaky':''), kind:'Review', grade:rating==='strong'?'Excellent':'Needs review', date});
+    DB.log((s.preferredName||s.name)+' — revised Juzʼ '+N+' ('+REV_LABEL[rating]+')');
+    DB.save();
+  },
+  logForm(sid,N){
+    const s=DB.data.students.find(x=>x.id===sid); if(!s) return;
+    const j=Object.assign({n:N},Rev.state(s,N)), hist=(s.revHistory||[]).filter(h=>h.juz===N).slice(0,4);
+    const o=overlay(`<div class="modal" style="max-width:430px"><h3>Juzʼ ${N} · ${esc(s.preferredName||s.name)}</h3>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">${j.k==='none'?'Not logged yet — rating it starts its freshness clock.':'Last: '+esc(Rev.text(j))+'.'}</p>
+      <div class="field"><label>Revised on</label><input type="date" id="rv-d" value="${today()}" max="${today()}"></div>
+      <div style="display:grid;gap:8px;margin:6px 0 10px">
+        <button class="btn btn-p" data-rate="strong">✅ Strong — fluent <span style="opacity:.75;font-weight:400">· back in ~5 weeks</span></button>
+        <button class="btn btn-o" data-rate="shaky">〰 Shaky — hesitations or small mistakes <span style="opacity:.75;font-weight:400">· ~2 weeks</span></button>
+        <button class="btn btn-danger" data-rate="forgot">❗ Forgot parts — needs re-learning <span style="opacity:.75;font-weight:400">· stays due</span></button></div>
+      ${hist.length?`<p style="font-size:11.5px;color:var(--ink3)">Recent: ${hist.map(h=>fmtDate(h.date)+' '+REV_LABEL[h.rating]).join(' · ')}</p>`:''}
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $$('[data-rate]',o).forEach(b=>b.onclick=()=>{
+      const dt=$('#rv-d',o).value||today(); Rev.log(s,N,b.dataset.rate,dt>today()?today():dt);
+      o.remove(); toast('Juzʼ '+N+' logged — '+REV_LABEL[b.dataset.rate]); Router.render(); if(QJ.root) QJ.refresh(); });
+  },
+  // coloured segments for the Progress Map's "Retention" mode: one segment per
+  // memorized Juzʼ, in path order, sized by pages memorized, filling exactly
+  // the student's progress width.
+  fillHTML(s,pct){
+    const sm=Rev.summary(s), tot=sm.list.reduce((n,j)=>n+j.done,0);
+    if(!tot) return `<i style="width:${pct.toFixed(1)}%;border-radius:12px"></i>`;
+    return `<div class="rev-fill" style="width:${pct.toFixed(1)}%">${sm.list.map(j=>`<span class="${j.k}" style="flex:${j.done}" title="Juzʼ ${j.n}${j.complete?'':' (in progress)'} — ${esc(Rev.text(j))}"></span>`).join('')}</div>`;
+  },
+  legendHTML(){
+    return `<div class="rev-legend"><span><i class="fresh"></i>Fresh</span><span><i class="soon"></i>Due soon</span><span><i class="due"></i>Overdue / forgot</span><span><i class="none"></i>Not logged yet</span></div>`;
+  },
+  // Student profile: tap a Juzʼ to rate it
+  profileCardHTML(s){
+    const sm=Rev.summary(s); if(!sm.total) return '';
+    return `<div class="card" style="margin-bottom:14px;border-top:3px solid #7B4FA0">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <b style="font-family:var(--f-display);font-size:17px">🔁 Revision (murājaʿah)</b>
+        <span style="display:flex;gap:6px;flex-wrap:wrap">${sm.c.due?`<span class="tag tag-red">${sm.c.due} overdue</span>`:''}${sm.c.soon?`<span class="tag tag-gold">${sm.c.soon} due soon</span>`:''}${sm.c.fresh?`<span class="tag tag-green">${sm.c.fresh} fresh</span>`:''}${sm.c.none?`<span class="tag tag-dim">${sm.c.none} not logged</span>`:''}</span></div>
+      <div class="rev-grid">${sm.list.map(j=>`<button class="rev-cell ${j.k}${j.complete?'':' part'}" data-revcell="${s.id}:${j.n}" title="Juzʼ ${j.n}${j.complete?'':' — in progress ('+j.done+'/'+j.tot+' pages)'} · ${esc(Rev.text(j))}"><b>${j.n}</b><small>${j.k==='none'?'—':j.days===0?'today':j.days+'d'}</small></button>`).join('')}</div>
+      <p style="font-size:11.5px;color:var(--ink3);margin-top:8px">Tap a Juzʼ after hearing it recited and rate it. Strong comes due again after 5 weeks, Shaky after 2, Forgot stays due until re-rated. Dotted outline = Juzʼ still in progress. Each rating also adds a Review entry to the Qurʼān log below.</p></div>`;
+  },
+  // Teacher Workspace: who has older Juzʼ that need to be heard
+  dueCardHTML(){
+    const d=DB.data, stu=d.students.filter(s=>s.active!==false && s.level==='Level 3');
+    if(!stu.length) return '';
+    const rows=stu.map(s=>{ const sm=Rev.summary(s);
+      const tg=sm.list.filter(j=>j.k==='due'||j.k==='none').sort((a,b)=>((b.k==='due')-(a.k==='due'))||((b.overdue||0)-(a.overdue||0)));
+      const score=sm.list.filter(j=>j.k==='due').reduce((n,j)=>n+10+(j.overdue||0)/10,0)+sm.c.none*0.5;
+      return {s,sm,tg,score}; }).filter(r=>r.tg.length).sort((a,b)=>b.score-a.score);
+    const logged=stu.some(s=>s.revision&&Object.keys(s.revision).length);
+    const vis=logged?6:3; const dueStu=rows.filter(r=>r.sm.c.due).length, noneJ=rows.reduce((n,r)=>n+r.sm.c.none,0);
+    const chip=(s,j)=>`<button class="rev-chip ${j.k}" data-revcell="${s.id}:${j.n}" title="${esc(Rev.text(j))}">Juzʼ ${j.n}<small>${j.k==='none'?'not logged':j.rating==='forgot'?'forgot parts':j.overdue+'d overdue'}</small></button>`;
+    const rowHTML=r=>`<div class="wrow" style="cursor:default;flex-wrap:wrap;gap:6px 8px;align-items:center">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1;min-width:120px">${esc(r.s.name)}</span><span style="display:flex;gap:5px;flex-wrap:wrap">${r.tg.slice(0,4).map(j=>chip(r.s,j)).join('')}${r.tg.length>4?`<span class="tag tag-dim">+${r.tg.length-4}</span>`:''}</span></div>`;
+    return `<div class="card" style="margin-bottom:16px;border-top:3px solid #7B4FA0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div><b style="font-family:var(--f-display);font-size:17px">🔁 Revision due</b>
+        <p style="font-size:12px;color:var(--ink2);margin-top:2px">${dueStu?dueStu+' student'+(dueStu===1?'':'s')+' with an overdue Juzʼ':'Nothing overdue'}${noneJ?' · '+noneJ+' memorized Juzʼ not logged yet':''}</p></div>
+        <button class="btn btn-o btn-sm no-print" data-qjourney title="Full-screen class journey">🗺 Journey view</button></div>
+      ${!logged?`<p style="font-size:12.5px;color:var(--ink2);margin-top:8px">Nothing logged yet. When you hear a student recite an older Juzʼ in class, tap its chip and rate it — that starts its freshness clock, and the Progress Map's <b>Retention</b> view fills in.</p>`:''}
+      ${rows.length?`<div class="wlist" style="margin-top:8px">${rows.slice(0,vis).map(rowHTML).join('')}</div>
+      ${rows.length>vis?`<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">${rows.length-vis} more student${rows.length-vis===1?'':'s'}</summary><div class="wlist" style="margin-top:6px">${rows.slice(vis).map(rowHTML).join('')}</div></details>`:''}`
+      :`<p style="font-size:13px;color:var(--ok);margin-top:10px">✓ Every memorized Juzʼ is fresh or on schedule.</p>`}
+    </div>`;
+  }
+};
+
+/* ================= QURʼĀN JOURNEY (full-screen class view) =================
+   Every active Level 3 student as an avatar walking a winding road from
+   Bismillah to the khatm, at their real % of their own Ḥifẓ path. Milestone
+   markers follow the standard order (Juzʼ 30 → 1). Meant for the projector
+   or iPad: names can be switched off before sharing the screen. */
+const QJ = {
+  root:null, names:true, sel:null, _mode:null, _anim:true,
+  data(){
+    const d=DB.data, tdy=today(), cut=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+    const lastQ={}; (d.quran||[]).forEach(q=>{ if(!lastQ[q.sid]||q.date>lastQ[q.sid]) lastQ[q.sid]=q.date; });
+    return d.students.filter(s=>s.active!==false && s.level==='Level 3').map(s=>{
+      const st=hifzStats(s), rv=Rev.summary(s);
+      return {s, pct:st.pct, cur:st.cur, rev:rv, fj:furthestJuzDone(s), reverse:st.pid==='reverse',
+        behind: !!d.quran.length && (!lastQ[s.id]||lastQ[s.id]<cut)};
+    });
+  },
+  open(){
+    if(QJ.root) return;
+    const r=document.createElement('div'); r.className='qj'; r.setAttribute('role','dialog'); r.setAttribute('aria-modal','true'); r.setAttribute('aria-label','Qurʼān Journey');
+    r.innerHTML=`<div class="qj-top"><div style="min-width:0"><div class="qj-title">🗺 Qurʼān Journey</div><div class="qj-sub" id="qj-sub"></div></div>
+      <div class="qj-ctl"><button class="chip" id="qj-names"></button>${document.fullscreenEnabled?'<button class="chip" id="qj-fs">⛶ Fullscreen</button>':''}<button class="chip" id="qj-x" aria-label="Close journey">✕ Close</button></div></div>
+      <div class="qj-stage" id="qj-stage"><div class="qj-map" id="qj-map"></div></div>
+      <div class="qj-panel" id="qj-panel"></div>
+      <div class="qj-legend"><span><i class="qj-dot ok"></i>on track</span><span><i class="qj-dot warn"></i>no entry in 14+ days</span><span><i class="qj-badge-demo">3</i>overdue revision Juzʼ</span><span><i class="qj-tick"></i>class average</span><span>Milestones follow the standard order (Juzʼ 30 → 1)</span></div>`;
+    document.body.appendChild(r); QJ.root=r; QJ.sel=null; QJ._anim=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('#qj-x',r).onclick=()=>QJ.close();
+    $('#qj-names',r).onclick=()=>{ QJ.names=!QJ.names; if(!QJ.names) QJ.sel=null; QJ._anim=false; QJ.layout(); };
+    const fs=$('#qj-fs',r); if(fs) fs.onclick=()=>{ if(document.fullscreenElement) document.exitFullscreen(); else r.requestFullscreen&&r.requestFullscreen().catch(()=>toast('Fullscreen is not available here')); };
+    QJ._esc=e=>{ if(e.key==='Escape' && !document.querySelector('#overlays .ovl')) QJ.close(); };
+    QJ._rs=()=>{ clearTimeout(QJ._rt); QJ._rt=setTimeout(()=>{ QJ._anim=false; QJ.layout(); },150); };
+    document.addEventListener('keydown',QJ._esc); window.addEventListener('resize',QJ._rs);
+    QJ.layout();
+  },
+  close(){
+    if(!QJ.root) return;
+    document.removeEventListener('keydown',QJ._esc); window.removeEventListener('resize',QJ._rs);
+    cancelAnimationFrame(QJ._raf); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    QJ.root.remove(); QJ.root=null;
+  },
+  refresh(){ if(QJ.root){ QJ._anim=false; QJ.layout(); } },
+  layout(){
+    const r=QJ.root; if(!r) return;
+    cancelAnimationFrame(QJ._raf);
+    const rows=QJ.data(), stage=$('#qj-stage',r), map=$('#qj-map',r), names=QJ.names;
+    $('#qj-names',r).textContent = names ? '👁 Names on' : '🙈 Names hidden';
+    const avg = rows.length? rows.reduce((n,x)=>n+x.pct,0)/rows.length : 0;
+    $('#qj-sub',r).textContent = rows.length+' students · class average '+avg.toFixed(0)+'%';
+    const aw=stage.clientWidth, ah=stage.clientHeight, portrait=aw<700;
+    const W=portrait?620:1000, L=portrait?7:4, m=portrait?85:100, H=portrait?m*2+(L-1)*125:m*2+(L-1)*150;
+    const mapW = portrait? aw : Math.min(aw, ah*W/H), mapH = mapW*H/W, sc = mapW/W;
+    map.style.width=mapW+'px'; map.style.height=mapH+'px';
+    const gap=(H-2*m)/(L-1), rad=gap/2, xl=m+rad, xr=W-m-rad;
+    let dpath=`M ${xl} ${m}`;
+    for(let i=0;i<L;i++){ const y=m+gap*i, right=i%2===0; dpath+=` H ${right?xr:xl}`; if(i<L-1) dpath+=` A ${rad} ${rad} 0 0 ${right?1:0} ${right?xr:xl} ${y+gap}`; }
+    map.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${mapW}" height="${mapH}" aria-hidden="true" style="position:absolute;inset:0">
+      <path d="${dpath}" fill="none" stroke="var(--line)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${dpath}" fill="none" stroke="var(--surface)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+      <path id="qj-p" d="${dpath}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-dasharray="3 11" stroke-linecap="round" opacity=".75"/></svg><div class="qj-layer" id="qj-layer"></div>`;
+    const path=$('#qj-p',map), total=path.getTotalLength(), layer=$('#qj-layer',map);
+    const pt=len=>{ const p=path.getPointAtLength(Math.max(0,Math.min(total,len))); return {x:p.x*sc,y:p.y*sc}; };
+    const nrm=len=>{ const a=pt(len-3), b=pt(len+3), tx=b.x-a.x, ty=b.y-a.y, h=Math.hypot(tx,ty)||1; return {x:-ty/h,y:tx/h}; };
+    const AV=Math.round(Math.max(24,Math.min(40,mapW/26)));
+    const place=(el,len,off,w)=>{ const p=pt(len), n=nrm(len); el.style.left=(p.x+n.x*off-(w||AV)/2)+'px'; el.style.top=(p.y+n.y*off-(w||AV)/2)+'px'; };
+    // landmarks: end of each Juzʼ in the standard order
+    const mile=N=>Math.min(1,(605-Math.max(JUZ_PAGE[N],2))/603);
+    let lm='';
+    for(let N=30;N>=1;N--){ const big=N%5===0||N===1||N===30; lm+=`<div class="qj-node${big?' big':''}" data-len="${mile(N)*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
+    for(const N of [30,25,20,15,10,5]){ lm+=`<div class="qj-mlabel" data-lenl="${mile(N)*total/sc}">Juzʼ ${N}</div>`; }
+    lm+=`<div class="qj-flag" data-lenl="0">﷽ <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Khatm</small></div>`;
+    layer.innerHTML=lm;
+    $$('.qj-node',layer).forEach(e=>{ const l=+e.dataset.len*sc, w=parseFloat(e.style.width); place(e,l,0,w); });
+    const lastRight=(L-1)%2===0;
+    $$('[data-lenl]',layer).forEach(e=>{ const l=+e.dataset.lenl*sc; const p=pt(l), n=nrm(l);
+      if(e.classList.contains('qj-flag')){ const fin=e.classList.contains('fin'), dx=fin?(lastRight?1:-1):-1; e.style.left=(p.x+dx*62*sc)+'px'; e.style.top=p.y+'px'; }
+      else { e.style.left=(p.x+n.x*-34*sc*1.1)+'px'; e.style.top=(p.y+n.y*-34*sc*1.1)+'px'; }
+      e.style.transform='translate(-50%,-50%)'; });
+    // class average tick
+    if(rows.length){ const al=avg/100*total, p=pt(al), a=pt(al-3), b=pt(al+3), ang=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+90; const e=document.createElement('div'); e.className='qj-avg'; e.title='Class average: '+avg.toFixed(0)+'%';
+      e.style.left=p.x+'px'; e.style.top=p.y+'px'; e.style.height=(52*sc)+'px'; e.style.transform='translate(-50%,-50%) rotate('+ang+'deg)'; layer.appendChild(e); }
+    // avatars: stagger across the road width so close students don't stack
+    const items=rows.map(x=>({x, len:Math.max(0,Math.min(1,x.pct/100))*total})).sort((a,b)=>a.len-b.len);
+    const placed=[], slots=[0,1,-1,2,-2], minD=AV*1.04/sc; // user-space units, same as path length
+    items.forEach(it=>{
+      let tries=0;
+      for(;;){ const k=slots.find(o=>!placed.some(p=>p.off===o && Math.abs(p.len-it.len)<minD)); if(k!==undefined){ it.off=k; break; } it.len=Math.min(total,it.len+minD*0.5); if(++tries>40){ it.off=0; break; } }
+      placed.push(it);
+    });
+    const step=AV*0.92;
+    items.forEach((it,i)=>{
+      const x=it.x, s=x.s, b=document.createElement('button'); b.type='button';
+      b.className='qj-av'+(QJ.sel===s.id?' sel':'')+(names?'':' anon')+(x.behind?' behind':'');
+      b.style.width=b.style.height=AV+'px'; b.style.fontSize=Math.round(AV*0.36)+'px';
+      b.setAttribute('aria-label', names? (s.preferredName||s.name)+', '+x.pct.toFixed(0)+' percent' : 'student, '+x.pct.toFixed(0)+' percent');
+      b.innerHTML = names ? (s.photo?`<img src="${s.photo}" alt="" loading="lazy">`:esc(initials(s.name))) : '';
+      if(names && x.rev.c.due) b.insertAdjacentHTML('beforeend',`<span class="qj-badge">${x.rev.c.due}</span>`);
+      if(names){ b.addEventListener('click',()=>{ QJ.sel=QJ.sel===s.id?null:s.id; QJ.paint(); $$('.qj-av',layer).forEach(e=>e.classList.toggle('sel',e===b&&QJ.sel===s.id)); }); }
+      else b.tabIndex=-1;
+      layer.appendChild(b); it.el=b; it.step=step;
+    });
+    const draw=t=>{ items.forEach(it=>{ place(it.el, it.len*t, it.off*it.step*t); }); };
+    if(QJ._anim){
+      const t0=performance.now(), dur=1100; items.forEach((it,i)=>it.delay=i*22);
+      const tick=now=>{ let done=true; items.forEach(it=>{ const t=Math.max(0,Math.min(1,(now-t0-it.delay)/dur)), e=1-Math.pow(1-t,3); place(it.el,it.len*e,it.off*it.step*e); if(t<1) done=false; });
+        if(!done) QJ._raf=requestAnimationFrame(tick); };
+      QJ._raf=requestAnimationFrame(tick); QJ._anim=false;
+    } else draw(1);
+    QJ.paint(rows);
+  },
+  paint(rows){
+    const r=QJ.root; if(!r) return; rows=rows||QJ.data();
+    const panel=$('#qj-panel',r), x=rows.find(z=>z.s.id===QJ.sel);
+    if(!x||!QJ.names){ panel.innerHTML=`<span style="color:var(--ink3);font-size:13px">${QJ.names?'Tap a student to see where they are and what needs revising.':'Names are hidden — safe to share this screen.'}</span>`; return; }
+    const s=x.s, c=x.rev.c, st=hifzStats(s), g=s.hifzGoal, dueJ=x.rev.list.filter(j=>j.k==='due').slice(0,6);
+    panel.innerHTML=`<div class="qj-card">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0')}
+      <div style="min-width:0;flex:1"><div style="font-family:var(--f-display);font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:left" dir="auto">${esc(s.name)}</div>
+        <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${x.pct.toFixed(0)}% of their path · Juzʼ ${x.fj}/30 complete · now on ${esc(QS[st.cur].name)}${x.reverse?' · reverse path':''}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${g?`<span class="tag tag-gold">🍩 goal: Juzʼ ${g.juz}${g.deadline?' by '+esc(fmtDate(g.deadline)):''}</span>`:''}${x.behind?'<span class="tag tag-red">no entry in 14+ days</span>':''}
+          ${c.due?`<span class="tag tag-red">${c.due} overdue</span>`:''}${c.soon?`<span class="tag tag-gold">${c.soon} due soon</span>`:''}${c.fresh?`<span class="tag tag-green">${c.fresh} fresh</span>`:''}${c.none?`<span class="tag tag-dim">${c.none} not logged</span>`:''}</div>
+        ${dueJ.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px"><span style="font-size:11.5px;color:var(--ink3);align-self:center">Hear next:</span>${dueJ.map(j=>`<button class="rev-chip due" data-revcell="${s.id}:${j.n}">Juzʼ ${j.n}<small>${j.rating==='forgot'?'forgot parts':j.overdue+'d overdue'}</small></button>`).join('')}</div>`:''}</div>
+      <button class="btn btn-o btn-sm" id="qj-open">Open profile →</button></div>`;
+    $('#qj-open',panel).onclick=()=>{ QJ.close(); Router.go('#/students/'+s.id); };
+  }
+};
+document.addEventListener('click', e=>{
+  const t=e.target; if(!t||!t.closest) return;
+  const j=t.closest('[data-qjourney]'); if(j){ e.stopPropagation(); e.preventDefault(); QJ.open(); return; }
+  const m=t.closest('[data-qmapmode]'); if(m){ e.stopPropagation(); QMapUI.mode=m.dataset.qmapmode; Router.render(); return; }
+  const c=t.closest('[data-revcell]'); if(c){ e.stopPropagation(); e.preventDefault(); const v=c.dataset.revcell, i=v.lastIndexOf(':'); Rev.logForm(v.slice(0,i), +v.slice(i+1)); }
+}, true);
+
 function renderTreatGoalCard(s){
   const pid = HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard';
   const juzSeq = pid==='standard' ? [...Array(30)].map((_,i)=>30-i) : [...Array(30)].map((_,i)=>i+1);
@@ -7343,6 +7676,7 @@ const Students = {
      ${st.pct>=100?`<div class="notice info" style="margin-bottom:12px">🕋 <div><b>Ḥifẓ complete — all thirty Juzʼ!</b> ${esc(s.name)} has completed memorizing the entire Qur'an by heart. <button class="btn btn-p btn-sm" id="hifzCertBtn">🎓 Certificate</button></div></div>`:''}
      ${renderGoalCard(eta3, 'pages', e=>nextName?'Finish '+esc(QS[st.cur].name)+', begin '+esc(nextName):'Reach '+e.shortTarget+' pages', e=>'Complete '+esc(HIFZ_PATHS[st.pid].name)+' ('+st.total.toFixed(0)+' p.)')}
      ${renderTreatGoalCard(s)}
+     ${Rev.profileCardHTML(s)}
      <details style="margin-bottom:14px">
        <summary style="cursor:pointer;font-family:var(--f-display);font-size:15px;font-weight:600;padding:2px 0 8px">📊 Memorization Goal &amp; Tracker</summary>
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin-bottom:10px">
@@ -10483,34 +10817,87 @@ function agingBadge(days){
   const cls = days>=8?'tag-red':days>=4?'tag-gold':'tag-dim';
   return `<span class="tag ${cls}" title="${days} day${days===1?'':'s'} since the last stage change — nothing has moved on this application" style="margin-left:4px">${days}d</span>`;
 }
+// ---- Admissions card v2 helpers ----
+function admPhoneDigits(p){ return String(p||'').replace(/[^\d+]/g,''); }
+// Seats: capacity is a school setting (default 40); filled = active roster.
+function admSeats(){
+  const d=DB.data; const cap=+(d.settings.seatCapacity)||40;
+  const filled=d.students.filter(s=>s.active!==false).length;
+  return {cap, filled, open:Math.max(0,cap-filled)};
+}
+// Waiting-list families are atomic (siblings come in together). Walk the list
+// in order and mark which families fit the seats open right now.
+function admWaitlistFit(){
+  const wl = DB.data.admissions.filter(x=>x.stage==='waitlist').sort((x,y)=>(x.waitlistSince||'').localeCompare(y.waitlistSince||''));
+  let remaining = admSeats().open; const out={}, seen=new Set();
+  wl.forEach(a=>{ const key=a.appId||a.id; if(seen.has(key)) return; seen.add(key);
+    const fam = wl.filter(x=>(x.appId||x.id)===key), need=fam.length, fits = need<=remaining;
+    if(fits) remaining-=need;
+    fam.forEach(x=>out[x.id]={fits,need}); });
+  return out;
+}
+function admHealthText(a){
+  const healthNote = (a.health && !/^(n\/a|none|no|—|-)$/i.test(a.health.trim())) ? 'Health: '+a.health : '';
+  const allergyNote = isAllergyPositive(a.allergy) ? 'Allergies: '+a.allergy+(a.allergyDetail&&!/^[—-]$/.test(a.allergyDetail.trim())?' ('+a.allergyDetail+')':'') : '';
+  return [healthNote, allergyNote].filter(Boolean).join(' · ');
+}
+function admContactPref(a){ const p=(a.contactPref||'').toLowerCase(); return /text|sms/.test(p)?'text':/mail/.test(p)?'email':/call|phone/.test(p)?'call':''; }
 function admCard(a){
-  const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id);
+  const all = DB.data.admissions;
+  const siblings = all.filter(x=>x.appId && x.appId===a.appId && x.id!==a.id);
   const lastLog = (a.log&&a.log[0]) || null;
   const wlPos = a.stage==='waitlist'? admWaitlistPos(a) : null;
-  const ageDays = ['notfit','enrolled'].includes(a.stage)? null : admAgeDays(a);
-  const stageTag = `<span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlPos?' #'+wlPos:''}</span>${agingBadge(ageDays)}`;
+  const closed = ['notfit','enrolled'].includes(a.stage);
+  const idle = closed? null : admAgeDays(a);
   const justMoved = a.id===admLastMoved;
   if(justMoved) admLastMoved = null;
   const phase = admPhaseKey(a);
   const initial = (a.studentName||'?').trim().charAt(0).toUpperCase() || '?';
-  const meta = [a.studentAge?a.studentAge+' yrs':'', a.studentGender||'', a.parentName?'Parent: '+a.parentName:''].filter(Boolean).join(' · ');
-  const healthNote = (a.health && !/^(n\/a|none)$/i.test(a.health.trim())) ? 'Health: '+a.health : '';
-  const allergyNote = isAllergyPositive(a.allergy) ? 'Allergies: '+a.allergy+(a.allergyDetail?' ('+a.allergyDetail+')':'') : '';
-  const healthFlagText = [healthNote, allergyNote].filter(Boolean).join(' · ');
-  return `<div class="card${justMoved?' just-moved':''}" data-phase="${phase}" style="display:flex;flex-direction:column;gap:8px">
-    <div style="cursor:pointer;display:flex;gap:10px;align-items:flex-start" data-go="#/admissions/${a.id}">
-      <div class="adm-avatar" data-phase="${phase}">${esc(initial)}</div>
-      <div style="min-width:0;flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.studentName)||'(unnamed)'}</b>
-          <span style="display:flex;align-items:center;gap:5px;flex-shrink:0">${healthFlagText?`<span class="adm-healthflag" title="${esc(healthFlagText)}" aria-label="Health or allergy note on file: ${esc(healthFlagText)}">⚕</span>`:''}${stageTag}</span></div>
-        <div style="font-size:12px;color:var(--ink2);margin-top:2px">${esc(meta)}${a.parentPhone?' · '+esc(a.parentPhone):''}</div>
-        ${siblings.length?`<div style="font-size:11.5px;color:var(--ink3);margin-top:2px">+ ${siblings.length} sibling${siblings.length===1?'':'s'} applying</div>`:''}
-        ${lastLog?`<div style="font-size:11px;color:var(--ink3);margin-top:4px">${esc(lastLog.text)} · ${rel(lastLog.date)}</div>`:''}
+  const sub = [a.studentAge?a.studentAge+' yrs':'', a.studentGender||'', a.studentGrade||''].filter(Boolean).join(' · ');
+  const healthFlagText = admHealthText(a);
+  const fit = a.stage==='waitlist' ? ((Admissions._fit||{})[a.id]) : null;
+  // tags: stage, how long it has been sitting, seat fit, health
+  let waitTag = '';
+  if(a.stage==='waitlist' && a.waitlistSince){
+    const wd = Math.max(0, Math.round((new Date(today())-new Date(a.waitlistSince))/864e5));
+    waitTag = `<span class="tag ${wd>=45?'tag-red':wd>=21?'tag-gold':'tag-dim'}" title="On the waiting list since ${esc(fmtDate(a.waitlistSince))}">⏳ waiting ${wd}d</span>`;
+  } else if(idle!=null){
+    waitTag = `<span class="tag ${idle>=8?'tag-red':idle>=4?'tag-gold':'tag-dim'}" title="${idle} day${idle===1?'':'s'} since the last stage change — nothing has moved on this application">⏱ idle ${idle}d</span>`;
+  }
+  const fitTag = fit ? (fit.fits ? `<span class="tag tag-green" title="An open seat exists for this whole family (${fit.need} needed)">✓ fits open seats</span>` : `<span class="tag tag-dim" title="This family needs ${fit.need} seat${fit.need===1?'':'s'} — not enough open right now">needs ${fit.need} seat${fit.need===1?'':'s'}</span>`) : '';
+  const tags = `<span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlPos?' #'+wlPos:''}</span>${waitTag}${fitTag}${healthFlagText?`<span class="adm-healthflag" title="${esc(healthFlagText)}" aria-label="Health or allergy note on file: ${esc(healthFlagText)}">⚕</span>`:''}`;
+  // 5-step stepper for the live pipeline stages
+  const si = ADM_STAGE_ORDER.indexOf(a.stage);
+  const stepper = si>=0 ? `<div><div class="adm-steps" style="--sc:var(--stage-${phase})" aria-hidden="true">${ADM_STAGE_ORDER.map((_,i)=>`<i class="${i<=si?'on':''}${i===si?' cur':''}"></i>`).join('')}</div><div class="adm-steplbl">Step ${si+1} of ${ADM_STAGE_ORDER.length} · ${esc(ADM_STAGE_LABEL[a.stage])}</div></div>` : '';
+  const pref = admContactPref(a);
+  const row = (ico,html)=>`<div class="adm-row"><span class="adm-ico" aria-hidden="true">${ico}</span><span style="min-width:0;overflow-wrap:anywhere">${html}</span></div>`;
+  const rows = [
+    a.parentName ? row('👤', `${esc(a.parentName)}${pref?` <span style="color:var(--ink3)">· prefers ${pref==='text'?'text':pref==='call'?'a call':'email'}</span>`:''}`) : '',
+    a.parentPhone ? row('📞', esc(a.parentPhone)) : '',
+    (a.quranLevel||a.hifz||a.arabicLevel) ? row('📖', [a.quranLevel?'Qurʼān: '+esc(a.quranLevel):'', a.hifz&&!/^[—-]$/.test(a.hifz)?'Ḥifẓ: '+esc(a.hifz):'', a.arabicLevel?'Arabic: '+esc(a.arabicLevel):''].filter(Boolean).join(' · ')) : '',
+    siblings.length ? row('👪', `Applying with ${siblings.map(s=>`<span class="adm-sib" role="link" tabindex="0" data-sibgo="${s.id}" title="Open ${esc(s.studentName)}">${esc(admFirstName(s.studentName))}</span>`).join('')}`) : '',
+    lastLog ? row('🕘', `${esc(lastLog.text)} · ${esc(rel(lastLog.date))}`) : '',
+  ].filter(Boolean).join('');
+  const tel = admPhoneDigits(a.parentPhone);
+  const cbtn = (kind,label,href)=>`<a class="btn ${pref===kind?'btn-p':'btn-o'} btn-sm" href="${href}" onclick="event.stopPropagation()" title="${esc(label)} ${esc(a.parentName||'parent')}">${label}</a>`;
+  const contact = (tel||a.parentEmail) ? `<div class="adm-contact no-print">${tel?cbtn('call','📞 Call','tel:'+tel):''}${tel?cbtn('text','💬 Text','sms:'+tel):''}${a.parentEmail?cbtn('email','✉️ Email','mailto:'+esc(a.parentEmail)):''}</div>` : '';
+  return `<div class="card adm-card${justMoved?' just-moved':''}" data-phase="${phase}" style="display:flex;flex-direction:column">
+    <div style="cursor:pointer;display:flex;flex-direction:column;gap:10px" data-go="#/admissions/${a.id}">
+      <div class="adm-head">
+        <div class="adm-avatar lg" data-phase="${phase}">${esc(initial)}</div>
+        <div style="min-width:0;flex:1">
+          <div class="adm-name" dir="auto" title="${esc(a.studentName)}">${esc(a.studentName)||'(unnamed)'}</div>
+          ${sub?`<div class="adm-sub">${esc(sub)}</div>`:''}
+        </div>
       </div>
+      <div class="adm-tags">${tags}</div>
+      ${stepper}
+      ${rows?`<div class="adm-details">${rows}</div>`:''}
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${admProfileActions(a)}
+    <div class="adm-actions">${admProfileActions(a)}
       <button class="btn btn-ghost btn-sm" data-adm="${a.id}" data-act="note" title="Add note">📝</button>
     </div>
+    ${contact}
   </div>`;
 }
 Registry.register({ id:'admissions', name:'AMAN Admissions', icon:'inbox', group:'Workspaces',
@@ -10522,7 +10909,22 @@ const Admissions = {
   list(v){
     const d = DB.data;
     const find = (Admissions._find||'').toLowerCase();
-    const match = a => !find || a.studentName.toLowerCase().includes(find) || (a.parentName||'').toLowerCase().includes(find);
+    const match = a => !find || a.studentName.toLowerCase().includes(find) || (a.parentName||'').toLowerCase().includes(find)
+      || (find.replace(/\D/g,'').length>=3 && admPhoneDigits(a.parentPhone).includes(find.replace(/\D/g,''))) || (a.parentEmail||'').toLowerCase().includes(find);
+    Admissions._fit = admWaitlistFit();
+    const flt = Admissions._flt||'all', compact = Admissions._view==='compact';
+    const sibCount = a => d.admissions.filter(x=>x.appId && x.appId===a.appId && x.id!==a.id).length;
+    const fmatch = a => flt==='all'
+      || (flt==='stale' && !['notfit','enrolled'].includes(a.stage) && admAgeDays(a)>=8)
+      || (flt==='health' && !!admHealthText(a))
+      || (flt==='sib' && sibCount(a)>0)
+      || (flt==='fits' && a.stage==='waitlist' && (Admissions._fit[a.id]||{}).fits);
+    const pool = d.admissions.filter(match);
+    const fcount = {all:pool.length,
+      stale:pool.filter(a=>!['notfit','enrolled'].includes(a.stage)&&admAgeDays(a)>=8).length,
+      health:pool.filter(a=>!!admHealthText(a)).length,
+      sib:pool.filter(a=>sibCount(a)>0).length,
+      fits:pool.filter(a=>a.stage==='waitlist'&&(Admissions._fit[a.id]||{}).fits).length};
     const active = d.admissions.filter(a=>!['notfit','enrolled'].includes(a.stage) && match(a));
     const notfit = d.admissions.filter(a=>a.stage==='notfit' && match(a));
     const enrolled = d.admissions.filter(a=>a.stage==='enrolled' && match(a));
@@ -10563,6 +10965,10 @@ const Admissions = {
       </div>`;
     v.innerHTML = `<div class="page-wm"><div class="eyebrow">AMAN Admissions Pipeline</div><h2 class="page-title">AMAN Admissions</h2>
      <p class="page-sub">${esc(summary)}</p>
+     ${(()=>{ const st=admSeats(), wlN=active.filter(a=>a.stage==='waitlist').length;
+        return `<div class="adm-seats no-print"><div style="font-size:13px"><b style="font-family:var(--f-mono)">${st.filled}</b> of <b style="font-family:var(--f-mono)">${st.cap}</b> seats filled · <b style="color:${st.open?'var(--ok)':'var(--bad)'}">${st.open} open</b>${wlN?` · ${wlN} on the waiting list`:''}</div>
+          <div class="adm-seatbar" title="${st.filled} active students of ${st.cap} seats"><i style="width:${Math.min(100,st.filled/st.cap*100).toFixed(1)}%"></i></div>
+          <button class="btn btn-ghost btn-sm" id="admSeatCfg" title="Change the seat capacity">⚙ Capacity</button></div>`; })()}
      ${funnelStrip}
      ${healthStrip}
      <div class="filters no-print">
@@ -10573,6 +10979,10 @@ const Admissions = {
        ${d.admissions.length?`<input type="search" id="admFind" placeholder="Find applicant or parent…" value="${esc(Admissions._find||'')}" style="max-width:220px">`:''}
        <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${d.settings.admissionsLastSync?'Last synced '+rel(d.settings.admissionsLastSync):'Never synced'}</span>
      </div>
+     ${d.admissions.length?`<div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px">
+       ${[['all','All'],['stale','⏱ Idle 8d+'],['health','⚕ Health note'],['sib','👪 Siblings'],['fits','✓ Fits open seats']].map(([k,l])=>(k==='all'||fcount[k]||flt===k)?`<button class="chip ${flt===k?'on':''}" data-admflt="${k}">${l} ${fcount[k]}</button>`:'').join('')}
+       <span style="margin-left:auto;display:flex;gap:4px"><button class="chip ${!compact?'on':''}" data-admview="cards" title="Detailed cards">▦ Cards</button><button class="chip ${compact?'on':''}" data-admview="compact" title="Compact list">☰ Compact</button></span>
+     </div>`:''}
      ${(()=>{ const pending = d.unmatchedAgreements.map((u,i)=>({u,i})).filter(x=>!x.u.dismissed); return pending.length?`<details class="no-print" open style="margin-bottom:14px">
        <summary style="cursor:pointer;padding:10px 14px;background:color-mix(in srgb,var(--warn) 10%,var(--surface));border:1px solid var(--warn);border-radius:10px;font-size:13.5px;font-weight:600">⚠ ${pending.length} agreement submission${pending.length===1?'':'s'} couldn\u2019t be auto-matched \u2014 needs a quick manual match</summary>
        <div style="margin-top:8px">${pending.map(({u,i})=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
@@ -10585,18 +10995,18 @@ const Admissions = {
      ${!d.admissions.length? `<div class="empty"><div class="big">📥</div><h3>No applications yet</h3>
         <p>Sync from the website's Google Sheet, or add a phone / walk-in application manually.</p>
         <div style="display:flex;gap:9px;justify-content:center"><button class="btn btn-p" id="admSync2">Sync New Applications</button><button class="btn btn-o" id="admAdd2">Add manually</button></div></div>`
-     : ADM_STAGES.map(st=>{ const g=active.filter(a=>a.stage===st.id); if(!g.length) return '';
+     : ADM_STAGES.map(st=>{ const g=active.filter(a=>a.stage===st.id&&fmatch(a)); if(!g.length) return '';
         const phase = st.id==='enrollment'?'accepted':st.id;
         return `${admSectHeader(phase, st.label, g.length)}
-         <div class="grid g3">${g.sort((a,b)=>((a.log[0]&&a.log[0].date)||'').localeCompare((b.log[0]&&b.log[0].date)||'')).map(admCard).join('')}</div>`; }).join('')}
-     ${(()=>{ const wl=active.filter(a=>a.stage==='waitlist').sort((a,b)=>(a.waitlistSince||'').localeCompare(b.waitlistSince||''));
+         <div class="adm-grid${compact?' adm-compact':''}">${g.sort((a,b)=>((a.log[0]&&a.log[0].date)||'').localeCompare((b.log[0]&&b.log[0].date)||'')).map(admCard).join('')}</div>`; }).join('')}
+     ${(()=>{ const wl=active.filter(a=>a.stage==='waitlist'&&fmatch(a)).sort((a,b)=>(a.waitlistSince||'').localeCompare(b.waitlistSince||''));
         if(!wl.length) return '';
         return `${admSectHeader('waitlist','Waiting List',wl.length)}
-         <div class="grid g3">${wl.map(admCard).join('')}</div>`; })()}
-     ${notfit.length?`${admSectHeader('notfit','Not a Fit Right Now — welcome to reapply',notfit.length)}
-      <div class="grid g3">${notfit.map(admCard).join('')}</div>`:''}
+         <div class="adm-grid${compact?' adm-compact':''}">${wl.map(admCard).join('')}</div>`; })()}
+     ${notfit.filter(fmatch).length?`${admSectHeader('notfit','Not a Fit Right Now — welcome to reapply',notfit.filter(fmatch).length)}
+      <div class="adm-grid${compact?' adm-compact':''}">${notfit.filter(fmatch).map(admCard).join('')}</div>`:''}
      ${enrolled.length?`<div class="sect" id="sect-accepted-roster"><span class="sect-dot" data-phase="accepted"></span>Recently Enrolled<span class="rule"></span></div>
-      <div class="grid g3">${enrolled.slice(0,6).map(admCard).join('')}</div>`:''}
+      <div class="adm-grid${compact?' adm-compact':''}">${enrolled.filter(fmatch).slice(0,6).map(admCard).join('')}</div>`:''}
      ${healthTotal?'<div class="no-print" style="height:55vh" aria-hidden="true"></div>':''}</div>`;
     wireCommon(v); Admissions._wireActions(v);
     $$('[data-jump]',v).forEach(el=>el.addEventListener('click',()=>{
@@ -10608,12 +11018,27 @@ const Admissions = {
     $('#admSync',v)&&($('#admSync',v).onclick=sync); $('#admSync2',v)&&($('#admSync2',v).onclick=sync);
     $('#admAdd',v)&&($('#admAdd',v).onclick=add); $('#admAdd2',v)&&($('#admAdd2',v).onclick=add);
     $('#admCfg',v)&&($('#admCfg',v).onclick=()=>Admissions.settingsForm());
+    $('#admSeatCfg',v)&&($('#admSeatCfg',v).onclick=()=>Admissions.capacityForm());
+    $$('[data-admflt]',v).forEach(b=>b.onclick=()=>{ Admissions._flt=b.dataset.admflt; Router.render(); });
+    $$('[data-admview]',v).forEach(b=>b.onclick=()=>{ Admissions._view=b.dataset.admview; Router.render(); });
+    $$('[data-sibgo]',v).forEach(b=>{ const go=e=>{ e.stopPropagation(); Router.go('#/admissions/'+b.dataset.sibgo); };
+      b.addEventListener('click',go); b.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(e); } }); });
     $('#admSyncAgr',v)&&($('#admSyncAgr',v).onclick=()=>Admissions.syncAgreements());
     $$('[data-match-unmatched]',v).forEach(b=>b.onclick=()=>Admissions.matchAgreementForm(+b.dataset.matchUnmatched));
     $$('[data-dismiss-unmatched]',v).forEach(b=>b.onclick=()=>{ const i=+b.dataset.dismissUnmatched;
       confirmBox('Dismiss this submission? It won\u2019t be matched to any applicant, and won\u2019t show up again on future syncs.', ()=>{
         DB.data.unmatchedAgreements[i].dismissed = true; DB.save(); toast('Dismissed'); Router.render(); }); });
     const f=$('#admFind',v); if(f){ f.oninput=()=>{ Admissions._find=f.value; clearTimeout(Admissions._ft); Admissions._ft=setTimeout(()=>{Router.render(); const nf=$('#admFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
+  },
+  capacityForm(){
+    const st = admSeats();
+    const o = overlay(`<div class="modal" style="max-width:380px"><h3>Seat capacity</h3>
+      <div class="field"><label>Total student seats</label><input type="number" id="cap-n" min="1" max="300" value="${st.cap}"></div>
+      <p style="font-size:13px;color:var(--ink2)">Filled seats = active students on your roster (${st.filled} right now). The waiting list uses this to show which families fit the seats that are open.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="cap-go">Save</button></div></div>`, true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#cap-go',o).onclick=()=>{ const n=Math.round(+$('#cap-n',o).value); if(!(n>=1)){ toast('Enter a whole number of seats'); return; }
+      DB.data.settings.seatCapacity=n; DB.save(); o.remove(); toast('Capacity set to '+n); Router.render(); };
   },
   _wireActions(v){
     $$('button[data-adm]',v).forEach(b=>{ b.onclick = e=>{ e.stopPropagation();
