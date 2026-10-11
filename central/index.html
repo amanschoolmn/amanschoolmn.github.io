@@ -308,7 +308,7 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .qj-title{font-family:var(--f-display);font-weight:700;font-size:20px}
 .qj-sub{font-size:12.5px;color:var(--ink2)}
 .qj-ctl{display:flex;gap:6px;flex-wrap:wrap}
-.qj-stage{flex:1;min-height:0;overflow:auto;padding:10px}
+.qj-stage{flex:1;min-height:0;overflow:auto;padding:10px;position:relative}.qj-stage+.qj-stage{border-top:2px dashed var(--line)}.qj-plabel{position:absolute;top:6px;left:8px;font:700 11.5px var(--f-mono);color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:2px 10px;z-index:6}
 .qj-map{position:relative;margin:0 auto}
 .qj-layer{position:absolute;inset:0}
 .qj-node{position:absolute;border-radius:50%;background:var(--gold);border:2px solid var(--surface)}
@@ -330,6 +330,13 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .qj-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .qj-tick{display:inline-block;width:4px;height:12px;border-radius:3px;background:var(--gold);margin-right:6px;vertical-align:-2px}
 .qj-dot.ok{background:var(--ok)}.qj-dot.warn{background:var(--warn)}
+.sotm-cel{position:fixed;inset:0;z-index:97;background:radial-gradient(circle at 50% 30%,#1f5a40,#0e2a1e 70%);color:#fff7e0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 18px calc(24px + env(safe-area-inset-bottom));text-align:center}
+.sotm-x{position:absolute;top:14px;right:14px}.sotm-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;animation:sotmIn .5s ease both}
+.sotm-big{font-size:96px;line-height:1}.sotm-h{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,5vw,48px);color:#f1d27a}.sotm-sub{font-size:clamp(13px,2vw,18px);opacity:.85}
+.sotm-row{display:flex;gap:34px;flex-wrap:wrap;justify-content:center;margin-top:18px}.sotm-w{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:240px}.sotm-name{font-family:var(--f-display);font-weight:700;font-size:clamp(20px,3.5vw,32px)}
+.sotm-nav{display:flex;gap:16px;align-items:center}.sotm-cel .chip{background:rgba(255,255,255,.12);color:#fff7e0;border-color:rgba(255,255,255,.3)}.sotm-cel .chip.on{background:#d9ac54;color:#20261f}.sotm-cel .chip:disabled{opacity:.35}
+@keyframes sotmIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.sotm-stage{animation:none}}
+.qj-modes{display:flex;gap:6px;padding:6px 18px;flex-wrap:wrap;background:var(--surface);border-bottom:1px solid var(--line);flex-shrink:0}.qj-modes .chip.on{background:var(--forest,#1a4a35);color:#fff;border-color:transparent}
 .qj-panel{border-top:1px solid var(--line);padding:10px 18px;height:min(220px,34vh);overflow:auto;display:flex;align-items:flex-start;background:var(--surface);flex-shrink:0}
 .qj-card{display:flex;gap:12px;align-items:flex-start;width:100%;flex-wrap:wrap}
 .qj-legend{display:flex;gap:16px;flex-wrap:wrap;padding:6px 18px calc(8px + env(safe-area-inset-bottom));font-size:11px;color:var(--ink3);background:var(--surface)}
@@ -4109,6 +4116,82 @@ document.addEventListener('click',e=>{
 },true);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && Layout.editing && !document.querySelector('#overlays .ovl')) Layout.toggle(false); });
 
+/* ================= MILESTONE REWARDS =================
+   Level 3: every Juzʼ completed earns donuts. Level 1: finishing the Green Book earns a class party.
+   Rewards are recorded per student in s.rewards[{id,type:'juz'|'greenbook',juz,date,celebrated,...}]
+   and detected automatically on every render from real progress — nothing to remember to log.
+   Juzʼ are counted in the student's own path order and only when contiguous (furthestJuzDone), so a
+   Juzʼ that merely sits inside the sūrah currently being worked on is never awarded early.
+   First run baselines everything already completed as celebrated, so history doesn't flood you with
+   hundreds of old donuts. If a Juzʼ completes on the same update as a Class Treat Goal, only the goal's
+   treat is shown — one set of donuts, not two. */
+const Rewards = {
+  check(){
+    const d=DB.data; if(!d||!d.students) return 0;
+    const st=d.settings=d.settings||{}; const first=!st.rewardsBaseline;
+    try{ resolveAllHifzGoals(d); }catch(e){}
+    let n=0;
+    d.students.forEach(s=>{
+      if(s.active===false) return;
+      s.rewards=s.rewards||[];
+      const has=(t,j)=>s.rewards.some(r=>r.type===t&&(t!=='juz'||r.juz===j));
+      const add=(r)=>{ s.rewards.push(Object.assign({id:uid(),date:today(),celebrated:false},r)); n++; if(!r.celebrated) DB.log(s.name+' — '+(r.type==='juz'?'completed Juzʼ '+r.juz+' 🍩':'finished the Green Book 🎉')); };
+      if(s.level==='Level 3'){
+        const f=furthestJuzDone(s);
+        if(f){ const pid=HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard';
+          const seq=pid==='standard'?[...Array(30)].map((_,i)=>30-i):[...Array(30)].map((_,i)=>i+1);
+          for(const N of seq){
+            if(!has('juz',N)){
+              const viaGoal=(s.hifzGoalHistory||[]).some(h=>h.status==='met'&&!h.celebrated&&+h.juz===N);
+              add({type:'juz',juz:N,celebrated:first||viaGoal,base:first||undefined,via:viaGoal?'goal':undefined});
+            }
+            if(N===f) break; } }
+      }
+      if(s.level==='Level 1'&&s.gb&&(+s.gb.page||0)>=GB_TOTAL&&!has('greenbook')) add({type:'greenbook',celebrated:first,base:first||undefined});
+    });
+    if(first) st.rewardsBaseline=today();
+    if(n){ DB.save(); if(!first){ const p=Rewards.pending().length; if(p){ setTimeout(()=>{ try{ celebrate(); toast('🎉 New milestone reward earned!'); }catch(e){} },250); } } }
+    return n;
+  },
+  pending(){ const out=[]; DB.data.students.forEach(s=>{ if(s.active===false) return; (s.rewards||[]).forEach(r=>{ if(!r.celebrated) out.push({s,r}); }); }); return out; },
+  groups(){ // one row per student+day+type, so a multi-Juzʼ jump is a single treat
+    const g={}; Rewards.pending().forEach(({s,r})=>{ const k=s.id+'|'+r.date+'|'+r.type; (g[k]=g[k]||{key:k,s,type:r.type,date:r.date,juzs:[],ids:[]}); if(r.juz) g[k].juzs.push(r.juz); g[k].ids.push(r.id); });
+    return Object.values(g).sort((a,b)=>b.date.localeCompare(a.date)); },
+  label(g){ return g.type==='juz' ? 'completed Juzʼ '+g.juzs.join(', ') : 'finished the Green Book'; },
+  done(sid,ids,skip){ const s=DB.data.students.find(x=>x.id===sid); if(!s) return;
+    (s.rewards||[]).forEach(r=>{ if(ids.includes(r.id)){ r.celebrated=true; r.celebratedOn=today(); if(skip) r.skipped=true; } });
+    DB.save(); toast(skip?'Dismissed':'🍩 Enjoy the celebration!'); Router.render(); },
+  allergyNote(level){
+    const fl=DB.data.students.filter(s=>s.active!==false&&s.level===level&&s.application&&isAllergyPositive(s.application.allergy));
+    return fl.length?`<p style="font-size:11.5px;margin:6px 0 0">⚠ Allergy on file for: ${fl.map(s=>esc(s.name)).join(', ')} — bring an alternative.</p>`:''; },
+  stats(){ let don=0,par=0; DB.data.students.forEach(s=>(s.rewards||[]).forEach(r=>{ if(r.celebrated&&!r.base&&!r.skipped&&r.via!=='goal'){ if(r.type==='juz') don++; else par++; } })); return {don,par}; },
+  rowHTML(g){
+    const donut=g.type==='juz';
+    return `<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap">${avatarHTML(g.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}
+      <span class="t" style="flex:1;min-width:150px"><b>${esc(g.s.name)}</b> ${esc(Rewards.label(g))}<br><span style="font-size:10.5px;color:var(--ink3)">${fmtDate(g.date)}${donut?'':' · ready for Level 2?'}</span></span>
+      ${donut?'':`<button class="btn btn-o btn-sm no-print" data-go="#/students/${g.s.id}">Promote →</button>`}
+      <button class="btn btn-p btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}">${donut?'🍩 Delivered':'🎉 Party held'}</button>
+      <button class="btn btn-ghost btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}|skip" title="Not right? Dismiss without celebrating" style="padding:2px 6px">✕</button></div>`; },
+  cardHTML(){
+    const gs=Rewards.groups(), dn=gs.filter(g=>g.type==='juz'), pt=gs.filter(g=>g.type==='greenbook'), st=Rewards.stats();
+    return `<div class="card" style="margin-bottom:16px"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎉 Milestone rewards</h3>
+      <span style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag tag-gold">${st.don} 🍩 delivered</span><span class="tag tag-gold">${st.par} 🎉 parties held</span></span></div>
+      <p style="font-size:12.5px;color:var(--ink2);margin:6px 0 8px">Every Juzʼ a Level 3 student completes earns donuts. Every Level 1 student who finishes the Green Book earns a class party. Detected automatically from progress, on top of Class Treat Goals.</p>
+      ${gs.length?`${dn.length?`<div class="notice info" style="margin:0 0 8px">🍩 <div style="flex:1"><b>${dn.length} Juzʼ milestone${dn.length>1?'s':''} — treat Level 3!</b>${Rewards.allergyNote('Level 3')}<div class="wlist" style="margin-top:8px">${dn.map(Rewards.rowHTML).join('')}</div></div></div>`:''}
+      ${pt.length?`<div class="notice info" style="margin:0">🎉 <div style="flex:1"><b>${pt.length} Green Book graduate${pt.length>1?'s':''} — party time for Level 1!</b>${Rewards.allergyNote('Level 1')}<div class="wlist" style="margin-top:8px">${pt.map(Rewards.rowHTML).join('')}</div></div></div>`:''}`
+      :'<p style="font-size:12.5px;color:var(--ok);margin:0">Nothing waiting — the next milestone will show up here on its own.</p>'}</div>`; },
+  profileHTML(s){
+    const rs=(s.rewards||[]).filter(r=>!r.base); const gs=Rewards.groups().filter(g=>g.s.id===s.id);
+    if(!gs.length&&!rs.length) return '';
+    const juz=rs.filter(r=>r.type==='juz').map(r=>r.juz).sort((a,b)=>a-b), gb=rs.some(r=>r.type==='greenbook');
+    return `<div class="card" style="margin-bottom:16px"><div class="whead"><h3>🎉 Milestone rewards</h3></div>
+      ${gs.map(g=>`<div class="notice info" style="margin:0 0 8px">${g.type==='juz'?'🍩':'🎉'} <div><b>${esc(s.name)} ${esc(Rewards.label(g))}!</b> ${g.type==='juz'?'Time to treat Level 3 to donuts.':'Time for a Level 1 party.'}${Rewards.allergyNote(g.type==='juz'?'Level 3':'Level 1')}<br><button class="btn btn-p btn-sm no-print" style="margin-top:8px" data-rw="${s.id}|${g.ids.join(',')}">${g.type==='juz'?'🍩 Delivered':'🎉 Party held'}</button></div></div>`).join('')}
+      <p style="font-size:12.5px;color:var(--ink2);margin:0">${juz.length?'Juzʼ earned since tracking began: '+juz.join(', ')+'. ':''}${gb?'Green Book finished 🎉.':''}</p></div>`; },
+  wire(){ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-rw]'); if(!b) return;
+      e.stopPropagation(); e.preventDefault(); const [sid,ids,skip]=b.dataset.rw.split('|'); Rewards.done(sid,ids.split(','),!!skip); },true); }
+};
+Rewards.wire();
+
 const Router = {
   current:null,
   go(hash){ this.current = hash;
@@ -4118,6 +4201,7 @@ const Router = {
   render(){
     const {id,param} = this.parse();
     const m = Registry.get(id) || Registry.get('dashboard');
+    try{ Rewards.check(); }catch(e){ console.error('rewards',e); }
     const v = $('#view'); v.innerHTML='';
     m.render(v, param);
     $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.mod===m.id));
@@ -4449,7 +4533,7 @@ render(v){
       <button class="btn btn-p btn-sm" id="tuitionBannerDraft">✉️ Draft reminders</button>
       <button class="btn btn-ghost btn-sm" id="tuitionBannerDismiss">Dismiss for this month</button>
     </div></div></div>`:''}
-  <div style="display:flex;justify-content:flex-end;margin:0 0 10px"><button class="btn btn-ghost btn-sm no-print" id="custBtn">⚙ Customize · drag cards to reorder</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px">${QJ.buttonsHTML()}<button class="btn btn-ghost btn-sm no-print" id="custBtn">⚙ Customize · drag cards to reorder</button></div>
   <div class="grid g2" id="dashGrid">`;
 
   const W = {};
@@ -4473,6 +4557,7 @@ render(v){
     const items=[];
     stu.filter(s=>s.level==='Level 3').forEach(s=>(s.hifzGoalHistory||[]).filter(g=>g.status==='met'&&!g.celebrated).forEach(g=>
       items.push({i:'🍩',t:s.name+' reached the Juzʼ '+g.juz+' goal — treat Level 3 to donuts!', go:'#/students/'+s.id, tag:'treat!', why:'Ḥifẓ goal (Juzʼ '+g.juz+', deadline '+fmtDate(g.deadline)+') completed on '+fmtDate(g.resolvedDate), key:'treat_'+s.id+'_'+g.juz+'_'+g.resolvedDate})));
+    Rewards.groups().forEach(g=>items.push({i:g.type==='juz'?'🍩':'🎉',t:g.s.name+' '+Rewards.label(g)+(g.type==='juz'?' — treat Level 3 to donuts!':' — party time for Level 1!'), go:'#/students/'+g.s.id, tag:g.type==='juz'?'treat!':'party!', why:'milestone reward: '+(g.type==='juz'?'every completed Juzʼ earns donuts':'finishing the Green Book earns a Level 1 party')+' · earned '+fmtDate(g.date), key:'rw_'+g.s.id+'_'+g.date+'_'+g.type}));
     if(daysTo===0 && stu.length && !Object.keys(todayRec).length)
       items.push({i:'✅',t:'Attendance not taken yet for today’s class', go:'#/students/attendance', tag:'now', why:'today is a scheduled class day and no attendance is recorded yet', key:'att_'+tdy});
     openTasks.filter(t=>t.due&&t.due<tdy).forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed', key:'task_'+t.id}));
@@ -4750,6 +4835,7 @@ render(v){
     if(/^task_/.test(key)){
       const t=d.tasks.find(x=>x.id===key.slice(5)); if(t){ t.done=true; t.doneOn=tdy; DB.log('Task completed from Needs attention: '+t.text); }
       DB.save(); toast('Task completed ✓'); Router.render(); return; }
+    if(/^rw_/.test(key)){ const g=Rewards.groups().find(x=>'rw_'+x.s.id+'_'+x.date+'_'+x.type===key); if(g){ Rewards.done(g.s.id,g.ids,false); } return; }
     if(/^treat_/.test(key)){
       const m=key.match(/^treat_(.+?)_(\d+)_(.+)$/); const s=m&&d.students.find(x=>x.id===m[1]);
       const g=s&&(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated&&String(x.juz)===m[2]); if(g) g.celebrated=true;
@@ -5510,6 +5596,7 @@ const Teacher = {
     el.innerHTML = `
     ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><div style="display:flex;gap:7px;flex-shrink:0" class="no-print"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-p btn-sm" id="enterClassMode">🖥 Class Mode</button></div></div>`
       :`<div class="no-print" style="margin-bottom:16px;display:flex;gap:7px"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
+    ${Rewards.cardHTML()}
     ${Teacher.treatGoalsRosterHTML()}
     ${Rev.dueCardHTML()}
     <div class="sect">1 · Before class<span class="rule"></span></div>
@@ -6616,30 +6703,60 @@ const QJ = {
     const d=DB.data, cut=new Date(Date.now()-21*864e5).toISOString().slice(0,10), anyLog=d.students.some(s=>(s.gbLog||[]).length);
     return d.students.filter(s=>s.active!==false && s.level==='Level 1').map(s=>{
       const g=s.gb||{page:0}, log=[...(s.gbLog||[])].sort((a,b)=>b.date.localeCompare(a.date)), last=log[0]?log[0].date:null, page=Math.max(0,Math.min(GB_TOTAL,+g.page||0));
-      return {s, page, pct:page/GB_TOTAL*100, fluency:g.fluency||'', last, log:[...log].reverse(), behind:anyLog && (!last||last<cut)};
+      return {s, lvl:'l1', page, pct:page/GB_TOTAL*100, fluency:g.fluency||'', last, log:[...log].reverse(), behind:anyLog && (!last||last<cut)};
     });
   },
+  dataL2(){
+    const d=DB.data, cut=new Date(Date.now()-21*864e5).toISOString().slice(0,10), anyLog=d.students.some(s=>(s.musLog||[]).length);
+    return d.students.filter(s=>s.active!==false && s.level==='Level 2').map(s=>{
+      const m=s.mus||{page:0}, log=[...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date)), last=log[0]?log[0].date:null, page=Math.max(0,Math.min(MUSHAF_TOTAL,+m.page||0));
+      return {s, lvl:'l2', page, pct:page/MUSHAF_TOTAL*100, fluency:(log[0]&&log[0].fluency)||m.fluency||'', last, log:[...log].reverse(), behind:anyLog && (!last||last<cut)};
+    });
+  },
+  dataAll(){ return [...QJ.dataL1(),...QJ.dataL3()]; }, // split view: Level 1 map on top, Level 3 below
   data(){
     if(QJ.mode==='l1') return QJ.dataL1();
+    if(QJ.mode==='l2') return QJ.dataL2();
+    if(QJ.mode==='all') return QJ.dataAll();
+    return QJ.dataL3();
+  },
+  dataL3(){
     const d=DB.data, tdy=today(), cut=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
     const lastQ={}; (d.quran||[]).forEach(q=>{ if(!lastQ[q.sid]||q.date>lastQ[q.sid]) lastQ[q.sid]=q.date; });
     return d.students.filter(s=>s.active!==false && s.level==='Level 3').map(s=>{
       const st=hifzStats(s), rv=Rev.summary(s);
-      return {s, pct:st.pct, cur:st.cur, rev:rv, fj:furthestJuzDone(s), reverse:st.pid==='reverse',
+      return {s, lvl:'l3', pct:st.pct, cur:st.cur, rev:rv, fj:furthestJuzDone(s), reverse:st.pid==='reverse',
         behind: !!d.quran.length && (!lastQ[s.id]||lastQ[s.id]<cut)};
     });
   },
+  MODES:{l1:['📗','Level 1','Green Book Journey'],l2:['📖','Level 2','Muṣḥaf Reading Journey'],l3:['🕌','Level 3','Qurʼān Journey'],all:['🪜','L1 + L3','Level 1 & Level 3 Journeys']},
+  buttonsHTML(){ return `<span class="qj-btns no-print" style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:11.5px;color:var(--ink3)">🗺 Journey maps</span>${Object.entries(QJ.MODES).map(([k,m])=>`<button class="btn btn-o btn-sm" data-qjourney="${k}">${m[0]} ${m[1]}</button>`).join('')}</span>`; },
+  chrome(){
+    const r=QJ.root, M=QJ.MODES[QJ.mode], m=QJ.mode;
+    $('#qj-title',r).textContent=M[0]+' '+M[2]; r.setAttribute('aria-label',M[2]);
+    $$('#qj-modes [data-qjm]',r).forEach(b=>b.classList.toggle('on',b.dataset.qjm===m));
+    const ok='<span><i class="qj-dot ok"></i>on track</span>', av='<span><i class="qj-tick"></i>class average</span>';
+    $('#qj-legend',r).innerHTML = m==='l1'? `${ok}<span><i class="qj-dot warn"></i>no page update in 21+ days</span>${av}<span>Finish line = Green Book complete (p.${GB_TOTAL}) → Level 2</span>`
+      : m==='l2'? `${ok}<span><i class="qj-dot warn"></i>no page update in 21+ days</span>${av}<span>Finish line = full Muṣḥaf (p.${MUSHAF_TOTAL}) → Level 3</span>`
+      : m==='all'? `${ok}<span><i class="qj-dot warn"></i>needs an update (21d L1 · 14d L3)</span>${av}<span>Level 1 (Green Book) on top · Level 3 (Ḥifẓ) below</span>`
+      : `${ok}<span><i class="qj-dot warn"></i>no entry in 14+ days</span><span><i class="qj-badge-demo">3</i>overdue revision</span>${av}<span>Juzʼ milestones follow the standard order</span>`;
+  },
+  setMode(m){ QJ.mode=m; QJ.sel=null; QJ._anim=!window.matchMedia('(prefers-reduced-motion: reduce)').matches; QJ.chrome(); QJ.layout(); },
   open(mode){
     if(QJ.root) return;
-    QJ.mode=mode==='l1'?'l1':'l3'; const L1=QJ.mode==='l1';
-    const r=document.createElement('div'); r.className='qj'; r.setAttribute('role','dialog'); r.setAttribute('aria-modal','true'); r.setAttribute('aria-label',L1?'Green Book Journey':'Qurʼān Journey');
-    r.innerHTML=`<div class="qj-top"><div style="min-width:0"><div class="qj-title">${L1?'📗 Green Book Journey':'🗺 Qurʼān Journey'}</div><div class="qj-sub" id="qj-sub"></div></div>
+    QJ.mode=QJ.MODES[mode]?mode:'l3';
+    const r=document.createElement('div'); r.className='qj'; r.setAttribute('role','dialog'); r.setAttribute('aria-modal','true');
+    r.innerHTML=`<div class="qj-top"><div style="min-width:0"><div class="qj-title" id="qj-title"></div><div class="qj-sub" id="qj-sub"></div></div>
       <div class="qj-ctl"><button class="chip" id="qj-names"></button>${document.fullscreenEnabled?'<button class="chip" id="qj-fs">⛶ Fullscreen</button>':''}<button class="chip" id="qj-x" aria-label="Close journey">✕ Close</button></div></div>
-      <div class="qj-stage" id="qj-stage"><div class="qj-map" id="qj-map"></div></div>
+      <div id="qj-modes" class="qj-modes">${Object.entries(QJ.MODES).map(([k,m])=>`<button class="chip" data-qjm="${k}">${m[0]} ${m[1]}</button>`).join('')}</div>
+      <div class="qj-stage" id="qj-stage"><div class="qj-map"></div></div>
+      <div class="qj-stage" id="qj-stage2" style="display:none"><div class="qj-map"></div></div>
       <div class="qj-panel" id="qj-panel"></div>
-      <div class="qj-legend">${L1?`<span><i class="qj-dot ok"></i>on track</span><span><i class="qj-dot warn"></i>no page update in 21+ days</span><span><i class="qj-tick"></i>class average</span><span>Finish line = Green Book complete (p.${GB_TOTAL}) → Level 2</span>`:`<span><i class="qj-dot ok"></i>on track</span><span><i class="qj-dot warn"></i>no entry in 14+ days</span><span><i class="qj-badge-demo">3</i>overdue revision Juzʼ</span><span><i class="qj-tick"></i>class average</span><span>Milestones follow the standard order (Juzʼ 30 → 1)</span>`}</div>`;
+      <div class="qj-legend" id="qj-legend"></div>`;
     document.body.appendChild(r); QJ.root=r; QJ.sel=null; QJ._anim=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     $('#qj-x',r).onclick=()=>QJ.close();
+    $$('#qj-modes [data-qjm]',r).forEach(b=>b.onclick=()=>QJ.setMode(b.dataset.qjm));
+    QJ.chrome();
     $('#qj-names',r).onclick=()=>{ QJ.names=!QJ.names; if(!QJ.names) QJ.sel=null; QJ._anim=false; QJ.layout(); };
     const fs=$('#qj-fs',r); if(fs) fs.onclick=()=>{ if(document.fullscreenElement) document.exitFullscreen(); else r.requestFullscreen&&r.requestFullscreen().catch(()=>toast('Fullscreen is not available here')); };
     QJ._esc=e=>{ if(e.key==='Escape' && !document.querySelector('#overlays .ovl')) QJ.close(); };
@@ -6657,13 +6774,29 @@ const QJ = {
   layout(){
     const r=QJ.root; if(!r) return;
     cancelAnimationFrame(QJ._raf);
-    const rows=QJ.data(), stage=$('#qj-stage',r), map=$('#qj-map',r), names=QJ.names;
+    const names=QJ.names, all=QJ.data(), split=QJ.mode==='all', mm=QJ.mode;
     $('#qj-names',r).textContent = names ? '👁 Names on' : '🙈 Names hidden';
+    const avgOf=rs=>rs.length? rs.reduce((n,x)=>n+x.pct,0)/rs.length : 0;
+    const l1=all.filter(x=>x.lvl==='l1'), l3=all.filter(x=>x.lvl==='l3');
+    $('#qj-sub',r).textContent = split ? l1.length+' in Level 1 (avg page '+Math.round(avgOf(l1)/100*GB_TOTAL)+' of '+GB_TOTAL+') · '+l3.length+' in Level 3 (avg '+avgOf(l3).toFixed(0)+'%)'
+      : all.length+' students · class average '+(mm==='l1'? 'page '+Math.round(avgOf(all)/100*GB_TOTAL)+' of '+GB_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : mm==='l2'? 'page '+Math.round(avgOf(all)/100*MUSHAF_TOTAL)+' of '+MUSHAF_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : avgOf(all).toFixed(0)+'%');
+    const st2=$('#qj-stage2',r); st2.style.display=split?'':'none'; if(!split) $('.qj-map',st2).innerHTML='';
+    const panes = split ? [['l1',$('#qj-stage',r),l1],['l3',st2,l3]] : [[mm,$('#qj-stage',r),all]];
+    let items=[]; panes.forEach(([MD,stage,rows])=>{ items=items.concat(QJ.drawPane(stage,MD,rows,names,split)); });
+    if(QJ._anim){
+      const t0=performance.now(), dur=1100; items.forEach((it,i)=>it.delay=i*22);
+      const tick=now=>{ let done=true; items.forEach(it=>{ const t=Math.max(0,Math.min(1,(now-t0-it.delay)/dur)), e=1-Math.pow(1-t,3); it.put(it.len*e,it.off*it.step*e); if(t<1) done=false; });
+        if(!done) QJ._raf=requestAnimationFrame(tick); };
+      QJ._raf=requestAnimationFrame(tick); QJ._anim=false;
+    } else items.forEach(it=>it.put(it.len,it.off*it.step));
+    QJ.paint(all);
+  },
+  drawPane(stage,MD,rows,names,split){
+    const r=QJ.root, map=$('.qj-map',stage);
     const avg = rows.length? rows.reduce((n,x)=>n+x.pct,0)/rows.length : 0;
-    $('#qj-sub',r).textContent = rows.length+' students · class average '+(QJ.mode==='l1'? 'page '+Math.round(avg/100*GB_TOTAL)+' of '+GB_TOTAL+' ('+avg.toFixed(0)+'%)' : avg.toFixed(0)+'%');
     const aw=stage.clientWidth, ah=stage.clientHeight, portrait=aw<700;
-    const W=portrait?620:1000, L=portrait?7:4, m=portrait?85:100, H=portrait?m*2+(L-1)*125:m*2+(L-1)*150;
-    const mapW = portrait? aw : Math.min(aw, ah*W/H), mapH = mapW*H/W, sc = mapW/W;
+    const W=portrait?620:1000, L=split?2:portrait?7:4, m=split?(portrait?92:98):portrait?85:100, H=split?m*2+(L-1)*110:portrait?m*2+(L-1)*125:m*2+(L-1)*150;
+    const mapW = (portrait&&!split)? aw : Math.min(aw, Math.max(220,ah)*W/H), mapH = mapW*H/W, sc = mapW/W;
     map.style.width=mapW+'px'; map.style.height=mapH+'px';
     const gap=(H-2*m)/(L-1), rad=gap/2, xl=m+rad, xr=W-m-rad;
     let dpath=`M ${xl} ${m}`;
@@ -6671,16 +6804,21 @@ const QJ = {
     map.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${mapW}" height="${mapH}" aria-hidden="true" style="position:absolute;inset:0">
       <path d="${dpath}" fill="none" stroke="var(--line)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="${dpath}" fill="none" stroke="var(--surface)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
-      <path id="qj-p" d="${dpath}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-dasharray="3 11" stroke-linecap="round" opacity=".75"/></svg><div class="qj-layer" id="qj-layer"></div>`;
-    const path=$('#qj-p',map), total=path.getTotalLength(), layer=$('#qj-layer',map);
+      <path class="qj-p" d="${dpath}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-dasharray="3 11" stroke-linecap="round" opacity=".75"/></svg><div class="qj-layer"></div>${split?`<div class="qj-plabel">${MD==='l1'?'📗 Level 1 · Green Book':'🕌 Level 3 · Ḥifẓ'}</div>`:''}`;
+    const path=$('#qj-p',map)||map.querySelector('path[stroke-dasharray]'), total=path.getTotalLength(), layer=map.querySelector('.qj-layer');
     const pt=len=>{ const p=path.getPointAtLength(Math.max(0,Math.min(total,len))); return {x:p.x*sc,y:p.y*sc}; };
     const nrm=len=>{ const a=pt(len-3), b=pt(len+3), tx=b.x-a.x, ty=b.y-a.y, h=Math.hypot(tx,ty)||1; return {x:-ty/h,y:tx/h}; };
     const AV=Math.round(Math.max(24,Math.min(40,mapW/26)));
     const place=(el,len,off,w)=>{ const p=pt(len), n=nrm(len); el.style.left=(p.x+n.x*off-(w||AV)/2)+'px'; el.style.top=(p.y+n.y*off-(w||AV)/2)+'px'; };
     // landmarks: end of each Juzʼ in the standard order
     const mile=N=>Math.min(1,(605-Math.max(JUZ_PAGE[N],2))/603);
-    const L1=QJ.mode==='l1'; let lm='';
-    if(L1){
+    let lm='';
+    if(!rows.length){ /* empty level: still draw the road */ }
+    if(MD==='l2'){
+      for(let p=50;p<=MUSHAF_TOTAL;p+=50){ const big=p%100===0; lm+=`<div class="qj-node${big?' big':''}" data-len="${Math.min(1,p/MUSHAF_TOTAL)*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
+      for(const p of [100,200,300,400,500]){ lm+=`<div class="qj-mlabel" data-lenl="${p/MUSHAF_TOTAL*total/sc}">p.${p}</div>`; }
+      lm+=`<div class="qj-flag" data-lenl="0">📖 <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Level 3</small></div>`;
+    } else if(MD==='l1'){
       for(let p=10;p<=GB_TOTAL;p+=10){ const big=p%40===0; lm+=`<div class="qj-node${big?' big':''}" data-len="${p/GB_TOTAL*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
       for(const p of [20,40,60,80,100,120,140]){ lm+=`<div class="qj-mlabel" data-lenl="${p/GB_TOTAL*total/sc}">p.${p}</div>`; }
       lm+=`<div class="qj-flag" data-lenl="0">أ ب <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Level 2</small></div>`;
@@ -6715,45 +6853,54 @@ const QJ = {
       b.setAttribute('aria-label', names? (s.preferredName||s.name)+', '+x.pct.toFixed(0)+' percent' : 'student, '+x.pct.toFixed(0)+' percent');
       b.innerHTML = names ? (s.photo?`<img src="${s.photo}" alt="" loading="lazy">`:esc(initials(s.name))) : '';
       if(names && x.rev && x.rev.c.due) b.insertAdjacentHTML('beforeend',`<span class="qj-badge">${x.rev.c.due}</span>`);
-      if(names){ b.addEventListener('click',()=>{ QJ.sel=QJ.sel===s.id?null:s.id; QJ.paint(); $$('.qj-av',layer).forEach(e=>e.classList.toggle('sel',e===b&&QJ.sel===s.id)); }); }
+      if(names){ b.addEventListener('click',()=>{ QJ.sel=QJ.sel===s.id?null:s.id; QJ.paint(); $$('.qj-av',r).forEach(e=>e.classList.toggle('sel',e===b&&QJ.sel===s.id)); }); }
       else b.tabIndex=-1;
       layer.appendChild(b); it.el=b; it.step=step;
     });
-    const draw=t=>{ items.forEach(it=>{ place(it.el, it.len*t, it.off*it.step*t); }); };
-    if(QJ._anim){
-      const t0=performance.now(), dur=1100; items.forEach((it,i)=>it.delay=i*22);
-      const tick=now=>{ let done=true; items.forEach(it=>{ const t=Math.max(0,Math.min(1,(now-t0-it.delay)/dur)), e=1-Math.pow(1-t,3); place(it.el,it.len*e,it.off*it.step*e); if(t<1) done=false; });
-        if(!done) QJ._raf=requestAnimationFrame(tick); };
-      QJ._raf=requestAnimationFrame(tick); QJ._anim=false;
-    } else draw(1);
-    QJ.paint(rows);
+    items.forEach(it=>{ it.put=(len,off)=>place(it.el,len,off); });
+    return items;
   },
   paint(rows){
     const r=QJ.root; if(!r) return; rows=rows||QJ.data();
     const panel=$('#qj-panel',r), x=rows.find(z=>z.s.id===QJ.sel);
-    if(QJ.mode==='l1'){
-      if(!x||!QJ.names){ panel.innerHTML=`<span style="color:var(--ink3);font-size:13px">${QJ.names?'Tap a student to see their page, pace, and update it right here.':'Names are hidden — safe to share this screen.'}</span>`; return; }
-      const s=x.s, left=GB_TOTAL-x.page, nextM=Math.min(GB_TOTAL,(Math.floor(x.page/20)+1)*20), eta=paceETA(x.log,x.page,GB_TOTAL,'page');
-      panel.innerHTML=`<div class="qj-card">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0')}
-        <div style="min-width:0;flex:1"><div style="font-family:var(--f-display);font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:left" dir="auto">${esc(s.name)}</div>
-          <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">Page ${x.page} of ${GB_TOTAL} · ${x.pct.toFixed(0)}%${x.fluency?' · '+esc(x.fluency):''}${x.page>=GB_TOTAL?'':' · '+left+' to go'}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.page>=GB_TOTAL?'<span class="tag tag-green">🎉 complete — ready for Level 2</span>':`<span class="tag tag-gold">next milestone p.${nextM} (${nextM-x.page} away)</span>`}${x.behind?'<span class="tag tag-red">no page update in 21+ days</span>':''}${eta&&x.page<GB_TOTAL?`<span class="tag tag-dim">~${eta.weeks} wk at ${eta.pace} pg/wk</span>`:''}<span class="tag tag-dim">${x.last?'last update '+esc(fmtDate(x.last)):'no updates logged'}</span></div>
-          <div class="no-print" style="display:flex;gap:6px;align-items:center;margin-top:8px"><label for="qj-pg" style="font-size:11.5px;color:var(--ink3)">New page</label><input id="qj-pg" type="number" min="0" max="${GB_TOTAL}" value="${x.page}" style="width:76px"><button class="btn btn-p btn-sm" id="qj-save">Save</button></div></div>
+    if(!x||!QJ.names){ panel.style.height='auto'; panel.innerHTML=`<span style="color:var(--ink3);font-size:13px">${QJ.names?'Tap a student to see where they are and update it right here.':'Names are hidden — safe to share this screen.'}</span>`; return; }
+    panel.style.height='';
+    const s=x.s, avatar=avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0');
+    const nameEl=`<div style="font-family:var(--f-display);font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:left" dir="auto">${esc(s.name)}</div>`;
+    const done=()=>{ QJ._anim=false; QJ.layout(); Router.render(); };
+    if(x.lvl==='l1'||x.lvl==='l2'){
+      const L1=x.lvl==='l1', T=L1?GB_TOTAL:MUSHAF_TOTAL, step=L1?20:100, left=T-x.page, nextM=Math.min(T,(Math.floor(x.page/step)+1)*step), eta=paceETA(x.log,x.page,T,'page');
+      panel.innerHTML=`<div class="qj-card">${avatar}
+        <div style="min-width:0;flex:1">${nameEl}
+          <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${L1?'':'Muṣḥaf '}Page ${x.page} of ${T} · ${x.pct.toFixed(0)}%${x.fluency?' · '+esc(x.fluency):''}${x.page>=T?'':' · '+left+' to go'}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.page>=T?`<span class="tag tag-green">🎉 complete — ready for ${L1?'Level 2':'Level 3'}</span>`:`<span class="tag tag-gold">next milestone p.${nextM} (${nextM-x.page} away)</span>`}${x.behind?'<span class="tag tag-red">no page update in 21+ days</span>':''}${eta&&x.page<T?`<span class="tag tag-dim">~${eta.weeks} wk at ${eta.pace} pg/wk</span>`:''}</div>
+          <div class="no-print" style="display:flex;gap:6px;align-items:center;margin-top:8px"><label for="qj-pg" style="font-size:11.5px;color:var(--ink3)">New page</label><input id="qj-pg" type="number" min="0" max="${T}" value="${x.page}" style="width:76px"><button class="btn btn-p btn-sm" id="qj-save">Save</button></div></div>
         <button class="btn btn-o btn-sm" id="qj-open">Open profile →</button></div>`;
       $('#qj-open',panel).onclick=()=>{ QJ.close(); Router.go('#/students/'+s.id); };
-      $('#qj-save',panel).onclick=()=>{ const pg=Math.max(0,Math.min(GB_TOTAL,+$('#qj-pg',panel).value||0)); const g=s.gb=s.gb||{page:0,fluency:''}; const lg=s.gbLog=s.gbLog||[];
-        g.page=pg; lg.push({date:today(), page:pg, fluency:g.fluency||'', note:''}); DB.log('Green Book update — '+s.name+' p.'+pg); DB.save(); toast('Page '+pg+' saved'); QJ._anim=false; QJ.layout(); Router.render(); };
+      $('#qj-save',panel).onclick=()=>{ const pg=Math.max(0,Math.min(T,+$('#qj-pg',panel).value||0));
+        if(L1){ const g=s.gb=s.gb||{page:0,fluency:''}; const lg=s.gbLog=s.gbLog||[]; g.page=pg; lg.push({date:today(), page:pg, fluency:g.fluency||'', note:''}); DB.log('Green Book update — '+s.name+' p.'+pg); }
+        else { const g=s.mus=s.mus||{page:0,fluency:'',acc:''}; const lg=s.musLog=s.musLog||[]; g.page=pg; lg.push({date:today(), page:pg, fluency:g.fluency||'', note:''}); DB.log('Muṣḥaf reading update — '+s.name+' p.'+pg); }
+        DB.save(); toast('Page '+pg+' saved'); done(); };
       return; }
-    if(!x||!QJ.names){ panel.innerHTML=`<span style="color:var(--ink3);font-size:13px">${QJ.names?'Tap a student to see where they are and what needs revising.':'Names are hidden — safe to share this screen.'}</span>`; return; }
-    const s=x.s, c=x.rev.c, st=hifzStats(s), g=s.hifzGoal, dueJ=x.rev.list.filter(j=>j.k==='due').slice(0,6);
-    panel.innerHTML=`<div class="qj-card">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0')}
-      <div style="min-width:0;flex:1"><div style="font-family:var(--f-display);font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:left" dir="auto">${esc(s.name)}</div>
-        <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${x.pct.toFixed(0)}% of their path · Juzʼ ${x.fj}/30 complete · now on ${esc(QS[st.cur].name)}${x.reverse?' · reverse path':''}</div>
+    const c=x.rev.c, st=hifzStats(s), g=s.hifzGoal, dueJ=x.rev.list.filter(j=>j.k==='due').slice(0,6);
+    panel.innerHTML=`<div class="qj-card">${avatar}
+      <div style="min-width:0;flex:1">${nameEl}
+        <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${x.pct.toFixed(0)}% of their path · Juzʼ ${x.fj}/30 complete · now on ${esc(QS[st.cur].name)}${st.pid==='reverse'?' · reverse path':''}${s.hifz&&s.hifz.curPage?' · p.'+s.hifz.curPage:''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${g?`<span class="tag tag-gold">🍩 goal: Juzʼ ${g.juz}${g.deadline?' by '+esc(fmtDate(g.deadline)):''}</span>`:''}${x.behind?'<span class="tag tag-red">no entry in 14+ days</span>':''}
           ${c.due?`<span class="tag tag-red">${c.due} overdue</span>`:''}${c.soon?`<span class="tag tag-gold">${c.soon} due soon</span>`:''}${c.fresh?`<span class="tag tag-green">${c.fresh} fresh</span>`:''}${c.none?`<span class="tag tag-dim">${c.none} not logged</span>`:''}</div>
+        <div class="no-print" style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap"><label for="qj-sur" style="font-size:11.5px;color:var(--ink3)">Now on</label>
+          <select id="qj-sur" style="max-width:190px">${st.order.map(n=>`<option value="${n}" ${n===st.cur?'selected':''}>${esc(QS[n].name)}</option>`).join('')}</select>
+          <label for="qj-hp" style="font-size:11.5px;color:var(--ink3)">Page</label><input id="qj-hp" type="number" min="${QS[st.cur].p}" max="604" value="${s.hifz&&s.hifz.curPage?s.hifz.curPage:''}" placeholder="p.${QS[st.cur].p}" style="width:76px"><button class="btn btn-p btn-sm" id="qj-save">Save</button></div>
         ${dueJ.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px"><span style="font-size:11.5px;color:var(--ink3);align-self:center">Hear next:</span>${dueJ.map(j=>`<button class="rev-chip due" data-revcell="${s.id}:${j.n}">Juzʼ ${j.n}<small>${j.rating==='forgot'?'forgot parts':j.overdue+'d overdue'}</small></button>`).join('')}</div>`:''}</div>
       <button class="btn btn-o btn-sm" id="qj-open">Open profile →</button></div>`;
     $('#qj-open',panel).onclick=()=>{ QJ.close(); Router.go('#/students/'+s.id); };
+    const sur=$('#qj-sur',panel), hp=$('#qj-hp',panel);
+    sur.onchange=()=>{ const n=+sur.value; hp.min=QS[n].p; hp.placeholder='p.'+QS[n].p; hp.value=''; };
+    $('#qj-save',panel).onclick=()=>{ const n=+sur.value, pv=hp.value.trim(); const before=hifzStats(s);
+      if(n!==before.cur) updateHifzPosition(s,{cur:n});
+      if(pv!=='') updateHifzPosition(s,{curPage:+pv}); else if(n===before.cur) updateHifzPosition(s,{curPage:null});
+      DB.log(s.name+' — Ḥifẓ position set to '+QS[s.hifz.cur].name+(s.hifz.curPage?' p.'+s.hifz.curPage:'')+' (Journey map)');
+      DB.save(); toast(s.name+' updated'); done(); };
   }
 };
 document.addEventListener('click', e=>{
@@ -6958,6 +7105,7 @@ const Students = {
        }).join('')}</div>
      </details>`; })()}
      <div class="filters no-print" style="margin-top:-6px">
+       ${QJ.buttonsHTML()}
        <button class="btn btn-ghost btn-sm" id="stEmerCard">🆘 Emergency card</button>
        <button class="btn btn-ghost btn-sm" id="stExport">⬇ CSV</button>
        <button class="btn btn-ghost btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select'}</button>
@@ -7962,6 +8110,7 @@ const Students = {
      ${st.pct>=100?`<div class="notice info" style="margin-bottom:12px">🕋 <div><b>Ḥifẓ complete — all thirty Juzʼ!</b> ${esc(s.name)} has completed memorizing the entire Qur'an by heart. <button class="btn btn-p btn-sm" id="hifzCertBtn">🎓 Certificate</button></div></div>`:''}
      ${renderGoalCard(eta3, 'pages', e=>nextName?'Finish '+esc(QS[st.cur].name)+', begin '+esc(nextName):'Reach '+e.shortTarget+' pages', e=>'Complete '+esc(HIFZ_PATHS[st.pid].name)+' ('+st.total.toFixed(0)+' p.)')}
      ${renderTreatGoalCard(s)}
+     ${Rewards.profileHTML(s)}
      ${Rev.profileCardHTML(s)}
      <details style="margin-bottom:14px">
        <summary style="cursor:pointer;font-family:var(--f-display);font-size:15px;font-weight:600;padding:2px 0 8px">📊 Memorization Goal &amp; Tracker</summary>
@@ -8454,6 +8603,208 @@ ${sections || '<p style="font-size:13px;color:#686e5f">No students to show.</p>'
 </body></html>`;
 }
 
+/* ================= STUDENT OF THE MONTH HUB =================
+   Engine behind both Student of the Month panels plus: lock/finalize a month (settings.sotmLocks),
+   score breakdown + runner-up, attendance guardrail (settings.sotmMinAtt), won-last-month badge,
+   extra recognitions (Most Improved / Perfect Attendance / Ḥifẓ Star), announce kit,
+   Hall of Fame, and a full-screen celebration reveal. */
+const Sotm = {
+  key(y,m){ return y+'-'+String(PT_MONTHS.indexOf(m)+1).padStart(2,'0'); },
+  display(y,m){ return sotmFormatMonths(PT_MONTHS.indexOf(m),null,y); },
+  text(y,m){ return '🌟 Student of the Month — '+Sotm.display(y,m); },
+  prevOf(y,m){ let i=PT_MONTHS.indexOf(m)-1; if(i<0) return {year:y-1,month:PT_MONTHS[11]}; return {year:y,month:PT_MONTHS[i]}; },
+  minAtt(){ const st=DB.data.settings; return st.sotmMinAtt==null?50:+st.sotmMinAtt; },
+  locks(){ const st=DB.data.settings; return st.sotmLocks=st.sotmLocks||{}; },
+  lockOf(y,m){ return Sotm.locks()[Sotm.key(y,m)]||null; },
+  range(y,m){ const i=PT_MONTHS.indexOf(m), mm=String(i+1).padStart(2,'0'); return {from:`${y}-${mm}-01`, to:`${y}-${mm}-${String(new Date(y,i+1,0).getDate()).padStart(2,'0')}`}; },
+  stu(id){ return DB.data.students.find(x=>x.id===id); },
+  attend(sid,keys){ const a=DB.data.attendance; let held=0,pres=0,perfect=true;
+    keys.forEach(k=>{ const r=a[k]; if(!r||!Object.keys(r).length) return; const v=r[sid]; if(v==='E') return; held++; if(v==='P'||v==='L') pres++; else perfect=false; });
+    return {held,pres,perfect:perfect&&held>0}; },
+  attOK(sid,keys){ const {held,pres}=Sotm.attend(sid,keys); return held===0 || pres>=Math.ceil(held*Sotm.minAtt()/100); },
+  titles(sid,exceptText){ return new Set(DB.data.achievements.filter(a=>a.sid===sid&&a.type==='sotm'&&a.text!==exceptText).map(a=>a.text)).size; },
+  wonIn(sid,y,m){ const t=Sotm.text(y,m); return DB.data.achievements.some(a=>a.sid===sid&&a.type==='sotm'&&a.text===t); },
+  // ---- ranking (kind: 'quran' | 'combo') ----
+  rank(kind,y,m,all){
+    const lock=Sotm.lockOf(y,m), keys=ptMonthKeys(y,m), cur=Sotm.text(y,m), out={};
+    LEVELS.forEach(L=>{
+      const sn=lock&&lock[kind]&&lock[kind][L];
+      if(sn){ const mk=o=>{ const s=Sotm.stu(o.sid); return s?{s,score:o.score,parts:o.parts||{}}:null; };
+        out[L]={locked:true, win:{list:sn.list.map(mk).filter(Boolean),extra:sn.extra||0}, runner:sn.runner?mk(sn.runner):null, inelig:(sn.inelig||[]).map(Sotm.stu).filter(Boolean)}; return; }
+      const subject=DB.data.gbSubjects[0], range=Sotm.range(y,m), weights=DB.data.comboSomWeights; const scored=[], inelig=[];
+      all.filter(s=>s.level===L).forEach(s=>{
+        const st=ptStats(s.id,keys); let score, parts;
+        if(kind==='quran'){ if(!ptSomEligible(st)) return; score=ptSom(st); parts={q:st.quranPct,h:st.hwPct,c:st.cwPct}; }
+        else { score=comboSom(weights,subject,s,keys,range); if(score==null) return; parts={q:ptSomEligible(st)?ptSom(st):null,i:gbIsEnrolled(s)?gbSubjectGrade(subject,s,range):null}; }
+        const at=Sotm.attend(s.id,keys); parts.a=at.held?at.pres+'/'+at.held:null;
+        if(!Sotm.attOK(s.id,keys)){ inelig.push(s); return; }
+        scored.push({s,score,parts});
+      });
+      scored.sort((a,b)=>b.score-a.score);
+      const k=x=>x.score.toFixed(1), top=scored.length?k(scored[0]):null;
+      const tied=scored.filter(x=>k(x)===top).sort((a,b)=>(Sotm.titles(a.s.id,cur)-Sotm.titles(b.s.id,cur))||a.s.name.localeCompare(b.s.name,'ar'));
+      out[L]={locked:false, win:{list:tied.slice(0,3),extra:Math.max(0,tied.length-3)}, runner:scored.find(x=>k(x)!==top)||null, inelig};
+    });
+    return out;
+  },
+  // ---- extra recognitions ----
+  awards(y,m,all){
+    const lock=Sotm.lockOf(y,m); if(lock&&lock.awards){ const h=o=>Object.assign({},o,{s:Sotm.stu(o.sid)}); const A=lock.awards;
+      return {locked:true, improved:A.improved.map(h).filter(x=>x.s), perfect:A.perfect.map(h).filter(x=>x.s), hifz:A.hifz.map(h).filter(x=>x.s)}; }
+    const keys=ptMonthKeys(y,m), p=Sotm.prevOf(y,m), pkeys=ptMonthKeys(p.year,p.month);
+    const win=new Set(); ['quran','combo'].forEach(k=>{ const r=Sotm.rank(k,y,m,all); LEVELS.forEach(L=>r[L].win.list.forEach(x=>win.add(x.s.id))); });
+    const improved=[]; LEVELS.forEach(L=>{ const c=[];
+      all.filter(s=>s.level===L&&!win.has(s.id)).forEach(s=>{ const n=ptStats(s.id,keys), b=ptStats(s.id,pkeys); if(!ptSomEligible(n)||!ptSomEligible(b)||!Sotm.attOK(s.id,keys)) return;
+        const now=ptSom(n), before=ptSom(b), delta=now-before; if(delta>=0.05) c.push({sid:s.id,s,L,delta,now,before}); });
+      c.sort((a,b)=>b.delta-a.delta); if(c.length){ const t=c[0].delta.toFixed(1); improved.push(...c.filter(x=>x.delta.toFixed(1)===t).slice(0,3)); } });
+    const perfect=all.map(s=>({s,at:Sotm.attend(s.id,keys)})).filter(x=>x.at.held>=3&&x.at.perfect).map(x=>({sid:x.s.id,s:x.s,held:x.at.held}));
+    const r=Sotm.range(y,m), end=r.to<today()?r.to:today(); const hz=[];
+    all.filter(s=>s.level==='Level 3').forEach(s=>{ const lg=[...(s.hifzLog||[])].sort((a,b)=>a.date.localeCompare(b.date)); const base=[...lg].reverse().find(e=>e.date<r.from); const last=[...lg].reverse().find(e=>e.date>=r.from&&e.date<=end);
+      if(base&&last&&last.pages>base.pages) hz.push({sid:s.id,s,pages:Math.round((last.pages-base.pages)*10)/10}); });
+    hz.sort((a,b)=>b.pages-a.pages); const hifz=hz.length?hz.filter(x=>x.pages===hz[0].pages).slice(0,3):[];
+    return {locked:false, improved, perfect, hifz};
+  },
+  // ---- finalize ----
+  snapshot(kind,y,m,all){ const live=Object.assign({},Sotm.lockOf(y,m)); const tmp=Sotm.locks(); const key=Sotm.key(y,m), saved=tmp[key]; delete tmp[key];
+    const r=Sotm.rank(kind,y,m,all); if(saved) tmp[key]=saved;
+    const o={}, sn=x=>x?{sid:x.s.id,score:x.score,parts:x.parts}:null;
+    LEVELS.forEach(L=>{ o[L]={list:r[L].win.list.map(sn),extra:r[L].win.extra,runner:sn(r[L].runner),inelig:r[L].inelig.map(s=>s.id)}; }); return o; },
+  finalize(y,m){
+    const all=DB.data.students.filter(s=>s.active!==false), key=Sotm.key(y,m), L=Sotm.locks(); const saved=L[key]; delete L[key];
+    const quran=Sotm.snapshot('quran',y,m,all), combo=Sotm.snapshot('combo',y,m,all), A=Sotm.awards(y,m,all); if(saved) L[key]=saved;
+    const strip=a=>a.map(({s,...r})=>r);
+    L[key]={date:today(),minAtt:Sotm.minAtt(),quran,combo,awards:{improved:strip(A.improved),perfect:strip(A.perfect),hifz:strip(A.hifz)}};
+    const ach=DB.data.achievements, txt=Sotm.text(y,m); let n=0;
+    const add=(sid,text,type)=>{ if(!ach.some(a=>a.sid===sid&&a.text===text)){ ach.push({sid,text,date:today(),type}); n++; } };
+    [quran,combo].forEach(sn=>LEVELS.forEach(l=>sn[l].list.forEach(o=>add(o.sid,txt,'sotm'))));
+    const d=Sotm.display(y,m); A.improved.forEach(x=>add(x.sid,'🏅 Most Improved — '+d,'award')); A.perfect.forEach(x=>add(x.sid,'🎯 Perfect Attendance — '+d,'award')); A.hifz.forEach(x=>add(x.sid,'📖 Ḥifẓ Star — '+d,'award'));
+    DB.log('Student of the Month finalized — '+d+' ('+n+' recognitions recorded)'); DB.save(); return n;
+  },
+  // ---- UI helpers ----
+  av(s,px,ring){ return avatarHTML(s,`width:${px}px;height:${px}px;border-radius:50%;font-size:${Math.round(px/3)}px;flex-shrink:0;${ring?'border:2px solid var(--gold)':''}`); },
+  pct(v){ return v==null?'—':Math.round(v)+'%'; },
+  partsLine(kind,x,L){ const p=x.parts||{}; const a=p.a?` · 📅 attended ${p.a}`:'';
+    return kind==='quran'?`📖 ${Sotm.pct(p.q)} · 📝 HW ${Sotm.pct(p.h)} · ✏️ CW ${Sotm.pct(p.c)}${a}`:`📖 Qurʼān ${p.q==null?'—':p.q.toFixed(0)} · 📚 Islamic Studies ${p.i==null?'—':p.i.toFixed(0)}${a}`; },
+  levelHTML(kind,L,res,emptyMsg,a,y,m){
+    const win=res.win, tagL=`<span class="tag ${ptLevelTag(L)}">${L}</span>`;
+    const inel=res.inelig.length?`<div style="font-size:11.5px;color:var(--ink3);margin-top:6px">⛔ Not eligible — attended under ${Sotm.minAtt()}% of the month's sessions: ${res.inelig.map(s=>esc(s.name)).join(', ')}</div>`:'';
+    if(!win.list.length) return `<div style="padding:8px 10px;border-radius:9px;background:var(--surface2)"><div style="display:flex;align-items:center;gap:8px">${tagL}<span style="color:var(--ink3);font-size:12.5px">${emptyMsg}</span></div>${inel}</div>`;
+    const multi=win.list.length>1, sc=win.list[0].score.toFixed(1), prev=Sotm.prevOf(y,m);
+    const run=res.runner?`<div style="font-size:11.5px;color:var(--ink3);margin-top:6px">🥈 Runner-up: ${esc(res.runner.s.name)} · ${res.runner.score.toFixed(1)} (${(res.runner.score-win.list[0].score).toFixed(1)})</div>`:'';
+    return `<div style="padding:8px 10px;border-radius:9px;background:var(--surface2)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">${tagL}${res.locked?'<span class="tag tag-dim">🔒 finalized</span>':''}${multi?`<span class="tag tag-gold">🤝 ${win.list.length}-way tie at ${sc}</span>`:''}${win.extra?`<span class="tag tag-dim" title="Only 3 can be named. Students who haven't won before come first, then alphabetical">+${win.extra} more tied — top 3 shown</span>`:''}
+        ${multi?`<span class="no-print" style="margin-left:auto"><button class="btn btn-o btn-sm" ${a.all}="${win.list.map(x=>x.s.id).join(',')}">🌟 Share card for all ${win.list.length}</button></span>`:''}</div>
+      ${win.list.map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">${Sotm.av(x.s,38,true)}<div style="min-width:0"><b dir="rtl" style="overflow-wrap:anywhere">${esc(x.s.name)}</b>${Sotm.wonIn(x.s.id,prev.year,prev.month)?' <span class="tag tag-dim" title="Also won last month">🏅 won last month</span>':''}
+          <div style="font-size:11.5px;color:var(--ink3);margin-top:1px">${Sotm.partsLine(kind,x,L)}</div></div></div>
+        <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-family:var(--f-mono)">${x.score.toFixed(1)}</b>
+          <button class="btn btn-o btn-sm" ${a.cert}="${x.s.id}">🏆 Certificate</button><button class="btn btn-o btn-sm" ${a.share}="${x.s.id}">🌟 Share Card</button></div></div>`).join('')}
+      ${run}${inel}</div>`;
+  },
+  // ---- hub ----
+  hubHTML(all,y,m){
+    const lock=Sotm.lockOf(y,m), keys=ptMonthKeys(y,m), held=keys.filter(k=>DB.data.attendance[k]&&Object.keys(DB.data.attendance[k]).length).length, A=Sotm.awards(y,m,all);
+    const chips=(arr,fmt)=>arr.length?arr.map(x=>`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">${Sotm.av(x.s,28)}<span style="min-width:0;flex:1;font-size:12.5px;overflow-wrap:anywhere" dir="auto">${esc(x.s.name)}</span><span class="m" style="font-size:11px;color:var(--ink3);white-space:nowrap">${fmt(x)}</span></div>`).join(''):'';
+    const box=(t,hint,body,cat)=>`<div class="card" style="padding:10px 12px;flex:1;min-width:210px"><div style="font-weight:700;font-size:13px">${t}</div><div style="font-size:11px;color:var(--ink3);margin-bottom:4px">${hint}</div>${body||'<div style="font-size:12px;color:var(--ink3)">Nobody yet this month.</div>'}</div>`;
+    const imp=LEVELS.map(L=>{ const l=A.improved.filter(x=>x.L===L); return l.length?`<div style="font-size:10.5px;font-weight:700;color:var(--ink3);margin-top:4px">${L}</div>`+chips(l,x=>`+${x.delta.toFixed(1)} (${x.before.toFixed(0)}→${x.now.toFixed(0)})`):''; }).join('');
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0;font-family:var(--f-display);font-size:17px">🌟 Student of the Month Hub — ${m} ${y}</h3>
+      ${lock?`<span class="tag tag-green">🔒 Finalized ${esc(fmtDate(lock.date))}</span>`:'<span class="tag tag-gold">Live — recalculates as you grade</span>'}</div>
+      <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">
+        ${lock?'<button class="btn btn-o btn-sm" id="sotmUnlock">🔓 Unlock month</button>':'<button class="btn btn-p btn-sm" id="sotmLock">🔒 Finalize month</button>'}
+        <button class="btn btn-o btn-sm" id="sotmCel">🎬 Celebrate</button><button class="btn btn-o btn-sm" id="sotmAnn">📣 Announce kit</button><button class="btn btn-o btn-sm" id="sotmHof">🏛 Hall of Fame</button></div>
+      <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-bottom:10px">Eligibility: attended at least <input id="sotmMin" type="number" min="0" max="100" value="${Sotm.minAtt()}" style="width:64px"> % of this month's ${held} session${held===1?'':'s'}${lock?` <span class="ai-sub">(locked month keeps the ${lock.minAtt}% rule it was finalized with)</span>`:''}</div>
+      <div style="font-weight:700;font-size:13px;margin:6px 0">✨ More ways to shine ${A.locked?'<span class="tag tag-dim">🔒 finalized</span>':''}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${box('🏅 Most Improved','biggest score gain vs last month (not a winner)',imp)}
+        ${box('🎯 Perfect Attendance','every held session present (3+ sessions)',chips(A.perfect,x=>x.held+' of '+x.held))}
+        ${box('📖 Ḥifẓ Star','most pages memorized this month',chips(A.hifz,x=>'+'+x.pages+' pages'))}</div>
+      ${lock?'':'<p style="font-size:11.5px;color:var(--ink3);margin:8px 0 0">Finalize freezes these winners and records everyone in their history, so later grade edits can’t change a month you’ve already announced.</p>'}`;
+  },
+  wire(root,v){
+    const P=Progress, y=P._year, m=P._month, all=()=>DB.data.students.filter(s=>s.active!==false), rp=()=>P._repaint(v||$('#view'));
+    const b=id=>$(id,root); let e;
+    if(e=b('#sotmLock')) e.onclick=()=>confirmBox('Finalize '+m+' '+y+'? Winners and extra recognitions are frozen and added to each student’s history. You can unlock later.',()=>{ const n=Sotm.finalize(y,m); toast('Finalized — '+n+' recognitions recorded'); rp(); });
+    if(e=b('#sotmUnlock')) e.onclick=()=>confirmBox('Unlock '+m+' '+y+'? Winners will recalculate from current grades. (Recognitions already recorded in student histories stay.)',()=>{ delete Sotm.locks()[Sotm.key(y,m)]; DB.save(); toast('Unlocked'); rp(); });
+    if(e=b('#sotmMin')) e.onchange=()=>{ DB.data.settings.sotmMinAtt=Math.max(0,Math.min(100,+e.value||0)); DB.save(); rp(); };
+    if(e=b('#sotmCel')) e.onclick=()=>Sotm.celebrate(y,m);
+    if(e=b('#sotmAnn')) e.onclick=()=>Sotm.announce(y,m);
+    if(e=b('#sotmHof')) e.onclick=()=>Sotm.hall(y);
+  },
+  winnersFor(y,m){ const all=DB.data.students.filter(s=>s.active!==false), r=Sotm.rank('quran',y,m,all), c=Sotm.rank('combo',y,m,all), out=[];
+    LEVELS.forEach(L=>{ const seen=new Set(); r[L].win.list.forEach(x=>{ seen.add(x.s.id); out.push({L,s:x.s,score:x.score,kind:'Qurʼān'}); });
+      c[L].win.list.forEach(x=>{ if(!seen.has(x.s.id)) out.push({L,s:x.s,score:x.score,kind:'Overall'}); }); }); return out; },
+  // ---- announce kit ----
+  msg(w,y,m,tied){ const s=w.s, g=(s.guardians||[]).find(x=>x.name)||{}, first=(s.preferredName||s.name.split(' ')[0]||s.name);
+    return `Assalamu alaykum${g.name?' '+g.name:''}, alḥamdulillāh — we’re delighted to share that ${first} has been named Student of the Month for ${w.L} for ${Sotm.display(y,m)} at AMAN${tied?' (shared with other strong students this month)':''}. Their effort and consistency really stood out. Please congratulate ${first} at home — jazākum Allāhu khayran for your support.\n— Nuradin Aliy, AMAN`; },
+  announce(y,m){
+    const ws=Sotm.winnersFor(y,m); if(!ws.length){ toast('No winners to announce yet'); return; }
+    const byL={}; ws.forEach(w=>(byL[w.L]=byL[w.L]||[]).push(w)); const disp=Sotm.display(y,m);
+    const classTxt=`🌟 Student of the Month — ${disp}\n`+LEVELS.filter(L=>byL[L]).map(L=>`${L}: ${byL[L].map(w=>w.s.name).filter((n,i,a)=>a.indexOf(n)===i).join(' · ')}`).join('\n')+'\nBarakallāhu fīhim — keep striving, everyone!';
+    const o=overlay(`<div class="modal" style="max-width:640px"><h3>📣 Announce kit — ${esc(disp)}</h3>
+      <p style="font-size:12.5px;color:var(--ink2);margin-top:-4px">Everything for each winner in one place. Edit any message before sending.</p>
+      <div style="max-height:62vh;overflow:auto">${ws.map((w,i)=>{ const ph=((w.s.guardians||[]).find(g=>g.phone)||{}).phone||''; return `<div class="card" style="margin-bottom:10px;padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${Sotm.av(w.s,34,true)}<b dir="auto" style="flex:1;min-width:120px">${esc(w.s.name)}</b><span class="tag ${ptLevelTag(w.L)}">${w.L}</span><span class="tag tag-dim">${w.kind}</span></div>
+        <textarea id="ak-m${i}" rows="4" style="width:100%;margin-top:8px;font-size:12.5px">${esc(Sotm.msg(w,y,m,ws.filter(x=>x.L===w.L&&x.kind===w.kind).length>1))}</textarea>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn btn-o btn-sm" data-akc="${i}">📋 Copy message</button>${ph?`<button class="btn btn-o btn-sm" data-aks="${i}">💬 Text parent</button>`:'<span class="ai-sub" style="align-self:center">no guardian phone on file</span>'}
+          <button class="btn btn-o btn-sm" data-akcert="${w.s.id}">🏆 Certificate</button><button class="btn btn-o btn-sm" data-akshare="${w.s.id}">🌟 Share card</button></div></div>`; }).join('')}
+      <div class="card" style="padding:10px 12px"><b style="font-size:13px">Class announcement</b><textarea id="ak-class" rows="5" style="width:100%;margin-top:6px;font-size:12.5px">${esc(classTxt)}</textarea><button class="btn btn-o btn-sm" id="ak-cc" style="margin-top:6px">📋 Copy</button></div></div>
+      <div class="mfoot"><button class="btn btn-p" data-x="c">Done</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const copy=t=>{ try{ navigator.clipboard.writeText(t); toast('Copied'); }catch(e){ toast('Copy not available here'); } };
+    $$('[data-akc]',o).forEach(b=>b.onclick=()=>copy($('#ak-m'+b.dataset.akc,o).value));
+    $('#ak-cc',o).onclick=()=>copy($('#ak-class',o).value);
+    $$('[data-aks]',o).forEach(b=>b.onclick=()=>{ const w=ws[+b.dataset.aks], t=$('#ak-m'+b.dataset.aks,o).value, ph=((w.s.guardians||[]).find(g=>g.phone)||{}).phone;
+      w.s.parentLog=w.s.parentLog||[]; w.s.parentLog.unshift({date:today(),text:'Student of the Month text sent — '+disp}); DB.save(); location.href='sms:'+ph.replace(/[^\d+]/g,'')+'?&body='+encodeURIComponent(t); });
+    $$('[data-akcert]',o).forEach(b=>b.onclick=()=>{ const s=Sotm.stu(b.dataset.akcert); o.remove(); if(s) Students.sotmForm(s,PT_MONTHS.indexOf(m),y); });
+    $$('[data-akshare]',o).forEach(b=>b.onclick=()=>{ const s=Sotm.stu(b.dataset.akshare); if(!s) return; const t=Sotm.text(y,m); if(!DB.data.achievements.some(a=>a.sid===s.id&&a.text===t)) DB.data.achievements.push({sid:s.id,text:t,date:today(),type:'sotm'}); DB.save(); openLetterPreview(renderSOTMShareCard([s],disp)); });
+  },
+  // ---- hall of fame ----
+  hall(y0){
+    const d=DB.data, rows=d.achievements.filter(a=>a.type==='sotm'||a.type==='award'), seen=new Set(), items=[];
+    rows.forEach(a=>{ const k=a.sid+'|'+a.text; if(seen.has(k)) return; seen.add(k); const mt=a.text.match(/(\d{4})\s*$/), s=Sotm.stu(a.sid); if(!s||!mt) return;
+      const label=a.text.replace(/^[^\w؀-ۿ]*/,'').split('—')[0].trim(), when=a.text.split('—').slice(1).join('—').trim(), mi=SOTM_MONTHS.findIndex(n=>when.startsWith(n));
+      items.push({s,year:+mt[1],mi:mi<0?0:mi,when,label,type:a.type}); });
+    const years=[...new Set(items.map(x=>x.year))].sort((a,b)=>b-a); if(!years.length) years.push(y0);
+    let Y=years.includes(y0)?y0:years[0];
+    const o=overlay(`<div class="modal" style="max-width:680px"><h3>🏛 Hall of Fame</h3><div id="hof"></div><div class="mfoot"><button class="btn btn-p" data-x="c">Close</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const draw=()=>{ const yr=items.filter(x=>x.year===Y&&x.type==='sotm'), tally={};
+      yr.forEach(x=>{ (tally[x.s.id]=tally[x.s.id]||{s:x.s,n:0}).n++; });
+      const tl=Object.values(tally).sort((a,b)=>b.n-a.n||a.s.name.localeCompare(b.s.name,'ar')), top=(tl.length&&tl[0].n>=2)?tl.filter(t=>t.n===tl[0].n).slice(0,3):[];
+      const all={}; items.filter(x=>x.type==='sotm').forEach(x=>{ (all[x.s.id]=all[x.s.id]||{s:x.s,n:0}).n++; });
+      const aw={}; items.filter(x=>x.type==='award').forEach(x=>{ (aw[x.s.id]=aw[x.s.id]||{s:x.s,n:0}).n++; });
+      const byM=PT_MONTHS.map((n,i)=>({n,w:yr.filter(x=>x.mi===i)})).filter(r=>r.w.length);
+      $('#hof',o).innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${years.map(yy=>`<button class="chip ${yy===Y?'on':''}" data-hy="${yy}">${yy}</button>`).join('')}</div>
+        <div class="card" style="padding:12px;margin-bottom:10px;border-top:3px solid var(--gold)"><div style="font-weight:700">🏆 Student of the Year ${Y} <span class="ai-sub">(most monthly titles)</span></div>
+          ${top.length?`<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px">${top.map(t=>`<div style="display:flex;align-items:center;gap:10px">${Sotm.av(t.s,52,true)}<div><b dir="auto">${esc(t.s.name)}</b><div class="ai-sub">${t.n} title${t.n>1?'s':''}${top.length>1?' · shared':''}</div></div></div>`).join('')}</div>`:`<p class="ai-sub" style="margin:6px 0 0">${yr.length?'Nobody has won more than once yet — Student of the Year appears as soon as someone earns a second title.':'No titles recorded for this year yet. Finalizing a month (or generating a certificate/share card) records it here.'}</p>`}</div>
+        ${byM.length?`<div class="card" style="padding:12px;margin-bottom:10px"><b>By month</b>${byM.map(r=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--line)"><span style="width:84px;font-size:12px;color:var(--ink3);flex-shrink:0">${r.n}</span><div style="display:flex;gap:10px;flex-wrap:wrap">${r.w.map(x=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px">${Sotm.av(x.s,24)}${esc(x.s.name)}</span>`).join('')}</div></div>`).join('')}</div>`:''}
+        <div class="card" style="padding:12px"><b>Trophy case — all time</b><div style="display:flex;flex-direction:column;gap:2px;margin-top:6px;max-height:210px;overflow:auto">${Object.values(all).sort((a,b)=>b.n-a.n||a.s.name.localeCompare(b.s.name,'ar')).map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">${Sotm.av(t.s,26)}<span style="flex:1;font-size:12.5px" dir="auto">${esc(t.s.name)}</span><span class="tag tag-gold">${'🌟'.repeat(Math.min(t.n,5))}${t.n>5?' ×'+t.n:''}</span>${aw[t.s.id]?`<span class="tag tag-dim">+${aw[t.s.id].n} 🏅</span>`:''}</div>`).join('')||'<span class="ai-sub">Nothing yet.</span>'}</div></div>`;
+      $$('[data-hy]',o).forEach(b=>b.onclick=()=>{ Y=+b.dataset.hy; draw(); }); };
+    draw();
+  },
+  // ---- celebration reveal ----
+  celebrate(y,m){
+    const all=DB.data.students.filter(s=>s.active!==false), r=Sotm.rank('quran',y,m,all), c=Sotm.rank('combo',y,m,all), A=Sotm.awards(y,m,all);
+    const steps=[{intro:true}];
+    LEVELS.forEach(L=>{ if(r[L].win.list.length) steps.push({label:'⭐ '+L+' Student of the Month',sub:LEVEL_SUB[L]||'',list:r[L].win.list.map(x=>({s:x.s,note:Sotm.pct(x.parts.q)+' Qurʼān'}))});
+      const ids=r[L].win.list.map(x=>x.s.id).sort().join(), cids=c[L].win.list.map(x=>x.s.id).sort().join();
+      if(c[L].win.list.length && cids!==ids) steps.push({label:'🏆 '+L+' · Overall (Qurʼān + Islamic Studies)',sub:LEVEL_SUB[L]||'',list:c[L].win.list.map(x=>({s:x.s,note:''}))}); });
+    const impList=A.improved; if(impList.length) steps.push({label:'🏅 Most Improved',sub:'Biggest jump since last month',list:impList.map(x=>({s:x.s,note:'+'+x.delta.toFixed(1)}))});
+    if(A.perfect.length) steps.push({label:'🎯 Perfect Attendance',sub:'Never missed a session',list:A.perfect.map(x=>({s:x.s,note:x.held+' of '+x.held}))});
+    if(A.hifz.length) steps.push({label:'📖 Ḥifẓ Star',sub:'Most pages memorized',list:A.hifz.map(x=>({s:x.s,note:'+'+x.pages+' pages'}))});
+    if(steps.length===1){ toast('No winners to celebrate yet'); return; }
+    let i=0; const root=document.createElement('div'); root.className='sotm-cel'; root.setAttribute('role','dialog'); root.setAttribute('aria-modal','true'); document.body.appendChild(root);
+    const close=()=>{ document.removeEventListener('keydown',key); root.remove(); };
+    const draw=()=>{ const st=steps[i], last=i===steps.length-1;
+      root.innerHTML=`<button class="chip sotm-x" id="sc-x">✕ Close</button><div class="sotm-stage">${st.intro?`<div class="sotm-big">🌟</div><div class="sotm-h">Student of the Month</div><div class="sotm-sub">${esc(Sotm.display(y,m))}</div><div class="sotm-sub" style="margin-top:18px;opacity:.7">Tap Next to reveal</div>`
+        :`<div class="sotm-sub">${esc(st.sub)}</div><div class="sotm-h">${esc(st.label)}</div><div class="sotm-row">${st.list.map(x=>`<div class="sotm-w">${avatarHTML(x.s,'width:150px;height:150px;border-radius:50%;font-size:48px;border:5px solid var(--gold);box-shadow:0 8px 30px rgba(0,0,0,.4)')}<div class="sotm-name" dir="auto">${esc(x.s.name)}</div>${x.note?`<div class="sotm-sub" style="margin-top:2px">${esc(x.note)}</div>`:''}</div>`).join('')}</div>`}</div>
+        <div class="sotm-nav"><button class="chip" id="sc-b" ${i===0?'disabled':''}>◀ Back</button><span class="sotm-sub">${i+1} / ${steps.length}</span><button class="chip on" id="sc-n">${last?'Done ✓':'Next ▶'}</button></div>`;
+      $('#sc-x',root).onclick=close; $('#sc-b',root).onclick=()=>{ if(i>0){ i--; draw(); } }; $('#sc-n',root).onclick=()=>{ if(last) close(); else { i++; draw(); try{ celebrate(); }catch(e){} } }; };
+    const key=e=>{ if(e.key==='Escape') close(); else if(e.key==='ArrowRight'||e.key===' '){ e.preventDefault(); $('#sc-n',root).click(); } else if(e.key==='ArrowLeft') $('#sc-b',root).click(); };
+    document.addEventListener('keydown',key); draw();
+  }
+};
+
 const Progress = {
   render(v){ this._openId ? this.detail(v, this._openId) : this.roster(v); },
 
@@ -8587,26 +8938,38 @@ const Progress = {
   // graded" rather than "did poorly." Requiring at least one non-null
   // percentage means an ungraded student is correctly excluded rather than
   // silently becoming the winner by default.
+  // Shared by both Student of the Month panels. Winners = everyone tied for the top
+  // score at the precision shown on screen (one decimal), capped at 3 per level.
+  _somWinners(scored){
+    if(!scored.length) return {list:[],extra:0};
+    const key=x=>x.score.toFixed(1), top=key(scored[0]);
+    const tied=scored.filter(x=>key(x)===top).sort((a,b)=>a.s.name.localeCompare(b.s.name,'ar'));
+    return {list:tied.slice(0,3), extra:Math.max(0,tied.length-3)};
+  },
+  _somLevelHTML(L, win, emptyMsg, a){
+    if(!win.list.length) return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;background:var(--surface2)"><span class="tag ${ptLevelTag(L)}">${L}</span><span style="color:var(--ink3);font-size:12.5px">${emptyMsg}</span></div>`;
+    const multi=win.list.length>1, score=win.list[0].score.toFixed(1);
+    return `<div style="padding:8px 10px;border-radius:9px;background:var(--surface2)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${multi?6:0}px"><span class="tag ${ptLevelTag(L)}">${L}</span>${multi?`<span class="tag tag-gold">🤝 ${win.list.length}-way tie at ${score}</span>`:''}${win.extra?`<span class="tag tag-dim" title="Only 3 can be named; shown alphabetically">+${win.extra} more tied — top 3 shown</span>`:''}
+        ${multi?`<span class="no-print" style="margin-left:auto"><button class="btn btn-o btn-sm" ${a.all}="${win.list.map(x=>x.s.id).join(',')}" title="One share card naming all ${win.list.length}">🌟 Share card for all ${win.list.length}</button></span>`:''}</div>
+      ${win.list.map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;${multi?'padding:4px 0':''}">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0">${avatarHTML(x.s,'width:36px;height:36px;border-radius:50%;font-size:12px;flex-shrink:0;border:2px solid var(--gold)')}<b dir="rtl" style="overflow-wrap:anywhere">${esc(x.s.name)}</b></div>
+        <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-family:var(--f-mono)">${x.score.toFixed(1)}</b>
+          <button class="btn btn-o btn-sm" ${a.cert}="${x.s.id}" title="Generate this student's Student of the Month certificate for this month">🏆 Certificate</button>
+          <button class="btn btn-o btn-sm" ${a.share}="${x.s.id}" title="Generate a shareable Student of the Month card for this student">🌟 Share Card</button></div></div>`).join('')}
+    </div>`;
+  },
+  _shareSomAll(ids){
+    const ss=ids.map(id=>DB.data.students.find(x=>x.id===id)).filter(Boolean); if(!ss.length) return;
+    const monthDisplay = sotmFormatMonths(PT_MONTHS.indexOf(this._month), null, this._year);
+    const html = renderSOTMShareCard(ss, monthDisplay);
+    ss.forEach(s=>DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'}));
+    DB.log('Student of the Month share card generated for '+ss.length+' students — '+monthDisplay);
+    DB.save(); toast('Share card ready — added to '+ss.length+' students’ history'); openLetterPreview(html);
+  },
   _somBodyHTML(all, monthKeys){
-    const somByLevel={};
-    LEVELS.forEach(L=>{
-      const scored = all.filter(s=>s.level===L).map(s=>({s, st:ptStats(s.id,monthKeys)}))
-        .filter(x=>ptSomEligible(x.st))
-        .map(x=>({...x, score:ptSom(x.st)})).sort((a,b)=>b.score-a.score);
-      somByLevel[L] = scored[0]||null;
-    });
-    return LEVELS.map(L=>{ const top=somByLevel[L];
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface2)">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="tag ${ptLevelTag(L)}">${L}</span>
-          ${top ? `<b dir="rtl">${esc(top.s.name)}</b>` : `<span style="color:var(--ink3);font-size:12.5px">No students currently enrolled</span>`}
-        </div>
-        ${top?`<div class="no-print" style="display:flex;align-items:center;gap:10px">
-          <b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>
-          <button class="btn btn-o btn-sm" data-somcert="${top.s.id}" title="Generate this student's Student of the Month certificate for this month">🏆 Certificate</button>
-          <button class="btn btn-o btn-sm" data-somshare="${top.s.id}" title="Generate a shareable Student of the Month card for this student">🌟 Share Card</button>
-        </div>`:''}
-      </div>`; }).join('');
+    const r=Sotm.rank('quran',this._year,this._month,all);
+    return LEVELS.map(L=>Sotm.levelHTML('quran',L,r[L],'No students currently enrolled',{cert:'data-somcert',share:'data-somshare',all:'data-somshareall'},this._year,this._month)).join('');
   },
   // Bound after every render of the Student of the Month panel — both the
   // full roster() render and the single-row _patchAfterCycle() repaint, since
@@ -8616,6 +8979,7 @@ const Progress = {
   // today's real-world month — otherwise the certificate would silently be
   // dated wrong the moment staff look back at an earlier month's winner.
   _wireSomCert(container){
+    $$('[data-somshareall]',container).forEach(b=>b.onclick=()=>this._shareSomAll(b.dataset.somshareall.split(',')));
     $$('[data-somcert]',container).forEach(b=>b.onclick=()=>{
       const s = DB.data.students.find(x=>x.id===b.dataset.somcert);
       if(s) Students.sotmForm(s, PT_MONTHS.indexOf(this._month), this._year);
@@ -8651,27 +9015,8 @@ const Progress = {
     return { from:`${y}-${mm}-01`, to:`${y}-${mm}-${String(lastDay).padStart(2,'0')}` };
   },
   _comboSomBodyHTML(all, monthKeys){
-    const subject = DB.data.gbSubjects[0];
-    const range = this._comboSomRange();
-    const weights = DB.data.comboSomWeights;
-    const byLevel={};
-    LEVELS.forEach(L=>{
-      const scored = all.filter(s=>s.level===L).map(s=>({s, score:comboSom(weights, subject, s, monthKeys, range)}))
-        .filter(x=>x.score!=null).sort((a,b)=>b.score-a.score);
-      byLevel[L] = scored[0]||null;
-    });
-    return LEVELS.map(L=>{ const top=byLevel[L];
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface2)">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="tag ${ptLevelTag(L)}">${L}</span>
-          ${top ? `<b dir="rtl">${esc(top.s.name)}</b>` : `<span style="color:var(--ink3);font-size:12.5px">No eligible students yet</span>`}
-        </div>
-        ${top?`<div class="no-print" style="display:flex;align-items:center;gap:10px">
-          <b style="font-family:var(--f-mono)">${top.score.toFixed(1)}</b>
-          <button class="btn btn-o btn-sm" data-combosomcert="${top.s.id}" title="Generate this student's Student of the Month certificate for this month">🏆 Certificate</button>
-          <button class="btn btn-o btn-sm" data-combosomshare="${top.s.id}" title="Generate a shareable Student of the Month card for this student">🌟 Share Card</button>
-        </div>`:''}
-      </div>`; }).join('');
+    const r=Sotm.rank('combo',this._year,this._month,all);
+    return LEVELS.map(L=>Sotm.levelHTML('combo',L,r[L],'No eligible students yet',{cert:'data-combosomcert',share:'data-combosomshare',all:'data-combosomshareall'},this._year,this._month)).join('');
   },
   _comboSomWeightsHTML(){
     const w = DB.data.comboSomWeights;
@@ -8691,6 +9036,7 @@ const Progress = {
   // render — a tap-to-cycle elsewhere on the roster has no reason to touch
   // whatever weights someone might be mid-edit on.
   _wireComboSom(v){
+    $$('[data-combosomshareall]',v).forEach(b=>b.onclick=()=>this._shareSomAll(b.dataset.combosomshareall.split(',')));
     $$('[data-combosomcert]',v).forEach(b=>b.onclick=()=>{
       const s = DB.data.students.find(x=>x.id===b.dataset.combosomcert);
       if(s) Students.sotmForm(s, PT_MONTHS.indexOf(this._month), this._year);
@@ -8748,6 +9094,7 @@ const Progress = {
     }
     const lc = $('#ptLiveCounter',v);
     if(lc) lc.innerHTML = wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat);
+    const hubEl = $('#ptSomHub',v); if(hubEl && document.activeElement && document.activeElement.id!=='sotmMin'){ hubEl.innerHTML = Sotm.hubHTML(all,year,month); Sotm.wire(hubEl,v); }
     const somBody = $('#ptSomBody',v);
     if(somBody){ somBody.innerHTML = this._somBodyHTML(all, monthKeys); this._wireSomCert(somBody); }
     const comboSomBody = $('#ptComboSomBody',v);
@@ -8856,7 +9203,8 @@ const Progress = {
      }).join('') : '<div class="empty"><p>No students match.</p></div>'}
      `}
 
-     <details class="card" style="margin-top:6px" ${this._somOpen?'open':''} id="ptSom">
+     <div class="card" style="margin-top:10px" id="ptSomHub">${Sotm.hubHTML(all,year,month)}</div>
+     <details class="card" style="margin-top:10px" ${this._somOpen?'open':''} id="ptSom">
        <summary style="cursor:pointer;font-weight:700;color:var(--green)">🌟 Student of the Month — ${month} ${year}</summary>
        <div id="ptSomBody" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${this._somBodyHTML(all, monthKeys)}</div>
      </details>
@@ -8892,6 +9240,7 @@ const Progress = {
     if(f) f.oninput=()=>{ this._find=f.value; clearTimeout(this._ft); this._ft=setTimeout(()=>{ this._repaint(v); const nf=$('#ptFind'); if(nf){ nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length); } },250); };
     const somEl=$('#ptSom',v); if(somEl) somEl.ontoggle=()=>{ this._somOpen=somEl.open; };
     this._wireSomCert(v);
+    Sotm.wire($('#ptSomHub',v),v);
     const comboSomEl=$('#ptComboSom',v); if(comboSomEl) comboSomEl.ontoggle=()=>{ this._comboSomOpen=comboSomEl.open; };
     this._wireComboSom(v);
     this._wireComboSomWeights(v);
@@ -12681,7 +13030,7 @@ const AnaTabs = {
     const totPages=L3.reduce((a,x)=>a+hifzStats(x.s).pages,0);
     el.innerHTML = `
      <div class="filters no-print"><select id="anaLvl">${['All','Level 1','Level 2','Level 3'].map(L=>`<option ${L===lvl?'selected':''}>${L}</option>`).join('')}</select>
-      <span style="font-size:12px;color:var(--ink3)">${rows.length} students · flags computed for ${R.a} → ${R.b}</span></div>
+      <span style="font-size:12px;color:var(--ink3)">${rows.length} students · flags computed for ${R.a} → ${R.b}</span>${QJ.buttonsHTML()}</div>
      <div class="grid g3" style="margin-bottom:16px">
       <div class="widget"><div class="whead"><h3>Level 1 · Green Book</h3>${L1.length?'<button class="btn btn-o btn-sm no-print" data-qjourney="l1">🗺 Journey</button>':''}</div>
         ${L1.length?`<div class="kpi">${Math.round(L1.reduce((a,x)=>a+((x.s.gb&&x.s.gb.page)||0),0)/L1.length)}<small>avg page of ${GB_TOTAL}</small></div>
