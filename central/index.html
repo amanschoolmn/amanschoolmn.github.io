@@ -736,6 +736,28 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
 .ai-qi.done{opacity:.6}.ai-qi.done .ai-qd{display:inline}
 .ai-qa{display:flex;gap:7px;align-items:center;margin-top:7px}
 
+/* ===== Layout studio ===== */
+.lay-hidden{display:none!important}
+.lay-ghost{opacity:.45}
+.lay-blk{position:relative}
+body.lay-editing .lay-blk{outline:2px dashed var(--gold);outline-offset:3px;border-radius:12px}
+.lay-over{outline-color:var(--green)!important;outline-style:solid!important}
+.lay-tb{position:absolute;top:-15px;right:10px;display:flex;align-items:center;gap:3px;z-index:8;background:var(--surface);border:1px solid var(--gold);border-radius:99px;padding:2px 5px;box-shadow:var(--shadow)}
+.lay-tb button,.lay-navc button,.lay-tabc button{width:28px;height:28px;border-radius:50%;font-size:12px;color:var(--ink);line-height:1}
+.lay-tb button:hover,.lay-navc button:hover,.lay-tabc button:hover{background:var(--surface2)}
+.lay-grip{cursor:grab;padding:0 5px;color:var(--ink3);font-size:15px;user-select:none}
+.lay-tabc{display:inline-flex;align-items:center;gap:1px;margin:0 6px 0 -4px;align-self:center;background:var(--surface);border:1px solid var(--gold);border-radius:99px}
+.lay-navrow{display:flex;align-items:center;gap:0}
+.lay-navrow a{flex:1;min-width:0;padding-right:2px;font-size:12.5px}
+body.lay-editing .lay-navrow a svg{display:none}
+.lay-navc{display:inline-flex;gap:1px;margin-left:auto}
+.lay-navc button{color:#fff;opacity:.85;width:22px;height:22px;font-size:10px}
+@media(max-width:560px){#layBar .lay-bh{display:none}}
+#sidebar .grp .lay-navc{float:right}
+#layBar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:95;display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:min(94vw,760px);background:var(--surface);border:1.5px solid var(--gold);border-radius:16px;padding:10px 16px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+#layBar .lay-bt{font-size:13.5px}#layBar .lay-bh{font-size:12px;color:var(--ink2);flex:1;min-width:200px}
+#layBar .lay-ba{display:flex;gap:7px;flex-wrap:wrap}
+
 /* ===== Tuition v16 ===== */
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:14px}
 .kpi-sub{font-size:12.5px;color:var(--ink2);margin-top:6px}
@@ -787,6 +809,7 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
       </button>
       <div class="top-acts">
         <button class="iconbtn" id="quickAdd" title="Add resource" aria-label="Add resource"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        <button class="iconbtn" id="layBtn" title="Customize layout" aria-label="Customize layout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
         <button class="iconbtn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg></button>
         <button class="iconbtn" id="logoutBtn" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
       </div>
@@ -3924,6 +3947,168 @@ const Registry = {
 };
 
 /* ---------- router ---------- */
+/* ================= LAYOUT STUDIO =================
+   Reorder and hide modules (sidebar), tabs, and the cards on any page.
+   Stored in settings.ui, so it travels with backups. Uses ▲▼ buttons (work on
+   iPad touch) plus drag handles on desktop. Cards are found by their heading,
+   so it works on every page without each module being rewritten. */
+const Layout = {
+  editing:false,
+  ui(){ const s=DB.data.settings; const u=s.ui=s.ui||{}; u.nav=u.nav||{groups:[],order:[],hidden:[]}; u.tabs=u.tabs||{}; u.pages=u.pages||{}; return u; },
+  norm(t){ return (t||'').toLowerCase().replace(/[0-9$%#.,:·()\[\]\/\\—–-]+/g,' ').replace(/\s+/g,' ').trim().slice(0,40); },
+  pageKey(){ const {id,param}=Router.parse(); return id+((param&&!/\d/.test(param))?'/'+param:''); },
+  pageName(){ const {id}=Router.parse(); const m=Registry.get(id); return m?m.name:id; },
+  rank(list,id){ const i=list.indexOf(id); return i<0?1e6:i; },
+  /* ---------- cards ---------- */
+  blocks(v){
+    const sel='.widget, .card', out=[], seen=new Map();
+    $$(sel,v).forEach(el=>{
+      if(el.parentElement.closest(sel) || el.matches('.adm-card,.tcc,.kpi-card,.qj-card,.ai-sec,.ai-qi')) return;
+      const h=el.querySelector('h3,h2,h4,.sect,:scope > b'); if(!h) return;
+      const t=h.textContent.replace(/\s+/g,' ').trim(); if(t.length<2||t.length>70) return;
+      out.push({el,title:t,parent:el.parentElement});
+    });
+    const cnt=new Map(); out.forEach(b=>cnt.set(b.parent,(cnt.get(b.parent)||0)+1));
+    const f=out.filter(b=>cnt.get(b.parent)<=12);
+    f.forEach(b=>{ const id=Layout.norm(b.title)||'block'; const n=(seen.get(id)||0)+1; seen.set(id,n); b.id=n>1?id+'#'+n:id; });
+    return f;
+  },
+  applyBlocks(v){
+    if(Router.parse().id==='dashboard') { Layout._bl=[]; return; }
+    const pg=Layout.ui().pages[Layout.pageKey()]||{order:[],hidden:{}};
+    const bl=Layout.blocks(v); Layout._bl=bl;
+    const groups=new Map(); bl.forEach(b=>{ if(!groups.has(b.parent)) groups.set(b.parent,[]); groups.get(b.parent).push(b); });
+    groups.forEach(list=>{
+      const known=list.filter(b=>pg.order.includes(b.id)); if(known.length<2) return;
+      const sorted=[...known].sort((a,b)=>Layout.rank(pg.order,a.id)-Layout.rank(pg.order,b.id));
+      if(sorted.every((b,i)=>b===known[i])) return;
+      const marks=known.map(b=>{ const m=document.createComment(''); b.el.replaceWith(m); return m; });
+      sorted.forEach((b,i)=>marks[i].replaceWith(b.el));
+    });
+    bl.forEach(b=>{ const hid=!!(pg.hidden||{})[b.id]; b.el.classList.toggle('lay-hidden',hid&&!Layout.editing); b.el.classList.toggle('lay-ghost',hid&&Layout.editing); });
+    if(Layout.editing) Layout.blockChrome(bl);
+  },
+  blockChrome(bl){
+    const key=Layout.pageKey();
+    const orderNow=()=>Layout._bl.slice().sort((a,b)=>(a.el.compareDocumentPosition(b.el)&4)?-1:1).map(b=>b.id);
+    const save=ids=>{ Layout.ui().pages[key]=Object.assign(Layout.ui().pages[key]||{hidden:{}},{order:ids}); DB.save(); Router.render(); };
+    const move=(b,dir)=>{
+      const sibs=Layout._bl.filter(x=>x.parent===b.parent).sort((a,c)=>(a.el.compareDocumentPosition(c.el)&4)?-1:1);
+      const i=sibs.indexOf(b), j=i+dir; if(j<0||j>=sibs.length) return;
+      const ids=orderNow(), a=ids.indexOf(b.id), c=ids.indexOf(sibs[j].id); [ids[a],ids[c]]=[ids[c],ids[a]]; save(ids); };
+    bl.forEach(b=>{
+      b.el.classList.add('lay-blk');
+      const pg=Layout.ui().pages[key]||{hidden:{}}; const hid=!!(pg.hidden||{})[b.id];
+      const tb=document.createElement('div'); tb.className='lay-tb no-print'; tb.title=b.title;
+      tb.innerHTML=`<span class="lay-grip" draggable="true" title="Drag to move">⠿</span><button type="button" data-d="-1" aria-label="Move earlier">▲</button><button type="button" data-d="1" aria-label="Move later">▼</button><button type="button" data-h="1" aria-label="${hid?'Show':'Hide'}">${hid?'🙈':'👁'}</button>`;
+      b.el.appendChild(tb);
+      $$('[data-d]',tb).forEach(x=>x.onclick=e=>{ e.stopPropagation(); move(b,+x.dataset.d); });
+      $('[data-h]',tb).onclick=e=>{ e.stopPropagation(); const p=Layout.ui().pages[key]=Layout.ui().pages[key]||{order:orderNow(),hidden:{}}; p.hidden=p.hidden||{}; if(hid) delete p.hidden[b.id]; else p.hidden[b.id]=b.title; if(!p.order||!p.order.length) p.order=orderNow(); DB.save(); Router.render(); };
+      const grip=$('.lay-grip',tb);
+      grip.addEventListener('dragstart',e=>{ Layout._drag=b; try{ e.dataTransfer.setData('text/plain',b.id); e.dataTransfer.setDragImage(b.el,20,20); }catch(_){} });
+      b.el.addEventListener('dragover',e=>{ if(Layout._drag&&Layout._drag.parent===b.parent&&Layout._drag!==b){ e.preventDefault(); b.el.classList.add('lay-over'); } });
+      b.el.addEventListener('dragleave',()=>b.el.classList.remove('lay-over'));
+      b.el.addEventListener('drop',e=>{ e.preventDefault(); b.el.classList.remove('lay-over'); const s=Layout._drag; Layout._drag=null; if(!s||s===b||s.parent!==b.parent) return;
+        const ids=orderNow().filter(x=>x!==s.id); ids.splice(ids.indexOf(b.id),0,s.id); save(ids); });
+    });
+  },
+  /* ---------- tabs ---------- */
+  tabId(b){ return b.dataset.tab||b.dataset.pttab||b.textContent.trim(); },
+  applyTabs(v){
+    const mod=Router.parse().id;
+    $$('.tabs',v).forEach((t,ti)=>{
+      const key=mod+'#'+ti, cfg=Layout.ui().tabs[key]||{order:[],hidden:{}};
+      let btns=$$(':scope > button',t); if(btns.length<2) return;
+      const known=btns.filter(b=>cfg.order.includes(Layout.tabId(b)));
+      if(known.length>1){ const sorted=[...known].sort((a,b)=>Layout.rank(cfg.order,Layout.tabId(a))-Layout.rank(cfg.order,Layout.tabId(b)));
+        if(!sorted.every((b,i)=>b===known[i])){ const marks=known.map(b=>{ const m=document.createComment(''); b.replaceWith(m); return m; }); sorted.forEach((b,i)=>marks[i].replaceWith(b)); } }
+      btns=$$(':scope > button',t);
+      btns.forEach(b=>{ const hid=!!(cfg.hidden||{})[Layout.tabId(b)] && !b.classList.contains('on'); b.classList.toggle('lay-hidden',hid&&!Layout.editing); b.classList.toggle('lay-ghost',hid&&Layout.editing); });
+      if(Layout.editing){
+        const orderNow=()=>$$(':scope > button',t).map(Layout.tabId);
+        const save=ids=>{ Layout.ui().tabs[key]=Object.assign(Layout.ui().tabs[key]||{hidden:{}},{order:ids}); DB.save(); Router.render(); };
+        btns.forEach(b=>{ const id=Layout.tabId(b), hid=!!(cfg.hidden||{})[id];
+          const c=document.createElement('span'); c.className='lay-tabc no-print';
+          c.innerHTML=`<button type="button" data-d="-1" aria-label="Move tab left">◀</button><button type="button" data-d="1" aria-label="Move tab right">▶</button><button type="button" data-h="1" aria-label="${hid?'Show tab':'Hide tab'}">${hid?'🙈':'👁'}</button>`;
+          b.after(c);
+          $$('[data-d]',c).forEach(x=>x.onclick=e=>{ e.stopPropagation(); const ids=orderNow(), i=ids.indexOf(id), j=i+(+x.dataset.d); if(j<0||j>=ids.length) return; [ids[i],ids[j]]=[ids[j],ids[i]]; save(ids); });
+          $('[data-h]',c).onclick=e=>{ e.stopPropagation(); const p=Layout.ui().tabs[key]=Layout.ui().tabs[key]||{order:orderNow(),hidden:{}}; p.hidden=p.hidden||{}; if(hid) delete p.hidden[id]; else p.hidden[id]=b.textContent.trim(); if(!p.order.length) p.order=orderNow(); DB.save(); Router.render(); };
+        });
+      }
+    });
+  },
+  apply(v){
+    document.body.classList.toggle('lay-editing',Layout.editing);
+    Layout.applyTabs(v); Layout.applyBlocks(v); Layout.bar();
+  },
+  /* ---------- sidebar ---------- */
+  navMarkup(){
+    const u=Layout.ui().nav, E=Layout.editing, groups={};
+    Registry.modules.filter(m=>m.group).forEach(m=>(groups[m.group]=groups[m.group]||[]).push(m));
+    const gnames=Object.keys(groups).sort((a,b)=>Layout.rank(u.groups,a)-Layout.rank(u.groups,b));
+    const gRank=a=>gnames.indexOf(a);
+    let html='';
+    gnames.forEach(g=>{
+      const mods=groups[g].slice().sort((a,b)=>Layout.rank(u.order,a.id)-Layout.rank(u.order,b.id));
+      const vis=mods.filter(m=>E||!u.hidden.includes(m.id)||m.id==='settings');
+      if(!vis.length) return;
+      html+=`<div class="grp">${g}${E?`<span class="lay-navc"><button type="button" data-gm="${esc(g)}:-1" aria-label="Move section up">▲</button><button type="button" data-gm="${esc(g)}:1" aria-label="Move section down">▼</button></span>`:''}</div>`;
+      vis.forEach(m=>{ const hid=u.hidden.includes(m.id);
+        const a=`<a href="#/${m.id}" data-mod="${m.id}" class="${hid?'lay-ghost':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[m.icon]||NAV_ICONS.book}</svg>${m.name}</a>`;
+        html+= E? `<div class="lay-navrow">${a}<span class="lay-navc"><button type="button" data-mm="${m.id}:-1" aria-label="Move up">▲</button><button type="button" data-mm="${m.id}:1" aria-label="Move down">▼</button>${m.id==='settings'?'':`<button type="button" data-mh="${m.id}" aria-label="${hid?'Show':'Hide'}">${hid?'🙈':'👁'}</button>`}</span></div>` : a;
+      });
+    });
+    return html;
+  },
+  wireNav(){
+    const u=Layout.ui().nav;
+    const groups={}; Registry.modules.filter(m=>m.group).forEach(m=>(groups[m.group]=groups[m.group]||[]).push(m));
+    const gnames=()=>Object.keys(groups).sort((a,b)=>Layout.rank(u.groups,a)-Layout.rank(u.groups,b));
+    const mods=g=>groups[g].slice().sort((a,b)=>Layout.rank(u.order,a.id)-Layout.rank(u.order,b.id));
+    $$('#nav [data-gm]').forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); const [g,d]=b.dataset.gm.split(':'); const ids=gnames(); const i=ids.indexOf(g), j=i+(+d); if(j<0||j>=ids.length) return; [ids[i],ids[j]]=[ids[j],ids[i]]; u.groups=ids; DB.save(); buildNav(); });
+    $$('#nav [data-mm]').forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); const [id,d]=b.dataset.mm.split(':'); const m=Registry.get(id); const list=mods(m.group).map(x=>x.id); const i=list.indexOf(id), j=i+(+d); if(j<0||j>=list.length) return; [list[i],list[j]]=[list[j],list[i]];
+      const all=u.order.filter(x=>!list.includes(x)); u.order=all.concat(list); DB.save(); buildNav(); });
+    $$('#nav [data-mh]').forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); const id=b.dataset.mh, i=u.hidden.indexOf(id); if(i>=0) u.hidden.splice(i,1); else u.hidden.push(id); DB.save(); buildNav(); });
+  },
+  /* ---------- toolbar / state ---------- */
+  hiddenHere(){
+    const key=Layout.pageKey(), mod=Router.parse().id, out=[];
+    const pg=Layout.ui().pages[key]; if(pg) Object.entries(pg.hidden||{}).forEach(([id,t])=>out.push({kind:'card',id,t,key}));
+    Object.entries(Layout.ui().tabs).filter(([k])=>k.startsWith(mod+'#')).forEach(([k,c])=>Object.entries(c.hidden||{}).forEach(([id,t])=>out.push({kind:'tab',id,t,key:k})));
+    return out;
+  },
+  bar(){
+    let b=document.getElementById('layBar');
+    if(!Layout.editing){ if(b) b.remove(); return; }
+    if(!b){ b=document.createElement('div'); b.id='layBar'; b.className='no-print'; document.body.appendChild(b); }
+    const hid=Layout.hiddenHere(), dash=Router.parse().id==='dashboard';
+    b.innerHTML=`<div class="lay-bt"><b>🎛 Customizing</b> <span>${esc(Layout.pageName())}</span></div>
+      <div class="lay-bh">${dash?'Sidebar & tabs: use ▲▼ 👁. Dashboard cards have their own editor →':'Use ▲▼ (or drag ⠿) to move · 👁 to hide. Sidebar and tab bars are editable too.'}</div>
+      <div class="lay-ba">${dash?'<button class="btn btn-o btn-sm" id="layDash">Dashboard cards…</button>':''}${hid.length?`<button class="btn btn-o btn-sm" id="layHid">Hidden here (${hid.length})</button>`:''}<button class="btn btn-o btn-sm" id="layRst">Reset page</button><button class="btn btn-p btn-sm" id="layDone">Done</button></div>`;
+    $('#layDone',b).onclick=()=>Layout.toggle(false);
+    $('#layRst',b).onclick=()=>confirmBox('Reset the order and hidden items on this page (cards and tabs) to the defaults?',()=>{ const u=Layout.ui(); delete u.pages[Layout.pageKey()]; const mod=Router.parse().id; Object.keys(u.tabs).filter(k=>k.startsWith(mod+'#')).forEach(k=>delete u.tabs[k]); DB.save(); Router.render(); toast('Page reset'); });
+    const d=$('#layDash',b); if(d) d.onclick=()=>{ const c=document.getElementById('custBtn'); if(c) c.click(); };
+    const h=$('#layHid',b); if(h) h.onclick=()=>{
+      const o=overlay(`<div class="modal" style="max-width:420px"><h3>Hidden on this page</h3><div class="wlist">${hid.map((x,i)=>`<div class="wrow" style="cursor:default"><span>${x.kind==='tab'?'🗂':'▭'}</span><span class="t">${esc(x.t)} <span class="ai-sub">${x.kind}</span></span><button class="chip" data-i="${i}">Show</button></div>`).join('')}</div><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button></div></div>`,true);
+      $('[data-x=c]',o).onclick=()=>o.remove();
+      $$('[data-i]',o).forEach(bt=>bt.onclick=()=>{ const x=hid[+bt.dataset.i], u=Layout.ui(); if(x.kind==='card') delete u.pages[x.key].hidden[x.id]; else delete u.tabs[x.key].hidden[x.id]; DB.save(); o.remove(); Router.render(); });
+    };
+  },
+  toggle(on){
+    Layout.editing = on===undefined? !Layout.editing : !!on;
+    document.body.classList.toggle('lay-editing',Layout.editing);
+    buildNav(); Router.render();
+    if(Layout.editing) toast('Customize mode — ▲▼ to move, 👁 to hide');
+  },
+  resetAll(){ confirmBox('Reset the whole app layout — sidebar order, hidden modules, tab order, and card order on every page?',()=>{ DB.data.settings.ui=null; DB.save(); buildNav(); Router.render(); toast('Layout reset'); }); },
+};
+document.addEventListener('click',e=>{
+  if(!Layout.editing) return; const t=e.target; if(!t||!t.closest) return;
+  if(t.closest('#layBar,.lay-tb,.lay-tabc,.lay-navc,.tabs,.filters,select,input,textarea,.ovl,#sidebar .grp,#topbar,header')) return;
+  if(t.closest('#view')){ e.stopPropagation(); e.preventDefault(); }
+},true);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && Layout.editing && !document.querySelector('#overlays .ovl')) Layout.toggle(false); });
+
 const Router = {
   current:null,
   go(hash){ this.current = hash;
@@ -3965,6 +4150,7 @@ const Router = {
       const on = t.querySelector('button.on');
       if(on) on.scrollIntoView({block:'nearest', inline:'nearest'});
     });
+    Layout.apply(v);
   }
 };
 window.addEventListener('hashchange', ()=>{ Router.current = location.hash; Router.render(); window.scrollTo(0,0); });
@@ -4178,6 +4364,7 @@ const WIDGETS = [
  {id:'schedule', name:'Calendar & Upcoming'},
  {id:'memo', name:'Memorization'},
  {id:'qmap', name:'Qurʼān Progress Map'},
+ {id:'gbmap', name:'Green Book Progress Map (Level 1)'},
  {id:'atttrend', name:'Attendance Trend'},
  {id:'attheat', name:'Attendance Heatmap'},
  {id:'streaks', name:'Streaks'},
@@ -4201,7 +4388,7 @@ const REMINDERS = [
 // wrapper's border/background entirely).
 const WIDGET_ACCENT = {
   focus:'var(--gold)', momentum:'var(--ok)', quick:'var(--info)', week:'var(--green)',
-  schedule:'var(--info)', memo:'var(--green)', qmap:'#7B4FA0', atttrend:'var(--ok)', attheat:'var(--ok)',
+  schedule:'var(--info)', memo:'var(--green)', qmap:'#7B4FA0', gbmap:'var(--gold)', atttrend:'var(--ok)', attheat:'var(--ok)',
   streaks:'var(--gold)', termgoals:'var(--green)', digest:'var(--info)', progress:'var(--gold)',
   fresh:'var(--info)', recognitions:'var(--gold)', ai:'#7B4FA0', activity:'var(--ink3)', tuition:'var(--gold)'
 };
@@ -4213,7 +4400,7 @@ render(v){
   // widget order: merge stored prefs with any new widgets (non-destructive migration)
   const known = WIDGETS.map(w=>w.id);
   let on = d.settings.widgets;
-  if(on){ on = on.filter(x=>known.includes(x)); known.forEach(k=>{ if(!on.includes(k) && !(d.settings.hiddenW||[]).includes(k)) on.push(k); }); }
+  if(on){ on = on.filter(x=>known.includes(x)); known.forEach(k=>{ if(!on.includes(k) && !(d.settings.hiddenW||[]).includes(k)){ const qi=on.indexOf('qmap'); if(k==='gbmap' && qi>=0) on.splice(qi+1,0,k); else on.push(k); } }); }
   else on = [...known];
   // ---- shared computations (once) ----
   const tdy = today();
@@ -4303,13 +4490,14 @@ render(v){
     if(bkDays==null || bkDays>14)
       items.push({i:'🛟',t: bkDays==null?'No backup has ever been exported':'Backup overdue — last export '+bkDays+'d ago', go:'#/settings', tag:'backup', why:'everything here lives in this browser only — rule fires past 14 days since last export', key:'backup'});
     const doneKeys = (d.settings.focusDone && d.settings.focusDone.date===tdy) ? d.settings.focusDone.keys : [];
-    const visible = items.filter(x=>!doneKeys.includes(x.key));
+    const snz = d.settings.focusSnooze||{};
+    const visible = items.filter(x=>!doneKeys.includes(x.key) && !(snz[x.key] && snz[x.key]>=tdy));
     const doneToday = items.length - visible.length;
     const rowIcon = x => x.photo ? avatarHTML(x.photo,'width:22px;height:22px;border-radius:50%;font-size:8.5px;flex-shrink:0') : `<span>${x.i}</span>`;
     return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${visible.length?'tag-gold':'tag-green'}">${visible.length||'all clear'}</span></div>
-     ${visible.length? `<div class="wlist">${visible.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}">${rowIcon(x)}<span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span><button class="btn btn-ghost btn-sm no-print" data-focusdone="${esc(x.key)}" title="Mark done for today">✓</button></div>`).join('')}</div>`
+     ${visible.length? `<div class="wlist">${visible.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}">${rowIcon(x)}<span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span><button class="btn btn-ghost btn-sm no-print" data-focusdone="${esc(x.key)}" title="${/^task_/.test(x.key)?'Complete this task':/^(treat_|att_|tuition_)/.test(x.key)?'Mark done':'Hide for 7 days'}">✓</button></div>`).join('')}</div>`
      : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}
-     ${doneToday? `<p class="no-print" style="font-size:11px;color:var(--ink3);margin-top:8px">${doneToday} item${doneToday>1?'s':''} marked done today · <button class="btn btn-ghost btn-sm" id="focusUndo" style="padding:1px 6px;font-size:11px">undo</button></p>`:''}`;
+     ${doneToday? `<p class="no-print" style="font-size:11px;color:var(--ink3);margin-top:8px">${doneToday} item${doneToday>1?'s':''} hidden · <button class="btn btn-ghost btn-sm" id="focusUndo" style="padding:1px 6px;font-size:11px">undo</button></p>`:''}`;
   };
   W.momentum = ()=>{
     const cutoffD = new Date(Date.now()-30*864e5);
@@ -4331,6 +4519,21 @@ render(v){
     return `<div class="whead"><h3>✨ This month's momentum</h3></div>
      ${items.length? `<div style="display:flex;flex-wrap:wrap;gap:10px">${items.map(x=>`<button class="chip" data-go="${x.go}" style="font-size:13px;padding:8px 14px">${x.i} ${x.t}</button>`).join('')}</div>`
      : `<p style="font-family:var(--f-body);font-size:14.5px;color:var(--ink2)">Quiet month so far — log a promotion, achievement, or memorization entry and it'll show up here.</p>`}`;
+  };
+  W.gbmap = ()=>{
+    const l1 = stu.filter(s=>s.level==='Level 1');
+    if(!l1.length) return `<div class="whead"><h3>📗 Green Book progress map</h3></div><p style="font-size:13.5px;color:var(--ink2)">No active Level 1 students yet.</p>`;
+    const rows = l1.map(s=>{ const page=Math.max(0,Math.min(GB_TOTAL,+((s.gb||{}).page)||0)); return {s,page,pct:page/GB_TOTAL*100}; }).sort((a,b)=>b.pct-a.pct);
+    const row = r=>{
+      const nearStart=r.pct<14, avatarEl=avatarHTML(r.s,'width:20px;height:20px;border-radius:50%;font-size:8px;border:2px solid var(--ok);flex-shrink:0');
+      const labelEl=`<span style="font-family:var(--f-mono);font-size:9.5px;font-weight:800;color:var(--ink)">${r.pct.toFixed(0)}%</span>`;
+      return `<div class="frow qmap-row" data-go="#/students/${r.s.id}" style="display:flex;align-items:center;gap:8px;padding:2px 4px;border-radius:6px;cursor:pointer">
+       <span class="qmap-name" style="width:112px;flex-shrink:0;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.s.name)}">${esc(r.s.name)}</span>
+       <div class="qmap-track" style="position:relative;flex:1;height:24px"><div class="bar" style="height:24px;border-radius:12px"><i style="width:${r.pct.toFixed(1)}%;border-radius:12px"></i></div>
+        <div style="position:absolute;top:50%;left:${r.pct.toFixed(1)}%;transform:translate(${nearStart?'6px':'calc(-100% - 6px)'},-50%);display:flex;align-items:center;gap:3px;white-space:nowrap;pointer-events:none">${nearStart?avatarEl+labelEl:labelEl+avatarEl}</div></div>
+       <span class="qmap-juz" style="width:62px;flex-shrink:0;text-align:right;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">p.${r.page}/${GB_TOTAL}</span></div>`; };
+    return `<div class="whead"><h3>📗 Green Book progress map</h3><span style="display:flex;gap:6px;align-items:center" class="no-print"><button class="btn btn-o btn-sm" data-qjourney="l1" title="Full-screen class journey">🗺 Journey</button><span class="tag tag-dim">${l1.length} in Level 1</span></span></div>
+     <div style="display:flex;flex-direction:column;gap:5px">${rows.map(row).join('')}</div>`;
   };
   W.kpis = ()=>{
     const cards = [
@@ -4530,7 +4733,7 @@ render(v){
   W.tuition = ()=> `<div class="whead"><h3>Tuition note</h3></div>
      <textarea id="tuitionNote" placeholder="Fee status, reminders, notes for Br. Abdallah… saved automatically.">${esc(d.settings.tuitionNote||'')}</textarea>`;
 
-  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'||wid==='qmap'||wid==='attheat'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${W[wid]()}</div>`; }
+  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'||wid==='qmap'||wid==='gbmap'||wid==='attheat'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${W[wid]()}</div>`; }
   h += `</div>`;
   v.innerHTML = h;
   wireCommon(v);
@@ -4539,14 +4742,27 @@ render(v){
   $$('[data-focusdone]',v).forEach(b=>b.addEventListener('click', e=>{
     e.stopPropagation();
     const key=b.dataset.focusdone;
-    const fd = (d.settings.focusDone && d.settings.focusDone.date===tdy) ? d.settings.focusDone.keys.slice() : [];
-    if(!fd.includes(key)) fd.push(key);
-    d.settings.focusDone = {date:tdy, keys:fd};
-    DB.save(); toast('Marked done for today'); Router.render();
+    // What "done" means depends on what the item is. A task is a real record:
+    // complete it, so it can never come back. Treat/attendance/tuition keys
+    // already embed their own date or month, so hiding them for good is safe.
+    // Everything else is a recurring rule that would re-fire tomorrow, so it
+    // is snoozed for 7 days rather than hidden for one.
+    if(/^task_/.test(key)){
+      const t=d.tasks.find(x=>x.id===key.slice(5)); if(t){ t.done=true; t.doneOn=tdy; DB.log('Task completed from Needs attention: '+t.text); }
+      DB.save(); toast('Task completed ✓'); Router.render(); return; }
+    if(/^treat_/.test(key)){
+      const m=key.match(/^treat_(.+?)_(\d+)_(.+)$/); const s=m&&d.students.find(x=>x.id===m[1]);
+      const g=s&&(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated&&String(x.juz)===m[2]); if(g) g.celebrated=true;
+      DB.save(); toast('Marked celebrated'); Router.render(); return; }
+    const sn=d.settings.focusSnooze=d.settings.focusSnooze||{};
+    const perm=/^(att_|tuition_)/.test(key);
+    sn[key]= perm? '9999-12-31' : (()=>{ const x=new Date(); x.setDate(x.getDate()+7); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); })();
+    Object.keys(sn).forEach(k=>{ if(sn[k]<tdy) delete sn[k]; });
+    DB.save(); toast(perm?'Marked done':'Hidden for 7 days'); Router.render();
   }));
   (()=>{ const focusUndo=$('#focusUndo',v); if(focusUndo) focusUndo.addEventListener('click', e=>{
     e.stopPropagation();
-    d.settings.focusDone = {date:tdy, keys:[]}; DB.save(); toast('Restored'); Router.render();
+    d.settings.focusDone = {date:tdy, keys:[]}; d.settings.focusSnooze={}; DB.save(); toast('Restored'); Router.render();
   }); })();
   // Term goals — add/remove/self-report
   $('#tgAdd',v) && ($('#tgAdd',v).onclick=()=>{
@@ -6395,8 +6611,16 @@ const Rev = {
    markers follow the standard order (Juzʼ 30 → 1). Meant for the projector
    or iPad: names can be switched off before sharing the screen. */
 const QJ = {
-  root:null, names:true, sel:null, _mode:null, _anim:true,
+  root:null, names:true, sel:null, _mode:null, _anim:true, mode:'l3',
+  dataL1(){
+    const d=DB.data, cut=new Date(Date.now()-21*864e5).toISOString().slice(0,10), anyLog=d.students.some(s=>(s.gbLog||[]).length);
+    return d.students.filter(s=>s.active!==false && s.level==='Level 1').map(s=>{
+      const g=s.gb||{page:0}, log=[...(s.gbLog||[])].sort((a,b)=>b.date.localeCompare(a.date)), last=log[0]?log[0].date:null, page=Math.max(0,Math.min(GB_TOTAL,+g.page||0));
+      return {s, page, pct:page/GB_TOTAL*100, fluency:g.fluency||'', last, log:[...log].reverse(), behind:anyLog && (!last||last<cut)};
+    });
+  },
   data(){
+    if(QJ.mode==='l1') return QJ.dataL1();
     const d=DB.data, tdy=today(), cut=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
     const lastQ={}; (d.quran||[]).forEach(q=>{ if(!lastQ[q.sid]||q.date>lastQ[q.sid]) lastQ[q.sid]=q.date; });
     return d.students.filter(s=>s.active!==false && s.level==='Level 3').map(s=>{
@@ -6405,14 +6629,15 @@ const QJ = {
         behind: !!d.quran.length && (!lastQ[s.id]||lastQ[s.id]<cut)};
     });
   },
-  open(){
+  open(mode){
     if(QJ.root) return;
-    const r=document.createElement('div'); r.className='qj'; r.setAttribute('role','dialog'); r.setAttribute('aria-modal','true'); r.setAttribute('aria-label','Qurʼān Journey');
-    r.innerHTML=`<div class="qj-top"><div style="min-width:0"><div class="qj-title">🗺 Qurʼān Journey</div><div class="qj-sub" id="qj-sub"></div></div>
+    QJ.mode=mode==='l1'?'l1':'l3'; const L1=QJ.mode==='l1';
+    const r=document.createElement('div'); r.className='qj'; r.setAttribute('role','dialog'); r.setAttribute('aria-modal','true'); r.setAttribute('aria-label',L1?'Green Book Journey':'Qurʼān Journey');
+    r.innerHTML=`<div class="qj-top"><div style="min-width:0"><div class="qj-title">${L1?'📗 Green Book Journey':'🗺 Qurʼān Journey'}</div><div class="qj-sub" id="qj-sub"></div></div>
       <div class="qj-ctl"><button class="chip" id="qj-names"></button>${document.fullscreenEnabled?'<button class="chip" id="qj-fs">⛶ Fullscreen</button>':''}<button class="chip" id="qj-x" aria-label="Close journey">✕ Close</button></div></div>
       <div class="qj-stage" id="qj-stage"><div class="qj-map" id="qj-map"></div></div>
       <div class="qj-panel" id="qj-panel"></div>
-      <div class="qj-legend"><span><i class="qj-dot ok"></i>on track</span><span><i class="qj-dot warn"></i>no entry in 14+ days</span><span><i class="qj-badge-demo">3</i>overdue revision Juzʼ</span><span><i class="qj-tick"></i>class average</span><span>Milestones follow the standard order (Juzʼ 30 → 1)</span></div>`;
+      <div class="qj-legend">${L1?`<span><i class="qj-dot ok"></i>on track</span><span><i class="qj-dot warn"></i>no page update in 21+ days</span><span><i class="qj-tick"></i>class average</span><span>Finish line = Green Book complete (p.${GB_TOTAL}) → Level 2</span>`:`<span><i class="qj-dot ok"></i>on track</span><span><i class="qj-dot warn"></i>no entry in 14+ days</span><span><i class="qj-badge-demo">3</i>overdue revision Juzʼ</span><span><i class="qj-tick"></i>class average</span><span>Milestones follow the standard order (Juzʼ 30 → 1)</span>`}</div>`;
     document.body.appendChild(r); QJ.root=r; QJ.sel=null; QJ._anim=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     $('#qj-x',r).onclick=()=>QJ.close();
     $('#qj-names',r).onclick=()=>{ QJ.names=!QJ.names; if(!QJ.names) QJ.sel=null; QJ._anim=false; QJ.layout(); };
@@ -6435,7 +6660,7 @@ const QJ = {
     const rows=QJ.data(), stage=$('#qj-stage',r), map=$('#qj-map',r), names=QJ.names;
     $('#qj-names',r).textContent = names ? '👁 Names on' : '🙈 Names hidden';
     const avg = rows.length? rows.reduce((n,x)=>n+x.pct,0)/rows.length : 0;
-    $('#qj-sub',r).textContent = rows.length+' students · class average '+avg.toFixed(0)+'%';
+    $('#qj-sub',r).textContent = rows.length+' students · class average '+(QJ.mode==='l1'? 'page '+Math.round(avg/100*GB_TOTAL)+' of '+GB_TOTAL+' ('+avg.toFixed(0)+'%)' : avg.toFixed(0)+'%');
     const aw=stage.clientWidth, ah=stage.clientHeight, portrait=aw<700;
     const W=portrait?620:1000, L=portrait?7:4, m=portrait?85:100, H=portrait?m*2+(L-1)*125:m*2+(L-1)*150;
     const mapW = portrait? aw : Math.min(aw, ah*W/H), mapH = mapW*H/W, sc = mapW/W;
@@ -6454,10 +6679,16 @@ const QJ = {
     const place=(el,len,off,w)=>{ const p=pt(len), n=nrm(len); el.style.left=(p.x+n.x*off-(w||AV)/2)+'px'; el.style.top=(p.y+n.y*off-(w||AV)/2)+'px'; };
     // landmarks: end of each Juzʼ in the standard order
     const mile=N=>Math.min(1,(605-Math.max(JUZ_PAGE[N],2))/603);
-    let lm='';
-    for(let N=30;N>=1;N--){ const big=N%5===0||N===1||N===30; lm+=`<div class="qj-node${big?' big':''}" data-len="${mile(N)*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
-    for(const N of [30,25,20,15,10,5]){ lm+=`<div class="qj-mlabel" data-lenl="${mile(N)*total/sc}">Juzʼ ${N}</div>`; }
-    lm+=`<div class="qj-flag" data-lenl="0">﷽ <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Khatm</small></div>`;
+    const L1=QJ.mode==='l1'; let lm='';
+    if(L1){
+      for(let p=10;p<=GB_TOTAL;p+=10){ const big=p%40===0; lm+=`<div class="qj-node${big?' big':''}" data-len="${p/GB_TOTAL*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
+      for(const p of [20,40,60,80,100,120,140]){ lm+=`<div class="qj-mlabel" data-lenl="${p/GB_TOTAL*total/sc}">p.${p}</div>`; }
+      lm+=`<div class="qj-flag" data-lenl="0">أ ب <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Level 2</small></div>`;
+    } else {
+      for(let N=30;N>=1;N--){ const big=N%5===0||N===1||N===30; lm+=`<div class="qj-node${big?' big':''}" data-len="${mile(N)*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
+      for(const N of [30,25,20,15,10,5]){ lm+=`<div class="qj-mlabel" data-lenl="${mile(N)*total/sc}">Juzʼ ${N}</div>`; }
+      lm+=`<div class="qj-flag" data-lenl="0">﷽ <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Khatm</small></div>`;
+    }
     layer.innerHTML=lm;
     $$('.qj-node',layer).forEach(e=>{ const l=+e.dataset.len*sc, w=parseFloat(e.style.width); place(e,l,0,w); });
     const lastRight=(L-1)%2===0;
@@ -6483,7 +6714,7 @@ const QJ = {
       b.style.width=b.style.height=AV+'px'; b.style.fontSize=Math.round(AV*0.36)+'px';
       b.setAttribute('aria-label', names? (s.preferredName||s.name)+', '+x.pct.toFixed(0)+' percent' : 'student, '+x.pct.toFixed(0)+' percent');
       b.innerHTML = names ? (s.photo?`<img src="${s.photo}" alt="" loading="lazy">`:esc(initials(s.name))) : '';
-      if(names && x.rev.c.due) b.insertAdjacentHTML('beforeend',`<span class="qj-badge">${x.rev.c.due}</span>`);
+      if(names && x.rev && x.rev.c.due) b.insertAdjacentHTML('beforeend',`<span class="qj-badge">${x.rev.c.due}</span>`);
       if(names){ b.addEventListener('click',()=>{ QJ.sel=QJ.sel===s.id?null:s.id; QJ.paint(); $$('.qj-av',layer).forEach(e=>e.classList.toggle('sel',e===b&&QJ.sel===s.id)); }); }
       else b.tabIndex=-1;
       layer.appendChild(b); it.el=b; it.step=step;
@@ -6500,6 +6731,19 @@ const QJ = {
   paint(rows){
     const r=QJ.root; if(!r) return; rows=rows||QJ.data();
     const panel=$('#qj-panel',r), x=rows.find(z=>z.s.id===QJ.sel);
+    if(QJ.mode==='l1'){
+      if(!x||!QJ.names){ panel.innerHTML=`<span style="color:var(--ink3);font-size:13px">${QJ.names?'Tap a student to see their page, pace, and update it right here.':'Names are hidden — safe to share this screen.'}</span>`; return; }
+      const s=x.s, left=GB_TOTAL-x.page, nextM=Math.min(GB_TOTAL,(Math.floor(x.page/20)+1)*20), eta=paceETA(x.log,x.page,GB_TOTAL,'page');
+      panel.innerHTML=`<div class="qj-card">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0')}
+        <div style="min-width:0;flex:1"><div style="font-family:var(--f-display);font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:left" dir="auto">${esc(s.name)}</div>
+          <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">Page ${x.page} of ${GB_TOTAL} · ${x.pct.toFixed(0)}%${x.fluency?' · '+esc(x.fluency):''}${x.page>=GB_TOTAL?'':' · '+left+' to go'}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.page>=GB_TOTAL?'<span class="tag tag-green">🎉 complete — ready for Level 2</span>':`<span class="tag tag-gold">next milestone p.${nextM} (${nextM-x.page} away)</span>`}${x.behind?'<span class="tag tag-red">no page update in 21+ days</span>':''}${eta&&x.page<GB_TOTAL?`<span class="tag tag-dim">~${eta.weeks} wk at ${eta.pace} pg/wk</span>`:''}<span class="tag tag-dim">${x.last?'last update '+esc(fmtDate(x.last)):'no updates logged'}</span></div>
+          <div class="no-print" style="display:flex;gap:6px;align-items:center;margin-top:8px"><label for="qj-pg" style="font-size:11.5px;color:var(--ink3)">New page</label><input id="qj-pg" type="number" min="0" max="${GB_TOTAL}" value="${x.page}" style="width:76px"><button class="btn btn-p btn-sm" id="qj-save">Save</button></div></div>
+        <button class="btn btn-o btn-sm" id="qj-open">Open profile →</button></div>`;
+      $('#qj-open',panel).onclick=()=>{ QJ.close(); Router.go('#/students/'+s.id); };
+      $('#qj-save',panel).onclick=()=>{ const pg=Math.max(0,Math.min(GB_TOTAL,+$('#qj-pg',panel).value||0)); const g=s.gb=s.gb||{page:0,fluency:''}; const lg=s.gbLog=s.gbLog||[];
+        g.page=pg; lg.push({date:today(), page:pg, fluency:g.fluency||'', note:''}); DB.log('Green Book update — '+s.name+' p.'+pg); DB.save(); toast('Page '+pg+' saved'); QJ._anim=false; QJ.layout(); Router.render(); };
+      return; }
     if(!x||!QJ.names){ panel.innerHTML=`<span style="color:var(--ink3);font-size:13px">${QJ.names?'Tap a student to see where they are and what needs revising.':'Names are hidden — safe to share this screen.'}</span>`; return; }
     const s=x.s, c=x.rev.c, st=hifzStats(s), g=s.hifzGoal, dueJ=x.rev.list.filter(j=>j.k==='due').slice(0,6);
     panel.innerHTML=`<div class="qj-card">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0')}
@@ -6514,7 +6758,7 @@ const QJ = {
 };
 document.addEventListener('click', e=>{
   const t=e.target; if(!t||!t.closest) return;
-  const j=t.closest('[data-qjourney]'); if(j){ e.stopPropagation(); e.preventDefault(); QJ.open(); return; }
+  const j=t.closest('[data-qjourney]'); if(j){ e.stopPropagation(); e.preventDefault(); QJ.open(j.dataset.qjourney); return; }
   const m=t.closest('[data-qmapmode]'); if(m){ e.stopPropagation(); QMapUI.mode=m.dataset.qmapmode; Router.render(); return; }
   const c=t.closest('[data-revcell]'); if(c){ e.stopPropagation(); e.preventDefault(); const v=c.dataset.revcell, i=v.lastIndexOf(':'); Rev.logForm(v.slice(0,i), +v.slice(i+1)); }
 }, true);
@@ -12117,6 +12361,7 @@ const inR=(d,a,b)=> d>=a && d<=b;
 // data model, so they don't get a fabricated arrow.
 function deltaMini(cur, prev){
   if(prev==null||!isFinite(prev)||cur==null) return '';
+  if(prev===0&&cur>0) return `<span class='dnew' style='font-size:10px;font-weight:700;margin-left:4px;color:var(--ok)'>new</span>`;
   const df=Math.round((cur-prev)*10)/10; if(!df) return '<span style="font-size:10px;font-weight:700;color:var(--ink3);margin-left:4px">=</span>';
   return `<span style="font-size:10px;font-weight:700;margin-left:4px;color:${df>0?'var(--ok)':'var(--bad)'}">${df>0?'▲':'▼'}${Math.abs(df)}</span>`;
 }
@@ -12147,7 +12392,7 @@ function stuFlags(a,b){ // transparent rules: behind / ahead / attention
 Registry.register({ id:'analytics', name:'Analytics', icon:'chart', group:'Intelligence',
 render(v,param){
   const tab=param||'overview';
-  const T={overview:'🎛 Overview', students:'Students & Levels', curriculum:'Curriculum', admin:'Administrative', kb:'Knowledge Base', reports:'Reports'};
+  const T={overview:'🎛 Overview', students:'Students & Levels', attendance:'Attendance', curriculum:'Curriculum', admin:'Administrative', kb:'Knowledge Base', reports:'Reports'};
   const R=anaRange();
   v.innerHTML = `<div class="eyebrow">School Intelligence Center</div><h2 class="page-title">Analytics</h2>
    <p class="page-sub">Questions answered from live data — every number clicks through to its source.</p>
@@ -12163,7 +12408,209 @@ render(v,param){
   $$('[data-tab]',v).forEach(b=>b.onclick=()=>Router.go('#/analytics/'+b.dataset.tab));
   (AnaTabs[tab]||AnaTabs.overview)($('#anaT2',v), R);
 }});
+/* ================= ANALYTICS v2 helpers ================= */
+const AnaX = {
+  sort:{k:'name',dir:1},
+  band(sc){ return sc==null? {k:'na',label:'n/a',c:'var(--ink3)'} : sc>=80? {k:'strong',label:'Strong',c:'var(--ok)'} : sc>=60? {k:'steady',label:'Steady',c:'var(--gold)'} : {k:'low',label:'Needs you',c:'var(--bad)'}; },
+  lastLog(s){
+    let best=null; const bump=x=>{ if(x&&(!best||x>best)) best=x; };
+    (s.gbLog||[]).forEach(x=>bump(x.date)); (s.musLog||[]).forEach(x=>bump(x.date)); (s.hifzLog||[]).forEach(x=>bump(x.date)); (s.revHistory||[]).forEach(x=>bump(x.date));
+    DB.data.quran.forEach(q=>{ if(q.sid===s.id) bump(q.date); });
+    return best;
+  },
+  attStats(s,a,b){
+    let p=0,l=0,ab=0,ex=0;
+    Object.keys(DB.data.attendance).forEach(day=>{ if(!inR(day,a,b)) return; const v=DB.data.attendance[day][s.id]; if(v==='P')p++; else if(v==='L')l++; else if(v==='A')ab++; else if(v==='E')ex++; });
+    const den=p+l+ab; return {p,l,ab,ex,den,rate:den>=2?Math.round((p+l)/den*100):null};
+  },
+  /* Health = transparent 100-point score from up to 3 signals. A signal with no data is
+     left out and the rest re-weighted, so a missing log never silently counts as failure. */
+  health(s,R){
+    const parts=[], at=AnaX.attStats(s,R.a,R.b);
+    parts.push(at.rate!=null? {k:'att',label:'Attendance',pts:at.rate*0.5,max:50,note:`${at.rate}% present or late (${at.p+at.l} of ${at.den}; ${at.ex} excused not counted)`} : {k:'att',label:'Attendance',na:true,max:50,note:'fewer than 2 marked sessions in range'});
+    const last=AnaX.lastLog(s), days=last?daysBetweenISO(last,today()):null, young=s.startDate&&daysBetweenISO(s.startDate,today())<28;
+    parts.push(last&&!young? {k:'mom',label:'Momentum',pts:days<=14?30:days<=28?20:days<=56?10:0,max:30,note:`last progress update ${days} day${days===1?'':'s'} ago`} : {k:'mom',label:'Momentum',na:true,max:30,note:last?'new student (under 4 weeks)':'no progress updates logged yet'});
+    let ret=null;
+    if(s.level==='Level 3'){ const sm=Rev.summary(s), lg=sm.c.fresh+sm.c.soon+sm.c.due; if(lg>0) ret={pts:(sm.c.fresh+sm.c.soon)/lg*20,note:`${sm.c.fresh+sm.c.soon} of ${lg} rated Juzʼ are fresh or due soon`}; }
+    else { const f=s.level==='Level 1'? (s.gb||{}).fluency : (([...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date))[0]||{}).fluency||(s.mus||{}).fluency); const m={Strong:20,Good:14,Developing:8}; if(m[f]!=null) ret={pts:m[f],note:'fluency: '+f}; }
+    parts.push(ret? {k:'ret',label:s.level==='Level 3'?'Retention':'Fluency',pts:ret.pts,max:20,note:ret.note} : {k:'ret',label:s.level==='Level 3'?'Retention':'Fluency',na:true,max:20,note:s.level==='Level 3'?'no Juzʼ revision rated yet':'no fluency recorded'});
+    const av=parts.filter(p=>!p.na), mx=av.reduce((a,p)=>a+p.max,0);
+    return {score:mx? Math.round(av.reduce((a,p)=>a+p.pts,0)/mx*100):null, parts, coverage:mx, last, days};
+  },
+  pace(s){
+    if(s.level==='Level 1'){ const g=s.gb||{page:0}; return {cur:g.page||0,total:GB_TOTAL,eta:paceETA(s.gbLog||[],g.page||0,GB_TOTAL,'page'),what:'Green Book'}; }
+    if(s.level==='Level 2'){ const m=s.mus||{page:0}; return {cur:m.page||0,total:MUSHAF_TOTAL,eta:paceETA(s.musLog||[],m.page||0,MUSHAF_TOTAL,'page'),what:'Muṣḥaf'}; }
+    const st=hifzStats(s); return {cur:st.pages,total:st.total,eta:paceETA(s.hifzLog||[],st.pages,st.total,'pages'),what:'Ḥifẓ'};
+  },
+  /* ---------- 1. data quality ---------- */
+  quality(R){
+    const d=DB.data, act=d.students.filter(s=>s.active!==false), L3=act.filter(s=>s.level==='Level 3'), out=[];
+    const inc=act.filter(s=>regComplete(s).length);
+    const miss={}; inc.forEach(s=>regComplete(s).forEach(m=>miss[m]=(miss[m]||0)+1));
+    if(inc.length) out.push({k:'incomplete',i:'📋',t:`${inc.length} of ${act.length} student records are incomplete`,sub:Object.entries(miss).map(([k,n])=>k+' ×'+n).join(' · '),act:'See who'});
+    const noEnt=L3.filter(s=>!d.quran.some(q=>q.sid===s.id&&inR(q.date,R.a,R.b)));
+    if(noEnt.length){ const last=d.quran.reduce((a,q)=>q.date>a?q.date:a,''); out.push({k:'noentries',i:'📖',t:`${noEnt.length} of ${L3.length} Level 3 students have no Qurʼān log entry in this range`,sub:(last?'Last entry anywhere: '+fmtDate(last)+'. ':'No Qurʼān entries have ever been logged. ')+'The “no entry 14d+” behind-flag depends on these, so it may be flagging missing logging rather than missing progress.',act:'See who'}); }
+    const sess=Object.keys(d.attendance).filter(x=>inR(x,R.a,R.b)).sort(), lastS=sess[sess.length-1];
+    if(!sess.length) out.push({k:'att',i:'✅',t:'No attendance recorded in this range',sub:'Attendance rates, health scores and behind-flags all rely on it.'});
+    else if(daysBetweenISO(lastS,today())>10 && nextClassDate && true) out.push({k:'att',i:'✅',t:`Last attendance was ${daysBetweenISO(lastS,today())} days ago (${fmtDate(lastS)})`,sub:'If class met since, take attendance so rates stay accurate.'});
+    const withRev=L3.filter(s=>(s.revHistory||[]).length).length;
+    if(L3.length && withRev<Math.ceil(L3.length/3)) out.push({k:'rev',i:'🔁',t:`Revision tracker is barely used — ${withRev} of ${L3.length} Level 3 students have a rating`,sub:'Retention scores and the revision-due lists stay empty until Juzʼ are rated.'});
+    const noPlan=famList().filter(f=>!f.solo&&f.members.some(s=>s.active!==false)).filter(f=>{ const p=d.finance.plans[f.key]; return !p||!p.start; });
+    if(noPlan.length) out.push({k:'plans',i:'💵',t:`${noPlan.length} famil${noPlan.length>1?'ies have':'y has'} no tuition plan`,sub:noPlan.slice(0,4).map(f=>f.key).join(', '),go:'#/tuition/families',act:'Open Tuition'});
+    const bk=d.settings.lastBackupAt, bd=bk?Math.floor((Date.now()-new Date(bk))/864e5):null;
+    if(bd==null||bd>14) out.push({k:'bk',i:'🛟',t:bd==null?'No backup has ever been exported':`Backup is ${bd} days old`,sub:'Everything lives in this browser only.',go:'#/settings',act:'Back up'});
+    const total=6, score=Math.round((total-out.length)/total*100);
+    return {issues:out,score:Math.max(0,score)};
+  },
+  qualityCard(R){
+    const q=AnaX.quality(R);
+    if(!q.issues.length) return `<div class="widget wfull" style="border-top:3px solid var(--ok)"><div class="whead"><h3>🩺 Data quality</h3><span class="tag tag-green">all checks pass</span></div><p style="font-size:13px;color:var(--ok)">The numbers on this page are backed by logged data.</p></div>`;
+    return `<div class="widget wfull" style="border-top:3px solid var(--warn)"><div class="whead"><h3>🩺 Data quality</h3><span class="tag ${q.score>=70?'tag-gold':'tag-red'}">${q.score}% of checks pass</span></div>
+      <p style="font-size:12.5px;color:var(--ink2);margin:0 0 8px">Some numbers below look worse than reality because the data behind them isn't logged. Fix these first.</p>
+      <div class="wlist">${q.issues.map(x=>`<div class="wrow" style="cursor:default;align-items:flex-start"><span>${x.i}</span><span class="t">${esc(x.t)}<br><span style="font-size:11.5px;color:var(--ink3)">${esc(x.sub||'')}</span></span>${x.k==='incomplete'||x.k==='noentries'?`<button class="chip" data-drill="${x.k}">${x.act}</button>`:x.go?`<button class="chip" data-go="${x.go}">${x.act}</button>`:''}</div>`).join('')}</div></div>`;
+  },
+  /* ---------- 3. drill-downs ---------- */
+  drill(kind,R){
+    const d=DB.data, act=d.students.filter(s=>s.active!==false); let title='', rows=[], msg=null;
+    const row=(s,why)=>({s,why});
+    if(kind==='incomplete'){ title='Incomplete records'; rows=act.filter(s=>regComplete(s).length).map(s=>row(s,'missing: '+regComplete(s).join(', '))); }
+    else if(kind==='noentries'){ title='Level 3 — no Qurʼān entry in range'; rows=act.filter(s=>s.level==='Level 3'&&!d.quran.some(q=>q.sid===s.id&&inR(q.date,R.a,R.b))).map(s=>{ const l=d.quran.filter(q=>q.sid===s.id).reduce((a,q)=>q.date>a?q.date:a,''); return row(s,l?'last entry '+fmtDate(l):'no entries ever'); }); msg='progress'; }
+    else if(kind==='behind'){ title='Flagged behind'; rows=stuFlags(R.a,R.b).filter(x=>x.flags.some(f=>f[0]==='behind')).map(x=>row(x.s,x.flags.filter(f=>f[0]==='behind').map(f=>f[1]).join('; '))); msg='progress'; }
+    else if(kind==='attlow'){ title='Attendance below 80%'; rows=act.map(s=>({s,at:AnaX.attStats(s,R.a,R.b)})).filter(x=>x.at.rate!=null&&x.at.rate<80).sort((a,b)=>a.at.rate-b.at.rate).map(x=>row(x.s,x.at.rate+'% · '+x.at.ab+' absent, '+x.at.ex+' excused')); msg='absence'; }
+    else if(kind==='low'){ title='Health score under 60'; rows=act.map(s=>({s,h:AnaX.health(s,R)})).filter(x=>x.h.score!=null&&x.h.score<60).sort((a,b)=>a.h.score-b.h.score).map(x=>row(x.s,'score '+x.h.score+' — '+x.h.parts.filter(p=>!p.na).map(p=>p.label+' '+Math.round(p.pts)+'/'+p.max).join(' · '))); msg='progress'; }
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3>${esc(title)} <span class="tag tag-dim">${rows.length}</span></h3>
+      ${rows.length?`<div class="wlist" style="max-height:52vh;overflow:auto">${rows.map(r=>`<div class="wrow" data-sid="${r.s.id}">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:10px;flex-shrink:0')}<span class="t" dir="auto">${esc(r.s.name)}<br><span style="font-size:11.5px;color:var(--ink3)">${esc(r.why)}</span></span><span class="tag tag-dim">${r.s.level.replace('Level ','L')}</span></div>`).join('')}</div>`:'<p style="color:var(--ok)">Nobody — all clear.</p>'}
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button>${rows.length&&msg?`<button class="btn btn-p" id="drMsg">✉️ Message parents</button>`:''}</div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $$('[data-sid]',o).forEach(e=>e.onclick=()=>{ o.remove(); Router.go('#/students/'+e.dataset.sid); });
+    const m=$('#drMsg',o); if(m) m.onclick=()=>{ o.remove(); AI2.stuQueue(rows.map(r=>r.s.id),msg); };
+  },
+  healthModal(sid,R){
+    const s=DB.data.students.find(x=>x.id===sid); if(!s) return; const h=AnaX.health(s,R), b=AnaX.band(h.score);
+    const o=overlay(`<div class="modal" style="max-width:440px"><h3>${esc(s.name)} — health ${h.score==null?'n/a':h.score}</h3>
+      <p style="font-size:13px;color:var(--ink2)"><b style="color:${b.c}">${b.label}</b>${h.coverage<100?` · based on ${h.parts.filter(p=>!p.na).length} of 3 signals (missing ones are left out, not counted as zero)`:''}</p>
+      ${h.parts.map(p=>`<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>${p.label}</span><span style="font-family:var(--f-mono)">${p.na?'—':Math.round(p.pts)+' / '+p.max}</span></div><div class="bar" style="height:8px;margin:3px 0"><i style="width:${p.na?0:p.pts/p.max*100}%"></i></div><div style="font-size:11.5px;color:var(--ink3)">${esc(p.note)}</div></div>`).join('')}
+      <p style="font-size:11.5px;color:var(--ink3)">Score = points earned ÷ points available × 100. Attendance 50 · Momentum 30 · Retention/Fluency 20.</p>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" id="hmOpen">Open profile →</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove(); $('#hmOpen',o).onclick=()=>{ o.remove(); Router.go('#/students/'+sid); };
+  },
+  /* ---------- 2. trends ---------- */
+  trendsCard(R){
+    const d=DB.data, sess=Object.keys(d.attendance).filter(x=>inR(x,R.a,R.b)).sort();
+    const rates=sess.map(day=>{ const v=Object.values(d.attendance[day]); const n=v.length; return n? Math.round(v.filter(x=>x==='P'||x==='L').length/n*100):0; });
+    const att=attRate(R.a,R.b), ap=attRate(R.pa,R.pb);
+    const months=[...Array(6)].map((_,i)=>{ const dt=new Date(); dt.setDate(1); dt.setMonth(dt.getMonth()-(5-i)); return dt.toISOString().slice(0,7); });
+    const byM=months.map(m=>d.finance.payments.filter(p=>p.date.slice(0,7)===m&&p.kind!=='excused'&&p.kind!=='registration').reduce((a,p)=>a+(+p.amount||0),0));
+    const weeks=8, wk=[...Array(weeks)].map((_,i)=>{ const end=new Date(new Date(R.b)-(weeks-1-i)*7*864e5), st=new Date(end-7*864e5); return d.quran.filter(q=>{const t=new Date(q.date); return t>st&&t<=end;}).length; });
+    const dl=(c,p,u)=>{ if(c==null||p==null) return '<span class="ai-sub">no prior data</span>'; const x=Math.round((c-p)*10)/10; return x===0?'<span class="ai-sub">unchanged vs prior period</span>':`<span style="color:${x>0?'var(--ok)':'var(--bad)'};font-weight:700">${x>0?'▲ +':'▼ −'}${Math.abs(x)}${u||''}</span> <span class="ai-sub">vs prior period</span>`; };
+    return `<div class="widget wfull"><div class="whead"><h3>📈 Trends</h3></div><div class="grid g3">
+      <div><div class="kpi" style="font-size:24px">${att.rate!=null?att.rate+'%':'—'}</div><div style="font-size:12px;margin-bottom:4px">${dl(att.rate,ap.rate,' pts')}</div>${rates.length>1?spark(rates,'attendance by session (%)',100):'<div class="ai-sub">needs 2+ sessions</div>'}</div>
+      <div><div class="kpi" style="font-size:24px">$${byM[5]}</div><div style="font-size:12px;margin-bottom:4px">${dl(byM[5],byM[4],'')} <span class="ai-sub">(tuition, this vs last month)</span></div>${byM.some(x=>x)?spark(byM,'tuition received by month'):'<div class="ai-sub">no payments</div>'}</div>
+      <div><div class="kpi" style="font-size:24px">${wk[weeks-1]}</div><div style="font-size:12px;margin-bottom:4px">${dl(wk[weeks-1],wk[weeks-2],'')} <span class="ai-sub">(Qurʼān entries, last 2 weeks)</span></div>${wk.some(x=>x)?spark(wk,'Qurʼān entries per week'):'<div class="ai-sub">no entries logged</div>'}</div></div></div>`;
+  },
+  /* ---------- 10. goals ---------- */
+  goalMetrics:{
+    att:{label:'Attendance %',unit:'%',cur:R=>{ const a=attRate(R.a,R.b); return a.rate; }},
+    l1page:{label:'Level 1 average Green Book page',unit:'',cur:()=>{ const l=DB.data.students.filter(s=>s.active!==false&&s.level==='Level 1'); return l.length?Math.round(l.reduce((a,s)=>a+((s.gb||{}).page||0),0)/l.length):null; }},
+    l3pct:{label:'Level 3 average Ḥifẓ %',unit:'%',cur:()=>{ const l=DB.data.students.filter(s=>s.active!==false&&s.level==='Level 3'); return l.length?Math.round(l.reduce((a,s)=>a+hifzStats(s).pct,0)/l.length):null; }},
+    collect:{label:'Tuition collection rate %',unit:'%',cur:()=>{ const f=famList().filter(x=>!x.solo&&x.members.some(s=>s.active!==false)).map(x=>famFinance(x.key)); const e=f.reduce((a,x)=>a+x.expected,0), o=f.reduce((a,x)=>a+x.balance,0); return e>0?Math.max(0,Math.round((e-o)/e*100)):null; }},
+    health:{label:'Average student health score',unit:'',cur:R=>{ const sc=DB.data.students.filter(s=>s.active!==false).map(s=>AnaX.health(s,R).score).filter(x=>x!=null); return sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):null; }},
+  },
+  goalsCard(R){
+    const goals=DB.data.settings.anaGoals||[];
+    const rows=goals.map(g=>{ const m=AnaX.goalMetrics[g.metric]; const cur=m?m.cur(R):null;
+      const span=Math.max(1,daysBetweenISO(g.start,g.by)), el=Math.max(0,Math.min(span,daysBetweenISO(g.start,today())));
+      const need=g.target-g.startVal, prog=need? (cur-g.startVal)/need : (cur>=g.target?1:0), exp=el/span;
+      const done=cur!=null&&cur>=g.target, late=!done&&today()>g.by, on=!done&&prog>=exp*0.9;
+      const st=done?['✅ reached','tag-green']:late?['⏰ deadline passed','tag-red']:cur==null?['no data','tag-dim']:on?['on track','tag-green']:['behind pace','tag-red'];
+      return `<div class="crow" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600;margin-bottom:3px"><span>${esc(g.label||m.label)}</span><span style="font-family:var(--f-mono)">${cur==null?'—':cur}${m.unit} → ${g.target}${m.unit} by ${esc(fmtDate(g.by))}</span></div>
+        <div style="position:relative"><div class="bar" style="height:10px"><i style="width:${Math.max(0,Math.min(100,prog*100))}%"></i></div><span title="Where you should be today" style="position:absolute;top:-3px;left:${exp*100}%;width:2px;height:16px;background:var(--gold)"></span></div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:4px"><span class="tag ${st[1]}">${st[0]}</span><span class="ai-sub">started at ${g.startVal}${m.unit} · gold tick = expected by today</span><button class="chip" style="margin-left:auto" data-goaldel="${g.id}" aria-label="Remove goal">✕</button></div></div>`; }).join('');
+    return `<div class="widget wfull"><div class="whead"><h3>🎯 Goals vs actuals</h3><button class="btn btn-o btn-sm no-print" id="goalAdd">＋ Add goal</button></div>${rows||'<p style="font-size:12.5px;color:var(--ink2)">Set a target (e.g. “Level 1 average page 80 by Dec 15”) and this tracks real progress against where you should be by today.</p>'}</div>`;
+  },
+  goalForm(R){
+    const t=today(), dt=new Date(); dt.setMonth(dt.getMonth()+3); const by=dt.toISOString().slice(0,10);
+    const o=overlay(`<div class="modal" style="max-width:420px"><h3>New goal</h3>
+      <div class="field"><label>Metric</label><select id="gm">${Object.entries(AnaX.goalMetrics).map(([k,m])=>`<option value="${k}">${m.label}</option>`).join('')}</select></div>
+      <div class="field"><label>Target</label><input id="gt" type="number" step="1"></div><div class="field"><label>By</label><input id="gb" type="date" value="${by}" min="${t}"></div>
+      <p class="ai-sub" id="gcur"></p><div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="gs">Save goal</button></div></div>`,true);
+    const upd=()=>{ const m=AnaX.goalMetrics[$('#gm',o).value], c=m.cur(R); $('#gcur',o).textContent=c==null?'No data yet for this metric.':'Right now: '+c+m.unit; if(c!=null&&!$('#gt',o).value) $('#gt',o).value=Math.min(100,Math.ceil(c*1.15)); };
+    $('#gm',o).onchange=()=>{ $('#gt',o).value=''; upd(); }; upd();
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#gs',o).onclick=()=>{ const k=$('#gm',o).value, m=AnaX.goalMetrics[k], c=m.cur(R), tg=+$('#gt',o).value, by=$('#gb',o).value; if(!tg||!by){ toast('Enter a target and a date'); return; } if(c==null){ toast('No data for that metric yet'); return; }
+      const a=DB.data.settings.anaGoals=DB.data.settings.anaGoals||[]; a.push({id:uid(),metric:k,target:tg,by,start:today(),startVal:c}); DB.log('Analytics goal added: '+m.label+' → '+tg); DB.save(); o.remove(); Router.render(); };
+  },
+  wire(el,R){
+    $$('[data-drill]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); AnaX.drill(b.dataset.drill,R); });
+    $$('[data-health]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); AnaX.healthModal(b.dataset.health,R); });
+    const ga=$('#goalAdd',el); if(ga) ga.onclick=()=>AnaX.goalForm(R);
+    $$('[data-goaldel]',el).forEach(b=>b.onclick=()=>{ const a=DB.data.settings.anaGoals||[]; DB.data.settings.anaGoals=a.filter(g=>g.id!==b.dataset.goaldel); DB.save(); Router.render(); });
+  },
+  /* ---------- 5. pace & projections ---------- */
+  paceCard(rows){
+    const items=rows.map(x=>({s:x.s,p:AnaX.pace(x.s)})).sort((a,b)=>(a.p.eta?a.p.eta.weeks:1e9)-(b.p.eta?b.p.eta.weeks:1e9));
+    const med=lv=>{ const v=items.filter(i=>i.s.level===lv&&i.p.eta).map(i=>i.p.eta.pace).sort((a,b)=>a-b); return v.length?v[Math.floor(v.length/2)]:null; };
+    const meds=['Level 1','Level 2','Level 3'].map(l=>[l,med(l)]).filter(x=>x[1]!=null);
+    return `<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>🏁 Pace & projections</h3><span class="ai-sub">from each student's own dated updates (last ~8 weeks)</span></div>
+      ${meds.length?`<p style="font-size:12.5px;color:var(--ink2);margin:0 0 8px">Typical pace: ${meds.map(([l,p])=>`<b>${l.replace('Level ','L')}</b> ${p} pg/wk`).join(' · ')}</p>`:''}
+      <div style="max-height:380px;overflow:auto">${items.map(({s,p})=>{ const pct=Math.min(100,p.cur/p.total*100); const e=p.eta;
+        return `<div class="wrow" data-go="#/students/${s.id}" style="gap:10px"><span class="t" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}">${esc(s.name)}</span><span class="tag tag-dim">${s.level.replace('Level ','L')}</span>
+          <div style="flex:1;min-width:60px"><div class="bar" style="height:9px"><i style="width:${pct}%"></i></div></div>
+          <span style="font-size:11.5px;min-width:130px;text-align:right;color:var(--ink2)">${e?`~${e.weeks} wk · ${esc(fmtDate(e.date.toISOString().slice(0,10)))} <span class="ai-sub">(${e.pace}/wk)</span>`:'<span class="ai-sub">needs 2+ dated updates</span>'}</span></div>`; }).join('')}</div></div>`;
+  },
+  /* ---------- 6. promotion pipeline ---------- */
+  pipelineCard(R){
+    const act=DB.data.students.filter(s=>s.active!==false), by=l=>act.filter(s=>s.level===l);
+    const L1=by('Level 1'), L2=by('Level 2'), L3=by('Level 3');
+    const l1=L1.map(s=>({s,pace:AnaX.pace(s)})).sort((a,b)=>b.pace.cur-a.pace.cur);
+    const ready1=l1.filter(x=>x.pace.cur>=GB_TOTAL).length, soon1=l1.filter(x=>x.pace.cur<GB_TOTAL&&x.pace.eta&&x.pace.eta.weeks<=8).length;
+    const l2=L2.map(s=>{ const log=[...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3); let n=0; for(const x of log){ if(x.fluency==='Strong') n++; else break; } return {s,n}; });
+    const box=(t,n,sub,go)=>`<div class="card" style="text-align:center;flex:1;min-width:110px;cursor:pointer" data-go="${go}"><div class="kpi" style="font-size:26px">${n}</div><div style="font-size:12.5px;font-weight:700">${t}</div><div class="ai-sub">${sub}</div></div>`;
+    return `<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>🪜 Promotion pipeline</h3></div>
+      <div style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap">${box('Level 1',L1.length,ready1?ready1+' ready · '+soon1+' within 8 wks':soon1+' within 8 wks','#/analytics/students')}<div style="align-self:center;font-size:22px;color:var(--ink3)">→</div>${box('Level 2',L2.length,L2.length?l2.filter(x=>x.n>=3).length+' ready':'none yet','#/analytics/students')}<div style="align-self:center;font-size:22px;color:var(--ink3)">→</div>${box('Level 3',L3.length,'Ḥifẓ','#/analytics/students')}</div>
+      ${l1.length?`<div style="margin-top:12px;font-size:12.5px;font-weight:700">Level 1 closest to Level 2</div>${l1.slice(0,5).map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span style="font-size:12px;color:var(--ink2)">p.${x.pace.cur}/${GB_TOTAL} · ${GB_TOTAL-x.pace.cur} to go${x.pace.eta&&x.pace.cur<GB_TOTAL?' · ~'+x.pace.eta.weeks+' wk':''}</span></div>`).join('')}`:''}
+      ${l2.length?`<div style="margin-top:10px;font-size:12.5px;font-weight:700">Level 2 → 3 (3 Strong readings in a row)</div>${l2.map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span class="tag ${x.n>=3?'tag-green':'tag-dim'}">${x.n} of 3</span></div>`).join('')}`:''}</div>`;
+  },
+  /* ---------- 8. cohorts ---------- */
+  cohortCard(R){
+    const act=DB.data.students.filter(s=>s.active!==false);
+    const key=s=>s.startDate? s.startDate.slice(0,7):'Original roster';
+    const groups={}; act.forEach(s=>(groups[key(s)]=groups[key(s)]||[]).push(s));
+    const stat=list=>{ const hs=list.map(s=>AnaX.health(s,R).score).filter(x=>x!=null), at=list.map(s=>AnaX.attStats(s,R.a,R.b).rate).filter(x=>x!=null), pc=list.map(s=>AnaX.pace(s)).filter(p=>p.eta).map(p=>p.eta.pace);
+      const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null; return {n:list.length,h:avg(hs),at:avg(at),pace:avg(pc)}; };
+    const lv=['Level 1','Level 2','Level 3'].map(l=>[l,stat(act.filter(s=>s.level===l))]).filter(x=>x[1].n);
+    const co=Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,l])=>[k==='Original roster'?k:ymLabel(k)+' starters',stat(l)]);
+    const tbl=(title,rows)=>`<div style="margin-bottom:10px"><div style="font-size:12.5px;font-weight:700;margin-bottom:4px">${title}</div><table class="tbl"><thead><tr><th></th><th>Students</th><th>Attendance</th><th>Pace (pg/wk)</th><th>Health</th></tr></thead><tbody>${rows.map(([n,s])=>`<tr><td>${esc(n)}</td><td>${s.n}</td><td>${s.at!=null?s.at+'%':'—'}</td><td>${s.pace!=null?s.pace:'—'}</td><td>${s.h!=null?s.h:'—'}</td></tr>`).join('')}</tbody></table></div>`;
+    return `<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>👥 Cohort comparison</h3><span class="ai-sub">averages; “—” = not enough logged data</span></div><div class="scrollx">${tbl('By level',lv)}${co.length>1?tbl('By start month',co):''}</div></div>`;
+  },
+  /* ---------- 7. attendance patterns ---------- */
+  attendanceTab(el,R){
+    const d=DB.data, sess=Object.keys(d.attendance).filter(x=>inR(x,R.a,R.b)).sort();
+    if(!sess.length){ el.innerHTML='<div class="empty"><div class="big">✅</div><h3>No attendance in this range</h3><p>Take attendance (Students → Attendance) and patterns appear here.</p></div>'; return; }
+    const info=sess.map(day=>{ const v=Object.values(d.attendance[day]), n=v.length, p=v.filter(x=>x==='P'||x==='L').length; return {day,n,p,rate:n?Math.round(p/n*100):0,dow:AI2.dow(day)}; });
+    const avg=Math.round(info.reduce((a,x)=>a+x.rate,0)/info.length), dips=info.filter(x=>x.rate<avg-12);
+    const W=720,H=190,pl=34,pb=34,pt=14, cw=(W-pl-8)/info.length, bw=Math.min(34,cw*0.7), y=v=>pt+(H-pt-pb)*(1-v/100);
+    const bars=info.map((x,i)=>{ const cx=pl+cw*i+cw/2; return `<g><title>${esc(fmtDate(x.day))}: ${x.rate}% (${x.p} of ${x.n})</title><rect x="${cx-bw/2}" y="${y(x.rate)}" width="${bw}" height="${y(0)-y(x.rate)}" rx="3" style="fill:${x.rate<avg-12?'var(--bad)':'var(--ok)'}"/>
+      <text x="${cx}" y="${y(x.rate)-4}" text-anchor="middle" style="fill:var(--ink);font:600 9.5px var(--f-mono)">${x.rate}</text><text x="${cx}" y="${H-18}" text-anchor="middle" style="fill:var(--ink2);font:10px var(--f-mono)">${x.day.slice(5)}</text><text x="${cx}" y="${H-6}" text-anchor="middle" style="fill:var(--ink3);font:9px var(--f-mono)">${['Su','Mo','Tu','We','Th','Fr','Sa'][x.dow]}</text></g>`; }).join('');
+    const grid=[0,50,100].map(v=>`<line x1="${pl}" x2="${W-8}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)" stroke-dasharray="${v?'3 4':'0'}"/><text x="${pl-5}" y="${y(v)+3}" text-anchor="end" style="fill:var(--ink3);font:9.5px var(--f-mono)">${v}</text>`).join('');
+    const dayAvg=dw=>{ const l=info.filter(x=>x.dow===dw); return l.length? Math.round(l.reduce((a,x)=>a+x.rate,0)/l.length):null; };
+    const sat=dayAvg(6), sun=dayAvg(0);
+    const act=d.students.filter(s=>s.active!==false);
+    const chronic=act.map(s=>{ const at=AnaX.attStats(s,R.a,R.b); return {s,miss:at.ab+at.ex,ab:at.ab,ex:at.ex,den:at.p+at.l+at.ab+at.ex}; }).filter(x=>x.miss>=3).sort((a,b)=>b.miss-a.miss).slice(0,8);
+    const worst=[...info].sort((a,b)=>a.rate-b.rate).slice(0,3);
+    el.innerHTML=`<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>📅 Attendance by session</h3><span class="ai-sub">average ${avg}% · red = 12+ pts below average</span></div>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-height:260px" role="img" aria-label="Attendance rate per session">${grid}${bars}</svg></div>
+     <div class="grid g2"><div class="widget"><div class="whead"><h3>Saturday vs Sunday</h3></div><div style="display:flex;gap:16px"><div><div class="kpi" style="font-size:26px">${sat==null?'—':sat+'%'}</div><div class="ai-sub">Saturday avg</div></div><div><div class="kpi" style="font-size:26px">${sun==null?'—':sun+'%'}</div><div class="ai-sub">Sunday avg</div></div></div>
+        ${sat!=null&&sun!=null&&Math.abs(sat-sun)>=8?`<p style="font-size:12.5px;color:var(--ink2);margin-top:8px">${sat>sun?'Sunday':'Saturday'} runs ${Math.abs(sat-sun)} points lower — worth asking families why.</p>`:''}</div>
+      <div class="widget"><div class="whead"><h3>Lowest sessions</h3></div>${worst.map(x=>`<div class="wrow" style="cursor:default"><span class="t">${esc(fmtDate(x.day))}</span><span class="m">${x.rate}% · ${x.p}/${x.n}</span></div>`).join('')}${dips.length?`<p class="ai-sub" style="margin-top:6px">${dips.length} session${dips.length>1?'s':''} well below average — check for closures, weather or holidays.</p>`:''}</div>
+      <div class="widget wfull"><div class="whead"><h3>Most missed (absent + excused, 3+ in range)</h3><button class="chip no-print" data-drill="attlow">Attendance under 80%</button></div>
+        ${chronic.length?chronic.map(x=>`<div class="wrow" data-go="#/students/${x.s.id}">${avatarHTML(x.s,'width:24px;height:24px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t">${esc(x.s.name)}</span><span class="m">${x.ab} absent · ${x.ex} excused of ${x.den}</span></div>`).join(''):'<p style="font-size:12.5px;color:var(--ok)">Nobody has missed 3+ sessions in this range.</p>'}</div></div>`;
+    wireCommon(el); AnaX.wire(el,R);
+  },
+};
+
 const AnaTabs = {
+  attendance(el,R){ AnaX.attendanceTab(el,R); },
   overview(el,R){
     const d=DB.data;
     const act=d.students.filter(s=>s.active!==false);
@@ -12181,13 +12628,13 @@ const AnaTabs = {
     // computed insights (each states its rule)
     const ins=[];
     if(att.rate!=null && attPrev.rate!=null && att.rate<attPrev.rate-5) ins.push({i:'📉',t:`Attendance slipped to ${att.rate}% (was ${attPrev.rate}% the prior period)`, go:'#/analytics/students', r:'rule: drop >5pts vs prior'});
-    if(behind.length) ins.push({i:'🎓',t:`${behind.length} student${behind.length>1?'s':''} flagged behind — see the flag column for why`, go:'#/analytics/students', r:'rules: attendance <70% · no L3 entry 14d · ½+ entries need review'});
+    if(behind.length) ins.push({i:'🎓',t:`${behind.length} student${behind.length>1?'s':''} flagged behind — tap to see who and why`, drill:'behind', go:'#/analytics/students', r:'rules: attendance <70% · no L3 entry 14d · ½+ entries need review'});
     if(qN && qP && qN<qP*0.7) ins.push({i:'📖',t:`Memorization entries down: ${qN} this period vs ${qP} prior`, go:'#/analytics/students', r:'rule: drop >30%'});
     const dueF=fams.filter(fm=>{const fin=famFinance(fm.key); return fin.plan.monthly>0&&fin.monthStatus!=='Paid';});
     if(dueF.length) ins.push({i:'💵',t:`${dueF.length} famil${dueF.length>1?'ies':'y'} not fully paid this month · $${outst} total outstanding`, go:'#/tuition/owe', r:'rule: month status ≠ Paid'});
     if(!act.some(s=>s.level==='Level 2')) ins.push({i:'🧩',t:'Level 2 is empty and its curriculum is still unbuilt — the first Green Book graduate has nowhere to land', go:'#/resource/pln-l2', r:'rule: 0 students + Planned resource'});
     const inc=act.filter(s=>regComplete(s).length).length;
-    if(inc) ins.push({i:'📋',t:`${inc} student records incomplete (guardian / phone / emergency / photo)`, go:'#/admin/enroll', r:'rule: any required field empty'});
+    if(inc) ins.push({i:'📋',t:`${inc} student records incomplete — tap to see who and what’s missing`, drill:'incomplete', go:'#/admin/enroll', r:'rule: any required field empty'});
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">${[
        ['🎓',act.length,'Active students','#/students',''],
@@ -12196,10 +12643,11 @@ const AnaTabs = {
        ['🕌',L3.length?avgH.toFixed(0)+'%':'—','Avg Ḥifẓ (L3)','#/analytics/students',''],
        ['💵',pays?'$'+pays:'—','Collected','#/analytics/admin',deltaMini(pays,paysPrev)],
        ['📚',curAvg+'%','Curriculum avg','#/analytics/curriculum','']]
-      .map(([i,val,lab,go,dm])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:18px">${val}${dm}</b><span>${lab}</span></button>`).join('')}</div>
+      .map(([i,val,lab,go,dm])=>`<button class="kpi-card" ${lab.startsWith('Attendance')?'data-drill="attlow"':lab==='Qur’an entries'?'data-drill="noentries"':`data-go="${go}"`}><span class="ki">${i}</span><b style="font-size:18px">${val}${dm}</b><span>${lab}</span></button>`).join('')}</div>
+     <div class="grid g2" style="margin-bottom:16px">${AnaX.qualityCard(R)}${AnaX.trendsCard(R)}${AnaX.goalsCard(R)}</div>
      <div class="grid g2">
       <div class="widget wfull"><div class="whead"><h3>🧠 Computed insights</h3><span style="font-size:10.5px;color:var(--ink3)">every insight shows its rule — no black box</span></div>
-       ${ins.length?`<div class="wlist">${ins.map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">${esc(x.r)}</span></span></div>`).join('')}</div>`
+       ${ins.length?`<div class="wlist">${ins.map(x=>`<div class="wrow frow" ${x.drill?`data-drill="${x.drill}"`:`data-go="${x.go}"`}><span>${x.i}</span><span class="t">${esc(x.t)}<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">${esc(x.r)}</span></span></div>`).join('')}</div>`
        :'<p style="font-family:var(--f-body);color:var(--ok)">No warning rules firing in this period, al-ḥamdu lillāh.</p>'}
        <button class="chip" style="margin-top:10px" id="aiBrief">✨ Generate AI executive briefing from these numbers</button></div>
       <div class="widget"><div class="whead"><h3>Levels right now</h3></div>
@@ -12208,7 +12656,7 @@ const AnaTabs = {
       <div class="widget"><div class="whead"><h3>Upcoming priorities</h3></div>
        <div class="wlist">${d.tasks.filter(t=>!t.done).sort((a,b)=>String(a.due||'9').localeCompare(String(b.due||'9'))).slice(0,5).map(t=>`<div class="wrow" data-go="#/admin/tasks"><span>${t.pri==='High'?'🔴':'☐'}</span><span class="t">${esc(t.text)}</span><span class="m">${t.due?fmtDate(t.due):''}</span></div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Clear</div>'}</div></div>
      </div>`;
-    wireCommon(el);
+    wireCommon(el); AnaX.wire(el,R);
     $('#aiBrief',el).onclick=()=>{
       const brief=`Act as my executive advisor. Data for ${R.a}→${R.b}: ${act.length} active students (${act.filter(s=>s.level==='Level 1').length} L1, ${act.filter(s=>s.level==='Level 2').length} L2, ${L3.length} L3). Attendance ${att.rate??'n/a'}% over ${att.sess} sessions (prior period ${attPrev.rate??'n/a'}%). ${qN} memorization entries (prior ${qP}). Avg L3 hifz ${avgH.toFixed(1)}%. Tuition collected $${pays}, outstanding $${outst}. Curriculum avg ${curAvg}%. ${behind.length} students flagged behind. Open findings: ${ins.map(x=>x.t).join(' | ')||'none'}. Give me: top 3 priorities, 2 risks I might be missing, and 1 thing going well to build on.`;
       sessionStorage.setItem('ai_q', brief); Router.go('#/ai'); };
@@ -12216,8 +12664,12 @@ const AnaTabs = {
   students(el,R){
     const flags=stuFlags(R.a,R.b);
     const lvl=Ana._lvl||'All';
-    const rows=flags.filter(x=>lvl==='All'||x.s.level===lvl);
+    let rows=flags.filter(x=>lvl==='All'||x.s.level===lvl);
     const d=DB.data;
+    rows.forEach(x=>x.h=AnaX.health(x.s,R));
+    const so=AnaX.sort, sk={name:x=>x.s.name.toLowerCase(),lvl:x=>x.s.level,att:x=>x.attP==null?-1:x.attP,ent:x=>x.q,prog:x=>x.prog,health:x=>x.h.score==null?-1:x.h.score}[so.k]||(x=>x.s.name);
+    rows=[...rows].sort((a,b)=>{ const A=sk(a),B=sk(b); return (A>B?1:A<B?-1:0)*so.dir; });
+    const th=(k,l)=>`<th data-sort="${k}" style="cursor:pointer;white-space:nowrap">${l}${so.k===k?(so.dir>0?' ▲':' ▼'):''}</th>`;
     // per-week entry trend within range (up to 8 buckets)
     const weeks=Math.min(8, Math.max(2, Math.ceil(R.len/7)));
     const wk=[...Array(weeks)].map((_,i)=>{ const end=new Date(new Date(R.b)-i*7*864e5), st=new Date(end-7*864e5);
@@ -12231,7 +12683,7 @@ const AnaTabs = {
      <div class="filters no-print"><select id="anaLvl">${['All','Level 1','Level 2','Level 3'].map(L=>`<option ${L===lvl?'selected':''}>${L}</option>`).join('')}</select>
       <span style="font-size:12px;color:var(--ink3)">${rows.length} students · flags computed for ${R.a} → ${R.b}</span></div>
      <div class="grid g3" style="margin-bottom:16px">
-      <div class="widget"><div class="whead"><h3>Level 1 · Green Book</h3></div>
+      <div class="widget"><div class="whead"><h3>Level 1 · Green Book</h3>${L1.length?'<button class="btn btn-o btn-sm no-print" data-qjourney="l1">🗺 Journey</button>':''}</div>
         ${L1.length?`<div class="kpi">${Math.round(L1.reduce((a,x)=>a+((x.s.gb&&x.s.gb.page)||0),0)/L1.length)}<small>avg page of ${GB_TOTAL}</small></div>
         <p style="font-size:12px;color:var(--ink2);margin-top:8px">Closest to promotion: ${L1.slice(0,2).map(x=>esc(x.s.name)+' (p.'+((x.s.gb&&x.s.gb.page)||0)+')').join(' · ')||'—'}</p>`
         :'<p style="font-size:12.5px;color:var(--ink3)">No L1 students in view.</p>'}</div>
@@ -12241,16 +12693,19 @@ const AnaTabs = {
       <div class="widget"><div class="whead"><h3>Level 3 · Ḥifẓ</h3></div>
         ${L3.length?`<div class="kpi">${totPages.toFixed(0)}<small>pages memorized class-wide</small></div>
         <p style="font-size:12px;color:var(--ink2);margin-top:8px">Paths: ${paths.standard} standard · ${paths.reverse} reverse — both computed per-student.</p>`:'—'}</div></div>
+     ${AnaX.pipelineCard(R)}${AnaX.paceCard(rows)}${AnaX.cohortCard(R)}
      ${d.quran.length?`<div class="widget" style="margin-bottom:16px"><div class="whead"><h3>Memorization activity</h3></div>${spark(wk,'entries / week in range')}</div>`:''}
-     <div class="card scrollx" style="padding:4px 12px"><table class="tbl"><thead><tr><th>Student</th><th>Lvl</th><th>Attend.</th><th>Entries</th><th>Progress</th><th>Flags</th></tr></thead><tbody>
+     <div class="card scrollx" style="padding:4px 12px"><table class="tbl"><thead><tr>${th('name','Student')}${th('lvl','Lvl')}${th('health','Health')}${th('att','Attend.')}${th('ent','Entries')}${th('prog','Progress')}<th>Flags</th></tr></thead><tbody>
       ${rows.map(x=>`<tr data-go="#/students/${x.s.id}" style="cursor:pointer"><td><b>${esc(x.s.name)}</b></td>
         <td>${x.s.level.replace('Level ','L')}</td>
+        <td>${x.h.score==null?'<span class="ai-sub">—</span>':`<button class="tag" data-health="${x.s.id}" title="Why this score?" style="cursor:pointer;border:0;color:${AnaX.band(x.h.score).c};font-weight:800">● ${x.h.score}</button>`}</td>
         <td style="font-family:var(--f-mono)">${x.attP!=null?x.attP+'%':'—'}</td>
-        <td style="font-family:var(--f-mono)">${x.q||'—'}${x.needsRev?' <span class="tag tag-gold">'+x.needsRev+' rev</span>':''}</td>
+        <td style="font-family:var(--f-mono)" title="${x.s.level==='Level 3'?'Qur’ān entries logged in this range':'Entries are only logged for Level 3 — L1/L2 progress is the Progress column'}">${x.q||(x.s.level==='Level 3'?'0':'<span class="ai-sub">n/a</span>')}${x.needsRev?' <span class="tag tag-gold">'+x.needsRev+' rev</span>':''}</td>
         <td>${x.s.level==='Level 2'? 'p.'+x.prog : `<div style="min-width:90px"><div class="bar"><i style="width:${x.prog}%"></i></div></div>`}</td>
         <td>${x.flags.map(f=>`<span class="tag ${f[0]==='behind'?'tag-red':'tag-green'}" title="${esc(f[1])}">${f[0]==='behind'?'▼ ':'▲ '}${esc(f[1])}</span>`).join(' ')||'<span class="tag tag-dim">on track</span>'}</td></tr>`).join('')}
      </tbody></table></div>`;
-    wireCommon(el);
+    wireCommon(el); AnaX.wire(el,R);
+    $$('th[data-sort]',el).forEach(h=>h.onclick=()=>{ const k=h.dataset.sort; AnaX.sort=AnaX.sort.k===k?{k,dir:-AnaX.sort.dir}:{k,dir:k==='name'||k==='lvl'?1:-1}; Router.render(); });
     $('#anaLvl',el).onchange=e=>{ Ana._lvl=e.target.value; Router.render(); };
   },
   curriculum(el,R){
@@ -12342,7 +12797,7 @@ const AnaTabs = {
       ${[['📋','Attendance report','Per-student presence across every session in range','att'],
          ['📖','Memorization report','Every L3 student: path, position, %, entries in range','memo'],
          ['🗓️','Class session report','Pick a date: who came, what was recited','sess'],
-         ['🏫','Term summary','The whole school in one document — students, levels, curriculum, admin','term'],
+         ['🏫','Term summary','The whole school in one document — health scores, goals, attendance trend, finance, data quality','term'],
          ['🏛️','Board & donor report','One-page external summary — impact numbers only, no family-level detail','board']]
         .map(([i,t,dsc,k])=>`<div class="card" style="cursor:pointer" data-rep="${k}"><div style="font-size:22px;margin-bottom:6px">${i}</div><b style="font-family:var(--f-display);font-size:16px">${t}</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">${dsc}</p></div>`).join('')}
       <div class="card" style="cursor:pointer" data-go="#/tuition/families"><div style="font-size:22px;margin-bottom:6px">💵</div><b style="font-family:var(--f-display);font-size:16px">Tuition report</b><p style="font-family:var(--f-body);font-size:13.5px;color:var(--ink2);margin-top:4px">Lives in Tuition → 🖨 button</p></div>
@@ -12383,16 +12838,28 @@ const AnaReports = {
       repShell('Class Session · '+fmtDate(day), `<table><thead><tr><th>Student</th><th>Att.</th><th>Qur’an</th></tr></thead><tbody>${rows}</tbody></table>`); }; },
   term(R){ const d=DB.data;
     const act=d.students.filter(s=>s.active!==false);
-    const att=attRate(R.a,R.b);
+    const att=attRate(R.a,R.b), attP=attRate(R.pa,R.pb);
     const L3=act.filter(s=>s.level==='Level 3');
     const fams=famList().filter(f=>!f.solo);
     const outst=fams.reduce((a,f)=>a+famFinance(f.key).balance,0);
+    const coll=d.finance.payments.filter(p=>inR(p.date,R.a,R.b)&&p.kind!=='excused').reduce((a,p)=>a+(+p.amount||0),0);
+    const hs=act.map(s=>({s,h:AnaX.health(s,R)})).filter(x=>x.h.score!=null).sort((a,b)=>b.h.score-a.h.score);
+    const avgH=hs.length?Math.round(hs.reduce((a,x)=>a+x.h.score,0)/hs.length):null;
+    const goals=(d.settings.anaGoals||[]).map(g=>{ const m=AnaX.goalMetrics[g.metric]; return m?{g,m,cur:m.cur(R)}:null; }).filter(Boolean);
+    const q=AnaX.quality(R);
+    const behind=stuFlags(R.a,R.b).filter(x=>x.flags.some(f=>f[0]==='behind'));
+    const pg=L3.reduce((a,s)=>a+hifzStats(s).pages,0);
+    const dl=(c,p)=>c==null||p==null?'':(c-p===0?' (unchanged vs prior period)':' ('+(c-p>0?'+':'')+(Math.round((c-p)*10)/10)+' vs prior period)');
     repShell('Term Summary · '+R.a+' → '+R.b, `
-     <h2>School</h2><p>${act.length} active students — ${act.filter(s=>s.level==='Level 1').length} Level 1 (Green Book), ${act.filter(s=>s.level==='Level 2').length} Level 2 (Muṣḥaf), ${L3.length} Level 3 (Ḥifẓ). Staff: ${d.staff.map(s=>esc(s.name)).join('; ')}.</p>
-     <h2>Attendance</h2><p>${att.rate!=null?att.rate+'% present across '+att.sess+' sessions.':'No sessions recorded in range.'}</p>
-     <h2>Qur'an</h2><p>${d.quran.filter(q=>inR(q.date,R.a,R.b)).length} entries in range. Class-wide Ḥifẓ: ${L3.reduce((a,s)=>a+hifzStats(s).pages,0).toFixed(0)} pages memorized.</p>
-     <h2>Curriculum</h2><p>Madinah Arabic ${unitsPct('mad')}% · Names & Attributes ${unitsPct('na')}% · Tawhid ${unitsPct('tawhid')}% · Lessons taught: ${d.lessons.filter(L=>L.taught).length}.</p>
-     <h2>Administration</h2><p>Tuition collected in range: $${d.finance.payments.filter(p=>inR(p.date,R.a,R.b)).reduce((a,p)=>a+(+p.amount||0),0)} · Outstanding: $${outst} · Open tasks: ${d.tasks.filter(t=>!t.done).length}.</p>
+     <h2>School at a glance</h2><p>${act.length} active students — ${act.filter(s=>s.level==='Level 1').length} Level 1 (Green Book), ${act.filter(s=>s.level==='Level 2').length} Level 2 (Muṣḥaf), ${L3.length} Level 3 (Ḥifẓ).${avgH!=null?' Average student health score: <b>'+avgH+'</b>/100 ('+AnaX.band(avgH).label+').':''}</p>
+     <h2>Attendance</h2><p>${att.rate!=null?att.rate+'% present across '+att.sess+' sessions'+dl(att.rate,attP.rate)+'.':'No sessions recorded in range.'}</p>
+     <h2>Qur’ān &amp; progress</h2><p>${d.quran.filter(q=>inR(q.date,R.a,R.b)).length} Qur’ān entries in range. Class-wide Ḥifẓ: ${pg.toFixed(0)} pages memorized.</p>
+     <table><thead><tr><th>Student</th><th>Lvl</th><th>Health</th></tr></thead><tbody>${hs.map(x=>`<tr><td>${esc(x.s.name)}</td><td>${x.s.level.replace('Level ','L')}</td><td>${x.h.score}</td></tr>`).join('')}</tbody></table>
+     ${behind.length?`<h2>Needs attention</h2><p>${behind.map(x=>esc(x.s.name)+' ('+x.flags.filter(f=>f[0]==='behind').map(f=>esc(f[1])).join('; ')+')').join(' · ')}</p>`:''}
+     <h2>Goals</h2>${goals.length?`<table><thead><tr><th>Goal</th><th>Now</th><th>Target</th><th>By</th></tr></thead><tbody>${goals.map(x=>`<tr><td>${esc(x.m.label)}</td><td>${x.cur==null?'—':x.cur+x.m.unit}</td><td>${x.g.target}${x.m.unit}</td><td>${esc(x.g.by||'')}</td></tr>`).join('')}</tbody></table>`:'<p>No goals set yet.</p>'}
+     <h2>Curriculum</h2><p>Madinah Arabic ${unitsPct('mad')}% · Names &amp; Attributes ${unitsPct('na')}% · Tawhid ${unitsPct('tawhid')}% · Lessons taught: ${d.lessons.filter(L=>L.taught).length}.</p>
+     <h2>Administration</h2><p>Tuition collected in range: $${coll} · Outstanding: $${outst} · Open tasks: ${d.tasks.filter(t=>!t.done).length}.</p>
+     <h2>Data quality</h2><p>${q.issues.length?q.issues.map(x=>esc(x.t)).join('; ')+'.':'All checks pass.'}</p>
      <h2>Knowledge Base</h2><p>${d.resources.length} resources; ${d.resources.filter(r=>r.status==='Planned').length} planned gaps; ${d.resources.filter(r=>r.status.startsWith('Missing')).length} awaiting re-upload.</p>`); },
   /* ---------- board(): a one-page external-facing report — aggregate numbers only, no
      family names or individual balances, since this is meant to leave the building ---------- */
@@ -13270,6 +13737,9 @@ render(v){
      <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:12px">Storage used: ${(bytes/1024).toFixed(0)} KB of ~5 MB (${pctUsed}%)</div>
      <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sExp">Export backup</button>
       <label class="btn btn-o" style="cursor:pointer">Import backup<input type="file" id="sImp" accept=".json" hidden></label></div></div>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🎛 Customize layout</h3>
+     <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Reorder or hide sidebar modules, tabs, and the cards on any page. Saved on this device and included in your backups. You can also tap the sliders icon at the top of any page.</p>
+     <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sLay">Start customizing</button><button class="btn btn-o" id="sLayRst">Reset layout</button></div></div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🗂️ Collections</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Add a new Knowledge Base collection.</p>
      <div style="display:flex;gap:9px"><input id="sCol" placeholder="e.g., Media Library"><button class="btn btn-o" id="sColAdd">Add</button></div></div>
@@ -13284,6 +13754,8 @@ render(v){
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Reset wipes everything in this browser and restores the seed catalog. Export a backup first.</p>
      <button class="btn btn-danger" id="sReset">Reset AMAN Central</button></div></div>`;
   $('#sTheme',v).onclick=()=>Theme.toggle();
+  $('#sLay',v).onclick=()=>{ Router.go('#/dashboard'); setTimeout(()=>Layout.toggle(true),50); };
+  $('#sLayRst',v).onclick=()=>Layout.resetAll();
   $('#sExp',v).onclick=()=>{ DB.export(); Router.render(); };
   $('#sImp',v).onchange=e=>{ if(e.target.files[0]) DB.import(e.target.files[0]); };
   $('#sColAdd',v).onclick=()=>{ const c=$('#sCol',v).value.trim(); if(!c)return;
@@ -13307,11 +13779,10 @@ const NAV_ICONS = {
  coins:'<circle cx="8.5" cy="8.5" r="5.5"/><path d="M8.5 6v5M6 8.5h5"/><path d="M13 15.5a5.5 5.5 0 1 0 5.5-5.5"/>',
 };
 function buildNav(){
-  const groups={};
-  Registry.modules.filter(m=>m.group).forEach(m=>(groups[m.group]=groups[m.group]||[]).push(m));
-  $('#nav').innerHTML = Object.entries(groups).map(([g,ms])=>`<div class="grp">${g}</div>`+ms.map(m=>
-    `<a href="#/${m.id}" data-mod="${m.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[m.icon]||NAV_ICONS.book}</svg>${m.name}</a>`).join('')).join('');
+  $('#nav').innerHTML = Layout.navMarkup();
   $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); Router.go('#/'+a.dataset.mod); }));
+  const cur=Router.parse().id; $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.mod===cur));
+  Layout.wireNav();
 }
 // ---------- authentication (client-side lock screen — see setup notes) ----------
 // This is a deterrent, not real security: the file has no server, so the
@@ -13326,6 +13797,7 @@ function bootApp(){
   $('#openPalette').onclick=()=>Palette.open();
   $('#quickAdd').onclick=()=>ResourceForm.open();
   $('#themeBtn').onclick=()=>Theme.toggle();
+  $('#layBtn').onclick=()=>Layout.toggle();
   $('#logoutBtn').onclick=()=>confirmBox('Log out of AMAN Central?', doLogout);
   $('#hambBtn').onclick=()=>$('#sidebar').classList.toggle('open');
   document.addEventListener('click', e=>{ if(window.innerWidth<=900 && !e.target.closest('#sidebar') && !e.target.closest('#hambBtn')) $('#sidebar').classList.remove('open'); });
