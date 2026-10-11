@@ -373,6 +373,7 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .qj-flag.fin{color:var(--gold);font-size:20px}
 .qj-avg{width:4px;border-radius:3px;background:var(--gold);box-shadow:0 0 0 2px var(--surface);opacity:.9}
 .qj-av{position:absolute;border-radius:50%;border:3px solid var(--ok);background:var(--green);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:var(--f-display);transition:transform .15s ease}
+.qj-jz{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);background:var(--gold);color:#20261f;font:800 10px/1 var(--f-mono);padding:2px 5px;border-radius:99px;border:1.5px solid var(--surface);white-space:nowrap;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.3)}.qj-jz.fin{background:var(--ok);color:#fff}
 .qj-av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .qj-av.behind{border-color:var(--warn)}
 .qj-av.sel{transform:scale(1.35);z-index:5;box-shadow:0 0 0 3px var(--gold),0 4px 12px rgba(0,0,0,.35)}
@@ -6805,6 +6806,12 @@ const QJ = {
         behind: !!d.quran.length && (!lastQ[s.id]||lastQ[s.id]<cut)};
     });
   },
+  tagOf(x){ // little label under each avatar: L3 = Juzʼ they are working on; L1/L2 = page
+    if(x.lvl==='l3'){ const f=x.fj||0, rev=x.reverse; const nxt=rev?f+1:(f===0?30:f-1); const done=rev?f>=30:f===30&&false||(!rev&&f===1);
+      if(done){ x.fin=true; return {t:'✓ 30',title:'Finished all 30 Juzʼ'}; }
+      return {t:'J'+nxt,title:'Working on Juzʼ '+nxt+' ('+f+' of 30 Juzʼ complete)'}; }
+    const T=x.lvl==='l1'?GB_TOTAL:MUSHAF_TOTAL; if(x.page>=T){ x.fin=true; return {t:'✓',title:'Complete'}; }
+    return {t:'p.'+x.page,title:'On page '+x.page+' of '+T}; },
   MODES:{l1:['📗','Level 1','Green Book Journey'],l2:['📖','Level 2','Muṣḥaf Reading Journey'],l3:['🕌','Level 3','Qurʼān Journey'],all:['🪜','L1 + L3','Level 1 & Level 3 Journeys']},
   buttonsHTML(){ return `<span class="qj-btns no-print" style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:11.5px;color:var(--ink3)">🗺 Journey maps</span>${Object.entries(QJ.MODES).map(([k,m])=>`<button class="btn btn-o btn-sm" data-qjourney="${k}">${m[0]} ${m[1]}</button>`).join('')}</span>`; },
   chrome(){
@@ -6857,6 +6864,7 @@ const QJ = {
     $('#qj-sub',r).textContent = split ? l1.length+' in Level 1 (avg page '+Math.round(avgOf(l1)/100*GB_TOTAL)+' of '+GB_TOTAL+') · '+l3.length+' in Level 3 (avg '+avgOf(l3).toFixed(0)+'%)'
       : all.length+' students · class average '+(mm==='l1'? 'page '+Math.round(avgOf(all)/100*GB_TOTAL)+' of '+GB_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : mm==='l2'? 'page '+Math.round(avgOf(all)/100*MUSHAF_TOTAL)+' of '+MUSHAF_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : avgOf(all).toFixed(0)+'%');
     const st2=$('#qj-stage2',r); st2.style.display=split?'':'none'; if(!split) $('.qj-map',st2).innerHTML='';
+    QJ.paint(all); // panel first, so the stage height is final before the map is sized
     const panes = split ? [['l1',$('#qj-stage',r),l1],['l3',st2,l3]] : [[mm,$('#qj-stage',r),all]];
     let items=[]; panes.forEach(([MD,stage,rows])=>{ items=items.concat(QJ.drawPane(stage,MD,rows,names,split)); });
     if(QJ._anim){
@@ -6871,20 +6879,23 @@ const QJ = {
     const r=QJ.root, map=$('.qj-map',stage);
     const avg = rows.length? rows.reduce((n,x)=>n+x.pct,0)/rows.length : 0;
     const aw=stage.clientWidth, ah=stage.clientHeight, portrait=aw<700;
-    const W=portrait?620:1000, L=split?2:portrait?7:4, m=split?(portrait?92:98):portrait?85:100, H=split?m*2+(L-1)*110:portrait?m*2+(L-1)*125:m*2+(L-1)*150;
-    const mapW = (portrait&&!split)? aw : Math.min(aw, Math.max(220,ah)*W/H), mapH = mapW*H/W, sc = mapW/W;
+    const W=portrait?620:1000, L=split?2:portrait?7:3;
+    const pad=split?34:50, tall=!(portrait&&!split);
+    const AV=Math.round(tall? Math.max(28,Math.min(42,Math.min(aw,ah)/16)) : Math.max(24,Math.min(40,aw/26)));
+    const lane=3.05*AV+8; // the road is wide enough for ~3 avatars side by side
+    const sc = tall ? Math.max(.3,Math.min(aw/W,(ah-L*lane)/(56+(L-1)*pad))) : aw/W;
+    const RW=Math.max(40,lane/sc), m=RW/2+28, gp=RW+pad, H=2*m+(L-1)*gp, mapW=sc*W, mapH=sc*H;
     map.style.width=mapW+'px'; map.style.height=mapH+'px';
     const gap=(H-2*m)/(L-1), rad=gap/2, xl=m+rad, xr=W-m-rad;
     let dpath=`M ${xl} ${m}`;
     for(let i=0;i<L;i++){ const y=m+gap*i, right=i%2===0; dpath+=` H ${right?xr:xl}`; if(i<L-1) dpath+=` A ${rad} ${rad} 0 0 ${right?1:0} ${right?xr:xl} ${y+gap}`; }
     map.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${mapW}" height="${mapH}" aria-hidden="true" style="position:absolute;inset:0">
-      <path d="${dpath}" fill="none" stroke="var(--line)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="${dpath}" fill="none" stroke="var(--surface)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${dpath}" fill="none" stroke="var(--line)" stroke-width="${RW+8}" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${dpath}" fill="none" stroke="var(--surface)" stroke-width="${RW}" stroke-linecap="round" stroke-linejoin="round"/>
       <path class="qj-p" d="${dpath}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-dasharray="3 11" stroke-linecap="round" opacity=".75"/></svg><div class="qj-layer"></div>${split?`<div class="qj-plabel">${MD==='l1'?'📗 Level 1 · Green Book':'🕌 Level 3 · Ḥifẓ'}</div>`:''}`;
     const path=$('#qj-p',map)||map.querySelector('path[stroke-dasharray]'), total=path.getTotalLength(), layer=map.querySelector('.qj-layer');
     const pt=len=>{ const p=path.getPointAtLength(Math.max(0,Math.min(total,len))); return {x:p.x*sc,y:p.y*sc}; };
     const nrm=len=>{ const a=pt(len-3), b=pt(len+3), tx=b.x-a.x, ty=b.y-a.y, h=Math.hypot(tx,ty)||1; return {x:-ty/h,y:tx/h}; };
-    const AV=Math.round(Math.max(24,Math.min(40,mapW/26)));
     const place=(el,len,off,w)=>{ const p=pt(len), n=nrm(len); el.style.left=(p.x+n.x*off-(w||AV)/2)+'px'; el.style.top=(p.y+n.y*off-(w||AV)/2)+'px'; };
     // landmarks: end of each Juzʼ in the standard order
     const mile=N=>Math.min(1,(605-Math.max(JUZ_PAGE[N],2))/603);
@@ -6908,20 +6919,20 @@ const QJ = {
     const lastRight=(L-1)%2===0;
     $$('[data-lenl]',layer).forEach(e=>{ const l=+e.dataset.lenl*sc; const p=pt(l), n=nrm(l);
       if(e.classList.contains('qj-flag')){ const fin=e.classList.contains('fin'), dx=fin?(lastRight?1:-1):-1; e.style.left=(p.x+dx*62*sc)+'px'; e.style.top=p.y+'px'; }
-      else { e.style.left=(p.x+n.x*-34*sc*1.1)+'px'; e.style.top=(p.y+n.y*-34*sc*1.1)+'px'; }
+      else { const lo=-(RW/2+16)*sc; e.style.left=Math.max(26,Math.min(mapW-26,p.x+n.x*lo))+'px'; e.style.top=(p.y+n.y*lo)+'px'; }
       e.style.transform='translate(-50%,-50%)'; });
     // class average tick
     if(rows.length){ const al=avg/100*total, p=pt(al), a=pt(al-3), b=pt(al+3), ang=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+90; const e=document.createElement('div'); e.className='qj-avg'; e.title='Class average: '+avg.toFixed(0)+'%';
       e.style.left=p.x+'px'; e.style.top=p.y+'px'; e.style.height=(52*sc)+'px'; e.style.transform='translate(-50%,-50%) rotate('+ang+'deg)'; layer.appendChild(e); }
     // avatars: stagger across the road width so close students don't stack
     const items=rows.map(x=>({x, len:Math.max(0,Math.min(1,x.pct/100))*total})).sort((a,b)=>a.len-b.len);
-    const placed=[], slots=[0,1,-1,2,-2], minD=AV*1.04/sc; // user-space units, same as path length
+    const placed=[], slots=[0,1,-1,2,-2].filter(o=>Math.abs(o)<=1||RW*sc>=AV*4.2), minD=AV*1.04/sc; // user-space units, same as path length
     items.forEach(it=>{
       let tries=0;
       for(;;){ const k=slots.find(o=>!placed.some(p=>p.off===o && Math.abs(p.len-it.len)<minD)); if(k!==undefined){ it.off=k; break; } it.len=Math.min(total,it.len+minD*0.5); if(++tries>40){ it.off=0; break; } }
       placed.push(it);
     });
-    const step=AV*0.92;
+    const step=Math.min(AV*1.02,(RW*sc-AV-4)/2);
     items.forEach((it,i)=>{
       const x=it.x, s=x.s, b=document.createElement('button'); b.type='button';
       b.className='qj-av'+(QJ.sel===s.id?' sel':'')+(names?'':' anon')+(x.behind?' behind':'');
@@ -6929,6 +6940,7 @@ const QJ = {
       b.setAttribute('aria-label', names? (s.preferredName||s.name)+', '+x.pct.toFixed(0)+' percent' : 'student, '+x.pct.toFixed(0)+' percent');
       b.innerHTML = names ? (s.photo?`<img src="${s.photo}" alt="" loading="lazy">`:esc(initials(s.name))) : '';
       if(names && x.rev && x.rev.c.due) b.insertAdjacentHTML('beforeend',`<span class="qj-badge">${x.rev.c.due}</span>`);
+      if(names){ const tag=QJ.tagOf(x); if(tag) b.insertAdjacentHTML('beforeend',`<span class="qj-jz${x.fin?' fin':''}" title="${esc(tag.title)}">${esc(tag.t)}</span>`); }
       if(names){ b.addEventListener('click',()=>{ QJ.sel=QJ.sel===s.id?null:s.id; QJ.paint(); $$('.qj-av',r).forEach(e=>e.classList.toggle('sel',e===b&&QJ.sel===s.id)); }); }
       else b.tabIndex=-1;
       layer.appendChild(b); it.el=b; it.step=step;
