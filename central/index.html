@@ -284,6 +284,10 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .ama-hero h2{color:#fff!important;margin:2px 0 4px}
 .ama-hero .ama-tag{font-family:var(--f-display);font-style:italic;color:#d9b765;font-size:15px;margin-bottom:6px}
 .ama-hero p{color:#cfd7e4!important;margin:0}
+.aman-hero{background:radial-gradient(120% 140% at 0% 0%,#256146 0%,#1a4a35 45%,#0f2c20 100%);border-color:#d9ac5466;box-shadow:0 6px 22px rgba(15,44,32,.3)}
+.aman-hero .logo-tile{background:#fffdf6;border-color:#d9ac54}
+.aman-hero .logo-tile img{width:auto;height:112px;max-width:96px;border-radius:0}
+.aman-hero .ama-tag{color:#e6c277}
 .ama-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 14px}
 .ama-kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:14px;padding:11px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:transform .12s,box-shadow .12s}
 .ama-kpi:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
@@ -11846,8 +11850,8 @@ const Admissions = {
     const funnelStrip = !d.admissions.length ? '' : `<div class="no-print" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 14px">
        ${funnel.map(([label,n,jump],i)=>`${i>0?'<span style="color:var(--ink3);font-size:13px">→</span>':''}<button class="chip${jump?'':' btn-ghost'}" ${jump?`data-jump="${jump}"`:''} style="cursor:${jump?'pointer':'default'}"><b>${n}</b> ${esc(label)}</button>`).join('')}
       </div>`;
-    v.innerHTML = `<div class="page-wm"><div class="adm-hero"><div style="min-width:0"><div class="eyebrow">AMAN Admissions Pipeline</div><h2 class="page-title">AMAN Admissions</h2>
-     <p class="page-sub">${esc(summary)}</p></div><div class="logo-tile" title="Al-Madrasatu An-Nuriyyah"><img src="${AMAN_LOGO}" alt="AMAN logo"></div></div>
+    v.innerHTML = `<div class="page-wm"><div class="ama-hero aman-hero"><div class="logo-tile" title="Al-Madrasatu An-Nuriyyah"><img src="${AMAN_LOGO}" alt="AMAN logo"></div><div style="min-width:0"><div class="eyebrow">AMAN Admissions Pipeline</div><h2 class="page-title">AMAN Admissions</h2>
+     <div class="ama-tag">Youth Educated… Family Cultivated… World Illuminated</div><p>${esc(summary)}</p></div></div>
      ${(()=>{ const st=admSeats(), wlN=active.filter(a=>a.stage==='waitlist').length;
         return `<div class="adm-seats no-print"><div style="font-size:13px"><b style="font-family:var(--f-mono)">${st.filled}</b> of <b style="font-family:var(--f-mono)">${st.cap}</b> seats filled · <b style="color:${st.open?'var(--ok)':'var(--bad)'}">${st.open} open</b>${wlN?` · ${wlN} on the waiting list`:''}</div>
           <div class="adm-seatbar" title="${st.filled} active students of ${st.cap} seats"><i style="width:${Math.min(100,st.filled/st.cap*100).toFixed(1)}%"></i></div>
