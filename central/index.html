@@ -271,6 +271,65 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .db-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin-bottom:6px}.db-legend span{display:flex;align-items:center;gap:5px}.db-legend .db-c{width:18px;font-size:10px}
 .db-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink3);font-family:var(--f-mono);margin:0 4px 2px 160px}
 @media(max-width:640px){.db-row{flex-wrap:wrap}.db-name{width:calc(100% - 40px)}.db-strip{flex-basis:100%;gap:2px}.db-c{font-size:9px}.db-scale{margin-left:0}}
+/* ---- Revision Planner + Tawḥīd Poem tracker ---- */
+.hubbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin:0 0 16px;padding:8px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh1,0 1px 2px rgba(0,0,0,.04))}
+.hub-t{font-family:var(--f-display,inherit);font-weight:800;font-size:15px;color:var(--green,#1a4a35);padding:0 6px}
+.hub-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.hub-tab{border:0;background:transparent;color:var(--ink2,#444);font:600 13px/1 var(--f-body,inherit);padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.hub-tab:hover{background:var(--bg2,rgba(0,0,0,.05))}
+.hub-tab.on{background:var(--green,#1a4a35);color:#fff}
+.hub-tab i{font-style:normal;font-size:11px;font-weight:800;background:var(--gold,#d9ac54);color:#20261f;border-radius:20px;padding:2px 7px}
+@media(max-width:640px){.pt-hero{padding:18px}.pt-hero>div:first-child{flex:1 1 100%!important}}
+.hub-x{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:640px){.hub-x{margin-left:0;width:100%}.hub-tabs{width:100%}.hub-tab{flex:1 1 auto;justify-content:center}}
+.rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 14px}
+.rp-kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:14px;padding:11px 14px}
+.rp-kpi b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;color:var(--k,var(--ink))}.rp-kpi span{font-size:11.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;font-weight:600}.rp-kpi small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.rp-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))}
+.rp-card{display:flex;flex-direction:column;gap:8px}
+.rp-lbl{font:700 10.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.rp-today{background:var(--surface2);border-radius:10px;padding:8px 10px}
+.rp-ports{display:flex;flex-wrap:wrap;gap:5px}
+.rp-p{display:inline-flex;flex-direction:column;padding:4px 9px;border-radius:9px;font-size:12.5px;font-weight:600;line-height:1.25}.rp-p small{font-weight:400;font-size:10.5px;opacity:.75}
+.rp-p.sab{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--ink)}.rp-p.man{background:color-mix(in srgb,var(--stage-review) 18%,transparent);color:var(--ink)}
+.rp-week{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink3)}
+.rp-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--surface2);color:var(--ink3);font:700 11px var(--f-mono);cursor:pointer;padding:0}.rp-dot.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.rp-hist{display:flex;gap:3px;align-items:flex-end;margin-top:6px}.rp-hist i{display:block;width:100%;max-width:18px;height:10px;border-radius:3px;background:var(--surface2);border:1px solid var(--line)}
+.rp-hist i.hg{background:var(--ok);border-color:var(--ok)}.rp-hist i.hm{background:color-mix(in srgb,var(--ok) 55%,var(--surface));border-color:transparent}.rp-hist i.hl{background:color-mix(in srgb,var(--gold) 55%,var(--surface));border-color:transparent}.rp-hist i.hz{background:color-mix(in srgb,var(--bad) 30%,var(--surface));border-color:transparent}.rp-hist i.hn{opacity:.35}
+.rp-hist.big{gap:6px}.rp-hist.big>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}.rp-hist.big i{height:30px;max-width:none}.rp-hist.big small{font:600 10.5px var(--f-mono);color:var(--ink3)}
+.rp-meter{margin:4px 0 12px}.rp-mbar{height:9px;border-radius:99px;background:var(--surface2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}.rp-mbar i{display:block;height:100%;background:linear-gradient(90deg,var(--ok),var(--gold))}.rp-mleg{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);margin-top:4px}
+.rp-days{display:grid;gap:8px}.rp-day{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.rp-day.today{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 25%,transparent)}.rp-day.done{background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
+.rp-why{margin:0;padding-left:18px;display:grid;gap:7px;font-size:13.5px;line-height:1.5}
+.pt-hero{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:22px 26px;border-radius:20px;margin-bottom:14px;color:#f6efe0;background:radial-gradient(120% 140% at 0% 0%,#256146 0%,#1a4a35 45%,#0f2c20 100%);border:1px solid #d9ac5466;box-shadow:0 6px 22px rgba(15,44,32,.3)}
+.pt-ar{font-family:'Amiri','Scheherazade New',serif;direction:rtl}.pt-title{font-size:28px;color:#e6c277;line-height:1.5}
+.pt-parts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pt-part{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--pc);border-radius:14px;padding:11px 13px;display:flex;flex-direction:column;gap:3px}.pt-part .pt-ar{font-size:17px;color:var(--pc);text-align:right}.pt-part small{font-size:11px;color:var(--ink3)}
+.pt-c{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink3);font:700 11px var(--f-mono);cursor:pointer;padding:0}
+.pt-c.mini{width:auto;height:18px;min-width:0;flex:1;border-radius:4px;border-width:1px;cursor:pointer}.pt-legend .pt-c.mini{display:inline-block;width:14px;flex:none}
+.pt-c.learning{background:color-mix(in srgb,var(--gold) 30%,var(--surface));border-color:var(--gold);color:var(--ink)}
+.pt-c.mem{background:var(--ok);border-color:var(--ok);color:#fff}
+.pt-c.solid{background:linear-gradient(155deg,#e6c277,#b8872a);border-color:#b8872a;color:#20261f}
+.pt-c.due{background:color-mix(in srgb,var(--bad) 18%,var(--surface));border-color:var(--bad);color:var(--bad)}
+.pt-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin-bottom:8px}.pt-legend span{display:flex;align-items:center;gap:5px}
+.pt-board{overflow-x:auto}.pt-brow,.pt-bhead{display:grid;grid-template-columns:150px minmax(420px,1fr) 44px;gap:8px;align-items:center;margin-bottom:5px}
+.pt-strip{display:flex;gap:2px}.pt-bp{height:14px;border-radius:4px;color:#fff;font:700 9px var(--f-mono);text-align:center;line-height:14px;opacity:.9}
+.pt-bname{display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font:600 12.5px var(--f-ui);text-align:left;min-width:0}.pt-bname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-bn{font:700 12px var(--f-mono);text-align:right}.pt-bn em{font-style:normal;margin-left:3px}.pt-bn em.ok{color:var(--ok)}.pt-bn em.bad{color:var(--bad)}
+.pt-shead{display:flex;gap:16px;align-items:center;margin:12px 0 4px}.pt-ring{position:relative;flex-shrink:0}.pt-ring svg{display:block}.pt-ring b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 22px var(--f-display);line-height:1}.pt-ring b small{font-size:11px;font-weight:500;color:var(--ink3)}
+.pt-pgroup{border-left:4px solid var(--pc);padding-left:12px;margin:14px 0}.pt-ph{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;color:var(--pc)}.pt-ph .pt-ar{font-size:18px}
+.pt-sec{margin:8px 0}.pt-sh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;margin-bottom:5px}.pt-cells{display:flex;flex-wrap:wrap;gap:5px}
+.pt-big{font-size:clamp(24px,5vw,32px);line-height:2.05;text-align:center}.pt-w{display:inline-block;padding:0 3px;border-radius:6px}.pt-w.rh{box-shadow:inset 0 -7px 0 -1px color-mix(in srgb,var(--gold) 45%,transparent)}
+.pt-next .pt-big{background:var(--surface2);border-radius:12px;padding:6px 10px}
+.pt-modal{max-height:92vh;overflow:auto}.pt-mh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+.pt-recap{background:color-mix(in srgb,var(--ok) 10%,var(--surface));border-radius:10px;padding:8px 11px;margin-bottom:10px;font-size:12px}.pt-recap small{font:700 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ok)}.pt-recap .pt-ar{font-size:17px;margin-top:2px}
+.pt-tabs{display:flex;gap:6px;margin-bottom:10px}.pt-note{font-size:11.5px;color:var(--gold);text-align:center;margin:2px 0 10px}
+.pt-mean{background:var(--surface2);border-radius:10px;padding:10px 13px;font-style:italic;color:var(--ink2);font-size:13.5px;line-height:1.6}.pt-mean b{display:block;font:700 10px var(--f-mono);font-style:normal;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);margin-bottom:3px}
+.pt-reps{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;color:var(--ink2)}.pt-rep{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);background:var(--surface2);font-weight:700;cursor:pointer}.pt-rep.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.pt-dr{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:5px}
+.pt-dw{display:inline-block;padding:1px 5px;border-radius:6px}.pt-dw.hid{color:transparent;background:repeating-linear-gradient(90deg,var(--line),var(--line) 6px,transparent 6px,transparent 11px);border-bottom:2px dashed var(--gold);cursor:pointer}.pt-dw.peek{color:var(--ink)!important;background:color-mix(in srgb,var(--gold) 30%,transparent)!important}
+.pt-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.pt-opts{display:grid;gap:8px}.pt-opt{text-align:left;padding:11px 13px;border-radius:11px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px/1.45 var(--f-ui);cursor:pointer}.pt-opt.ar{font-family:'Amiri',serif;font-size:21px;direction:rtl;text-align:center}.pt-opt:hover:not(:disabled){border-color:var(--gold)}.pt-opt.ok{background:color-mix(in srgb,var(--ok) 20%,var(--surface));border-color:var(--ok)}.pt-opt.bad{background:color-mix(in srgb,var(--bad) 18%,var(--surface));border-color:var(--bad)}
+.qj-jz.poem{background:#1a4a35;color:#f4ead6}
+@media(max-width:720px){.rp-kpis,.pt-parts{grid-template-columns:repeat(2,1fr)}.pt-brow,.pt-bhead{grid-template-columns:96px minmax(380px,1fr) 38px}.pt-hero{padding:18px 16px}.pt-title{font-size:22px}.rp-day{grid-template-columns:38px 1fr auto}}
 /* ---- Admissions logos + Amaanah hero ---- */
 .logo-tile{flex-shrink:0;background:#fffdf6;border:1px solid var(--line);border-radius:16px;padding:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .logo-tile img{display:block;height:96px;width:auto;max-width:130px;object-fit:contain}
@@ -4007,6 +4066,27 @@ const Registry = {
   get(id){ return this.modules.find(m=>m.id===id); }
 };
 
+
+/* ================= HUBS =================
+   Two workspaces replace four sidebar items: Qur’an Ḥifẓ (class week +
+   revision plans + hearing queue) and Islamic Studies (gradebook + Tawḥīd
+   poem). Old routes (#/revplan, #/poem, #/students/progress,
+   #/students/gradebook) still work — they now draw inside a shared tab bar. */
+const HUBS={
+  hifz:{name:'Qur’an Ḥifẓ',ico:'📖',tabs:[['progress','📊 Class week','#/students/progress'],['revplan','🔁 Revision plans','#/revplan'],['hear','🎧 Hearing queue','#/revplan/hear'],['how','ℹ️ How it works','#/revplan/how']],
+    extra:'<button class="btn btn-o btn-sm" data-qjourney="all">🗺 Qur’an journey</button>'},
+  islamic:{name:'Islamic Studies',ico:'🕌',tabs:[['gradebook','📗 Gradebook','#/students/gradebook'],['poem','📜 Tawḥīd Poem','#/poem']],
+    extra:'<button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">Lesson plans ↗</button><button class="btn btn-ghost btn-sm" data-go="#/teacher/curriculum">Curriculum ↗</button>'}
+};
+function navId(){ const {id,param}=Router.parse(); if(id==='students'&&param==='progress') return 'hifz'; if(id==='students'&&param==='gradebook') return 'islamic'; const m=Registry.get(id); return (m&&m.nav)||id; }
+function hubBadge(key){ try{ if(key==='hear') return RP.stu().reduce((a,s)=>a+RP.ready(s).length,0); if(key==='poem') return PT.stu().reduce((a,s)=>a+PT.sum(s).due,0); }catch(e){} return 0; }
+function hubShell(v,hub,key){
+  const H=HUBS[hub];
+  v.innerHTML=`<div class="hubbar no-print"><span class="hub-t">${H.ico} ${H.name}</span><div class="hub-tabs">${H.tabs.map(([k,l,h])=>{ const n=hubBadge(k); return `<button class="hub-tab ${k===key?'on':''}" data-go="${h}">${l}${n?`<i>${n}</i>`:''}</button>`; }).join('')}</div><span class="hub-x">${H.extra||''}</span></div><div class="hub-body"></div>`;
+  wireCommon(v);
+  return v.querySelector('.hub-body');
+}
+
 /* ---------- router ---------- */
 /* ================= LAYOUT STUDIO =================
    Reorder and hide modules (sidebar), tabs, and the cards on any page.
@@ -4281,7 +4361,7 @@ const Router = {
     try{ Rewards.check(); }catch(e){ console.error('rewards',e); }
     const v = $('#view'); v.innerHTML='';
     m.render(v, param);
-    $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.mod===m.id));
+    const _nv=Registry.get(id)?navId():m.id; $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.mod===_nv));
     if(window.innerWidth<=900) $('#sidebar').classList.remove('open');
     // Scroll-to-top intentionally lives in go() / the hashchange listener
     // below, NOT here — render() is also called directly, ~130 places
@@ -6670,6 +6750,15 @@ function allergyReminderHTML(){
 const REV_INTERVAL = {strong:35, shaky:14, forgot:0};
 const REV_LABEL = {strong:'Strong', shaky:'Shaky', forgot:'Forgot parts'};
 const QMapUI = {mode:'progress'};
+const nm0=s=>s.preferredName||s.name;
+function l3TrackersCardHTML(s){
+  if(s.level!=='Level 3') return '';
+  const m=PT.sum(s), p=RP.plan(s), ready=RP.ready(s).length, due=RP.due(s).length;
+  return `<div class="card" style="margin-bottom:14px;border-top:3px solid var(--gold)"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">📜 Trackers</h3><span style="display:flex;gap:6px;flex-wrap:wrap" class="no-print"><button class="btn btn-o btn-sm" data-go="#/revplan/${s.id}">🔁 Revision plan</button><button class="btn btn-o btn-sm" data-go="#/poem/${s.id}">📜 Tawḥīd poem</button></span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:8px">
+      <div><div class="rp-lbl">Revision this week</div>${p?`<b>${p.B} pages/day</b> · ~${RP.minutes(p.B)} min<div class="adm-tags" style="margin-top:5px">${ready?`<span class="tag tag-gold">🎧 ${ready} to hear</span>`:''}${due?`<span class="tag tag-red">⏱ ${due} overdue</span>`:''}${RP.streak(s)?`<span class="tag tag-gold">🔥 ${RP.streak(s)}wk</span>`:''}</div>`:'<span style="font-size:12.5px;color:var(--ink3)">No memorized pages logged yet</span>'}</div>
+      <div><div class="rp-lbl">Tawḥīd poem</div><b>${m.memN} / 47 bayts</b>${m.next?` · next: bayt ${m.next}`:' · 🌟 complete'}<div class="bar" style="margin-top:6px"><i style="width:${m.pct.toFixed(0)}%"></i></div></div></div></div>`;
+}
 const Rev = {
   juzList(s){
     const pid = HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard';
@@ -6701,6 +6790,7 @@ const Rev = {
   log(s,N,rating,date){
     date = date||today(); s.revision=s.revision||{}; s.revHistory=s.revHistory||[];
     const cur=s.revision[N]; if(!cur || date>=cur.date) s.revision[N]={date,rating};
+    if(s.revPlan&&s.revPlan.ptr) delete s.revPlan.ptr[N]; // a heard Juzʼ starts a fresh pass
     s.revHistory.unshift({date,juz:N,rating}); if(s.revHistory.length>120) s.revHistory.length=120;
     DB.data.quran.push({sid:s.id, what:'Juzʼ '+N+' revision'+(rating==='forgot'?' — forgot parts':rating==='shaky'?' — shaky':''), kind:'Review', grade:rating==='strong'?'Excellent':'Needs review', date});
     DB.log((s.preferredName||s.name)+' — revised Juzʼ '+N+' ('+REV_LABEL[rating]+')');
@@ -6760,7 +6850,7 @@ const Rev = {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div><b style="font-family:var(--f-display);font-size:17px">🔁 Revision due</b>
         <p style="font-size:12px;color:var(--ink2);margin-top:2px">${dueStu?dueStu+' student'+(dueStu===1?'':'s')+' with an overdue Juzʼ':'Nothing overdue'}${noneJ?' · '+noneJ+' memorized Juzʼ not logged yet':''}</p></div>
-        <button class="btn btn-o btn-sm no-print" data-qjourney title="Full-screen class journey">🗺 Journey view</button></div>
+        <span style="display:flex;gap:6px;flex-wrap:wrap" class="no-print"><button class="btn btn-o btn-sm" data-go="#/revplan" title="Set this week's revision portions">🔁 Revision Planner</button><button class="btn btn-o btn-sm" data-qjourney title="Full-screen class journey">🗺 Journey view</button></span></div>
       ${!logged?`<p style="font-size:12.5px;color:var(--ink2);margin-top:8px">Nothing logged yet. When you hear a student recite an older Juzʼ in class, tap its chip and rate it — that starts its freshness clock, and the Progress Map's <b>Retention</b> view fills in.</p>`:''}
       ${rows.length?`<div class="wlist" style="margin-top:8px">${rows.slice(0,vis).map(rowHTML).join('')}</div>
       ${rows.length>vis?`<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">${rows.length-vis} more student${rows.length-vis===1?'':'s'}</summary><div class="wlist" style="margin-top:6px">${rows.slice(vis).map(rowHTML).join('')}</div></details>`:''}`
@@ -6795,6 +6885,7 @@ const QJ = {
     if(QJ.mode==='l1') return QJ.dataL1();
     if(QJ.mode==='l2') return QJ.dataL2();
     if(QJ.mode==='all') return QJ.dataAll();
+    if(QJ.mode==='poem') return PT.dataPoem();
     return QJ.dataL3();
   },
   dataL3(){
@@ -6807,12 +6898,13 @@ const QJ = {
     });
   },
   tagOf(x){ // little label under each avatar: L3 = Juzʼ they are working on; L1/L2 = page
+    if(x.lvl==='poem'){ if(x.contig>=47){ x.fin=true; return {t:'✓ 47',title:'Whole poem memorized'}; } return {t:'B'+(x.contig+1),title:'Next bayt to memorize: '+(x.contig+1)+' ('+x.contig+' in a row, '+x.memN+' memorized in all)'}; }
     if(x.lvl==='l3'){ const f=x.fj||0, rev=x.reverse; const nxt=rev?f+1:(f===0?30:f-1); const done=rev?f>=30:f===30&&false||(!rev&&f===1);
       if(done){ x.fin=true; return {t:'✓ 30',title:'Finished all 30 Juzʼ'}; }
       return {t:'J'+nxt,title:'Working on Juzʼ '+nxt+' ('+f+' of 30 Juzʼ complete)'}; }
     const T=x.lvl==='l1'?GB_TOTAL:MUSHAF_TOTAL; if(x.page>=T){ x.fin=true; return {t:'✓',title:'Complete'}; }
     return {t:'p.'+x.page,title:'On page '+x.page+' of '+T}; },
-  MODES:{l1:['📗','Level 1','Green Book Journey'],l2:['📖','Level 2','Muṣḥaf Reading Journey'],l3:['🕌','Level 3','Qurʼān Journey'],all:['🪜','L1 + L3','Level 1 & Level 3 Journeys']},
+  MODES:{l1:['📗','Level 1','Green Book Journey'],l2:['📖','Level 2','Muṣḥaf Reading Journey'],l3:['🕌','Level 3','Qurʼān Journey'],poem:['📜','Tawḥīd Poem','Tawḥīd Poem Journey'],all:['🪜','L1 + L3','Level 1 & Level 3 Journeys']},
   buttonsHTML(){ return `<span class="qj-btns no-print" style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:11.5px;color:var(--ink3)">🗺 Journey maps</span>${Object.entries(QJ.MODES).map(([k,m])=>`<button class="btn btn-o btn-sm" data-qjourney="${k}">${m[0]} ${m[1]}</button>`).join('')}</span>`; },
   chrome(){
     const r=QJ.root, M=QJ.MODES[QJ.mode], m=QJ.mode;
@@ -6821,6 +6913,7 @@ const QJ = {
     const ok='<span><i class="qj-dot ok"></i>on track</span>', av='<span><i class="qj-tick"></i>class average</span>';
     $('#qj-legend',r).innerHTML = m==='l1'? `${ok}<span><i class="qj-dot warn"></i>no page update in 21+ days</span>${av}<span>Finish line = Green Book complete (p.${GB_TOTAL}) → Level 2</span>`
       : m==='l2'? `${ok}<span><i class="qj-dot warn"></i>no page update in 21+ days</span>${av}<span>Finish line = full Muṣḥaf (p.${MUSHAF_TOTAL}) → Level 3</span>`
+      : m==='poem'? `${ok}<span><i class="qj-dot warn"></i>no poem activity in 21+ days</span>${av}<span>Bayts in a row from the start · 4 parts, 13 topics · finish = the whole poem</span>`
       : m==='all'? `${ok}<span><i class="qj-dot warn"></i>needs an update (21d L1 · 14d L3)</span>${av}<span>Level 1 (Green Book) on top · Level 3 (Ḥifẓ) below</span>`
       : `${ok}<span><i class="qj-dot warn"></i>no entry in 14+ days</span><span><i class="qj-badge-demo">3</i>overdue revision</span>${av}<span>Juzʼ milestones follow the standard order</span>`;
   },
@@ -6862,7 +6955,7 @@ const QJ = {
     const avgOf=rs=>rs.length? rs.reduce((n,x)=>n+x.pct,0)/rs.length : 0;
     const l1=all.filter(x=>x.lvl==='l1'), l3=all.filter(x=>x.lvl==='l3');
     $('#qj-sub',r).textContent = split ? l1.length+' in Level 1 (avg page '+Math.round(avgOf(l1)/100*GB_TOTAL)+' of '+GB_TOTAL+') · '+l3.length+' in Level 3 (avg '+avgOf(l3).toFixed(0)+'%)'
-      : all.length+' students · class average '+(mm==='l1'? 'page '+Math.round(avgOf(all)/100*GB_TOTAL)+' of '+GB_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : mm==='l2'? 'page '+Math.round(avgOf(all)/100*MUSHAF_TOTAL)+' of '+MUSHAF_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : avgOf(all).toFixed(0)+'%');
+      : all.length+' students · class average '+(mm==='l1'? 'page '+Math.round(avgOf(all)/100*GB_TOTAL)+' of '+GB_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : mm==='l2'? 'page '+Math.round(avgOf(all)/100*MUSHAF_TOTAL)+' of '+MUSHAF_TOTAL+' ('+avgOf(all).toFixed(0)+'%)' : mm==='poem'? 'bayt '+(avgOf(all)/100*47).toFixed(0)+' of 47 ('+avgOf(all).toFixed(0)+'%)' : avgOf(all).toFixed(0)+'%');
     const st2=$('#qj-stage2',r); st2.style.display=split?'':'none'; if(!split) $('.qj-map',st2).innerHTML='';
     QJ.paint(all); // panel first, so the stage height is final before the map is sized
     const panes = split ? [['l1',$('#qj-stage',r),l1],['l3',st2,l3]] : [[mm,$('#qj-stage',r),all]];
@@ -6909,6 +7002,10 @@ const QJ = {
       for(let p=10;p<=GB_TOTAL;p+=10){ const big=p%40===0; lm+=`<div class="qj-node${big?' big':''}" data-len="${p/GB_TOTAL*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
       for(const p of [20,40,60,80,100,120,140]){ lm+=`<div class="qj-mlabel" data-lenl="${p/GB_TOTAL*total/sc}">p.${p}</div>`; }
       lm+=`<div class="qj-flag" data-lenl="0">أ ب <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Level 2</small></div>`;
+    } else if(MD==='poem'){
+      for(let n=1;n<=47;n++){ const big=!!POEM_SECS.find(x=>x.b===n); lm+=`<div class="qj-node${big?' big':''}" data-len="${n/47*total/sc}" style="width:${big?11:5}px;height:${big?11:5}px"></div>`; }
+      for(const p of POEM_PARTS.slice(0,3)){ lm+=`<div class="qj-mlabel" data-lenl="${p.b/47*total/sc}">Part ${p.n} ✓</div>`; }
+      lm+=`<div class="qj-flag" data-lenl="0">📜 <small>Start</small></div><div class="qj-flag fin" data-lenl="${total/sc}">★ <small>Poem</small></div>`;
     } else {
       for(let N=30;N>=1;N--){ const big=N%5===0||N===1||N===30; lm+=`<div class="qj-node${big?' big':''}" data-len="${mile(N)*total/sc}" style="width:${big?11:6}px;height:${big?11:6}px"></div>`; }
       for(const N of [30,25,20,15,10,5]){ lm+=`<div class="qj-mlabel" data-lenl="${mile(N)*total/sc}">Juzʼ ${N}</div>`; }
@@ -6956,6 +7053,19 @@ const QJ = {
     const s=x.s, avatar=avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0');
     const nameEl=`<div style="font-family:var(--f-display);font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:left" dir="auto">${esc(s.name)}</div>`;
     const done=()=>{ QJ._anim=false; QJ.layout(); Router.render(); };
+    if(x.lvl==='poem'){
+      const nx=x.next;
+      panel.innerHTML=`<div class="qj-card">${avatar}<div style="min-width:0;flex:1">${nameEl}
+        <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${x.contig} bayt${x.contig===1?'':'s'} in a row · ${x.memN} memorized in all${nx?' · next: bayt '+nx+' ('+esc(poemSec(nx).en)+')':' · 🌟 the whole poem'}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.due?`<span class="tag tag-red">🔁 ${x.due} recall check${x.due===1?'':'s'} due</span>`:''}${x.behind?'<span class="tag tag-red">no poem activity in 21+ days</span>':''}</div>
+        <div class="no-print" style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap"><label for="qj-pb" style="font-size:11.5px;color:var(--ink3)">Memorized through bayt</label><input id="qj-pb" type="number" min="0" max="47" value="${x.contig}" style="width:70px"><button class="btn btn-p btn-sm" id="qj-save">Save</button>${nx?`<button class="btn btn-o btn-sm" id="qj-plus">＋ Bayt ${nx} memorized</button><button class="btn btn-o btn-sm" id="qj-study">▶ Study bayt ${nx}</button>`:''}</div></div>
+        <button class="btn btn-o btn-sm" id="qj-open">Open tracker →</button></div>`;
+      const refresh=()=>{ QJ._anim=false; QJ.layout(); Router.render(); };
+      $('#qj-open',panel).onclick=()=>{ QJ.close(); Router.go('#/poem/'+s.id); };
+      $('#qj-save',panel).onclick=()=>{ const n=Math.max(0,Math.min(47,+$('#qj-pb',panel).value||0)); if(n<x.contig){ toast('To clear bayts, open the tracker and change them one by one'); return; } if(n===x.contig) return; const before=PT.sum(s); PT.setThrough(s,n); toast(nm0(s)+' — memorized through bayt '+n); PT.celebrateIf(s,n,before); refresh(); };
+      const pl=$('#qj-plus',panel); if(pl) pl.onclick=()=>{ PT.setSt(s,nx,'mem'); toast('Bayt '+nx+' memorized ✅'); refresh(); };
+      const sd=$('#qj-study',panel); if(sd) sd.onclick=()=>{ QJ.close(); PT.study(s.id,nx); };
+      return; }
     if(x.lvl==='l1'||x.lvl==='l2'){
       const L1=x.lvl==='l1', T=L1?GB_TOTAL:MUSHAF_TOTAL, step=L1?20:100, left=T-x.page, nextM=Math.min(T,(Math.floor(x.page/step)+1)*step), eta=paceETA(x.log,x.page,T,'page');
       panel.innerHTML=`<div class="qj-card">${avatar}
@@ -7099,10 +7209,10 @@ function moduleHeroHTML(eyebrow, title, subtitle, icon){
 Registry.register({ id:'students', name:'Students', icon:'cap', group:'Workspaces',
 render(v,param){
   if(param==='attendance') return Students.attendance(v);
-  if(param==='progress') return Progress.render(v);
+  if(param==='progress') return Progress.render(hubShell(v,'hifz','progress'));
   if(param==='cleaning') return Cleaning.render(v);
   if(param==='fieldtrip') return FieldTrips.render(v);
-  if(param==='gradebook') return Gradebook.render(v);
+  if(param==='gradebook') return Gradebook.render(hubShell(v,'islamic','gradebook'));
   if(param && DB.data.students.find(s=>s.id===param)) return Students.profile(v,param);
   Students.list(v);
 }});
@@ -8199,7 +8309,8 @@ const Students = {
      ${renderGoalCard(eta3, 'pages', e=>nextName?'Finish '+esc(QS[st.cur].name)+', begin '+esc(nextName):'Reach '+e.shortTarget+' pages', e=>'Complete '+esc(HIFZ_PATHS[st.pid].name)+' ('+st.total.toFixed(0)+' p.)')}
      ${renderTreatGoalCard(s)}
      ${Rewards.profileHTML(s)}
-     ${Rev.profileCardHTML(s)}
+     ${l3TrackersCardHTML(s)}
+    ${Rev.profileCardHTML(s)}
      <details style="margin-bottom:14px">
        <summary style="cursor:pointer;font-family:var(--f-display);font-size:15px;font-weight:600;padding:2px 0 8px">📊 Memorization Goal &amp; Tracker</summary>
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin-bottom:10px">
@@ -10629,6 +10740,403 @@ const Gradebook = {
     students.forEach(s=>wireRow(s.id));
   },
 };
+/* ================= MODULE: REVISION PLANNER (Level 3 murājaʿah) =================
+   Sets each student's revision portion for the week using the classic hifz
+   method — SABQI (the freshest pages, every day) + MANZIL (older Juzʼ rotated
+   so the whole memorization keeps cycling) — capped by age so it is never too
+   much. Rating a Juzʼ (Rev.log) resets its pass; everything else lives in
+   s.revPlan = {cap, paused, ptr:{juz:pagesDoneThisPass}, weeks:{sunday:daysDone}, issued:{…}}. */
+const RP = {
+  DAYS:['Mon','Tue','Wed','Thu','Fri'], tab:'board', sort:'need', _open:{},
+  iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
+  addDays(i,n){ const d=parseLocalDate(i); d.setDate(d.getDate()+n); return RP.iso(d); },
+  ws(date){ const d=parseLocalDate(date||today()); if(d.getDay()===6) d.setDate(d.getDate()+1); d.setDate(d.getDate()-d.getDay()); return RP.iso(d); }, // Saturday already plans the coming Mon–Fri
+  lw(){ const dow=new Date().getDay(), cw=RP.ws(); return (dow===0||dow===6)?RP.addDays(cw,-7):cw; }, // the week whose home days you are recording
+
+  stu(){ return DB.data.students.filter(s=>s.active!==false&&s.level==='Level 3').sort((a,b)=>String(a.name).localeCompare(String(b.name))); },
+  get(s){ return s.revPlan||{ptr:{},weeks:{}}; },
+  mk(s){ const r=s.revPlan=s.revPlan||{}; r.ptr=r.ptr||{}; r.weeks=r.weeks||{}; return r; },
+  mem(s){ return Math.max(0,Math.min(603,Math.round(hifzStats(s).pages))); },
+  range(s){ const p=RP.mem(s), rev=hifzStats(s).pid==='reverse'; return rev?[2,p+1]:[605-p,604]; },
+  juzMem(s,N){ const a0=Math.max(JUZ_PAGE[N],2), b0=JUZ_PAGE[N+1]-1, [lo,hi]=RP.range(s), a=Math.max(a0,lo), b=Math.min(b0,hi); return {a,b,n:b>=a?b-a+1:0}; },
+  budget(s,M){
+    const rp=RP.get(s), age=s.dob?ageFromDob(s.dob):null;
+    const base= age==null?4 : age<=8?2 : age<=10?3 : age<=12?4 : age<=14?5 : 6;
+    const cap=Math.max(1,Math.min(10,+rp.cap||base)); let B=Math.min(cap,M);
+    let S=B<=2?1:B<=5?2:3; S=Math.min(S,M,B); const Mz=Math.max(0,Math.min(B-S,M-S));
+    return {B,S,Mz,cap,base,age,custom:!!rp.cap};
+  },
+  prio(j){ return j.k==='due'?(j.rating==='forgot'?3000:2000)+(j.overdue||0) : j.k==='none'?1500 : j.k==='soon'?1000+j.days : j.days||0; },
+  juzRows(s){ return Rev.summary(s).list.map(j=>Object.assign(j,{m:RP.juzMem(s,j.n)})).filter(j=>j.m.n>0); },
+  fmtRange(a,b){ return a===b?'p.'+a:'pp.'+a+'–'+b; },
+  where(p){ return QS[surahOfPage(p)].name; },
+  plan(s,ptrIn){
+    const M=RP.mem(s); if(M<=0) return null;
+    const bd=RP.budget(s,M), rp=RP.get(s), ptr=Object.assign({},ptrIn||rp.ptr||{});
+    const rows=RP.juzRows(s), [lo,hi]=RP.range(s), rev=hifzStats(s).pid==='reverse';
+    const sab=bd.S>0?(rev?[hi-bd.S+1,hi]:[lo,lo+bd.S-1]):null;
+    const q=()=>rows.filter(j=>(ptr[j.n]||0)<j.m.n).sort((a,b)=>RP.prio(b)-RP.prio(a));
+    let queue=q(), reset=false; const days=[];
+    for(let d=0; d<5; d++){
+      let need=bd.Mz; const man=[];
+      while(need>0){
+        if(!queue.length){ if(reset) break; reset=true; rows.forEach(j=>{ delete ptr[j.n]; }); queue=q(); if(!queue.length) break; }
+        const j=queue[0], p=ptr[j.n]||0, take=Math.min(j.m.n-p,need), from=j.m.a+p;
+        man.push({n:j.n,a:from,b:from+take-1}); ptr[j.n]=p+take; need-=take;
+        if(ptr[j.n]>=j.m.n) queue.shift();
+      }
+      days.push({sab,man});
+    }
+    const back=rows.filter(j=>j.k==='due'||j.k==='none').reduce((n,j)=>n+Math.max(0,j.m.n-(rp.ptr&&rp.ptr[j.n]||0)),0);
+    return Object.assign({M,days,ptr,back,weeksToClear:bd.Mz?Math.ceil(back/(5*bd.Mz)):null,cycleWeeks:bd.Mz?Math.ceil(Math.max(1,M-bd.S)/(5*bd.Mz)):null},bd);
+  },
+  issued(s){ const i=RP.get(s).issued; return i&&i.ws===RP.ws()?i:null; },
+  issue(s,force){
+    const rp=RP.mk(s), ws=RP.ws();
+    if(rp.issued&&rp.issued.ws===ws){ if(!force) return rp.issued; rp.ptr=Object.assign({},rp.issued.ptrBefore||{}); }
+    const before=Object.assign({},rp.ptr), p=RP.plan(s,before); if(!p) return null;
+    rp.issued={ws,B:p.B,S:p.S,Mz:p.Mz,days:p.days,ptrBefore:before,at:today()}; rp.ptr=p.ptr; rp.weeks[ws]=rp.weeks[ws]||0;
+    DB.log('Revision plan issued — '+(s.preferredName||s.name)+' ('+p.B+' pages/day)'); DB.save(); return rp.issued;
+  },
+  setDays(s,n){ const rp=RP.mk(s); rp.weeks[RP.lw()]=Math.max(0,Math.min(5,n)); DB.save(); },
+  ready(s){ const rp=RP.get(s); return RP.juzRows(s).filter(j=>rp.ptr&&(rp.ptr[j.n]||0)>=j.m.n&&j.m.n>0); },
+  due(s){ const rp=RP.get(s); return RP.juzRows(s).filter(j=>j.k==='due'&&!(rp.ptr&&(rp.ptr[j.n]||0)>=j.m.n)); },
+  streak(s){ const w=RP.get(s).weeks||{}; let n=0, k=RP.ws(); if(!(w[k]>=4)) k=RP.addDays(k,-7); while(w[k]>=4){ n++; k=RP.addDays(k,-7); } return n; },
+  adh(s){ const w=RP.get(s).weeks||{}, cur=RP.ws(), ks=Object.keys(w).filter(k=>k<=cur&&(k<cur||w[k]>0)).sort().slice(-6); return ks.length? ks.reduce((n,k)=>n+Math.min(5,w[k]),0)/(ks.length*5) : null; },
+  hist(s,n){ const w=RP.get(s).weeks||{}, cur=RP.ws(); return [...Array(n)].map((_,i)=>w[RP.addDays(cur,-7*(n-1-i))]); },
+  verified(s){ const rows=RP.juzRows(s), tot=rows.reduce((n,j)=>n+j.m.n,0); if(!tot) return null; return rows.filter(j=>j.k==='fresh'||j.k==='soon').reduce((n,j)=>n+j.m.n,0)/tot; },
+  need(s){ const iss=RP.issued(s); return RP.ready(s).length*5+RP.due(s).length*3+(iss?0:2)+(RP.get(s).paused?-20:0); },
+  todayIdx(){ const d=new Date().getDay(); return d>=1&&d<=5?d-1:-1; },
+  portionHTML(day,compact){
+    if(!day) return '';
+    const sab=day.sab?`<span class="rp-p sab" title="Sabqi — the freshest pages, revised daily">🌱 ${RP.fmtRange(day.sab[0],day.sab[1])}<small>${esc(RP.where(day.sab[0]))}</small></span>`:'';
+    const man=day.man.map(m=>`<span class="rp-p man" title="Manzil — older Juzʼ, rotating">🔁 Juzʼ ${m.n} · ${RP.fmtRange(m.a,m.b)}<small>${esc(RP.where(m.a))}</small></span>`).join('');
+    return (sab||man)?`<div class="rp-ports">${sab}${man}</div>`:'<span style="font-size:12px;color:var(--ink3)">—</span>';
+  },
+  minutes(p){ return Math.round(p*2); },
+  why(s,p){
+    const out=[], rp=RP.get(s);
+    out.push(`<b>${p.B} page${p.B===1?'':'s'}/day</b> — ${rp.cap?'set by you':'age-based'}${p.age!=null?' (age '+p.age+')':''}; about ${RP.minutes(p.B)} minutes. Never more than ${p.cap}.`);
+    if(p.S) out.push(`<b>Sabqi ${p.S} page${p.S===1?'':'s'}</b> — the most recently memorized pages, repeated daily because new material fades fastest.`);
+    if(p.Mz) out.push(`<b>Manzil ${p.Mz} page${p.Mz===1?'':'s'}</b> — older Juzʼ, overdue and forgotten ones first, then unlogged, then the stalest. The whole memorization comes round about every <b>${p.cycleWeeks} week${p.cycleWeeks===1?'':'s'}</b>.`);
+    if(p.back>0&&p.Mz) out.push(p.weeksToClear<=6?`Catching up on <b>${p.back} pages</b> of overdue or unlogged Juzʼ — about <b>${p.weeksToClear} week${p.weeksToClear===1?'':'s'}</b> at this load.`:`<b style="color:var(--bad)">${p.back} pages are overdue or unlogged — ${p.weeksToClear} weeks at this load.</b> Don't raise the daily amount; pause new memorization for a week or two, or hear the oldest Juzʼ in class to clear them faster.`);
+    return out;
+  },
+  /* ---------- printing / messaging ---------- */
+  slipText(s,iss){
+    const nm=s.preferredName||s.name, wk=fmtDate(RP.ws());
+    const lines=iss.days.map((d,i)=>RP.DAYS[i]+': '+[d.sab?'Sabqi '+RP.fmtRange(d.sab[0],d.sab[1])+' ('+RP.where(d.sab[0])+')':'', ...d.man.map(m=>'Manzil Juzʼ '+m.n+' '+RP.fmtRange(m.a,m.b))].filter(Boolean).join(' + '));
+    return 'Assalāmu ʿalaykum! '+nm+'’s revision plan, week of '+wk+' ('+iss.B+' pages a day, about '+RP.minutes(iss.B)+' minutes):\n'+lines.join('\n')+'\nPlease listen to them recite it each day and tick it off. We will hear it in class. Jazākum Allāhu khayran.';
+  },
+  slipHTML(s,iss){
+    const rows=iss.days.map((d,i)=>`<tr><td><b>${RP.DAYS[i]}</b></td><td>${d.sab?`🌱 ${RP.fmtRange(d.sab[0],d.sab[1])} <span class="sm">${esc(RP.where(d.sab[0]))}</span>`:''}</td><td>${d.man.map(m=>`🔁 Juzʼ ${m.n}: ${RP.fmtRange(m.a,m.b)}`).join('<br>')}</td><td class="box">☐</td></tr>`).join('');
+    const hear=RP.ready(s).map(j=>'Juzʼ '+j.n).join(', ');
+    return `<div class="slip"><div class="hd"><div><div class="sc">AL-MADRASATU AN-NURIYYAH · REVISION PLAN</div><h2>${esc(s.preferredName||s.name)}</h2><div class="sm">Week of ${esc(fmtDate(RP.ws()))} · ${iss.B} pages a day · about ${RP.minutes(iss.B)} minutes</div></div></div>
+      <table><tr><th></th><th>🌱 Sabqi — newest pages</th><th>🔁 Manzil — older Juzʼ</th><th>Done</th></tr>${rows}</table>
+      <p class="sm">Listen to your child recite it each day and tick the box. Short and steady beats long and rare.${hear?` <b>To be heard in class: ${esc(hear)}.</b>`:''}</p></div>`;
+  },
+  printSlips(list){
+    const items=list.map(s=>{ const iss=RP.issued(s)||RP.issue(s); return iss?RP.slipHTML(s,iss):''; }).filter(Boolean);
+    if(!items.length){ toast('Nothing to print yet'); return; }
+    const css=`body{font-family:'Crimson Pro',Georgia,serif;margin:0;color:#1f2a24}.slip{padding:26px 30px;page-break-after:always;border:2px solid #1a4a35;border-radius:14px;margin:16px}.slip:last-child{page-break-after:auto}.sc{font:700 11px monospace;letter-spacing:.12em;color:#b8872a}h2{font-family:'Playfair Display',serif;margin:4px 0 2px;font-size:28px;color:#1a4a35}.sm{font-size:13px;color:#566}table{width:100%;border-collapse:collapse;margin:14px 0}th,td{border:1px solid #d8c9a5;padding:9px 10px;text-align:left;font-size:15px}th{background:#f4ead6;font-size:12px;text-transform:uppercase;letter-spacing:.05em}td.box{font-size:22px;text-align:center;width:60px}@media print{.slip{margin:0;border-radius:0}}`;
+    printWindow('Revision plans', css, items.join(''));
+  },
+  /* ---------- views ---------- */
+  render(v,param){
+    const tab=param==='hear'?'hear':param==='how'?'how':'board';
+    if(param && DB.data.students.find(s=>s.id===param)) return RP.student(v,param);
+    RP.tab=tab; const L=RP.stu();
+    const rows=L.map(s=>({s,p:RP.plan(s),iss:RP.issued(s),ready:RP.ready(s),due:RP.due(s),paused:!!RP.get(s).paused,adh:RP.adh(s),streak:RP.streak(s)}));
+    const withHifz=rows.filter(r=>r.p), onPlan=withHifz.filter(r=>r.iss&&!r.paused).length;
+    const toHear=rows.reduce((n,r)=>n+r.ready.length,0), dueN=rows.reduce((n,r)=>n+r.due.length,0);
+    const adhs=rows.map(r=>r.adh).filter(x=>x!=null), adhAvg=adhs.length?adhs.reduce((a,b)=>a+b,0)/adhs.length:null;
+    const tabs='';
+    const kpi=(n,l,c,sm)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${l}</span>${sm?`<small>${sm}</small>`:''}</div>`;
+    const head=`<div class="page-wm"><div class="eyebrow">Level 3 · Murājaʿah</div><h2 class="page-title">Revision Planner</h2>
+      <p class="page-sub">The right amount of review for each student — fresh pages every day, older Juzʼ in rotation, never more than their age can carry.</p>
+      ${tabs}`;
+    if(tab==='how'){ v.innerHTML=head+RP.howHTML()+'</div>'; wireCommon(v); return; }
+    if(tab==='hear'){ v.innerHTML=head+RP.hearHTML(rows)+'</div>'; wireCommon(v); RP.wire(v); return; }
+    const need=rows.filter(r=>r.p&&!r.iss&&!r.paused).length;
+    let sorted=[...rows]; if(RP.sort==='need') sorted.sort((a,b)=>RP.need(b.s)-RP.need(a.s)); else if(RP.sort==='streak') sorted.sort((a,b)=>b.streak-a.streak||String(a.s.name).localeCompare(b.s.name));
+    v.innerHTML=head+`
+      <div class="rp-kpis no-print">${kpi(onPlan+'/'+withHifz.length,'On a plan this week','var(--ok)',need?need+' not issued yet':'all issued')}${kpi(toHear,'Ready to hear in class','var(--gold)','pass finished at home')}${kpi(dueN,'Overdue Juzʼ','var(--bad)','not yet in a pass')}${kpi(adhAvg==null?'—':Math.round(adhAvg*100)+'%','Home adherence','var(--stage-review)','last 6 weeks')}</div>
+      <div class="filters no-print"><button class="btn btn-p btn-sm" id="rpIssueAll">⚡ Issue all plans${need?' ('+need+')':''}</button><button class="btn btn-o btn-sm" id="rpPrintAll">🖨 Print all slips</button>
+        <span style="margin-left:auto;display:flex;gap:4px">${[['need','Needs attention'],['az','A–Z'],['streak','🔥 Streak']].map(([k,l])=>`<button class="chip ${RP.sort===k?'on':''}" data-rpsort="${k}">${l}</button>`).join('')}</span></div>
+      ${!L.length?'<div class="empty"><h3>No Level 3 students yet</h3></div>':`<div class="rp-grid">${sorted.map(RP.cardHTML).join('')}</div>`}</div>`;
+    wireCommon(v); RP.wire(v);
+  },
+  cardHTML(r){
+    const s=r.s, p=r.p;
+    if(!p) return `<div class="card rp-card" data-rps="${s.id}"><div class="adm-head">${avatarHTML(s,'width:42px;height:42px;border-radius:50%;flex-shrink:0')}<div><div class="adm-name">${esc(s.name)}</div><div class="adm-sub">No memorized pages logged yet — set their sūrah/page in Students → profile.</div></div></div></div>`;
+    const iss=r.iss, wk=RP.get(s).weeks||{}, lw=RP.lw(), hasW=wk[lw]!==undefined, n=wk[lw]||0, ti=RP.todayIdx();
+    const day= iss? (ti>=0? iss.days[ti] : null) : p.days[Math.max(0,ti)];
+    const ver=RP.verified(s);
+    const tags=`${r.ready.length?`<span class="tag tag-gold" title="They finished a full pass at home — hear it and rate it">🎧 ${r.ready.length} to hear</span>`:''}${r.due.length?`<span class="tag tag-red">⏱ ${r.due.length} overdue</span>`:''}${ver!=null?(ver>0?`<span class="tag ${ver>=.7?'tag-green':ver>=.4?'tag-gold':'tag-dim'}" title="Share of memorized pages in Juzʼ rated recently">✓ ${Math.round(ver*100)}% verified</span>`:'<span class="tag tag-dim" title="Hear a Juzʼ in class and rate it to start tracking">no Juzʼ rated yet</span>'):''}${r.streak?`<span class="tag tag-gold">🔥 ${r.streak}wk</span>`:''}${r.paused?'<span class="tag tag-dim">⏸ paused</span>':''}`;
+    const dots=hasW&&!r.paused?`<div class="rp-week" title="Tap the days they revised at home"><span>${lw===RP.ws()?'This week':'Last week'}</span>${RP.DAYS.map((d,i)=>`<button class="rp-dot ${i<n?'on':''}" data-rpday="${s.id}|${i}" aria-label="${d}">${d[0]}</button>`).join('')}<span style="margin-left:auto;font-family:var(--f-mono);font-size:11px">${n}/5</span></div>`:'';
+    const hh=RP.hist(s,8);
+    return `<div class="card rp-card" data-rps="${s.id}"><div style="cursor:pointer" data-go="#/revplan/${s.id}">
+      <div class="adm-head">${avatarHTML(s,'width:42px;height:42px;border-radius:50%;flex-shrink:0')}<div style="min-width:0;flex:1"><div class="adm-name" dir="auto" style="text-align:left">${esc(s.name)}</div>
+        <div class="adm-sub"><b>${p.B} pg/day</b> · ~${RP.minutes(p.B)} min · ${p.M} pages memorized</div></div></div>
+      <div class="adm-tags" style="margin:8px 0">${tags}</div>
+      ${iss&&!r.paused?`<div class="rp-today"><div class="rp-lbl">${ti>=0?'Today ('+RP.DAYS[ti]+')':'Weekend — class day'}</div>${ti>=0?RP.portionHTML(day):`<span style="font-size:12.5px;color:var(--ink2)">${r.ready.length?'Hear: '+r.ready.map(j=>'Juzʼ '+j.n).join(', '):'Hear whatever they ask to recite'}</span>`}</div>`
+        : r.paused?'':`<div class="rp-today"><div class="rp-lbl">Not issued this week</div><span style="font-size:12.5px;color:var(--ink2)">Preview: ${p.days[0].sab?'Sabqi '+RP.fmtRange(p.days[0].sab[0],p.days[0].sab[1]):''}${p.days[0].man.length?' + Juzʼ '+p.days[0].man.map(m=>m.n).join('/'):''}</span></div>`}
+      <div class="rp-hist" title="Days revised at home, last 8 weeks (oldest left)">${hh.map(x=>`<i class="h${x==null?'n':x>=4?'g':x>=2?'m':x>=1?'l':'z'}"></i>`).join('')}</div></div>
+      ${dots}
+      <div class="adm-actions no-print">${!iss&&!r.paused?`<button class="btn btn-p btn-sm" data-rpissue="${s.id}">Issue plan</button>`:''}<button class="btn btn-o btn-sm" data-go="#/revplan/${s.id}">Open plan →</button></div></div>`;
+  },
+  hearHTML(rows){
+    const list=rows.filter(r=>r.p&&(r.ready.length||r.due.length)).sort((a,b)=>b.ready.length-a.ready.length||b.due.length-a.due.length);
+    const chip=(s,j,kind)=>`<button class="rev-chip ${kind==='ready'?'soon':'due'}" data-revcell="${s.id}:${j.n}" title="${esc(Rev.text(j))}">Juzʼ ${j.n}<small>${kind==='ready'?'finished at home':j.rating==='forgot'?'forgot parts':j.overdue?j.overdue+'d overdue':'due now'}</small></button>`;
+    if(!list.length) return `<div class="card"><p style="color:var(--ok);margin:0">✓ Nobody has a Juzʼ waiting to be heard, and nothing is overdue.</p></div>`;
+    return `<div class="card"><div class="whead"><h3>🎧 Hearing queue</h3></div><p style="font-size:12.5px;color:var(--ink2);margin:0 0 8px">Gold = finished a full pass at home, ready to be rated. Red = overdue. Tap a Juzʼ after hearing it — the rating restarts its clock and clears the pass.</p>
+      <div class="wlist">${list.map(r=>`<div class="wrow" style="cursor:default;flex-wrap:wrap;gap:6px 8px;align-items:center">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1;min-width:130px"><b>${esc(r.s.preferredName||r.s.name)}</b></span><span style="display:flex;gap:5px;flex-wrap:wrap">${r.ready.map(j=>chip(r.s,j,'ready')).join('')}${r.due.slice(0,4).map(j=>chip(r.s,j,'due')).join('')}</span></div>`).join('')}</div></div>`;
+  },
+  howHTML(){
+    return `<div class="card"><div class="whead"><h3>How the plan is built</h3></div><div style="font-size:14px;line-height:1.65;display:grid;gap:10px">
+      <p style="margin:0"><b>Two parts every day.</b> 🌱 <b>Sabqi</b> is the newest few pages — repeated daily, because new memorization fades fastest. 🔁 <b>Manzil</b> is the older Juzʼ — taken in turns so the whole memorization keeps cycling.</p>
+      <p style="margin:0"><b>The right amount.</b> The daily total follows age — about 2 pages for 8 and under, 3 for 9–10, 4 for 11–12, 5 for 13–14, 6 for 15 and up — and is never more than the pages they actually know. You can set any student's amount yourself; it is capped at 10.</p>
+      <p style="margin:0"><b>What gets revised first.</b> Forgotten Juzʼ, then overdue ones, then Juzʼ never rated, then the stalest. Pages follow on from where the last pass stopped.</p>
+      <p style="margin:0"><b>Home → class.</b> Monday to Friday is the home plan. When a student finishes a whole Juzʼ, it appears under <b>Ready to hear</b>; rate it in class (Strong, Shaky or Forgot) and its clock restarts. Tap the Mon–Fri dots to record the days they really revised; 4+ days a week keeps the 🔥 streak going.</p>
+      <p style="margin:0"><b>Honest limits.</b> If the overdue backlog is more than about six weeks of the daily load, the planner says so rather than quietly piling on — the answer is to hear the oldest Juzʼ in class or slow new memorization, not to raise the amount.</p></div></div>`;
+  },
+  student(v,id){
+    const s=DB.data.students.find(x=>x.id===id), p=RP.plan(s), rp=RP.get(s), iss=RP.issued(s), n=(rp.weeks||{})[RP.lw()]||0, lwk=RP.lw(), canTick=!!iss&&lwk===RP.ws(), nm=s.preferredName||s.name;
+    const back=`<button class="btn btn-ghost btn-sm no-print" data-go="#/revplan">← Revision plans</button>`;
+    if(!p){ v.innerHTML=`<div class="page-wm">${back}<h2 class="page-title" style="margin-top:12px">${esc(s.name)}</h2><div class="card">No memorized pages yet — set their sūrah/page in their profile and the plan appears.</div></div>`; wireCommon(v); return; }
+    const shown=iss?{days:iss.days,B:iss.B}:{days:p.days,B:p.B}, ti=RP.todayIdx(), ready=RP.ready(s), due=RP.due(s), ver=RP.verified(s);
+    const meter=`<div class="rp-meter"><div class="rp-mbar"><i style="width:${Math.min(100,p.B/p.cap*100)}%"></i></div><div class="rp-mleg"><span>${p.B} of max ${p.cap} pages/day</span><span>~${RP.minutes(p.B)} min</span></div></div>`;
+    const grid=shown.days.map((d,i)=>`<div class="rp-day${i===ti?' today':''}${i<n&&canTick?' done':''}"><b>${RP.DAYS[i]}</b><div>${RP.portionHTML(d)}</div>${canTick?`<button class="rp-dot ${i<n?'on':''}" data-rpday="${s.id}|${i}" aria-label="Done ${RP.DAYS[i]}">✓</button>`:''}</div>`).join('');
+    const hh=RP.hist(s,12);
+    v.innerHTML=`<div class="page-wm">${back}
+     <div class="adm-head" style="margin:12px 0 6px">${avatarHTML(s,'width:54px;height:54px;border-radius:50%;flex-shrink:0')}<div style="min-width:0;flex:1"><div class="eyebrow">Revision plan</div><h2 class="page-title" style="margin:0;text-align:left" dir="auto">${esc(s.name)}</h2>
+       <p class="page-sub" style="margin:2px 0 0">${p.M} pages memorized${ver!=null?' · '+Math.round(ver*100)+'% verified fresh':''}${RP.streak(s)?' · 🔥 '+RP.streak(s)+'-week streak':''}</p></div>
+       <button class="btn btn-ghost btn-sm no-print" data-go="#/students/${s.id}">Profile →</button></div>
+     ${rp.paused?'<div class="notice info" style="margin:8px 0">⏸ Plan paused — resume it below.</div>':''}
+     <div class="card"><div class="whead"><h3>This week's plan${iss?'':' (preview — not issued)'}</h3><span style="font-size:12px;color:var(--ink3)">Week of ${esc(fmtDate(RP.ws()))}</span></div>${meter}
+       <div class="rp-days">${grid}</div>
+       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">${iss?`<button class="btn btn-o btn-sm" id="rpReplan">↻ Re-plan this week</button>`:`<button class="btn btn-p btn-sm" data-rpissue="${s.id}">Issue this plan</button>`}
+         <button class="btn btn-o btn-sm" id="rpPrint">🖨 Print slip</button><button class="btn btn-o btn-sm" id="rpCopy">📋 Copy parent message</button></div></div>
+     ${(rp.weeks||{})[lwk]!==undefined&&!canTick?`<div class="card no-print"><div class="whead"><h3>Last week at home</h3><span style="font-size:12px;color:var(--ink3)">Week of ${esc(fmtDate(lwk))}</span></div><div class="rp-week" style="font-size:13px"><span>Days they revised (Mon–Fri)</span>${RP.DAYS.map((d,i)=>`<button class="rp-dot ${i<n?'on':''}" data-rpday="${s.id}|${i}" aria-label="${d}">${d[0]}</button>`).join('')}<span style="margin-left:auto;font-family:var(--f-mono)">${n}/5</span></div></div>`:''}
+     ${ready.length||due.length?`<div class="card"><div class="whead"><h3>🎧 Hear in class</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap">${ready.map(j=>`<button class="rev-chip soon" data-revcell="${s.id}:${j.n}">Juzʼ ${j.n}<small>finished at home</small></button>`).join('')}${due.map(j=>`<button class="rev-chip due" data-revcell="${s.id}:${j.n}">Juzʼ ${j.n}<small>${j.rating==='forgot'?'forgot parts':j.overdue?j.overdue+'d overdue':'due now'}</small></button>`).join('')}</div></div>`:''}
+     <div class="card"><div class="whead"><h3>Why this plan</h3></div><ul class="rp-why">${RP.why(s,p).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+     <div class="card"><div class="whead"><h3>Last 12 weeks at home</h3></div><div class="rp-hist big">${hh.map((x,i)=>`<div><i class="h${x==null?'n':x>=4?'g':x>=2?'m':x>=1?'l':'z'}"></i><small>${x==null?'–':x}</small></div>`).join('')}</div><p style="font-size:11.5px;color:var(--ink3);margin:6px 0 0">Days revised out of 5. Oldest on the left.</p></div>
+     ${Rev.profileCardHTML(s)}
+     <div class="card no-print"><div class="whead"><h3>Adjust</h3></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+       <span style="font-size:13px">Pages per day</span><button class="btn btn-o btn-sm" data-rpcap="-1">−</button><b style="min-width:70px;text-align:center">${p.B}${rp.cap?'':' (auto)'}</b><button class="btn btn-o btn-sm" data-rpcap="1">＋</button>
+       ${rp.cap?`<button class="btn btn-ghost btn-sm" data-rpcap="auto">Back to auto</button>`:''}
+       <span style="margin-left:auto"></span><button class="btn btn-ghost btn-sm" id="rpPause">${rp.paused?'▶ Resume plan':'⏸ Pause plan'}</button></div>
+       <p style="font-size:11.5px;color:var(--ink3);margin:8px 0 0">Changes apply the next time you issue or re-plan the week.</p></div></div>`;
+    wireCommon(v); RP.wire(v,s);
+    const pr=$('#rpPrint',v); if(pr) pr.onclick=()=>RP.printSlips([s]);
+    const cp=$('#rpCopy',v); if(cp) cp.onclick=()=>{ const i=RP.issued(s)||RP.issue(s); const t=RP.slipText(s,i); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Message copied'),()=>toast('Could not copy')); };
+    const rpl=$('#rpReplan',v); if(rpl) rpl.onclick=()=>{ RP.issue(s,true); toast('Plan rebuilt'); Router.render(); };
+    $('#rpPause',v).onclick=()=>{ const r=RP.mk(s); r.paused=!r.paused; DB.save(); Router.render(); };
+    $$('[data-rpcap]',v).forEach(b=>b.onclick=()=>{ const r=RP.mk(s), a=b.dataset.rpcap; if(a==='auto') delete r.cap; else r.cap=Math.max(1,Math.min(10,(r.cap||p.B)+ +a)); DB.save(); Router.render(); });
+  },
+  wire(v){
+    $$('[data-rpsort]',v).forEach(b=>b.onclick=()=>{ RP.sort=b.dataset.rpsort; Router.render(); });
+    $$('[data-rpissue]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const s=DB.data.students.find(x=>x.id===b.dataset.rpissue); if(s){ RP.issue(s); toast('Plan issued — '+(s.preferredName||s.name)); Router.render(); } });
+    $$('[data-rpday]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [id,i]=b.dataset.rpday.split('|'), s=DB.data.students.find(x=>x.id===id); if(!s) return; const cur=(RP.get(s).weeks||{})[RP.ws()]||0, k=+i+1; RP.setDays(s,cur===k?k-1:k); const t=RP.streak(s); if(cur!==k&&k>=4&&t>=2) toast('🔥 '+t+' weeks on plan!'); Router.render(); });
+    const ia=$('#rpIssueAll',v); if(ia) ia.onclick=()=>{ let c=0; RP.stu().forEach(s=>{ if(RP.plan(s)&&!RP.issued(s)&&!RP.get(s).paused){ RP.issue(s); c++; } }); toast(c?c+' plan'+(c===1?'':'s')+' issued':'All plans already issued'); Router.render(); };
+    const pa=$('#rpPrintAll',v); if(pa) pa.onclick=()=>RP.printSlips(RP.stu().filter(s=>RP.plan(s)&&!RP.get(s).paused));
+  }
+};
+Registry.register({ id:'hifz', name:'Qur’an Ḥifẓ', icon:'spark', group:'Workspaces', render(v){ Router.go('#/revplan'); }});
+Registry.register({ id:'revplan', name:'Revision Planner', icon:'spark', group:null, nav:'hifz', render(v,param){ RP.render(hubShell(v,'hifz',param==='hear'?'hear':param==='how'?'how':'revplan'),param); }});
+
+/* ================= MODULE: TAWḤĪD POEM TRACKER (Level 3) =================
+   Manẓūmat Taʿlīm aṣ-Ṣibyān fī at-Tawḥīd — 47 bayts, 13 topics, 4 parts.
+   s.poem = { b:{ n:{ st:'learning'|'mem', date, chk:{date,r} } }, log:[…], quiz:[…] }.
+   A memorized bayt comes due for a recall check after 7 days (new), 21 days (Strong),
+   7 days (Shaky) or immediately (Forgot). Strong check = ⭐ solid. */
+const POEM = [{"n":1,"section":"مُقَدِّمَة","sectionEn":"Introduction","sadr":"يَقُولُ رَاجِي الْعَفْوِ وَالْغُفْرَانِ","ajuz":"مِنْ رَبِّهِ مُحَمَّدُ الشَّعْبَانِي","en":"The one hoping for pardon and forgiveness from his Lord, Muhammad ash-Sha'bani, says:"},{"n":2,"sadr":"أَحْمَدُ رَبِّي بِالنَّبِيِّ أَكْرَمَا","ajuz":"صَلَّى عَلَيْهِ رَبُّنَا وَسَلَّمَا","en":"I praise my Lord for the Prophet He most honored; may our Lord send blessings and peace upon him."},{"n":3,"sadr":"وَآلِهِ وَصَحْبِهِ أُولِي النُّهَى","ajuz":"وَمَنْ بِأَمْرِهِ وَنَهْيِهِ انْتَهَى","en":"And upon his family, his Companions — people of sound understanding — and whoever fully complied with his command and his prohibition."},{"n":4,"sadr":"وَبَعْدُ فَاعْلَمْ أَنَّمَا التَّوْحِيدُ","ajuz":"لَا شَيْءَ قَطُّ دُونَهُ يُفِيدُ","en":"Now then: know that Tawhid — nothing whatsoever besides it truly benefits."},{"n":5,"sadr":"فَابْدَأْ بِهِ التَّعْلِيمَ لِلصِّبْيَانِ","ajuz":"بِنَظْمِ مَتْنِ الْعَالِمِ الرَّبَّانِي","en":"So begin teaching it to children, in the versification of the godly scholar's text."},{"n":6,"sadr":"مُحَمَّدِ بْنِ عَابِدِ الْوَهَّابِ","ajuz":"جَزَاهُ رَبِّي أَحْسَنَ الثَّوَابِ","en":"Muhammad ibn 'Abid al-Wahhab — may my Lord reward him with the best reward."},{"n":7,"sadr":"بِهِ أَشَارَ شَيْخُنَا عَلِيٌّ","ajuz":"هُوَ ابْنُ مُوسَى الشَّارِحُ الْمَرْضِيُّ","en":"Our shaykh Ali pointed to it — he is Ibn Musa, the well-regarded commentator."},{"n":8,"sadr":"فِي بُغْيَةٍ لِلْمُسْتَفِيدِ عِلْمَا","ajuz":"فَزَادَهُ اللَّهُ الْكَرِيمُ فَهْمَا","en":"In [his book] 'Bughyah', for the seeker of knowledge — may Allah the Generous increase him in understanding."},{"n":9,"sadr":"وَأَسْأَلُ الرَّحْمَنَ عَفْوًا وَاسِعَا","ajuz":"وَأَنْ يَكُونَ النَّظْمُ سَهْلًا نَافِعَا","en":"And I ask the Most Merciful for abundant pardon, and that this poem be easy and beneficial."},{"n":10,"section":"مَعْرِفَةُ رَبِّكَ جَلَّ وَعَلَا","sectionEn":"Knowing your Lord","sadr":"إِنْ قِيلَ مَنْ رَبُّكَ قُلْتَ اللَّهُ","ajuz":"وَذُو الْأُلُوهِيَّةِ قُلْ مَعْنَاهُ","en":"If asked 'Who is your Lord?' say 'Allah' — and if asked the meaning of the One possessing divinity, state its meaning."},{"n":11,"sadr":"وَالْمَالِكُ الْمَعْبُودُ مَعْنَى الرَّبِّ","ajuz":"تَعْرِفُهُ بِالْخَلْقِ يَا ذَا اللُّبِّ","en":"The Owner, the Worshipped — that is the meaning of 'Rabb'. You know Him through creation, O person of intellect."},{"n":12,"sadr":"كَالْأَرْضِ وَالسَّمَاءِ وَالْآيَاتِ","ajuz":"كَالشَّمْسِ وَالْبَدْرِ وَكَالسَّاعَاتِ","en":"Like the earth, the sky, and the signs — like the sun, the full moon, and the passing hours."},{"n":13,"section":"مَعْرِفَةُ الْغَايَةِ مِنَ الْخَلْقِ","sectionEn":"The purpose of creation","sadr":"وَغَايَةُ الْخَلْقِ هِيَ الْعِبَادَةْ","ajuz":"لِلَّهِ وَحْدَهُ كَمَا الشَّهَادَةْ","en":"The purpose of creation is worship — of Allah alone, as the testimony (shahada) states."},{"n":14,"sadr":"وَحَدُّهَا الْمَشْهُورُ لَفْظُ جَامِعُ","ajuz":"لِكُلِّ مَا يُحِبُّهُ وَيَشْرَعُ","en":"Its well-known definition is a comprehensive term — covering everything He loves and legislates."},{"n":15,"sadr":"وَذَاكَ بِامْتِثَالِكَ الْأَوَامِرَا","ajuz":"كَذَلِكَ اجْتِنَابُكَ الزَّوَاجِرَا","en":"That is achieved through your compliance with the commands — and likewise your avoidance of the prohibitions."},{"n":16,"sadr":"بِشَرْطِ إِخْلَاصٍ بِلَا رِيَاءِ","ajuz":"مَعَ اتِّبَاعِ خَيْرِ الْأَنْبِيَاءِ","en":"With the condition of sincerity, without showing off — together with following the best of Prophets."},{"n":17,"section":"قُبْحُ الشِّرْكِ","sectionEn":"The ugliness of shirk","sadr":"وَالشِّرْكُ أَقْبَحُ الذُّنُوبِ فَاجْتَنِبْ","ajuz":"صَرْفَ عِبَادَةٍ لِمَخْلُوقٍ تُصِبْ","en":"Shirk is the ugliest of sins, so avoid directing any act of worship toward a created being."},{"n":18,"sadr":"لَا تَدْعُ غَيْرَ اللَّهِ فَاللَّهُ الصَّمَدْ","ajuz":"مَنْ يَدْعُ غَيْرَ اللَّهِ مَدْعُوهُ عَبَدْ","en":"Do not call upon other than Allah, for Allah is As-Samad — whoever calls upon other than Allah, what he calls upon is merely a worshipped idol."},{"n":19,"section":"أَوَّلُ مَا فَرَضَ اللَّهُ","sectionEn":"The first thing Allah made obligatory","sadr":"وَالْكُفْرُ بِالطَّاغُوتِ فَرْضٌ أَوَّلَا","ajuz":"لِمُؤْمِنٍ بِاللَّهِ جَلَّ وَعَلَا","en":"Disbelief in false objects of worship (taghut) is the very first obligation for one who believes in Allah, Glorified and Exalted."},{"n":20,"sadr":"وَكُلُّ مَا جَاوَزَ عَبْدٌ حَدَّهُ","ajuz":"حَتَّى الْمُطَاعِ فَالطَّاغُوتُ حُدَّهُ","en":"Anything a servant exceeds its proper limit with — even one who is obeyed — that is the very definition of taghut."},{"n":21,"section":"مَعْرِفَةُ الدِّينِ الْحَقِّ","sectionEn":"Knowing the true religion","sadr":"وَدِينُكَ الْإِسْلَامُ الِاسْتِسْلَامُ","ajuz":"لِلَّهِ بِالتَّوْحِيدِ وَالْقِيَامُ","en":"Your religion is Islam — submission to Allah through Tawhid and its establishment."},{"n":22,"sadr":"بِالْخَمْسَةِ الْأَرْكَانِ كَالصَّلَاةِ","ajuz":"وَالصَّوْمِ وَالْحَجِّ مَعَ الزَّكَاةِ","en":"With its five pillars: the prayer — and fasting, and Hajj, along with Zakat."},{"n":23,"sadr":"وَذَاكَ دِينُ اللَّهِ لِلْعِبَادِ","ajuz":"مِنْ خَلْقِ آدَمَ وَلِلْمَعَادِ","en":"And that has been Allah's religion for His servants — from the creation of Adam and until the Return."},{"n":24,"section":"مَعْرِفَةُ الْإِيمَانِ","sectionEn":"Knowing Iman (faith)","sadr":"وَالسِّتَّةُ الْأَرْكَانُ لِلْإِيمَانِ","ajuz":"إِيمَانُنَا بِاللَّهِ ذِي الْإِحْسَانِ","en":"The six pillars of faith: first, our belief in Allah, Possessor of perfect excellence."},{"n":25,"sadr":"وَبِالْمَلَائِكِ الْكِرَامِ وَالْكُتُبْ","ajuz":"وَالرُّسُلِ وَالسَّاعَةِ وَالَّذِي كُتِبْ","en":"And in the noble angels, and the Books — and the Messengers, and the Hour, and what has been decreed."},{"n":26,"section":"الْإِيمَانُ بِالْبَعْثِ","sectionEn":"Belief in the Resurrection","sadr":"وَمِنْ أُصُولِ ذَلِكَ الْإِيمَانِ","ajuz":"إِيمَانُنَا بِالْبَعْثِ لِلْأَبْدَانِ","en":"Among the foundations of that faith is our belief in the resurrection of bodies."},{"n":27,"sadr":"وَجَنَّةٍ وَالنَّارِ وَالْحِسَابِ","ajuz":"لِلنَّاسِ بِالثَّوَابِ وَالْعِقَابِ","en":"And belief in Paradise, the Fire, and the Reckoning — for people, with reward and punishment."},{"n":28,"sadr":"وَجَاحِدُ الْبَعْثِ فَفِي النِّيرَانِ","ajuz":"مُخَلَّدٌ سُحْقًا لِذِي الْكُفْرَانِ","en":"Whoever denies the Resurrection is in the Fire — abiding forever; perdition to the one of disbelief."},{"n":29,"section":"مَعْرِفَةُ النَّبِيِّ ﷺ","sectionEn":"Knowing the Prophet ﷺ","sadr":"وَقُلْ خِتَامُ الْأَنْبِيَاءِ مُحَمَّدُ","ajuz":"لِلْعَالَمِينَ مُرْسَلٌ كَيْ يَهْتَدُوا","en":"And say: the Seal of the Prophets is Muhammad — sent to all the worlds so that they may be guided."},{"n":30,"sadr":"وَأُوتِيَ الْكِتَابَ مَعْهُ الْحِكْمَةُ","ajuz":"دَعَا إِلَى التَّوْحِيدِ وَهْوَ الرَّحْمَةُ","en":"He was given the Book, and with it wisdom — he called to Tawhid, and he is a mercy to creation."},{"n":31,"sadr":"وَجَاهَدَ الْكُفَّارَ بِالسِّنَانِ","ajuz":"بَعْدَ قِيَامِ حُجَّةِ الْبَيَانِ","en":"He strove against the disbelievers with the spear — after the clear proof had been established."},{"n":32,"section":"عُمْرُهُ الْمُبَارَكُ ﷺ وَالْإِسْرَاءُ وَالْمِعْرَاجُ","sectionEn":"His blessed life, the Night Journey and Ascension","sadr":"وَأَرْبَعُونَ عُمْرُهُ فِي الْبَعْثَةِ","ajuz":"وَبَعْدَ عِشْرِينَ ثَلَاثَ الدَّعْوَةِ","en":"Forty was his age at the start of the Mission — and twenty-three years marked the span of his Call."},{"n":33,"sadr":"ثَلَاثَ عَشْرَةَ ثَلَاثٌ سِرًّا","ajuz":"بِمَكَّةٍ وَبَعْدَ عَشْرِ الْإِسْرَا","en":"Thirteen years in Makkah — three of them in secret — and after ten more came the Night Journey."},{"n":34,"sadr":"يَقْظَانَ وَالْمِعْرَاجُ حَتَّى الْمُنْتَهَى","ajuz":"وَالْخَمْسُ فِيهَا فُرِضَتْ لِذِي التُّهَى","en":"Wide awake, the Ascension went to the utmost extent — and in it the five daily prayers were made obligatory, for the person of understanding."},{"n":35,"sadr":"وَبَعْدَهَا الْهِجْرَةُ لِلْمَدِينَةْ","ajuz":"عَشْرًا بِهَا أَقَامَ مِنْ سِنِينَهْ","en":"And after it came the migration to Madinah — ten of his years he resided there."},{"n":36,"sadr":"مُجَاهِدًا حَقَّ الْجِهَادِ حَتَّى","ajuz":"فِي الدِّينِ أَفْوَاجُ الْأَنَامِ شَتَّى","en":"Striving with the truest striving, until people entered the religion in throngs, one after another."},{"n":37,"sadr":"وَاكْتَمَلَ الدِّينُ وَتَمَّ الْأَمْرُ","ajuz":"فَقُبِضَ الْمُخْتَارُ نِعْمَ الْعُمْرُ","en":"The religion was completed and the matter was perfected — then the Chosen One passed away; what an excellent life."},{"n":38,"sadr":"ثَلَاثَةٌ زَادَتْ عَلَى السِّتِّينَا","ajuz":"مُبَلَّغًا بَلَاغَهُ الْمُبِينَا","en":"Three added to sixty — sixty-three years old — having conveyed his message with full clarity."},{"n":39,"section":"أَوَّلُ الرُّسُلِ وَآخِرُهُمْ وَأَفْضَلُهُمْ ﷺ","sectionEn":"The first, last, and best of the messengers","sadr":"وَأَوَّلُ الرُّسُلِ الْكِرَامِ نُوحُ","ajuz":"بَعْدَ ظُهُورِ الشِّرْكِ جَاءَ الرُّوحُ","en":"The first of the noble Messengers was Nuh — after shirk appeared, the spirit of revelation came to him."},{"n":40,"sadr":"آخِرُهُمْ مُحَمَّدٌ زَمَانَا","ajuz":"لَكِنَّهُ أَوَّلُهُمْ مَكَانَا","en":"The last of them in time was Muhammad — but he is the first of them in rank."},{"n":41,"section":"أَفْضَلُ النَّاسِ بَعْدَ الْأَنْبِيَاءِ ﷺ","sectionEn":"The best of people after the Prophets","sadr":"وَأَفْضَلُ النَّاسِ بَعْدَ الْأَنْبِيَا","ajuz":"أَصْحَابُهُ خَيْرُ الْقُرُونِ عَالِيَا","en":"The best of people after the Prophets are his Companions, the best of generations, most elevated."},{"n":42,"sadr":"أَوَّلُهُمْ صِدِّيقُهُمْ ثُمَّ عُمَرْ","ajuz":"عُثْمَانُ بَعْدُ وَعَلِيٌّ مُعْتَبَرْ","en":"First of them is their Siddiq (Abu Bakr), then 'Umar — 'Uthman after, and 'Ali, esteemed."},{"n":43,"sadr":"وَخَيْرُ قَرْنٍ بَعْدَهُمُ الْأَتْبَاعُ","ajuz":"فَتَبَعُ الْأَتْبَاعِ يَا شُجَاعُ","en":"And the best generation after them is the Followers (Tabi'un) — then the Followers of the Followers, O brave one."},{"n":44,"section":"نُزُولُ عِيسَى ﷺ وَالْخَاتِمَةُ","sectionEn":"The descent of 'Isa, and the conclusion","sadr":"وَآخِرَ الزَّمَانِ عِيسَى يَنْزِلُ","ajuz":"فَيُدْرِكُ الدَّجَّالَ ثُمَّ يُقْتَلُ","en":"At the end of time, 'Isa will descend — he will reach the Dajjal, who will then be killed."},{"n":45,"sadr":"وَيَكْسِرُ الصَّلِيبَ وَالْخِنْزِيرَا","ajuz":"يَقْتُلُهُ مُحَرَّمًا حَقِيرَا","en":"He will break the cross and kill the pig — as something forbidden and despised."},{"n":46,"sadr":"وَيَقْبَلُ الْإِسْلَامَ لَا سِوَاهُ","ajuz":"تَمَّ وَحَمْدُ اللَّهِ مُنْتَهَاهُ","en":"He will accept only Islam, nothing else. It is complete — and all praise belongs to Allah, its fitting conclusion."},{"n":47,"sadr":"وَصَلَّى رَبُّنَا عَلَى مُحَمَّدِ","ajuz":"وَآلِهِ وَالصَّحْبِ ثُمَّ الْمُهْتَدِي","en":"And may our Lord send blessings upon Muhammad — and his family, and the Companions, and whoever is rightly guided."}];
+const POEM_PARTS = [
+  {n:1,en:'Foundations of Tawḥīd',ar:'أُصُولُ التَّوْحِيدِ',a:1,b:16,c:'#1a4a35'},
+  {n:2,en:'Shirk, Islam & Imān',ar:'الشِّرْكُ وَالْإِسْلَامُ وَالْإِيمَانُ',a:17,b:25,c:'#b8872a'},
+  {n:3,en:'The Unseen & the Prophet ﷺ',ar:'الْغَيْبُ وَالنَّبِيُّ ﷺ',a:26,b:38,c:'#a0522d'},
+  {n:4,en:'The Messengers & the End',ar:'الرُّسُلُ وَالْخَاتِمَةُ',a:39,b:47,c:'#2f6f8f'}];
+const POEM_SECS = (()=>{ const o=[]; POEM.forEach(b=>{ if(b.section) o.push({a:b.n,b:47,en:b.sectionEn,ar:b.section}); }); o.forEach((s,i)=>{ s.b=i<o.length-1?o[i+1].a-1:47; }); return o; })();
+const poemPart = n => POEM_PARTS.find(p=>n>=p.a&&n<=p.b);
+const poemSec = n => POEM_SECS.find(s=>n>=s.a&&n<=s.b);
+const PT = {
+  PACE_DEFAULT:2, sid:null,
+  cfg(){ const st=DB.data.settings; return st.poemCfg=st.poemCfg||{start:'',perWeek:PT.PACE_DEFAULT,meaning:false}; },
+  stu(){ return DB.data.students.filter(s=>s.active!==false&&s.level==='Level 3').sort((a,b)=>String(a.name).localeCompare(String(b.name))); },
+  diff(a){ return Math.max(0,Math.round((new Date(today())-parseLocalDate(a))/864e5)); },
+  st(s,n){
+    const b=s.poem&&s.poem.b&&s.poem.b[n]; if(!b) return {k:'none'};
+    if(b.st==='learning') return {k:'learning',date:b.date};
+    const ev=b.chk?b.chk.date:b.date, days=PT.diff(ev), iv=b.chk?(b.chk.r==='strong'?21:b.chk.r==='shaky'?7:0):7;
+    const due=!(b.bulk&&!b.chk)&&days>=iv; // bulk-marked bayts wait for a first real recall check instead of flooding the due list
+    return {k: !due&&b.chk&&b.chk.r==='strong'?'solid':due?'due':'mem', date:b.date, days, due, overdue:Math.max(0,days-iv), r:b.chk&&b.chk.r};
+  },
+  isMem(s,n){ const k=PT.st(s,n).k; return k==='mem'||k==='solid'||k==='due'; },
+  sum(s){
+    const c={none:0,learning:0,mem:0,solid:0,due:0}; for(let n=1;n<=47;n++) c[PT.st(s,n).k]++;
+    let contig=0; while(contig<47&&PT.isMem(s,contig+1)) contig++;
+    const memN=c.mem+c.solid+c.due, log=(s.poem&&s.poem.log)||[], last=log[0]?log[0].date:null;
+    return {c,contig,memN,learn:c.learning,due:c.due,solid:c.solid,pct:memN/47*100,last,next:contig<47?contig+1:null};
+  },
+  expected(){ const cf=PT.cfg(); if(!cf.start||cf.start>today()) return cf.start?0:null; const wk=Math.floor(PT.diff(cf.start)/7)+1; return Math.min(47,wk*(+cf.perWeek||PT.PACE_DEFAULT)); },
+  log(s,n,act){ s.poem=s.poem||{b:{}}; s.poem.log=s.poem.log||[]; s.poem.log.unshift({date:today(),n,act}); if(s.poem.log.length>200) s.poem.log.length=200; },
+  setSt(s,n,st){
+    s.poem=s.poem||{b:{}}; s.poem.b=s.poem.b||{}; const before=PT.sum(s);
+    if(st==='none') delete s.poem.b[n]; else if(st==='learning') s.poem.b[n]={st:'learning',date:today()}; else s.poem.b[n]={st:'mem',date:today()};
+    PT.log(s,n,st); DB.log((s.preferredName||s.name)+' — Tawḥīd poem bayt '+n+' → '+(st==='mem'?'memorized':st)); DB.save();
+    if(st==='mem') PT.celebrateIf(s,n,before);
+  },
+  check(s,n,r){ const b=s.poem&&s.poem.b&&s.poem.b[n]; if(!b||b.st!=='mem') return; b.chk={date:today(),r}; PT.log(s,n,'check-'+r); DB.log((s.preferredName||s.name)+' — poem bayt '+n+' recall: '+r); DB.save(); },
+  setThrough(s,upto){ s.poem=s.poem||{b:{}}; s.poem.b=s.poem.b||{}; for(let n=1;n<=upto;n++) if(!PT.isMem(s,n)) s.poem.b[n]={st:'mem',date:today(),bulk:true}; PT.log(s,upto,'through'); DB.log((s.preferredName||s.name)+' — poem memorized through bayt '+upto); DB.save(); },
+  celebrateIf(s,n,before){
+    const nm=s.preferredName||s.name, sec=poemSec(n), part=poemPart(n);
+    const full=(a,b)=>{ for(let i=a;i<=b;i++) if(!PT.isMem(s,i)) return false; return true; };
+    if(full(1,47)){ celebrate(); toast('🌟 '+nm+' has memorized the whole poem — mā shāʾ Allāh!'); }
+    else if(full(part.a,part.b)){ celebrate(); toast('🏅 '+nm+' finished Part '+part.n+': '+part.en); }
+    else if(full(sec.a,sec.b)) toast('✨ Topic complete: '+sec.en);
+  },
+  pct(x){ return x.contig/47*100; },
+  /* ---------- journey-map data ---------- */
+  dataPoem(){
+    const cut=new Date(Date.now()-21*864e5).toISOString().slice(0,10), any=PT.stu().some(s=>(s.poem&&s.poem.log||[]).length);
+    return PT.stu().map(s=>{ const m=PT.sum(s); return {s,lvl:'poem',pct:m.contig/47*100,contig:m.contig,memN:m.memN,next:m.next,due:m.due,behind:any&&(!m.last||m.last<cut)}; });
+  },
+  /* ---------- helpers ---------- */
+  rhyme(t){ const w=String(t).trim().split(/\s+/); return w.map((x,i)=>`<span class="pt-w${i===w.length-1?' rh':''}">${esc(x)}</span>`).join(' '); },
+  ring(p,sz,label){ const r=(sz-8)/2, c=2*Math.PI*r; return `<div class="pt-ring" style="width:${sz}px;height:${sz}px"><svg width="${sz}" height="${sz}"><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 ${sz/2} ${sz/2})"/></svg><b>${label}</b></div>`; },
+  cell(s,n,mini){ const k=PT.st(s,n).k; return `<button class="pt-c ${k}${mini?' mini':''}" data-ptb="${s.id}|${n}" title="Bayt ${n} — ${({none:'not started',learning:'learning',mem:'memorized',solid:'solid ⭐',due:'memorized — recall check due'})[k]}">${mini?'':n}</button>`; },
+  /* ---------- module render ---------- */
+  render(v,param){
+    if(param && DB.data.students.find(s=>s.id===param)) return PT.student(v,param);
+    const L=PT.stu(), rows=L.map(s=>({s,m:PT.sum(s)})), exp=PT.expected(), cf=PT.cfg();
+    const avg=rows.length?rows.reduce((n,r)=>n+r.m.memN,0)/rows.length:0, started=rows.filter(r=>r.m.memN||r.m.learn).length, dueN=rows.reduce((n,r)=>n+r.m.due,0), done=rows.filter(r=>r.m.memN===47).length;
+    const partAvg=POEM_PARTS.map(p=>{ if(!rows.length) return 0; let t=0; rows.forEach(r=>{ for(let n=p.a;n<=p.b;n++) if(PT.isMem(r.s,n)) t++; }); return t/(rows.length*(p.b-p.a+1))*100; });
+    const behind=exp==null?0:rows.filter(r=>r.m.contig<exp).length, ahead=exp==null?0:rows.length-behind;
+    const front=rows.length?Math.max(...rows.map(r=>r.m.contig)):0, nextCommon=(()=>{ const m={}; rows.forEach(r=>{ if(r.m.next) m[r.m.next]=(m[r.m.next]||0)+1; }); const e=Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0]; return e?{n:+e[0],c:e[1]}:null; })();
+    const boardHTML = !rows.length ? '<p style="color:var(--ink3)">No Level 3 students.</p>'
+      : '<div class="pt-bhead"><span></span><div class="pt-strip">'+POEM_PARTS.map(p=>'<div class="pt-bp" style="flex:'+(p.b-p.a+1)+';background:'+p.c+'">P'+p.n+'</div>').join('')+'</div><span></span></div>'
+        + rows.map(r=>`<div class="pt-brow"><button class="pt-bname" data-go="#/poem/${r.s.id}">${avatarHTML(r.s,'width:22px;height:22px;border-radius:50%;font-size:8px;flex-shrink:0')}<span dir="auto">${esc(r.s.preferredName||r.s.name)}</span></button><div class="pt-strip">${[...Array(47)].map((_,i)=>PT.cell(r.s,i+1,true)).join('')}</div><span class="pt-bn">${r.m.memN}${exp!=null?`<em class="${r.m.contig>=exp?'ok':'bad'}" title="${r.m.contig>=exp?'on pace':'behind pace'}">${r.m.contig>=exp?'●':'○'}</em>`:''}</span></div>`).join('');
+    v.innerHTML=`<div class="page-wm"><div class="pt-hero"><div style="min-width:0;flex:1"><div class="eyebrow" style="color:#d9b765">Level 3 · Memorization</div><h2 class="page-title" style="color:#fff;margin:2px 0 4px">Tawḥīd Poem Tracker</h2>
+       <div class="pt-ar pt-title">مَنْظُومَةُ تَعْلِيمِ الصِّبْيَانِ التَّوْحِيدِ</div>
+       <p style="color:#cfd7e4;margin:6px 0 0">${rows.length} students · class average ${avg.toFixed(1)} of 47 bayts${done?' · '+done+' finished 🌟':''}${dueN?' · '+dueN+' recall checks due':''}</p></div>
+       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start"><button class="btn btn-sm" style="background:#d9ac54;color:#20261f;border:0" data-qjourney="poem">🗺 Poem journey</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptPace">⚙ Class pace</button></div></div>
+     ${exp!=null&&rows.length?`<div class="notice info" style="margin:0 0 14px">🎯 <div><b>Class pace: ${cf.perWeek} bayts a week</b> from ${esc(fmtDate(cf.start))} — by now that is bayt <b>${exp}</b>. <b>${ahead}</b> on or ahead · <b>${behind}</b> behind.${nextCommon?` Most are working on bayt ${nextCommon.n} next.`:''}</div></div>`
+       :`<div class="notice info no-print" style="margin:0 0 14px">🎯 <div>Set a <b>class pace</b> (for example 2 bayts a week) and each student gets an on-pace / behind marker. <button class="btn btn-o btn-sm" id="ptPace2" style="margin-left:6px">Set pace</button></div></div>`}
+     <div class="pt-parts">${POEM_PARTS.map((p,i)=>`<div class="pt-part" style="--pc:${p.c}"><span class="pt-ar">${p.ar}</span><b>Part ${p.n} · ${esc(p.en)}</b><small>Bayts ${p.a}–${p.b}</small><div class="bar"><i style="width:${partAvg[i].toFixed(0)}%;background:${p.c}"></i></div><small>${partAvg[i].toFixed(0)}% of the class</small></div>`).join('')}</div>
+     <div class="card" style="margin-top:14px"><div class="whead"><h3>Class board — all 47 bayts</h3></div>
+       <div class="pt-legend"><span><i class="pt-c none mini"></i>not started</span><span><i class="pt-c learning mini"></i>learning</span><span><i class="pt-c mem mini"></i>memorized</span><span><i class="pt-c solid mini"></i>solid ⭐</span><span><i class="pt-c due mini"></i>recall check due</span></div>
+       <div class="pt-board">${boardHTML}</div></div>
+     ${dueN?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div class="wlist">${rows.filter(r=>r.m.due).map(r=>`<div class="wrow" style="cursor:default;flex-wrap:wrap;gap:6px 8px;align-items:center">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1;min-width:120px"><b>${esc(r.s.preferredName||r.s.name)}</b></span><span style="display:flex;gap:5px;flex-wrap:wrap">${[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(r.s,n).k==='due').slice(0,10).map(n=>`<button class="rev-chip due" data-ptb="${r.s.id}|${n}">Bayt ${n}<small>${PT.st(r.s,n).r==='forgot'?'forgot':PT.st(r.s,n).overdue+'d over'}</small></button>`).join('')}</span></div>`).join('')}</div></div>`:''}
+    </div>`;
+    wireCommon(v); PT.wire(v);
+    const pc=()=>PT.paceForm(); $('#ptPace',v)&&($('#ptPace',v).onclick=pc); $('#ptPace2',v)&&($('#ptPace2',v).onclick=pc);
+  },
+  paceForm(){
+    const cf=PT.cfg(), o=overlay(`<div class="modal" style="max-width:400px"><h3>Class pace &amp; settings — Tawḥīd poem</h3><p style="font-size:13px;color:var(--ink2);margin-bottom:10px">How many new bayts should the class learn each week? Two a week finishes the poem in about 24 weeks.</p>
+      <div class="field"><label>Start date</label><input type="date" id="pt-st" value="${esc(cf.start||today())}"></div>
+      <div class="field"><label>New bayts per week</label><input type="number" id="pt-pw" min="1" max="10" value="${+cf.perWeek||PT.PACE_DEFAULT}"></div>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-top:4px"><input type="checkbox" id="pt-mn" ${cf.meaning?'checked':''} style="margin-top:3px"><span>Also teach the English meaning <small style="display:block;color:var(--ink3)">Off while the class is memorizing the Arabic only. Turns on the meaning text and the meaning quiz.</small></span></label>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button>${cf.start?'<button class="btn btn-ghost" data-x="r">Remove pace</button>':''}<button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const r=$('[data-x=r]',o); if(r) r.onclick=()=>{ cf.start=''; DB.save(); o.remove(); Router.render(); };
+    $('[data-x=s]',o).onclick=()=>{ cf.start=$('#pt-st',o).value||today(); cf.perWeek=Math.max(1,Math.min(10,+$('#pt-pw',o).value||2)); cf.meaning=$('#pt-mn',o).checked; DB.save(); o.remove(); toast('Saved'); Router.render(); };
+  },
+  wire(v){ $$('[data-ptb]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n]=b.dataset.ptb.split('|'); PT.study(sid,+n); }); },
+  /* ---------- student page ---------- */
+  student(v,id){
+    const s=DB.data.students.find(x=>x.id===id), m=PT.sum(s), nm=s.preferredName||s.name, exp=PT.expected();
+    const sectionsHTML=POEM_PARTS.map(p=>`<div class="pt-pgroup" style="--pc:${p.c}"><div class="pt-ph"><span class="pt-ar">${p.ar}</span><b>Part ${p.n} · ${esc(p.en)}</b></div>${POEM_SECS.filter(sc=>sc.a>=p.a&&sc.b<=p.b).map(sc=>{ let k=0; for(let n=sc.a;n<=sc.b;n++) if(PT.isMem(s,n)) k++; const tot=sc.b-sc.a+1;
+      return `<div class="pt-sec"><div class="pt-sh"><span><b>${esc(sc.en)}</b> <span class="pt-ar" style="font-size:15px;color:var(--ink3)">${sc.ar}</span></span><span class="tag ${k===tot?'tag-green':k?'tag-gold':'tag-dim'}">${k===tot?'🏅 ':''}${k}/${tot}</span></div><div class="pt-cells">${[...Array(tot)].map((_,i)=>PT.cell(s,sc.a+i)).join('')}</div></div>`; }).join('')}</div>`).join('');
+    const nx=m.next, nb=nx?POEM[nx-1]:null, dueList=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(s,n).k==='due');
+    const log=((s.poem&&s.poem.log)||[]).slice(0,8), quiz=((s.poem&&s.poem.quiz)||[]).slice(0,5);
+    v.innerHTML=`<div class="page-wm"><button class="btn btn-ghost btn-sm no-print" data-go="#/poem">← Tawḥīd Poem</button>
+      <div class="pt-shead">${PT.ring(m.pct,92,m.memN+'<small>/47</small>')}<div style="min-width:0;flex:1"><div class="eyebrow">Tawḥīd poem</div><h2 class="page-title" style="margin:0;text-align:left" dir="auto">${esc(s.name)}</h2>
+        <div class="adm-tags" style="margin-top:6px"><span class="tag tag-green">✅ ${m.memN} memorized</span>${m.learn?`<span class="tag tag-gold">🌱 ${m.learn} learning</span>`:''}${m.solid?`<span class="tag tag-gold">⭐ ${m.solid} solid</span>`:''}${m.due?`<span class="tag tag-red">🔁 ${m.due} to re-check</span>`:''}${exp!=null?`<span class="tag ${m.contig>=exp?'tag-green':'tag-red'}">${m.contig>=exp?'on pace':'behind pace — expected bayt '+exp}</span>`:''}</div></div></div>
+      <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px"><button class="btn btn-p btn-sm" data-qjourney="poem">🗺 Journey map</button><button class="btn btn-o btn-sm" id="ptQuiz">🎯 Quiz me</button>${nx?`<button class="btn btn-o btn-sm" data-ptb="${s.id}|${nx}">▶ Study bayt ${nx}</button>`:''}<button class="btn btn-o btn-sm" id="ptThrough">⏩ Memorized through…</button>${m.memN===47?`<button class="btn btn-o btn-sm" id="ptCert">🏆 Certificate</button>`:''}<button class="btn btn-ghost btn-sm" data-go="#/students/${s.id}">Profile →</button></div>
+      ${nb?`<div class="card pt-next"><div class="whead"><h3>Next up — bayt ${nx}</h3><span style="font-size:12px;color:var(--ink3)">${esc(poemSec(nx).en)}</span></div><div class="pt-ar pt-big">${PT.rhyme(nb.sadr)}<br>${PT.rhyme(nb.ajuz)}</div>${PT.cfg().meaning?`<p style="font-size:13px;color:var(--ink2);font-style:italic;margin:8px 0 0">${esc(nb.en)}</p>`:''}</div>`:`<div class="card"><p style="margin:0;color:var(--ok)">🌟 The whole poem is memorized — mā shāʾ Allāh. Keep it fresh with recall checks.</p></div>`}
+      ${dueList.length?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap">${dueList.map(n=>`<button class="rev-chip due" data-ptb="${s.id}|${n}">Bayt ${n}<small>${PT.st(s,n).r==='forgot'?'forgot parts':PT.st(s,n).overdue+'d overdue'}</small></button>`).join('')}</div></div>`:''}
+      <div class="card"><div class="whead"><h3>All 47 bayts</h3></div><div class="pt-legend"><span><i class="pt-c none mini"></i>not started</span><span><i class="pt-c learning mini"></i>learning</span><span><i class="pt-c mem mini"></i>memorized</span><span><i class="pt-c solid mini"></i>solid ⭐</span><span><i class="pt-c due mini"></i>check due</span></div>${sectionsHTML}</div>
+      ${quiz.length||log.length?`<div class="card"><div class="whead"><h3>Recent activity</h3></div>${quiz.length?`<p style="font-size:12.5px;margin:0 0 6px">Quiz scores: ${quiz.map(q=>`<b>${q.score}/${q.of}</b> <span style="color:var(--ink3)">${esc(fmtDate(q.date))}</span>`).join(' · ')}</p>`:''}<div class="wlist">${log.map(l=>`<div class="wrow" style="cursor:default"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${esc(fmtDate(l.date))}</span><span class="t">${l.act==='through'?'Memorized through bayt '+l.n:'Bayt '+l.n+' → '+esc(({mem:'memorized',learning:'learning',none:'cleared','check-strong':'recall check: strong','check-shaky':'recall check: shaky','check-forgot':'recall check: forgot'})[l.act]||l.act)}</span></div>`).join('')}</div></div>`:''}</div>`;
+    wireCommon(v); PT.wire(v);
+    $('#ptQuiz',v).onclick=()=>PT.quiz(s.id);
+    $('#ptThrough',v).onclick=()=>PT.throughForm(s);
+    const c=$('#ptCert',v); if(c) c.onclick=()=>PT.certificate(s);
+  },
+  throughForm(s){
+    const m=PT.sum(s), o=overlay(`<div class="modal" style="max-width:380px"><h3>Memorized through bayt…</h3><p style="font-size:13px;color:var(--ink2);margin-bottom:10px">Marks bayts 1 to N as memorized (any already marked stay as they are). Use it to bring a student up to date in one step.</p><div class="field"><label>Bayt number (1–47)</label><input id="pt-th" type="number" min="1" max="47" value="${Math.min(47,Math.max(1,m.contig))}"></div><div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ const n=Math.max(1,Math.min(47,+$('#pt-th',o).value||0)); const before=PT.sum(s); PT.setThrough(s,n); o.remove(); toast((s.preferredName||s.name)+' — memorized through bayt '+n); PT.celebrateIf(s,n,before); Router.render(); if(QJ.root) QJ.refresh(); };
+  },
+  /* ---------- study modal ---------- */
+  study(sid,n,tab){
+    const s=DB.data.students.find(x=>x.id===sid); if(!s||n<1||n>47) return; const b=POEM[n-1], sec=poemSec(n), part=poemPart(n), cur=PT.st(s,n), prev=n>1?POEM[n-2]:null;
+    const old=$('#pt-study'); if(old) old.remove();
+    const o=overlay(`<div class="modal pt-modal" id="pt-study" style="max-width:640px;width:96vw"><div class="pt-mh"><div><div class="eyebrow" style="margin:0">${esc(s.preferredName||s.name)} · Part ${part.n} · ${esc(sec.en)}</div><h3 style="margin:2px 0 0">Bayt ${n} <span style="color:var(--ink3);font-weight:400">of 47</span></h3></div>
+        <span class="tag ${({none:'tag-dim',learning:'tag-gold',mem:'tag-green',solid:'tag-green',due:'tag-red'})[cur.k]}">${({none:'not started',learning:'🌱 learning',mem:'✅ memorized',solid:'⭐ solid',due:'🔁 check due'})[cur.k]}</span></div>
+      ${prev&&!b.section?`<div class="pt-recap"><small>Just before — bayt ${n-1}</small><div class="pt-ar">${esc(prev.sadr)} &nbsp; ${esc(prev.ajuz)}</div></div>`:b.section?`<div class="pt-recap"><small>New topic</small><div class="pt-ar">${esc(b.section)}</div></div>`:''}
+      <div class="pt-tabs"><button class="chip on" data-pt="learn">📖 Learn</button><button class="chip" data-pt="drill">🧩 Drill</button><button class="chip" data-pt="cue">🎤 Recite</button></div>
+      <div id="pt-pane"></div>
+      <div class="pt-foot no-print"><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-o btn-sm" data-st="learning">🌱 Learning</button><button class="btn btn-p btn-sm" data-st="mem">✅ Memorized</button>${cur.k!=='none'?'<button class="btn btn-ghost btn-sm" data-st="none">Clear</button>':''}</div>
+        <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-nav="-1" ${n<=1?'disabled':''}>← Prev</button><button class="btn btn-o btn-sm" data-nav="1" ${n>=47?'disabled':''}>Next →</button><button class="btn btn-ghost btn-sm" data-x="c">Close</button></div></div></div>`,true);
+    const pane=$('#pt-pane',o); let hidden=0, order=[];
+    const words=()=>[...b.sadr.trim().split(/\s+/).map(t=>({t,h:1})),...b.ajuz.trim().split(/\s+/).map(t=>({t,h:2}))];
+    const paneLearn=()=>{ pane.innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div><div class="pt-note">Listen for the matching ending on both lines — that is your ear's anchor.</div>
+      ${PT.cfg().meaning?`<div class="pt-mean"><b>Plain meaning</b>${esc(b.en)}</div>`:`<div id="pt-mwrap" class="no-print" style="text-align:center"><button class="btn btn-ghost btn-sm" id="pt-showm">Show English meaning</button></div>`}
+      <div class="pt-reps"><span>Read aloud</span>${[1,2,3].map(i=>`<button class="pt-rep" data-rep="${i}">${i}</button>`).join('')}<span id="pt-repmsg" style="font-size:12px;color:var(--ok)"></span></div>`;
+      const sm=$('#pt-showm',pane); if(sm) sm.onclick=()=>{ $('#pt-mwrap',pane).innerHTML=`<div class="pt-mean" style="text-align:left"><b>Plain meaning</b>${esc(b.en)}</div>`; };
+      let c=0; $$('[data-rep]',pane).forEach(x=>x.onclick=()=>{ c=Math.max(c,+x.dataset.rep); $$('[data-rep]',pane).forEach(y=>y.classList.toggle('on',+y.dataset.rep<=c)); $('#pt-repmsg',pane).textContent=c>=3?'Now try the Drill 👉':''; }); };
+    const paneDrill=()=>{ const W=words(); if(!order.length){ order=W.map((_,i)=>i).reverse(); }
+      const hid=order.slice(0,hidden); const mk=h=>W.map((w,i)=>w.h===h?`<span class="pt-dw${hid.includes(i)?' hid':''}" data-i="${i}">${esc(w.t)}</span>`:'').join(' ');
+      pane.innerHTML=`<div class="pt-dr"><span>${hidden===0?'All words showing':hidden===W.length?'Fully hidden — recite it all':hidden+' hidden'}</span><span>${hidden}/${W.length}</span></div><div class="bar"><i style="width:${hidden/W.length*100}%"></i></div>
+        <div class="pt-ar pt-big">${mk(1)}<br>${mk(2)}</div><div class="pt-note">Words fade from the end backwards. Tap a dashed word to peek.</div>
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-o" id="pt-show" ${hidden?'':'disabled'}>Show all</button><button class="btn btn-p" id="pt-fade" ${hidden>=W.length?'disabled':''}>Fade next word</button></div>`;
+      $$('.pt-dw.hid',pane).forEach(x=>x.onclick=()=>{ x.classList.add('peek'); setTimeout(()=>x.classList.remove('peek'),1200); });
+      $('#pt-show',pane).onclick=()=>{ hidden=0; paneDrill(); }; $('#pt-fade',pane).onclick=()=>{ hidden++; paneDrill(); }; };
+    const paneCue=()=>{ const first=b.sadr.trim().split(/\s+/).slice(0,2).join(' ');
+      pane.innerHTML=`<p style="font-size:13px;color:var(--ink2);margin:0 0 8px">Recite the whole bayt from memory, starting with:</p><div class="pt-ar pt-big" style="margin:6px 0">${esc(first)} …</div><div id="pt-rev"><button class="btn btn-o" id="pt-reveal">Reveal the bayt</button></div>`;
+      $('#pt-reveal',pane).onclick=()=>{ $('#pt-rev',pane).innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div>${cur.k==='none'||cur.k==='learning'?'<p style="font-size:12.5px;color:var(--ink2);margin:8px 0 0">Mark it ✅ Memorized below once they can recite it cleanly.</p>':`<p style="font-size:12.5px;color:var(--ink2);margin:8px 0 6px">How was the recitation?</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-p btn-sm" data-r="strong">✅ Strong</button><button class="btn btn-o btn-sm" data-r="shaky">〰 Shaky</button><button class="btn btn-danger btn-sm" data-r="forgot">❗ Forgot parts</button></div>`}`;
+        $$('[data-r]',pane).forEach(x=>x.onclick=()=>{ PT.check(s,n,x.dataset.r); toast('Bayt '+n+' — '+({strong:'strong ⭐',shaky:'shaky',forgot:'needs re-learning'})[x.dataset.r]); o.remove(); Router.render(); if(QJ.root) QJ.refresh(); }); }; };
+    const show=t=>{ $$('[data-pt]',o).forEach(x=>x.classList.toggle('on',x.dataset.pt===t)); (t==='drill'?paneDrill:t==='cue'?paneCue:paneLearn)(); };
+    $$('[data-pt]',o).forEach(x=>x.onclick=()=>show(x.dataset.pt)); show(tab||'learn');
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $$('[data-nav]',o).forEach(x=>x.onclick=()=>{ o.remove(); PT.study(sid,n+ +x.dataset.nav); });
+    $$('[data-st]',o).forEach(x=>x.onclick=()=>{ PT.setSt(s,n,x.dataset.st); o.remove(); toast('Bayt '+n+' → '+({mem:'memorized ✅',learning:'learning 🌱',none:'cleared'})[x.dataset.st]); Router.render(); if(QJ.root) QJ.refresh(); });
+  },
+  /* ---------- quiz ---------- */
+  quiz(sid){
+    const s=DB.data.students.find(x=>x.id===sid); if(!s) return; const m=PT.sum(s);
+    let pool=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(s,n).k!=='none'); if(pool.length<4) pool=[...Array(Math.min(47,Math.max(8,m.contig+6)))].map((_,i)=>i+1);
+    const sh=a=>{ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+    const mean=!!PT.cfg().meaning, kinds=mean?['line','next','meaning']:['line','next'];
+    const picks=sh(pool).slice(0,Math.min(8,pool.length)), qs=picks.map((n,i)=>{
+      let kind=kinds[i%kinds.length]; if(kind==='next'&&n>=47) kind='line';
+      const ans=kind==='next'?n+1:n, others=sh([...Array(47)].map((_,k)=>k+1).filter(k=>k!==ans&&k!==n)).slice(0,2), opts=sh([ans,...others]);
+      return {n,kind,ans,opts}; });
+    let i=0, score=0, wrong=[];
+    const o=overlay(`<div class="modal pt-modal" style="max-width:600px;width:96vw"><div id="pt-q"></div></div>`,true);
+    const draw=()=>{
+      const box=$('#pt-q',o);
+      if(i>=qs.length){ s.poem=s.poem||{b:{}}; s.poem.quiz=s.poem.quiz||[]; s.poem.quiz.unshift({date:today(),score,of:qs.length}); if(s.poem.quiz.length>20) s.poem.quiz.length=20; DB.save(); if(score===qs.length) celebrate();
+        box.innerHTML=`<h3>${score===qs.length?'🌟 Perfect!':score>=qs.length*.7?'👏 Well done':'Keep going'} — ${score} / ${qs.length}</h3>${wrong.length?`<p style="font-size:13px;color:var(--ink2)">Study these again:</p><div style="display:flex;gap:6px;flex-wrap:wrap">${wrong.map(n=>`<button class="rev-chip due" data-w="${n}">Bayt ${n}</button>`).join('')}</div>`:'<p style="color:var(--ok)">No mistakes.</p>'}<div class="mfoot"><button class="btn btn-o" id="pt-again">Another round</button><button class="btn btn-p" data-x="c">Done</button></div>`;
+        $$('[data-w]',box).forEach(x=>x.onclick=()=>{ o.remove(); PT.study(sid,+x.dataset.w); }); $('#pt-again',box).onclick=()=>{ o.remove(); PT.quiz(sid); }; $('[data-x=c]',box).onclick=()=>{ o.remove(); Router.render(); }; return; }
+      const q=qs[i], b=POEM[q.n-1];
+      box.innerHTML=`<div class="pt-dr"><b>${q.kind==='meaning'?'What does this bayt mean?':q.kind==='next'?'Which bayt comes next?':'Which line completes the bayt?'}</b><span>${i+1}/${qs.length}</span></div><div class="bar"><i style="width:${i/qs.length*100}%"></i></div>
+        <div class="pt-ar pt-big" style="margin:12px 0">${q.kind==='line'?esc(b.sadr)+'<br><span style="opacity:.35">… ؟ …</span>':esc(b.sadr)+'<br>'+esc(b.ajuz)}</div>
+        <div class="pt-opts">${q.opts.map(k=>`<button class="pt-opt${q.kind==='meaning'?'':' ar'}" data-k="${k}">${q.kind==='meaning'?esc(POEM[k-1].en):q.kind==='next'?esc(POEM[k-1].sadr):esc(POEM[k-1].ajuz)}</button>`).join('')}</div>`;
+      $$('[data-k]',box).forEach(x=>x.onclick=()=>{ const ok=+x.dataset.k===q.ans; if(ok) score++; else wrong.push(q.n);
+        $$('[data-k]',box).forEach(y=>{ y.disabled=true; if(+y.dataset.k===q.ans) y.classList.add('ok'); else if(y===x) y.classList.add('bad'); });
+        setTimeout(()=>{ i++; draw(); }, ok?650:1500); });
+    };
+    draw();
+  },
+  certificate(s){
+    const css=`body{margin:0;font-family:'Crimson Pro',Georgia,serif;color:#1f2a24}.c{margin:24px;padding:46px 40px;border:3px double #b8872a;border-radius:14px;text-align:center;background:#fffdf6}.ar{font-family:'Amiri',serif;font-size:38px;color:#1a4a35;margin:8px 0}.sc{font:700 12px monospace;letter-spacing:.2em;color:#b8872a}h1{font-family:'Playfair Display',serif;font-size:44px;margin:14px 0 4px;color:#1a4a35}.n{font-family:'Playfair Display',serif;font-size:36px;margin:22px 0 6px;border-bottom:1px solid #b8872a;display:inline-block;padding:0 30px 6px}p{font-size:18px;margin:10px 0}.t{margin-top:40px;font-style:italic;color:#566}`;
+    printWindow('Tawḥīd poem certificate', css, `<div class="c"><div class="sc">AL-MADRASATU AN-NURIYYAH</div><div class="ar">مَنْظُومَةُ تَعْلِيمِ الصِّبْيَانِ التَّوْحِيدِ</div><h1>Certificate of Memorization</h1><p>This is proudly presented to</p><div class="n">${esc(s.name)}</div><p>for memorizing all <b>47 bayts</b> of Shaykh Muḥammad ash-Shaʿbānī’s poem for teaching children Tawḥīd.</p><p>${esc(fmtDate(today()))}</p><div class="t">Youth Educated… Family Cultivated… World Illuminated</div></div>`);
+  }
+};
+Registry.register({ id:'islamic', name:'Islamic Studies', icon:'book', group:'Workspaces', render(v){ Router.go('#/students/gradebook'); }});
+Registry.register({ id:'poem', name:'Tawḥīd Poem', icon:'book', group:null, nav:'islamic', render(v,param){ PT.render(hubShell(v,'islamic','poem'),param); }});
+
 Registry.register({ id:'admin', name:'Administration', icon:'bank', group:'Workspaces',
 render(v,param){
   const tab=param||'overview';
@@ -14287,7 +14795,7 @@ const NAV_ICONS = {
 function buildNav(){
   $('#nav').innerHTML = Layout.navMarkup();
   $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); Router.go('#/'+a.dataset.mod); }));
-  const cur=Router.parse().id; $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.mod===cur));
+  const cur=navId(); $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.mod===cur));
   Layout.wireNav();
 }
 // ---------- authentication (client-side lock screen — see setup notes) ----------
