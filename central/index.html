@@ -281,6 +281,18 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .ml-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}.ml-row:last-child{border-bottom:0}
 .ml-what{font-size:13px;color:var(--ink2)}.ml-tags{display:flex;gap:5px;align-items:center;flex-shrink:0}
 @media(max-width:640px){.ml-fs{margin-left:0;width:100%}.ml-row{align-items:flex-start;flex-direction:column;gap:6px}.ml-tags{padding-left:39px}}
+.td-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-items:start}
+.td-card{padding:14px 16px}.td-card.ok{opacity:.72}
+.td-head{display:flex;gap:11px;align-items:center;margin-bottom:6px}.td-name{display:block;text-align:left;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.td-sec{border-top:1px dashed var(--line);padding:9px 0 2px}.td-st{font:700 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text,#8a6520);margin-bottom:6px}
+.td-it{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.td-lab{min-width:0;flex:1 1 120px}.td-lab b{display:block;font-size:13.5px}.td-lab small{display:block;color:var(--ink3);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-lab small.pt-ar{font-size:15px;color:var(--ink2);white-space:nowrap}
+.td-r{display:flex;gap:5px}.td-b{display:flex;flex-direction:column;align-items:center;min-width:58px;padding:7px 8px;border-radius:11px;border:1.5px solid var(--line);background:var(--surface,#fff);font:800 15px/1 var(--f-body,inherit);cursor:pointer;color:var(--ink)}
+.td-b small{font:600 9.5px var(--f-body,inherit);margin-top:3px;color:var(--ink3)}
+.td-b.strong{border-color:color-mix(in srgb,var(--ok,#2e7d4f) 55%,var(--line));color:var(--ok,#2e7d4f)}.td-b.shaky{border-color:color-mix(in srgb,var(--gold,#d9ac54) 70%,var(--line));color:var(--gold-text,#8a6520)}.td-b.forgot{border-color:color-mix(in srgb,var(--bad,#b3392f) 55%,var(--line));color:var(--bad,#b3392f)}
+.td-b:active{transform:scale(.94)}.td-wk{margin:0;flex:1 1 200px}
+@media(max-width:640px){.td-grid{grid-template-columns:1fr}.td-b{min-width:64px;padding:10px 8px}}
 .hubbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin:0 0 16px;padding:8px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh1,0 1px 2px rgba(0,0,0,.04))}
 .hub-t{font-family:var(--f-display,inherit);font-weight:800;font-size:15px;color:var(--green,#1a4a35);padding:0 6px}
 .hub-tabs{display:flex;gap:4px;flex-wrap:wrap}
@@ -4082,13 +4094,15 @@ const Registry = {
    poem). Old routes (#/revplan, #/poem, #/students/progress,
    #/students/gradebook) still work — they now draw inside a shared tab bar. */
 const HUBS={
-  hifz:{name:'Qur’an Ḥifẓ',ico:'📖',tabs:[['progress','📊 Class week','#/students/progress'],['log','📝 Memorization log','#/memlog'],['revplan','🔁 Revision plans','#/revplan'],['hear','🎧 Hearing queue','#/revplan/hear'],['how','ℹ️ How it works','#/revplan/how']],
+  hifz:{name:'Qur’an Ḥifẓ',ico:'📖',tabs:[['today','🎯 Today','#/today'],['progress','📊 Class week','#/students/progress'],['log','📝 Memorization log','#/memlog'],['revplan','🔁 Revision plans','#/revplan'],['hear','🎧 Hearing queue','#/revplan/hear'],['how','ℹ️ How it works','#/revplan/how']],
     extra:'<button class="btn btn-o btn-sm" data-qjourney="all">🗺 Qur’an journey</button>'},
   islamic:{name:'Islamic Studies',ico:'🕌',tabs:[['gradebook','📗 Gradebook','#/students/gradebook'],['poem','📜 Tawḥīd Poem','#/poem']],
     extra:'<button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">Lesson plans ↗</button><button class="btn btn-ghost btn-sm" data-go="#/teacher/curriculum">Curriculum ↗</button>'}
 };
+HUBS.adm={name:'Admissions',ico:'📥',tabs:[['aman','🏫 AMAN','#/admissions'],['amaanah','🌙 Amaanah','#/amaanah-admissions']],extra:''};
+HUBS.fin={name:'Admin & Tuition',ico:'🏛️',tabs:[['admin','🏛 Administration','#/admin'],['tuition','💰 Tuition','#/tuition']],extra:''};
 function navId(){ const {id,param}=Router.parse(); if(id==='students'&&param==='progress') return 'hifz'; if(id==='students'&&param==='gradebook') return 'islamic'; const m=Registry.get(id); return (m&&m.nav)||id; }
-function hubBadge(key){ try{ if(key==='hear') return RP.stu().reduce((a,s)=>a+RP.ready(s).length,0); if(key==='poem') return PT.stu().reduce((a,s)=>a+PT.sum(s).due,0); }catch(e){} return 0; }
+function hubBadge(key){ try{ if(key==='today') return TD.needCount(); if(key==='hear') return RP.stu().reduce((a,s)=>a+RP.ready(s).length,0); if(key==='poem') return PT.stu().reduce((a,s)=>a+PT.sum(s).due,0); }catch(e){} return 0; }
 function hubShell(v,hub,key){
   const H=HUBS[hub];
   v.innerHTML=`<div class="hubbar no-print"><span class="hub-t">${H.ico} ${H.name}</span><div class="hub-tabs">${H.tabs.map(([k,l,h])=>{ const n=hubBadge(k); return `<button class="hub-tab ${k===key?'on':''}" data-go="${h}">${l}${n?`<i>${n}</i>`:''}</button>`; }).join('')}</div><span class="hub-x">${H.extra||''}</span></div><div class="hub-body"></div>`;
@@ -11025,7 +11039,51 @@ const ML = {
 };
 Registry.register({ id:'memlog', name:'Memorization Log', icon:'spark', group:null, nav:'hifz', render(v){ ML.render(hubShell(v,'hifz','log')); }});
 
-Registry.register({ id:'hifz', name:'Qur’an Ḥifẓ', icon:'spark', group:'Workspaces', render(v){ Router.go('#/revplan'); }});
+/* ================= TODAY (class-day screen) =================
+   One screen per Level 3 student: Juzʼ to hear (one-tap rating), poem recall
+   checks due (one-tap rating), home-revision dots, last memorization + quick
+   log. Every tap writes the SAME records as the dedicated tabs (Rev.log,
+   PT.check, RP.setDays, ML.form) — nothing is duplicated. */
+const TD = {
+  f:'need', _v:null,
+  rows(){ const c14=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+    return RP.stu().map(s=>{ const ready=RP.ready(s), due=RP.due(s).slice(0,4), poem=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(s,n).k==='due'), l=ML.last(s.id), p=RP.plan(s);
+      const silent=!l||l.date<c14, rp=RP.get(s);
+      return {s,ready,due,poem,last:l,p,silent,paused:!!rp.paused,need:!!(ready.length||due.length||poem.length||silent)}; }); },
+  needCount(){ try{ return TD.rows().filter(r=>r.need).length; }catch(e){ return 0; } },
+  rate3(attr){ return `<span class="td-r">${[['strong','✓','Strong'],['shaky','~','Shaky'],['forgot','✗','Forgot']].map(([k,i,l])=>`<button class="td-b ${k}" ${attr}|${k}" title="${l}">${i}<small>${l}</small></button>`).join('')}</span>`; },
+  card(r){
+    const s=r.s, nm=ML.nm(s), wk=RP.get(s).weeks||{}, lw=RP.lw(), hasW=wk[lw]!==undefined, n=wk[lw]||0;
+    const juzRow=(j,kind)=>`<div class="td-it"><div class="td-lab"><b>Juzʼ ${j.n}</b><small>${kind==='ready'?'finished at home':j.rating==='forgot'?'forgot parts':j.overdue?j.overdue+'d overdue':'due now'}</small></div>${TD.rate3('data-tdrev="'+s.id+'|'+j.n)}</div>`;
+    const bayt=n=>`<div class="td-it"><div class="td-lab"><b>Bayt ${n}</b><small class="pt-ar" dir="rtl">${esc(POEM[n-1].sadr)}</small></div>${TD.rate3('data-tdpoem="'+s.id+'|'+n)}</div>`;
+    const sec=(ico,t,body)=>`<div class="td-sec"><div class="td-st">${ico} ${t}</div>${body}</div>`;
+    const parts=[];
+    if(r.ready.length||r.due.length) parts.push(sec('🎧','Hear in class',r.ready.map(j=>juzRow(j,'ready')).join('')+r.due.map(j=>juzRow(j,'due')).join('')));
+    if(r.poem.length) parts.push(sec('📜','Poem recall',r.poem.slice(0,3).map(bayt).join('')+(r.poem.length>3?`<button class="btn btn-ghost btn-sm" data-go="#/poem/${s.id}">+${r.poem.length-3} more bayts due →</button>`:'')));
+    if(r.p&&!r.paused) parts.push(sec('🔁','Home revision',`<div class="td-it"><div class="td-lab"><b>${r.p.B} pg/day</b><small>~${RP.minutes(r.p.B)} min a day</small></div>${hasW?`<div class="rp-week td-wk"><span>${lw===RP.ws()?'This week':'Last week'}</span>${RP.DAYS.map((d,i)=>`<button class="rp-dot ${i<n?'on':''}" data-rpday="${s.id}|${i}" aria-label="${d}">${d[0]}</button>`).join('')}<span style="font-family:var(--f-mono);font-size:11px">${n}/5</span></div>`:(RP.issued(s)?`<span class="tag tag-green">✓ plan issued this week</span>`:`<button class="btn btn-o btn-sm" data-rpissue="${s.id}">Issue plan</button>`)}</div>`));
+    parts.push(sec('📝','Memorization',`<div class="td-it"><div class="td-lab"><b dir="auto">${r.last?esc(r.last.what):'No entries yet'}</b><small>${r.last?(ML.daysAgo(r.last.date)===0?'today':ML.daysAgo(r.last.date)+'d ago')+' · '+esc(r.last.kind)+' · '+esc(r.last.grade):'log their first recitation'}</small></div><button class="btn btn-p btn-sm" data-tdlog="${s.id}">＋ Log</button></div>`));
+    return `<div class="card td-card ${r.need?'':'ok'}"><div class="td-head">${avatarHTML(s,'width:40px;height:40px;border-radius:50%;flex-shrink:0')}<div style="min-width:0;flex:1"><b class="td-name" dir="auto">${esc(nm)}</b><div class="adm-tags" style="margin-top:3px">${r.need?'':'<span class="tag tag-green">✓ all clear</span>'}${r.silent?'<span class="tag tag-red">no log 14d+</span>':''}${RP.streak(s)?`<span class="tag tag-gold">🔥 ${RP.streak(s)}wk</span>`:''}${r.paused?'<span class="tag tag-dim">⏸ revision paused</span>':''}</div></div><button class="btn btn-ghost btn-sm no-print" data-go="#/revplan/${s.id}">Plan →</button></div>${parts.join('')}</div>`;
+  },
+  render(v){
+    TD._v=v; const all=TD.rows(), show=TD.f==='all'?all:all.filter(r=>r.need);
+    const nHear=all.reduce((n,r)=>n+r.ready.length+r.due.length,0), nPoem=all.reduce((n,r)=>n+r.poem.length,0), nSil=all.filter(r=>r.silent).length, nNeed=all.filter(r=>r.need).length;
+    const kpi=(n,l,c)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${l}</span></div>`;
+    const dt=new Date(), dow=dt.getDay(), isClass=(dow===0||dow===6);
+    v.innerHTML=`<div class="page-wm"><div class="eyebrow">Level 3 · ${isClass?'Class day':'Prep'}</div><h2 class="page-title">Today</h2>
+      <p class="page-sub">${esc(dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))} — everything you need to hear, check and log, student by student. One tap rates it.</p>
+      <div class="rp-kpis no-print">${kpi(nHear,'Juzʼ to hear','var(--gold)')}${kpi(nPoem,'Poem bayts due','var(--info)')}${kpi(nSil,'No log in 14d+','var(--bad)')}${kpi(all.length-nNeed+'/'+all.length,'All clear','var(--ok)')}</div>
+      <div class="filters no-print"><span style="display:flex;gap:4px">${[['need','Needs me ('+nNeed+')'],['all','Everyone ('+all.length+')']].map(([k,l])=>`<button class="chip ${TD.f===k?'on':''}" data-tdf="${k}">${l}</button>`).join('')}</span><span style="margin-left:auto;font-size:12px;color:var(--ink3)">✓ Strong · ~ Shaky · ✗ Forgot (stays due)</span></div>
+      ${show.length?`<div class="td-grid">${show.map(TD.card).join('')}</div>`:`<div class="empty"><div class="big">🌟</div><h3>Everyone is all clear</h3><p>Nothing to hear, no poem checks due, everyone logged recently. Switch to “Everyone” to log anyway.</p></div>`}</div>`;
+    wireCommon(v); RP.wire(v);
+    $$('[data-tdf]',v).forEach(b=>b.onclick=()=>{ TD.f=b.dataset.tdf; TD.render(v); });
+    $$('[data-tdlog]',v).forEach(b=>b.onclick=()=>ML.form(b.dataset.tdlog));
+    $$('[data-tdrev]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,N,r]=b.dataset.tdrev.split('|'), s=DB.data.students.find(x=>x.id===sid); if(!s) return; Rev.log(s,+N,r); toast(ML.nm(s)+' · Juzʼ '+N+' — '+({strong:'Strong ✓',shaky:'Shaky',forgot:'Forgot — stays due'})[r]); TD.render(v); });
+    $$('[data-tdpoem]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n,r]=b.dataset.tdpoem.split('|'), s=DB.data.students.find(x=>x.id===sid); if(!s) return; PT.check(s,+n,r); toast(ML.nm(s)+' · bayt '+n+' — '+({strong:'Strong ✓',shaky:'Shaky',forgot:'Forgot — stays due'})[r]); TD.render(v); });
+  }
+};
+Registry.register({ id:'today', name:'Today', icon:'spark', group:null, nav:'hifz', render(v){ TD.render(hubShell(v,'hifz','today')); }});
+
+Registry.register({ id:'hifz', name:'Qur’an Ḥifẓ', icon:'spark', group:'Workspaces', render(v){ Router.go('#/today'); }});
 Registry.register({ id:'revplan', name:'Revision Planner', icon:'spark', group:null, nav:'hifz', render(v,param){ RP.render(hubShell(v,'hifz',param==='hear'?'hear':param==='how'?'how':'revplan'),param); }});
 
 /* ================= MODULE: TAWḤĪD POEM TRACKER (Level 3) =================
@@ -11220,8 +11278,9 @@ const PT = {
 Registry.register({ id:'islamic', name:'Islamic Studies', icon:'book', group:'Workspaces', render(v){ Router.go('#/students/gradebook'); }});
 Registry.register({ id:'poem', name:'Tawḥīd Poem', icon:'book', group:null, nav:'islamic', render(v,param){ PT.render(hubShell(v,'islamic','poem'),param); }});
 
-Registry.register({ id:'admin', name:'Administration', icon:'bank', group:'Workspaces',
+Registry.register({ id:'admin', name:'Admin & Tuition', icon:'bank', group:'Workspaces',
 render(v,param){
+  v=hubShell(v,'fin','admin');
   const tab=param||'overview';
   const T={overview:'🎛 Overview', enroll:'Enrollment', calendar:'Events & Trips', tasks:'Tasks', meetings:'Meetings', staff:'Staff', policies:'Documents'};
   v.innerHTML = `${moduleHeroHTML('Operational Control Center', 'Administration', 'The business side of AMAN — families, tuition, enrollment, events, and paper.', '🏛️')}
@@ -11473,8 +11532,9 @@ const Admin = {
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
   }
 };
-Registry.register({ id:'tuition', name:'Tuition', icon:'coins', group:'Workspaces',
+Registry.register({ id:'tuition', name:'Tuition', icon:'coins', group:null, nav:'admin',
 render(v,param){
+  v=hubShell(v,'fin','tuition');
   const tab=param||'overview';
   const T={overview:'🎛 Overview', matrix:'📅 Matrix', families:'👪 Families', owe:'📞 Who Owes Now'};
   v.innerHTML = `<div style="background:linear-gradient(135deg,var(--green) 0%,var(--green-deep) 100%);border-radius:16px;padding:22px 24px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden">
@@ -12390,8 +12450,9 @@ function admCard(a){
     ${contact}
   </div>`;
 }
-Registry.register({ id:'admissions', name:'AMAN Admissions', icon:'inbox', group:'Workspaces',
+Registry.register({ id:'admissions', name:'Admissions', icon:'inbox', group:'Workspaces',
 render(v,param){
+  v=hubShell(v,'adm','aman');
   if(param && DB.data.admissions.find(a=>a.id===param)) return Admissions.profile(v,param);
   Admissions.list(v);
 }});
@@ -13233,8 +13294,9 @@ function amaCard(a){
     ${contact}
   </div>`;
 }
-Registry.register({ id:'amaanah-admissions', name:'Amaanah Admissions', icon:'inbox', group:'Workspaces',
+Registry.register({ id:'amaanah-admissions', name:'Amaanah Admissions', icon:'inbox', group:null, nav:'admissions',
 render(v,param){
+  v=hubShell(v,'adm','amaanah');
   if(param && DB.data.amaanahApplications.find(a=>a.id===param)) return Amaanah.profile(v,param);
   Amaanah.list(v);
 }});
