@@ -315,6 +315,13 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .fu-row .btn{margin-left:auto}
 .whead+.td-it,.whead+.hp-row{margin-top:10px}
 @media(max-width:640px){.hp-row{flex-wrap:wrap}.hp-b{margin-left:0;width:100%;justify-content:flex-start}.pp-grid{grid-template-columns:1fr}.td-pg input{width:56px}}
+.ml-r{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff)}
+.ml-r select,.ml-r input,.mb-row select,.mb-row input{padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card,#fff);color:var(--ink);font:inherit;font-size:13.5px}
+.ml-rs{flex:1 1 150px;min-width:0}.ml-ra{display:inline-flex;align-items:center;gap:4px}.ml-ra input{width:58px;text-align:center}.ml-ra small{color:var(--ink3);font-size:11px}.ml-rg{flex:0 1 120px}.ml-rw.on{background:var(--green-deep,#1a4a35);color:#fff}
+.ml-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:5px;max-height:190px;overflow:auto;padding:6px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}.ml-grid[hidden]{display:none}
+.ml-gb{display:flex;flex-direction:column;align-items:center;padding:5px 3px;border:1px solid var(--line);border-radius:9px;background:var(--card,#fff);color:var(--ink);cursor:pointer;font:inherit}.ml-gb b{font-size:13px}.ml-gb small{font-size:10px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.ml-gb.done{opacity:.55}.ml-gb.on{background:var(--green-deep,#1a4a35);border-color:transparent}.ml-gb.on b,.ml-gb.on small{color:#fff}
+.mb-list{max-height:55vh;overflow:auto;margin:8px 0}.mb-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--line)}.mb-n{flex:1 1 110px;min-width:0;font-size:13.5px}.mb-s{flex:1 1 130px;min-width:0}.mb-row .ml-ra input{width:52px}
+.mb-gs{display:inline-flex;gap:4px}.mb-g{width:38px;height:36px;border:1.5px solid var(--line);border-radius:9px;background:var(--card,#fff);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer}.mb-g.sel[data-g=Excellent]{background:var(--ok);color:#fff;border-color:transparent}.mb-g.sel[data-g=Good]{background:var(--gold);color:#fff;border-color:transparent}.mb-g.sel[data-g="Needs review"]{background:var(--bad);color:#fff;border-color:transparent}
 .rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 14px}
 .rp-kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:14px;padding:11px 14px}
 .rp-kpi b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;color:var(--k,var(--ink))}.rp-kpi span{font-size:11.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;font-weight:600}.rp-kpi small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
@@ -10991,35 +10998,121 @@ const ML = {
   last(sid){ let b=null; DB.data.quran.forEach((q,i)=>{ if(q.sid===sid&&(!b||q.date>b.date||(q.date===b.date))) b=q; }); return b; },
   daysAgo(d){ return Math.max(0,Math.round((new Date(today())-new Date(d))/864e5)); },
   gtag(g){ return g==='Excellent'?'tag-green':g==='Good'?'tag-gold':'tag-red'; },
+  /* ---- v37 helpers: ayah-aware log ---- */
+  nOf(e){ if(e.n) return e.n; const w=String(e.what||''); const q=QS.slice(1).slice().sort((a,b)=>b.name.length-a.name.length).find(x=>w.startsWith(x.name)); return q?q.n:0; },
+  rangeOf(e){ const n=ML.nOf(e), c=SURAH_AYAHS[n]||0; if(e.a&&e.b) return [e.a,e.b]; const w=String(e.what||''); if(/whole/i.test(w)) return [1,c]; let m=w.match(/(\d+)\s*[–\-]\s*(\d+)/); if(m) return [Math.min(+m[1],c),Math.min(+m[2],c)]; m=w.match(/\s(\d+)\s*$/); if(m) return [Math.min(+m[1],c),Math.min(+m[1],c)]; return [1,c]; },
+  explicit(e){ return !!(e.a&&e.b)||/whole sūrah|\d+\s*[–\-]\s*\d+/.test(String(e.what||'')); },
+  fmt(n,a,b){ const q=QS[n], c=SURAH_AYAHS[n]; if(!a||!b) return q.name; if(a===1&&b===c) return q.name+' whole sūrah'; return q.name+' '+a+(b>a?'–'+b:''); },
+  ayatSum(es){ return es.filter(e=>ML.nOf(e)&&ML.explicit(e)).reduce((t,e)=>{ const r=ML.rangeOf(e); return t+Math.max(0,r[1]-r[0]+1); },0); },
+  cover(s,n){ const c=SURAH_AYAHS[n]||0, seen=new Array(c+2).fill(false); DB.data.quran.forEach(q=>{ if(q.sid===s.id&&q.kind==='New'&&ML.nOf(q)===n){ const r=ML.rangeOf(q); for(let i=Math.max(1,r[0]);i<=Math.min(c,r[1]);i++) seen[i]=true; } });
+    let k=0,first=0; for(let i=1;i<=c;i++){ if(seen[i]) k++; else if(!first) first=i; } return {covered:k,total:c,first}; },
+  rev(s){ try{ return hifzStats(s).pid==='reverse'; }catch(e){ return false; } },
+  after(s,n){ const m=ML.rev(s)?n+1:n-1; return (m<1||m>114)?0:m; },
+  ahead(s,n){ const cur=(s.hifz||{}).cur; if(!cur) return true; return ML.rev(s)?n>=cur:n<=cur; },
+  lastNew(s){ let b=null,bi=-1; DB.data.quran.forEach((q,i)=>{ if(q.sid===s.id&&q.kind==='New'&&ML.nOf(q)&&(!b||q.date>=b.date)){ b=q; bi=i; } }); return b; },
+  nextUp(s){ const l=ML.lastNew(s); if(!l){ const n=(s.hifz||{}).cur||114; return {n,a:1,b:SURAH_AYAHS[n]}; } const n=ML.nOf(l), cv=ML.cover(s,n);
+    if(cv.covered<cv.total&&cv.first) return {n,a:cv.first,b:cv.total}; const m=ML.after(s,n); if(!m) return {n,a:1,b:cv.total}; return {n:m,a:1,b:SURAH_AYAHS[m]}; },
+  drift(s){ const l=ML.lastNew(s), cur=(s.hifz||{}).cur; if(!l||!cur) return 0; const n=ML.nOf(l); return (n!==cur&&ML.ahead(s,n))?n:0; },
+  refresh(){ const id=Router.parse().id; if(id==='memlog') Router.render(); },
+  insights(){ const L=ML.stu(), t=today(), c21=RP.addDays(t,-21), weak=[], partial=[], coast=[], drift=[];
+    L.forEach(s=>{ const cnt={}; DB.data.quran.forEach(q=>{ if(q.sid===s.id&&q.grade==='Needs review'){ const n=ML.nOf(q); if(n) cnt[n]=(cnt[n]||0)+1; } }); Object.keys(cnt).forEach(n=>{ if(cnt[n]>=2) weak.push({s,n:+n,k:cnt[n]}); });
+      const ns=[...new Set(DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&ML.nOf(q)&&ML.explicit(q)).map(q=>ML.nOf(q)))]; ns.forEach(n=>{ const cv=ML.cover(s,n); if(cv.covered>0&&cv.covered<cv.total) partial.push({s,n,cv}); });
+      const ln=ML.lastNew(s); if(ln&&ln.date<c21&&DB.data.quran.some(q=>q.sid===s.id&&q.kind==='Review'&&q.date>=c21)) coast.push({s,d:ML.daysAgo(ln.date)});
+      const dn=ML.drift(s); if(dn) drift.push({s,n:dn}); });
+    return {weak,partial,coast,drift}; },
+  insightsHTML(){ const I=ML.insights(), tot=I.weak.length+I.partial.length+I.coast.length+I.drift.length;
+    const row=(s,txt,extra)=>`<div class="td-it" style="padding:6px 0">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px;flex-shrink:0')}<div class="td-lab"><b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(ML.nm(s))}</b><small>${txt}</small></div>${extra||''}</div>`;
+    const sec=(t,arr,f)=>arr.length?`<div class="td-sec"><div class="td-st">${t} (${arr.length})</div>${arr.map(f).join('')}</div>`:'';
+    return `<details class="card no-print" style="margin-bottom:14px" ${tot?'open':''}><summary style="cursor:pointer"><b>🔍 What needs your attention</b> <span class="tag ${tot?'tag-gold':'tag-green'}">${tot?tot+' to look at':'all clear'}</span></summary>
+      ${sec('Same sūrah graded “needs review” twice+',I.weak,x=>row(x.s,esc(QS[x.n].name)+' · '+x.k+' times'))}
+      ${sec('Sūrahs started but not finished',I.partial,x=>row(x.s,esc(QS[x.n].name)+' · '+x.cv.covered+' of '+x.cv.total+' āyāt · '+(x.cv.total-x.cv.covered)+' left',`<button class="btn btn-o btn-sm" data-mladd="${x.s.id}">Continue</button>`))}
+      ${sec('Reviewing but not memorizing anything new (21d+)',I.coast,x=>row(x.s,'no new memorization for '+x.d+' days'))}
+      ${sec('Log is ahead of their recorded position',I.drift,x=>row(x.s,'log says '+esc(QS[x.n].name)+' · position says '+esc(QS[(x.s.hifz||{}).cur].name),`<button class="btn btn-o btn-sm" data-mlfix="${x.s.id}|${x.n}">Move position</button>`))}
+      ${tot?'':'<p style="margin:8px 0 0;color:var(--ok)">✓ Nothing flagged. (Unfinished-sūrah and weak-spot checks sharpen as new entries record āyāt.)</p>'}</details>`; },
   form(sid, keep, pre){
     const L=ML.stu(); if(!L.length){ toast('No Level 3 students'); return; } pre=pre||{};
-    let cur=L.find(s=>s.id===(pre.sid||sid))||L[0], date=(keep&&keep.date)||today();
+    const ed=pre.edit!=null?DB.data.quran[pre.edit]:null; if(pre.edit!=null&&!ed) return;
+    let cur=L.find(s=>s.id===(ed?ed.sid:(pre.sid||sid)))||L[0], dirty=false, posTouched=false, kind=(ed&&ed.kind)||pre.kind||'New', gAll=(ed&&ed.grade)||pre.grade||'Excellent', rows=[];
+    const date=(ed&&ed.date)||(keep&&keep.date)||today();
+    const mk=(n,a,b,g)=>{ const c=SURAH_AYAHS[n]; return {n,a:a==null?1:Math.max(1,Math.min(c,a)),b:b==null?c:Math.max(1,Math.min(c,b)),g:g||''}; };
+    const init=()=>{ if(ed){ const r=ML.rangeOf(ed); return [mk(ML.nOf(ed)||114,r[0],r[1])]; } if(pre.rows&&pre.rows.length) return pre.rows.map(r=>mk(r.n,r.a,r.b)); const nu=ML.nextUp(cur); return [mk(nu.n,nu.a,nu.b)]; };
+    rows=init();
     const surOpts=n=>QS.slice(1).map(q=>`<option value="${q.n}" ${q.n===n?'selected':''}>${q.n}. ${esc(q.name)}</option>`).join('');
-    const o=overlay(`<div class="modal"><h3>📝 Log memorization</h3>
-      <div class="field"><label>Student</label><select id="ml-s">${L.map(s=>`<option value="${s.id}" ${s.id===cur.id?'selected':''}>${esc(ML.nm(s))}</option>`).join('')}</select></div>
-      <div class="grid" style="grid-template-columns:1.4fr 1fr;gap:12px"><div class="field"><label>Sūrah</label><select id="ml-su">${surOpts(pre.n||(cur.hifz||{}).cur||114)}</select></div>
-       <div class="field"><label>Āyāt / portion</label><input id="ml-p" placeholder="e.g. 1–10 or whole sūrah" value="${esc(pre.portion||'')}"></div></div>${pre.heard?`<p class="td-hint" style="margin:-4px 0 8px">🎙 Heard: “${esc(pre.heard)}” — ${pre.sid?'':'student not recognized, pick one · '}check before saving.</p>`:''}
-      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px"><div class="field"><label>Type</label><select id="ml-k"><option ${pre.kind!=='Review'?'selected':''}>New</option><option ${pre.kind==='Review'?'selected':''}>Review</option></select></div>
-       <div class="field"><label>Grade</label><select id="ml-g">${['Excellent','Good','Needs review'].map(g=>`<option ${(pre.grade||'Excellent')===g?'selected':''}>${g}</option>`).join('')}</select></div>
+    const o=overlay(`<div class="modal" style="max-width:640px"><h3>📝 ${ed?'Edit entry':'Log memorization'}</h3>
+      <div class="field"><label>Student</label><select id="ml-s" ${ed?'disabled':''}>${L.map(s=>`<option value="${s.id}" ${s.id===cur.id?'selected':''}>${esc(ML.nm(s))}</option>`).join('')}</select></div>
+      ${pre.heard?`<p class="td-hint" style="margin:-4px 0 8px">🎙 Heard: “${esc(pre.heard)}” — ${pre.sid?'':'student not recognized, pick one · '}check before saving.</p>`:''}
+      <div id="ml-sug" class="td-hint"></div><div id="ml-rows"></div>
+      ${ed?'':`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button type="button" class="btn btn-ghost btn-sm" id="ml-add"></button><button type="button" class="btn btn-ghost btn-sm" id="ml-pick">☰ Pick several</button></div><div id="ml-grid" class="ml-grid" hidden></div>`}
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px"><div class="field"><label>Type</label><select id="ml-k"><option ${kind==='New'?'selected':''}>New</option><option ${kind==='Review'?'selected':''}>Review</option></select></div>
+       <div class="field"><label>${ed?'Grade':'Grade (all)'}</label><select id="ml-g">${['Excellent','Good','Needs review'].map(g=>`<option ${gAll===g?'selected':''}>${g}</option>`).join('')}</select></div>
        <div class="field"><label>Date</label><input id="ml-d" type="date" value="${date}"></div></div>
-      <div class="field"><label>Note <span style="color:var(--ink3);font-weight:400">(optional)</span></label><input id="ml-n" placeholder="e.g. stumbles on the last two āyāt"></div>
-      <label id="ml-posw" style="display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0 10px"><input type="checkbox" id="ml-pos"> Also move their current position to this sūrah</label>
-      <div class="mfoot"><button class="btn btn-o" data-x="done">Done</button><button class="btn btn-p" data-x="next">Save & next student →</button><button class="btn btn-p" data-x="save">Save</button></div></div>`,true);
-    const sync=()=>{ const s=L.find(x=>x.id===$('#ml-s',o).value); $('#ml-su',o).value=(s.hifz||{}).cur||114; };
-    if(pre.kind==='Review') $('#ml-posw',o).style.display='none';
-    $('#ml-s',o).onchange=sync;
-    $('#ml-k',o).onchange=()=>{ $('#ml-posw',o).style.display=$('#ml-k',o).value==='New'?'flex':'none'; };
-    const save=()=>{ const s=L.find(x=>x.id===$('#ml-s',o).value), n=+$('#ml-su',o).value, p=$('#ml-p',o).value.trim(), nt=$('#ml-n',o).value.trim();
-      const snap=UNDO.snap(s);
-      const e={sid:s.id,what:QS[n].name+(p?' '+p:''),kind:$('#ml-k',o).value,grade:$('#ml-g',o).value,date:$('#ml-d',o).value||today()}; if(nt) e.note=nt;
-      DB.data.quran.push(e);
-      if(e.kind==='New'&&$('#ml-pos',o).checked) updateHifzPosition(s,{cur:n});
-      DB.log('Memorization log: '+s.name+' — '+e.what); DB.save(); toast(ML.nm(s)+' ✓ '+e.what,()=>{ UNDO.restore(snap); if(Router.parse().id==='memlog'&&ML._v) ML.render(ML._v); }); return s; };
-    const fin=()=>{ o.remove(); if(Router.parse().id==='memlog') ML.render(ML._v); };
-    $('[data-x=save]',o).onclick=()=>{ save(); fin(); };
-    $('[data-x=done]',o).onclick=()=>{ if($('#ml-p',o).value.trim()) save(); fin(); };
-    $('[data-x=next]',o).onclick=()=>{ save(); const sel=$('#ml-s',o); if(sel.selectedIndex<sel.options.length-1){ sel.selectedIndex++; sync(); $('#ml-p',o).value=''; $('#ml-n',o).value=''; $('#ml-pos',o).checked=false; $('#ml-p',o).focus(); } else fin(); };
+      <div class="field"><label>Note <span style="color:var(--ink3);font-weight:400">(optional)</span></label><input id="ml-n" value="${esc((ed&&ed.note)||'')}" placeholder="e.g. stumbles on the last two āyāt"></div>
+      <label id="ml-posw" style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:4px 0 10px"><input type="checkbox" id="ml-pos" style="margin-top:3px"><span id="ml-post"></span></label>
+      <div class="mfoot">${ed?'<button class="btn btn-o" data-x="done">Cancel</button><button class="btn btn-p" data-x="save">Save changes</button>':'<button class="btn btn-o" data-x="done">Done</button><button class="btn btn-p" data-x="next">Save & next student →</button><button class="btn btn-p" data-x="save">Save</button>'}</div></div>`,true);
+    const R=$('#ml-rows',o);
+    const posUpd=()=>{ const w=$('#ml-posw',o), show=kind==='New'&&!ed&&rows.length; w.style.display=show?'flex':'none'; if(!show) return; const last=rows[rows.length-1], c=(cur.hifz||{}).cur, ah=ML.ahead(cur,last.n)&&last.n!==c; if(!posTouched) $('#ml-pos',o).checked=ah;
+      $('#ml-post',o).innerHTML='Also move their current position to <b>'+esc(QS[last.n].name)+'</b>'+(c?' <span style="color:var(--ink3)">(now at '+esc(QS[c].name)+(ah?'':' — this is not ahead of it')+')</span>':''); };
+    const draw=()=>{ const multi=rows.length>1, tot=rows.reduce((t,r)=>t+r.b-r.a+1,0);
+      R.innerHTML=rows.map((r,i)=>{ const c=SURAH_AYAHS[r.n]; return `<div class="ml-r" data-i="${i}"><select class="ml-rs" aria-label="Sūrah">${surOpts(r.n)}</select><span class="ml-ra"><input type="number" class="ml-rf" min="1" max="${c}" value="${r.a}" inputmode="numeric" aria-label="From āyah"><i>–</i><input type="number" class="ml-rt" min="1" max="${c}" value="${r.b}" inputmode="numeric" aria-label="To āyah"><small>/ ${c}</small></span><button type="button" class="btn btn-o btn-sm ml-rw ${r.a===1&&r.b===c?'on':''}">Whole</button>${multi?`<select class="ml-rg" aria-label="Grade">${['Excellent','Good','Needs review'].map(g=>`<option ${(r.g||gAll)===g?'selected':''}>${g}</option>`).join('')}</select><button type="button" class="btn btn-ghost btn-sm ml-rx" aria-label="Remove">✕</button>`:''}</div>`; }).join('')+(rows.length?`<p class="td-hint" style="margin:0 0 6px">${tot} āyāt${multi?' across '+rows.length+' sūrahs':''}</p>`:'');
+      if(!ed){ const last=rows[rows.length-1], m=ML.after(cur,last?last.n:((cur.hifz||{}).cur||114)); const ad=$('#ml-add',o); ad.textContent=m?'＋ Add '+QS[m].name:'＋ Add another sūrah'; ad.dataset.n=m||''; $('#ml-sug',o).textContent=dirty?'':'✨ Suggested from their last entry — change anything, or just Save.'; const g=$('#ml-grid',o); if(!g.hidden) drawGrid(); }
+      posUpd(); };
+    const order=()=>{ const c=(cur.hifz||{}).cur||114, a=[]; if(ML.rev(cur)){ for(let i=c;i<=114;i++) a.push(i); for(let i=1;i<c;i++) a.push(i); } else { for(let i=c;i>=1;i--) a.push(i); for(let i=114;i>c;i--) a.push(i); } return a; };
+    const drawGrid=()=>{ const g=$('#ml-grid',o); g.innerHTML=order().map(n=>`<button type="button" class="ml-gb ${rows.some(r=>r.n===n)?'on':''} ${ML.cover(cur,n).covered>=SURAH_AYAHS[n]?'done':''}" data-gn="${n}" title="${esc(QS[n].name)}"><b>${n}</b><small>${esc(QS[n].name)}</small></button>`).join(''); };
+    R.addEventListener('change',e=>{ const row=e.target.closest('.ml-r'); if(!row) return; const r=rows[+row.dataset.i], t=e.target; dirty=true; if(t.classList.contains('ml-rs')){ r.n=+t.value; r.a=1; r.b=SURAH_AYAHS[r.n]; }
+      else if(t.classList.contains('ml-rf')||t.classList.contains('ml-rt')){ const c=SURAH_AYAHS[r.n]; let a=Math.round(+row.querySelector('.ml-rf').value)||1, b=Math.round(+row.querySelector('.ml-rt').value)||c; a=Math.max(1,Math.min(c,a)); b=Math.max(1,Math.min(c,b)); if(a>b){ const x=a; a=b; b=x; } r.a=a; r.b=b; }
+      else if(t.classList.contains('ml-rg')) r.g=t.value; draw(); });
+    R.addEventListener('click',e=>{ const row=e.target.closest('.ml-r'); if(!row) return; const r=rows[+row.dataset.i]; if(e.target.closest('.ml-rw')){ dirty=true; r.a=1; r.b=SURAH_AYAHS[r.n]; draw(); } else if(e.target.closest('.ml-rx')){ dirty=true; rows.splice(+row.dataset.i,1); draw(); } });
+    $('#ml-g',o).onchange=e=>{ gAll=e.target.value; rows.forEach(r=>r.g=''); dirty=true; draw(); };
+    $('#ml-k',o).onchange=e=>{ kind=e.target.value; posUpd(); };
+    $('#ml-pos',o).onchange=()=>{ posTouched=true; };
+    if(!ed){ $('#ml-add',o).onclick=()=>{ dirty=true; const m=+$('#ml-add',o).dataset.n||114; rows.push(mk(m)); draw(); };
+      $('#ml-pick',o).onclick=()=>{ const g=$('#ml-grid',o); g.hidden=!g.hidden; if(!g.hidden) drawGrid(); };
+      $('#ml-grid',o).addEventListener('click',e=>{ const b=e.target.closest('[data-gn]'); if(!b) return; const n=+b.dataset.gn; if(!dirty) rows=[]; dirty=true; if(rows.some(r=>r.n===n)) rows=rows.filter(r=>r.n!==n); else rows.push(mk(n)); draw(); drawGrid(); }); }
+    $('#ml-s',o).onchange=()=>{ cur=L.find(x=>x.id===$('#ml-s',o).value); if(!dirty&&!ed){ rows=init(); } draw(); };
+    draw();
+    const save=()=>{ if(!rows.length){ toast('Add a sūrah first'); return null; } const s=cur, dt=$('#ml-d',o).value||today(), nt=$('#ml-n',o).value.trim();
+      if(ed){ const r=rows[0], old=Object.assign({},ed), nw={sid:ed.sid,what:ML.fmt(r.n,r.a,r.b),n:r.n,a:r.a,b:r.b,kind,grade:r.g||gAll,date:dt}; if(nt) nw.note=nt; Object.keys(ed).forEach(k=>delete ed[k]); Object.assign(ed,nw); DB.log('Memorization log edited: '+s.name+' — '+nw.what); DB.save();
+        toast('Entry updated',()=>{ Object.keys(ed).forEach(k=>delete ed[k]); Object.assign(ed,old); DB.save(); ML.refresh(); }); return s; }
+      const snap=UNDO.snap(s), names=[];
+      rows.forEach(r=>{ const e={sid:s.id,what:ML.fmt(r.n,r.a,r.b),n:r.n,a:r.a,b:r.b,kind,grade:r.g||gAll,date:dt}; if(nt) e.note=nt; DB.data.quran.push(e); names.push(e.what); });
+      if(kind==='New'&&$('#ml-pos',o).checked) updateHifzPosition(s,{cur:rows[rows.length-1].n});
+      DB.log('Memorization log: '+s.name+' — '+names.join(', ')); DB.save(); toast(ML.nm(s)+' ✓ '+(names.length>1?names.length+' sūrahs':names[0]),()=>{ UNDO.restore(snap); ML.refresh(); }); return s; };
+    const fin=()=>{ o.remove(); ML.refresh(); };
+    $('[data-x=save]',o).onclick=()=>{ if(save()) fin(); };
+    $('[data-x=done]',o).onclick=()=>{ if(!ed&&dirty&&rows.length) save(); fin(); };
+    const nx=$('[data-x=next]',o); if(nx) nx.onclick=()=>{ if(!save()) return; const sel=$('#ml-s',o); if(sel.selectedIndex<sel.options.length-1){ sel.selectedIndex++; cur=L.find(x=>x.id===sel.value); dirty=false; posTouched=false; $('#ml-n',o).value=''; rows=init(); draw(); } else fin(); };
   },
+  batch(){ const P=ML.stu().filter(s=>CR.present(s)); if(!P.length){ toast('No Level 3 students marked here today'); return; }
+    const L=P.map(s=>({s,sc:HP.info(s).sc})).sort((a,b)=>b.sc-a.sc).map(x=>x.s), surOpts=n=>QS.slice(1).map(q=>`<option value="${q.n}" ${q.n===n?'selected':''}>${q.n}. ${esc(q.name)}</option>`).join('');
+    const o=overlay(`<div class="modal" style="max-width:760px"><h3>⚡ Class batch</h3><p class="td-hint">Everyone marked here, longest-waiting first. Tap a grade for each student who recited — their suggested portion is pre-filled, change it if needed. Students with no grade are skipped.</p>
+      <div class="field" style="max-width:200px"><label>Type</label><select id="mb-k"><option>New</option><option>Review</option></select></div>
+      <div class="mb-list">${L.map(s=>{ const nu=ML.nextUp(s), c=SURAH_AYAHS[nu.n]; return `<div class="mb-row" data-sid="${s.id}">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}<b class="mb-n" dir="auto">${esc(ML.nm(s))}</b><select class="mb-s">${surOpts(nu.n)}</select><span class="ml-ra"><input type="number" class="mb-f" min="1" max="${c}" value="${nu.a}" inputmode="numeric"><i>–</i><input type="number" class="mb-t" min="1" max="${c}" value="${nu.b}" inputmode="numeric"></span><span class="mb-gs">${[['Excellent','✓'],['Good','~'],['Needs review','✗']].map(([g,i])=>`<button type="button" class="mb-g" data-g="${g}" title="${g}">${i}</button>`).join('')}</span></div>`; }).join('')}</div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="save">Save graded entries</button></div></div>`,true);
+    o.addEventListener('change',e=>{ const row=e.target.closest('.mb-row'); if(!row) return; const s=$('.mb-s',row), f=$('.mb-f',row), t=$('.mb-t',row); if(e.target===s){ const c=SURAH_AYAHS[+s.value]; f.max=t.max=c; f.value=1; t.value=c; } else { const c=SURAH_AYAHS[+s.value]; f.value=Math.max(1,Math.min(c,Math.round(+f.value)||1)); t.value=Math.max(1,Math.min(c,Math.round(+t.value)||c)); } });
+    o.addEventListener('click',e=>{ const b=e.target.closest('.mb-g'); if(!b) return; const on=b.classList.contains('sel'); $$('.mb-g',b.parentNode).forEach(x=>x.classList.remove('sel')); if(!on) b.classList.add('sel'); });
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=save]',o).onclick=()=>{ const kind=$('#mb-k',o).value, dt=today(), snaps=[]; let k=0;
+      $$('.mb-row',o).forEach(row=>{ const gb=$('.mb-g.sel',row); if(!gb) return; const s=DB.data.students.find(x=>x.id===row.dataset.sid), n=+$('.mb-s',row).value, c=SURAH_AYAHS[n]; let a=Math.max(1,Math.min(c,Math.round(+$('.mb-f',row).value)||1)), b=Math.max(1,Math.min(c,Math.round(+$('.mb-t',row).value)||c)); if(a>b){ const x=a; a=b; b=x; }
+        snaps.push(UNDO.snap(s)); DB.data.quran.push({sid:s.id,what:ML.fmt(n,a,b),n,a,b,kind,grade:gb.dataset.g,date:dt}); if(kind==='New'&&ML.ahead(s,n)&&n!==(s.hifz||{}).cur) updateHifzPosition(s,{cur:n}); k++; });
+      if(!k){ toast('Tap a grade for at least one student'); return; } DB.log('Class batch: '+k+' memorization entries'); DB.save(); o.remove(); toast(k+' entr'+(k===1?'y':'ies')+' saved',()=>{ snaps.slice().reverse().forEach(UNDO.restore); ML.refresh(); }); ML.refresh(); };
+  },
+  wireRows(v){ $$('[data-mladd]',v).forEach(b=>b.onclick=()=>ML.form(b.dataset.mladd));
+    $$('[data-mlfix]',v).forEach(b=>b.onclick=()=>{ const [id,n]=b.dataset.mlfix.split('|'), s=DB.data.students.find(x=>x.id===id); if(!s) return; const x=UNDO.snap(s); updateHifzPosition(s,{cur:+n}); toast(ML.nm(s)+' position → '+QS[+n].name,()=>{ UNDO.restore(x); Router.render(); }); Router.render(); });
+    $$('[data-mledit]',v).forEach(b=>b.onclick=()=>ML.form(null,null,{edit:+b.dataset.mledit}));
+    $$('[data-mldel]',v).forEach(b=>b.onclick=()=>{ const q=DB.data.quran[+b.dataset.mldel]; if(!q) return; confirmBox('Delete this log entry? “'+q.what+'”',()=>{ const i=DB.data.quran.indexOf(q); if(i>=0) DB.data.quran.splice(i,1); DB.save(); toast('Deleted',()=>{ DB.data.quran.splice(Math.min(i,DB.data.quran.length),0,q); DB.save(); Router.render(); }); Router.render(); }); }); },
+  entryRow(q,i,withName){ const s=DB.data.students.find(x=>x.id===q.sid);
+    return `<div class="ml-row"><div class="ml-who">${withName?avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0'):''}<div style="min-width:0">${withName?`<b dir="auto">${esc(ML.nm(s))}</b>`:''}<div class="ml-what" dir="auto">${esc(q.what)}</div>${q.note?`<small>“${esc(q.note)}”</small>`:''}</div></div><div class="ml-tags"><span class="tag ${q.kind==='New'?'tag-blue':'tag-dim'}">${esc(q.kind)}</span><span class="tag ${ML.gtag(q.grade)}">${esc(q.grade)}</span><button class="btn btn-ghost btn-sm no-print" data-mledit="${i}" aria-label="Edit entry" title="Edit">✎</button><button class="btn btn-ghost btn-sm no-print" data-mldel="${i}" aria-label="Delete entry" title="Delete">✕</button></div></div>`; },
+  timeline(v,sid){ ML._v=v; const s=DB.data.students.find(x=>x.id===sid), t=today(), c30=RP.addDays(t,-30);
+    const es=DB.data.quran.map((q,i)=>({q,i})).filter(x=>x.q.sid===sid).sort((a,b)=>b.q.date.localeCompare(a.q.date)||b.i-a.i);
+    const ns=[]; es.forEach(({q})=>{ const n=ML.nOf(q); if(n&&q.kind==='New'&&!ns.includes(n)) ns.push(n); });
+    const cov=ns.map(n=>({n,cv:ML.cover(s,n),last:es.find(x=>x.q.kind==='New'&&ML.nOf(x.q)===n).q}));
+    const ay=cov.reduce((a,x)=>a+x.cv.covered,0), n30=es.filter(x=>x.q.kind==='New'&&x.q.date>=c30).length, ex=es.length?Math.round(es.filter(x=>x.q.grade==='Excellent').length/es.length*100):0, l=es[0];
+    const kpi=(n,lb,c)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${lb}</span></div>`;
+    v.innerHTML=`<div class="page-wm"><div class="eyebrow"><a href="#/memlog" style="color:inherit">← Memorization log</a></div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${avatarHTML(s,'width:54px;height:54px;border-radius:50%;font-size:18px;flex-shrink:0')}<div style="flex:1;min-width:0"><h2 class="page-title" style="margin:0" dir="auto">${esc(ML.nm(s))}</h2><p class="page-sub" style="margin:2px 0 0">${(s.hifz||{}).cur?'Currently at '+esc(QS[s.hifz.cur].name):'No position set'}${ML.drift(s)?' · ⚠ log is ahead of position':''}</p></div><button class="btn btn-p btn-sm no-print" data-mladd="${s.id}">＋ Log</button><button class="btn btn-o btn-sm no-print" data-go="#/students/${s.id}">Profile →</button></div>
+      <div class="rp-kpis" style="margin-top:14px">${kpi(ay,'Āyāt recorded memorized','var(--ok)')}${kpi(n30,'New entries, 30d','var(--info)')}${kpi(ex+'%','Graded excellent','var(--gold)')}${kpi(l?ML.daysAgo(l.q.date)+'d':'—','Since last entry','var(--bad)')}</div>
+      <div class="card"><div class="whead"><h3>Sūrahs memorized</h3></div>${cov.length?cov.map(x=>{ const p=x.cv.covered/x.cv.total*100; return `<div class="td-it"><div class="td-lab"><b>${x.n}. ${esc(QS[x.n].name)}</b><small>${x.cv.covered>=x.cv.total?'complete':x.cv.covered+' of '+x.cv.total+' āyāt · '+(x.cv.total-x.cv.covered)+' left'} · last: ${esc(x.last.grade)}</small><div class="bar" style="height:7px;margin-top:5px"><i style="width:${p}%"></i></div></div><span class="tag ${ML.gtag(x.last.grade)}">${esc(x.last.grade)}</span></div>`; }).join(''):'<p style="color:var(--ink3);margin:0">No “New” entries yet.</p>'}<p class="td-hint">Entries logged before v37 have no āyāt numbers, so they count as the whole sūrah.</p></div>
+      <div class="card" style="margin-top:14px;padding:6px 16px 14px"><div class="whead"><h3>All entries (${es.length})</h3></div>${es.map(({q,i})=>`<div class="ml-day" style="margin:8px 0 0"><span>${esc(fmtDate(q.date))}</span><i></i></div>`+ML.entryRow(q,i,false)).join('')||'<p style="color:var(--ink3)">Nothing logged yet.</p>'}</div></div>`;
+    wireCommon(v); ML.wireRows(v); },
   csv(rows){
     const q=x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"';
     const t=['Date,Student,Type,Portion,Grade,Note'].concat(rows.map(({q:e})=>{ const s=DB.data.students.find(x=>x.id===e.sid); return [e.date,s?s.name:'',e.kind,e.what,e.grade,e.note||''].map(q).join(','); })).join('\n');
@@ -11032,26 +11125,26 @@ const ML = {
     const kpi=(n,l,c)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${l}</span></div>`;
     const sel=(id,val,opts)=>`<select id="${id}" class="ml-sel">${opts.map(([k,l])=>`<option value="${k}" ${String(val)===String(k)?'selected':''}>${l}</option>`).join('')}</select>`;
     const strip=L.map(s=>{ const l=ML.last(s.id), d=l?ML.daysAgo(l.date):null, old=d==null||d>=14;
-      return `<div class="ml-chip ${old?'old':''}"><div class="ml-who">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div style="min-width:0"><b dir="auto">${esc(ML.nm(s))}</b><small>${l?esc(l.what).slice(0,26)+' · '+(d===0?'today':d+'d ago'):'no entries yet'}</small></div></div><button class="btn btn-o btn-sm" data-mladd="${s.id}">＋ Log</button></div>`; }).join('');
+      return `<div class="ml-chip ${old?'old':''}"><div class="ml-who" data-go="#/memlog/${s.id}" style="cursor:pointer">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div style="min-width:0"><b dir="auto">${esc(ML.nm(s))}</b><small>${l?esc(l.what).slice(0,26)+' · '+(d===0?'today':d+'d ago'):'no entries yet'}</small>${ML.drift(s)?'<small style="color:var(--gold-text,#8a6520)">⚠ log is ahead of position</small>':''}</div></div><button class="btn btn-o btn-sm" data-mladd="${s.id}">＋ Log</button></div>`; }).join('');
     const byDate={}; rows.forEach(x=>(byDate[x.q.date]=byDate[x.q.date]||[]).push(x));
-    const feed=Object.keys(byDate).sort().reverse().map(d=>`<div class="ml-day"><span>${esc(fmtDate(d))}</span><i></i><small>${byDate[d].length} entr${byDate[d].length===1?'y':'ies'}</small></div>`+byDate[d].map(({q,i})=>{ const s=DB.data.students.find(x=>x.id===q.sid);
-      return `<div class="ml-row"><div class="ml-who">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div style="min-width:0"><b dir="auto">${esc(ML.nm(s))}</b><div class="ml-what" dir="auto">${esc(q.what)}</div>${q.note?`<small>“${esc(q.note)}”</small>`:''}</div></div><div class="ml-tags"><span class="tag ${q.kind==='New'?'tag-blue':'tag-dim'}">${esc(q.kind)}</span><span class="tag ${ML.gtag(q.grade)}">${esc(q.grade)}</span><button class="btn btn-ghost btn-sm no-print" data-mldel="${i}" aria-label="Delete entry" title="Delete">✕</button></div></div>`; }).join('')).join('');
+    const feed=Object.keys(byDate).sort().reverse().map(d=>`<div class="ml-day"><span>${esc(fmtDate(d))}</span><i></i><small>${byDate[d].length} entr${byDate[d].length===1?'y':'ies'}</small></div>`+byDate[d].map(({q,i})=>ML.entryRow(q,i,true)).join('')).join('');
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">Level 3 · Ḥifẓ</div><h2 class="page-title">Memorization Log</h2>
       <p class="page-sub">Every new sūrah and review, class-wide — one tap to log, always the same record the student profiles use.</p>
       <div class="rp-kpis no-print">${kpi(rows.length,'Entries'+(f.range==='all'?'':' · last '+f.range+'d'),'var(--info)')}${kpi(nNew,'New memorization','var(--ok)')}${kpi(nRev,'Reviews','var(--gold)')}${kpi(nNeed,'Graded “needs review”','var(--bad)')}</div>
       <div class="card no-print" style="margin-bottom:14px"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">Log by student</h3><span class="tag ${silent.length?'tag-red':'tag-green'}">${silent.length?silent.length+' with no entry in 14d+':'everyone logged recently'}</span></div><div class="ml-strip">${strip||'<p style="color:var(--ink3)">No Level 3 students.</p>'}</div></div>
-      <div class="filters no-print"><button class="btn btn-p btn-sm" id="mlNew">＋ Log memorization</button><button class="btn btn-o btn-sm" id="mlCsv">⇩ Export CSV</button>
+      ${ML.insightsHTML()}
+      <div class="filters no-print"><button class="btn btn-p btn-sm" id="mlNew">＋ Log memorization</button><button class="btn btn-o btn-sm" id="mlBatch">⚡ Class batch</button><button class="btn btn-o btn-sm" id="mlCsv">⇩ Export CSV</button>
         <span class="ml-fs">${sel('mlS',f.sid,[['','All students']].concat(L.map(s=>[s.id,ML.nm(s)])))}${sel('mlK',f.kind,[['','New + Review'],['New','New only'],['Review','Reviews only']])}${sel('mlG',f.grade,[['','Any grade'],['Excellent','Excellent'],['Good','Good'],['Needs review','Needs review']])}${sel('mlR',f.range,[['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']])}</span></div>
       <div class="card" style="padding:6px 16px 14px">${feed||'<div class="empty"><div class="big">📝</div><h3>No entries in this view</h3><p>Tap “＋ Log” next to a student to record what they recited.</p></div>'}</div></div>`;
     wireCommon(v);
-    $$('[data-mladd]',v).forEach(b=>b.onclick=()=>ML.form(b.dataset.mladd));
+    ML.wireRows(v);
     $('#mlNew',v).onclick=()=>ML.form(f.sid||null);
+    $('#mlBatch',v).onclick=()=>ML.batch();
     $('#mlCsv',v).onclick=()=>{ if(!rows.length){ toast('Nothing to export'); return; } ML.csv(rows); };
     [['mlS','sid'],['mlK','kind'],['mlG','grade'],['mlR','range']].forEach(([id,k])=>{ $('#'+id,v).onchange=e=>{ f[k]=e.target.value; ML.render(v); }; });
-    $$('[data-mldel]',v).forEach(b=>b.onclick=()=>{ const q=DB.data.quran[+b.dataset.mldel]; if(!q) return; confirmBox('Delete this log entry? “'+q.what+'”',()=>{ const i=DB.data.quran.indexOf(q); if(i>=0) DB.data.quran.splice(i,1); DB.save(); toast('Deleted'); ML.render(v); }); });
   }
 };
-Registry.register({ id:'memlog', name:'Memorization Log', icon:'spark', group:null, nav:'hifz', render(v){ ML.render(hubShell(v,'hifz','log')); }});
+Registry.register({ id:'memlog', name:'Memorization Log', icon:'spark', group:null, nav:'hifz', render(v,param){ const b=hubShell(v,'hifz','log'); if(param&&DB.data.students.find(s=>s.id===param)) ML.timeline(b,param); else ML.render(b); }});
 
 /* ================= CLASSROOM (v36) =================
    Today (all levels, attendance-first) · Hearing plan (time budget + rotation)
@@ -11239,7 +11332,7 @@ const FU={
     if(days.length){ const lab={P:'present',L:'late',A:'absent',E:'excused'}; lines.push('Attendance: '+days.map(k=>new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short'})+' '+lab[d.attendance[k][s.id]]).join(', ')); }
     const ls=FU.lessons(from,t); if(ls.length) lines.push('In class: '+ls.slice(0,3).join('; '));
     if(L===3){ const q7=d.quran.filter(q=>q.sid===s.id&&q.date>from), nw=[...new Set(q7.filter(q=>q.kind==='New').map(q=>q.what))].slice(0,3), rv=(s.revHistory||[]).filter(h=>h.date>from);
-      lines.push(nw.length?'New memorization: '+nw.join('; '):'New memorization: none recorded this week'); if(rv.length) lines.push('Revision heard: '+rv.slice(0,4).map(h=>'Juzʼ '+h.juz+' ('+(REV_LABEL[h.rating]||h.rating)+')').join(', '));
+      { const ay=ML.ayatSum(q7.filter(q=>q.kind==='New')); lines.push(nw.length?'New memorization: '+nw.join('; ')+(ay?' ('+ay+' āyāt)':''):'New memorization: none recorded this week'); } if(rv.length) lines.push('Revision heard: '+rv.slice(0,4).map(h=>'Juzʼ '+h.juz+' ('+(REV_LABEL[h.rating]||h.rating)+')').join(', '));
       const ser=(s.hifzLog||[]).map(x=>({d:x.date,v:x.pages})).sort((a,b)=>a.d.localeCompare(b.d)), v1=FU.valAt(ser,t), v0=FU.valAt(ser,from); if(v1!=null&&v0!=null&&v1>v0) lines.push('Progress: +'+(v1-v0).toFixed(0)+' pages memorized this week');
       try{ const pm=PT.sum(s); if(pm.memN>0||pm.learn>0) lines.push('Tawḥīd poem: '+pm.memN+' of 47 bayts memorized'+(pm.due?' ('+pm.due+' due for a recall check)':'')); }catch(e){}
       const hw=(RP.get(s).weeks||{})[RP.lw()]; if(hw!==undefined) lines.push('Home revision last week: '+hw+' of 5 days');
@@ -11319,17 +11412,21 @@ const VL={
     const g=f.includes('needs review')||f.includes('needs work')||/\b(weak|struggl|poor|not good)\w*/.test(f)?'Needs review':/\b(excellent|great|perfect|amazing|outstanding)\b/.test(f)?'Excellent':/\bgood\b/.test(f)?'Good':null; if(g) res.grade=g;
     res.kind=/\b(review|revision|revised|revise)\b/.test(f)?'Review':'New';
     const stop=new Set(['surah','sura','soorah','chapter','verse','verses','ayah','ayat','aya','from','to','through','until','till','and','the','of','a','new','review','good','excellent','great','needs','work','weak','perfect']);
-    // surah
-    const keys=QS.slice(1).map(q=>({n:q.n,k:VL.surKey(q.name)})); let best={s:0,n:null,i:-1,len:0};
-    for(let i=0;i<tok.length;i++) for(let len=1;len<=3&&i+len<=tok.length;len++){ const w=tok.slice(i,i+len); if(w.some(x=>/^\d+$/.test(x)||x in VL.W||stop.has(x)||/[\u0600-\u06ff]/.test(x))) continue; const k=VL.surKey(w.join('')); if(k.length<3) continue; keys.forEach(c=>{ const s=VL.sim(k,c.k); if(s>best.s) best={s,n:c.n,i,len}; }); }
-    if(best.s>=.72){ res.n=best.n; res.si=best.i; res.sl=best.len; }
-    // numbers after the surah (or anywhere)
-    const after=res.si!=null?tok.slice(res.si+res.sl):tok, nums=VL.num(after);
-    if(/\b(whole|full|entire|complete)\b/.test(f)) res.portion='whole sūrah'; else if(nums.length>=2) res.portion=nums[0]+'–'+nums[1]; else if(nums.length===1) res.portion=String(nums[0]);
-    // student
-    const cand=tok.filter((x,i)=>!stop.has(x)&&!/^\d+$/.test(x)&&!(x in VL.W)&&!(res.si!=null&&i>=res.si&&i<res.si+res.sl)); let bs=null,bsc=0;
-    CR.active().forEach(s=>{ const names=[(s.preferredName||'').split(/\s+/)[0],(s.name||'').split(/\s+/).filter(w=>!['بن','بنت','ابن'].includes(w))[0]].filter(Boolean); names.forEach(nm=>{ const isAr=/[\u0600-\u06ff]/.test(nm), sk=isAr?VL.arsk(nm):VL.sk(nm); if(sk.length<2) return; cand.forEach(w=>{ const wk=/[\u0600-\u06ff]/.test(w)?VL.arsk(w):VL.sk(w); if(wk.length<2) return; const sc=VL.sim(wk,sk)+(wk===sk?.2:0); if(sc>bsc){ bsc=sc; bs=s; } }); }); });
-    if(bs&&bsc>=.66) res.sid=bs.id; return res; },
+    // sūrahs (every match, in order); numbers belong to the sūrah before them
+    const keys=QS.slice(1).map(q=>({n:q.n,k:VL.surKey(q.name)})), cands=[];
+    for(let i=0;i<tok.length;i++) for(let len=1;len<=3&&i+len<=tok.length;len++){ const w=tok.slice(i,i+len); if(w.some(x=>/^\d+$/.test(x)||x in VL.W||stop.has(x)||/[\u0600-\u06ff]/.test(x))) break; const k=VL.surKey(w.join('')); if(k.length<3) continue; let bb={s:0,n:0}; keys.forEach(c=>{ const s=VL.sim(k,c.k); if(s>bb.s) bb={s,n:c.n}; }); if(bb.s>=.72) cands.push({n:bb.n,i,len,s:bb.s}); }
+    const pick=(thr,excl)=>{ const used=new Set(excl), out=[]; cands.filter(c=>c.s>=thr).sort((x,y)=>y.s-x.s||x.len-y.len).forEach(c=>{ for(let j=c.i;j<c.i+c.len;j++) if(used.has(j)) return; for(let j=c.i;j<c.i+c.len;j++) used.add(j); out.push(c); }); return out; };
+    const strongIdx=new Set(); pick(.9,[]).forEach(c=>{ for(let j=c.i;j<c.i+c.len;j++) strongIdx.add(j); });
+    // student: best name match among words that are not clearly a sūrah
+    let bs=null,bsc=0,bsi=-1;
+    CR.active().forEach(s=>{ const names=[(s.preferredName||'').split(/\s+/)[0],(s.name||'').split(/\s+/).filter(w=>!['بن','بنت','ابن'].includes(w))[0]].filter(Boolean); names.forEach(nm=>{ const isAr=/[\u0600-\u06ff]/.test(nm), sk=isAr?VL.arsk(nm):VL.sk(nm); if(sk.length<2) return; tok.forEach((w,i)=>{ if(strongIdx.has(i)||stop.has(w)||/^\d+$/.test(w)||w in VL.W) return; const wk=/[\u0600-\u06ff]/.test(w)?VL.arsk(w):VL.sk(w); if(wk.length<2) return; const sc=VL.sim(wk,sk)+(wk===sk?.2:0); if(sc>bsc){ bsc=sc; bs=s; bsi=i; } }); }); });
+    if(bs&&bsc>=.66) res.sid=bs.id; else bsi=-1;
+    const ms=pick(.72,bsi>=0?[bsi]:[]).sort((x,y)=>x.i-y.i);
+    const allWhole=/\b(whole|full|entire|complete)\b/.test(f); res.rows=[];
+    ms.forEach((m,x)=>{ const end=x+1<ms.length?ms[x+1].i:tok.length; let nums=VL.num(tok.slice(m.i+m.len,end)); if(!nums.length&&x===0) nums=VL.num(tok.slice(0,m.i)); const c=SURAH_AYAHS[m.n]; let a=1,b=c;
+      if(!allWhole){ if(nums.length>=2){ a=nums[0]; b=nums[1]; } else if(nums.length===1){ a=b=nums[0]; } } a=Math.max(1,Math.min(c,a)); b=Math.max(1,Math.min(c,b)); if(a>b){ const t=a; a=b; b=t; } res.rows.push({n:m.n,a,b}); });
+    if(res.rows.length){ res.n=res.rows[0].n; res.portion=ML.fmt(res.rows[0].n,res.rows[0].a,res.rows[0].b); }
+    return res; },
   open(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; let rec=null;
     const o=overlay(`<div class="modal" style="max-width:520px"><h3>🎙 Voice log</h3><p class="td-hint">Say it like: <b>“Adam, Al-Mulk one to ten, good”</b>. Names and sūrahs are matched approximately — you always confirm before anything is saved.${SR?'':' (Live listening isn’t available here — tap the box and use the 🎤 key on your keyboard, or just type.)'}</p>
       <textarea id="vl-t" rows="3" placeholder="Adam, Al-Mulk one to ten, good" style="width:100%"></textarea><div id="vl-s" class="td-hint"></div>
