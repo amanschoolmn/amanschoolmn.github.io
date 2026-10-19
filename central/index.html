@@ -707,6 +707,23 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .pill-attw{min-width:76px;white-space:nowrap;font-size:11.5px;font-family:inherit;letter-spacing:.01em}.pill-cyc.LATE{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520);border-color:var(--gold)}
 .pill-cyc.EXC{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
 .pill-cyc:disabled{opacity:.4;cursor:not-allowed}
+.pt-card{container-type:inline-size;border-left:4px solid transparent}
+.pt-card[data-state=ok]{border-left-color:var(--ok)}.pt-card[data-state=warn]{border-left-color:var(--gold)}.pt-card[data-state=bad]{border-left-color:var(--bad)}.pt-card[data-state=info]{border-left-color:var(--info)}
+.pt-cells{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@container (max-width:470px){.pt-cells{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pt-cell{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pt-cap{font-size:10.5px;font-weight:700;color:var(--ink3);letter-spacing:.02em;white-space:nowrap}
+.pt-cell .pill-cyc,.pt-day .pill-cyc{width:100%;min-width:0;height:auto;min-height:44px;padding:6px 4px;white-space:normal;line-height:1.15;font-family:inherit;font-size:12.5px}
+.pt-status{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.pt-status.ok{color:var(--ok)}.pt-status.warn{color:var(--gold-text,#8a6520)}.pt-status.bad{color:var(--bad)}.pt-status.info{color:var(--info)}
+.pt-good{font-size:12px;padding:5px 11px}
+.pt-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--ink3)}
+.pt-dots{display:inline-flex;gap:4px;align-items:center}
+.pt-dots i{width:11px;height:11px;border-radius:50%;background:var(--line2);display:inline-block}
+.pt-dots i.ok{background:var(--ok)}.pt-dots i.warn{background:var(--gold)}.pt-dots i.bad{background:var(--bad)}.pt-dots i.info{background:var(--info)}.pt-dots i.part{background:var(--ink3);opacity:.55}
+.pt-work{display:inline-flex;gap:5px;align-items:center;padding:3px 9px;border-radius:999px;background:var(--surface2);font-weight:600;color:var(--ink2)}
+.pt-day{display:grid;grid-template-columns:34px repeat(4,minmax(0,1fr));gap:6px;align-items:center}
+.pt-capr{display:grid;grid-template-columns:34px repeat(4,minmax(0,1fr));gap:6px}
 .tag-purple{background:color-mix(in srgb,#7B4FA0 15%,transparent);color:#7B4FA0}
 .notice{display:flex;gap:11px;padding:13px 15px;border-radius:var(--r-sm);font-size:13.5px;border:1px solid;align-items:flex-start}
 .notice.warn{background:color-mix(in srgb,var(--warn) 9%,transparent);border-color:color-mix(in srgb,var(--warn) 35%,transparent);color:var(--ink)}
@@ -8632,6 +8649,8 @@ function ptWeekendPair(session){
 // for the existing 'A' (unexcused) and 'E' (excused) codes.
 const PT_ATT_CYCLE = [undefined,'P','L','A','E'];
 const PT_ATT_LABEL = {P:'Present', L:'Late', A:'Absent', E:'Excused absence'};
+const PT_RES = {PASS:'Passed', FAIL:'Failed', DONE:'Done', INC:'Incomplete', EXC:'Excused'};
+const ptRes = v => PT_RES[v] || '—';
 const PT_Q_CYCLE = [null,'PASS','FAIL','EXC'];
 const PT_HW_CYCLE = [null,'DONE','INC','EXC'];
 const PT_CW_CYCLE = [null,'DONE','INC','EXC'];
@@ -8718,6 +8737,22 @@ function ptReportCardHTML(s, monthlyRows, yearStats, comment){
 </body></html>`;
 }
 
+// One plain-words verdict per session, used for the card's status line, its
+// colored edge and the little history dots.
+function ptState(e){
+  const bad=[]; if(e.quran==='FAIL') bad.push('Qur\u2019an failed'); if(e.hw==='INC') bad.push('homework incomplete'); if(e.cw==='INC') bad.push('classwork incomplete');
+  if(!e.att && !e.quran && !e.hw && !e.cw) return {k:'none', t:'Not marked yet'};
+  if(e.att==='A') return {k:'bad', t:'Absent \u2014 follow up with the family'};
+  if(e.att==='E') return {k:'info', t:'Excused absence'};
+  if(bad.length) return {k:'warn', t:'Needs attention: '+bad.join(', ')};
+  if(e.att && (e.quran==='PASS'||e.cw==='DONE'||e.hw==='DONE')) return {k:'ok', t:(e.att==='L'?'Late, but all good':'All good')};
+  return {k:'part', t:'In progress \u2014 not everything marked'};
+}
+// Last few recorded sessions up to the selected one, oldest first.
+function ptRecent(sid, upTo, n){
+  const d=DB.data, set=new Set([...Object.keys(d.attendance||{}),...Object.keys(d.progress||{})]);
+  return [...set].filter(k=>k<=upTo).sort().map(k=>({k,e:ptEntry(k,sid)})).filter(x=>x.e.att||x.e.quran||x.e.hw||x.e.cw).slice(-n);
+}
 function ptEntry(dateKey, sid){
   const d = DB.data;
   const att = (d.attendance[dateKey]||{})[sid];
@@ -8797,9 +8832,9 @@ function ptPrintDayCell(e, closed){
   if(closed) return `<div class="closedcell">Closed</div>`;
   return `<div class="daywrap">
     <span class="pchip" style="color:${ptPillColor('att',e.att)};border-color:${ptPillColor('att',e.att)}">${PT_ATT_LABEL[e.att]||'—'}</span>
-    <span class="pchip" style="color:${ptPillColor('quran',e.quran)};border-color:${ptPillColor('quran',e.quran)}">${e.quran||'—'}</span>
-    <span class="pchip" style="color:${ptPillColor('hw',e.hw)};border-color:${ptPillColor('hw',e.hw)}">${e.hw||'—'}</span>
-    <span class="pchip" style="color:${ptPillColor('cw',e.cw)};border-color:${ptPillColor('cw',e.cw)}">${e.cw||'—'}</span>
+    <span class="pchip" style="color:${ptPillColor('quran',e.quran)};border-color:${ptPillColor('quran',e.quran)}">${e.quran?ptRes(e.quran):'—'}</span>
+    <span class="pchip" style="color:${ptPillColor('hw',e.hw)};border-color:${ptPillColor('hw',e.hw)}">${e.hw?ptRes(e.hw):'—'}</span>
+    <span class="pchip" style="color:${ptPillColor('cw',e.cw)};border-color:${ptPillColor('cw',e.cw)}">${e.cw?ptRes(e.cw):'—'}</span>
   </div>`;
 }
 function ptPrintStudentRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, pctHidden, pctRevealed){
@@ -8858,7 +8893,7 @@ function ptWeekendPrintHTML(year, month, satDate, sunDate, levelGroups, pctHidde
 <body>
 <div class="toolbar-actions"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
 <h1>Al-Madrasatu An-Nuriyyah \u2014 Weekend Progress</h1>
-<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (Present / Late / Absent / Excused absence) \u00b7 Qur\u2019an/HW/CW (PASS or DONE / FAIL or INC / EXC)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
+<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (Present / Late / Absent / Excused absence) \u00b7 Qur\u2019an, homework and classwork (Passed or Done / Failed or Incomplete / Excused)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
 ${sections || '<p style="font-size:13px;color:#686e5f">No students to show.</p>'}
 </body></html>`;
 }
@@ -9080,35 +9115,49 @@ const Progress = {
     const uaTone = st.ua>=3 ? 'color:var(--bad);font-weight:800' : st.ua===2 ? 'color:var(--warn);font-weight:800' : '';
     const revealed = this._pctRevealed && this._pctRevealed.has(s.id);
     const showPct = !this._pctHidden || revealed;
+    const ps = ptState(e);
+    const attCls = e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'LATE':'';
+    const cell = (cap,btn)=>`<div class="pt-cell"><span class="pt-cap">${cap}</span>${btn}</div>`;
+    const recent = ptRecent(s.id, session, 6);
+    let work = '';
+    if(L==='Level 3' && typeof HW!=='undefined' && s.hw){ try{ work = `📖 Homework portion: ${esc(HW.label(s.hw))}${s.hw.tries?` · ${s.hw.tries} failed attempt${s.hw.tries>1?'s':''}`:''}`; }catch(_){} }
+    else if(L==='Level 1'){ work = `📗 Green Book page ${((s.gb&&s.gb.page)||0)} of ${GB_TOTAL}`; }
+    else if(L==='Level 2'){ work = `📘 Muṣḥaf page ${((s.mus&&s.mus.page)||0)} of ${MUSHAF_TOTAL}`; }
+    const canGood = !['ok','bad','info'].includes(ps.k);
     return `<div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
         ${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}
         <div style="min-width:0;flex:1">
           <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="rtl">${esc(s.name)}</div>
-          <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
+          <div style="display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap">
             <span class="tag ${ptLevelTag(L)}">${L}</span>
             ${this._ptSort!=='name' && age!=null?`<span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${age}y</span>`:''}
-            ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)">🔥${st.streak}</span>`:''}
+            ${st.streak>0?`<span style="font-size:11px;font-weight:700;color:var(--gold-text)" title="Qur’an passed in a row">🔥 ${st.streak} passed in a row</span>`:''}
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="pill-cyc pill-attw ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'LATE':''}" data-cyc="${s.id}_att" title="🕌 Attendance — tap to change">${PT_ATT_LABEL[e.att]||'Not marked'}</button>
-        <button class="pill-cyc ${e.quran||''}" data-cyc="${s.id}_quran" title="📖 Qur'an">${e.quran||'—'}</button>
-        <button class="pill-cyc ${e.hw||''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="📝 Homework">${sat?(e.hw||'—'):'—'}</button>
-        <button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="✏️ Classwork">${e.cw||'—'}</button>
+      <div class="pt-cells">
+        ${cell('🕌 Attendance',`<button class="pill-cyc pill-attw ${attCls}" data-cyc="${s.id}_att" title="Attendance — tap to change">${PT_ATT_LABEL[e.att]||'Not marked'}</button>`)}
+        ${cell('📖 Qur’an',`<button class="pill-cyc ${e.quran||''}" data-cyc="${s.id}_quran" title="Qur’an — tap to change">${e.quran?ptRes(e.quran):'Not marked'}</button>`)}
+        ${cell('📝 Homework',`<button class="pill-cyc ${sat?(e.hw||''):''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="Homework — tap to change">${sat?(e.hw?ptRes(e.hw):'Not marked'):'Saturday only'}</button>`)}
+        ${cell('✏️ Classwork',`<button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="Classwork — tap to change">${e.cw?ptRes(e.cw):'Not marked'}</button>`)}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
+      <div class="pt-status ${ps.k}"><span>${{ok:'✅',warn:'⚠️',bad:'🚨',info:'📋',part:'⏳',none:'○'}[ps.k]} ${ps.t}</span>${canGood?`<button class="btn btn-ghost btn-sm pt-good no-print" data-ptgood="${s.id}" title="Present, Qur’an passed, homework done, classwork done — fills only the blanks">✓ Mark all good</button>`:''}</div>
+      <div class="pt-meta">
+        ${work?`<span class="pt-work">${work}</span>`:''}
+        ${recent.length>1?`<span class="pt-dots" title="Last ${recent.length} recorded sessions, oldest to newest">${recent.map(r=>{const q=ptState(r.e); return `<i class="${q.k}" title="${fmtDate(r.k)} — ${esc(q.t)}"></i>`;}).join('')}<span style="margin-left:3px">last ${recent.length} sessions</span></span>`:''}
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--ink3)">
         ${showPct ? `
-        <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
-        <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
-        <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
-        <span style="${uaTone}">🚫 ${st.ua}</span>
-        <span>⏱️ ${st.late}</span>
+        <span>Qur’an ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
+        <span>Homework ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
+        <span>Classwork ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
+        <span style="${uaTone}">Absent ${st.ua}</span>
+        <span>Late ${st.late}</span>
         ` : `<span style="font-style:italic;display:inline-flex;align-items:center;gap:4px">${PT_ICO_LOCK} Hidden</span>`}
         ${this._pctHidden ? `<button class="btn btn-ghost btn-sm no-print" data-ptpct="${s.id}" style="padding:1px 8px;font-size:11px;margin-left:auto" title="${revealed?'Hide again':'Reveal just this student'}">${revealed?PT_ICO_EYE_OFF+' Hide':PT_ICO_EYE+' Reveal'}</button>` : ''}
       </div>`;
   },
-  // Weekend Recap variant of _rowHTML — same card, but shows Saturday's and
+    // Weekend Recap variant of _rowHTML — same card, but shows Saturday's and
   // Sunday's cells as two stacked rows instead of just the one selected
   // session, so one screenshot covers the whole weekend. Tap-to-cycle still
   // works on either row; each pill carries its own date (data-cycw) since
@@ -9122,13 +9171,13 @@ const Progress = {
     const revealed = this._pctRevealed && this._pctRevealed.has(s.id);
     const showPct = !this._pctHidden || revealed;
     const dayRow = (dateKey, e, label, closed, hwEnabled) => `
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:10px;font-weight:700;color:var(--ink3);font-family:var(--f-mono);min-width:30px">${label}</span>
-        ${closed ? `<span style="font-size:11px;color:var(--ink3);font-style:italic">⛔ Closed</span>` : `
+      <div class="pt-day">
+        <span style="font-size:10px;font-weight:700;color:var(--ink3);font-family:var(--f-mono)">${label}</span>
+        ${closed ? `<span style="font-size:11px;color:var(--ink3);font-style:italic;grid-column:2/-1">⛔ Closed</span>` : `
         <button class="pill-cyc pill-attw ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'LATE':''}" data-cycw="${s.id}_att_${dateKey}" title="🕌 Attendance — tap to change">${PT_ATT_LABEL[e.att]||'Not marked'}</button>
-        <button class="pill-cyc ${e.quran||''}" data-cycw="${s.id}_quran_${dateKey}" title="📖 Qur'an">${e.quran||'—'}</button>
-        <button class="pill-cyc ${e.hw||''}" data-cycw="${s.id}_hw_${dateKey}" ${hwEnabled?'':'disabled'} title="📝 Homework">${hwEnabled?(e.hw||'—'):'—'}</button>
-        <button class="pill-cyc ${e.cw||''}" data-cycw="${s.id}_cw_${dateKey}" title="✏️ Classwork">${e.cw||'—'}</button>
+        <button class="pill-cyc ${e.quran||''}" data-cycw="${s.id}_quran_${dateKey}" title="📖 Qur'an">${e.quran?ptRes(e.quran):'Not marked'}</button>
+        <button class="pill-cyc ${e.hw||''}" data-cycw="${s.id}_hw_${dateKey}" ${hwEnabled?'':'disabled'} title="📝 Homework">${hwEnabled?(e.hw?ptRes(e.hw):'Not marked'):'Saturday only'}</button>
+        <button class="pill-cyc ${e.cw||''}" data-cycw="${s.id}_cw_${dateKey}" title="✏️ Classwork">${e.cw?ptRes(e.cw):'Not marked'}</button>
         `}
       </div>`;
     return `<div style="display:flex;align-items:center;gap:10px;cursor:pointer" data-ptopen="${s.id}">
@@ -9143,16 +9192,17 @@ const Progress = {
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:5px">
+        <div class="pt-capr"><span></span><span class="pt-cap">Attendance</span><span class="pt-cap">Qur\u2019an</span><span class="pt-cap">Homework</span><span class="pt-cap">Classwork</span></div>
         ${dayRow(satDate, eSat, 'Sat', satClosed, true)}
         ${dayRow(sunDate, eSun, 'Sun', sunClosed, false)}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:11px;font-family:var(--f-mono);color:var(--ink3)">
         ${showPct ? `
-        <span>📖 ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
-        <span>📚 ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
-        <span>✏️ ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
-        <span style="${uaTone}">🚫 ${st.ua}</span>
-        <span>⏱️ ${st.late}</span>
+        <span>Qur’an ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</span>
+        <span>Homework ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</span>
+        <span>Classwork ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</span>
+        <span style="${uaTone}">Absent ${st.ua}</span>
+        <span>Late ${st.late}</span>
         ` : `<span style="font-style:italic;display:inline-flex;align-items:center;gap:4px">${PT_ICO_LOCK} Hidden</span>`}
         ${this._pctHidden ? `<button class="btn btn-ghost btn-sm no-print" data-ptpct="${s.id}" style="padding:1px 8px;font-size:11px;margin-left:auto" title="${revealed?'Hide again':'Reveal just this student'}">${revealed?PT_ICO_EYE_OFF+' Hide':PT_ICO_EYE+' Reveal'}</button>` : ''}
       </div>`;
@@ -9168,8 +9218,8 @@ const Progress = {
     return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
        <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} absent</span>
        <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
-       <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
-       <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
+       <span>📝 Homework ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
+       <span>✏️ Classwork ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
   },
   // Weekend Recap variant — same tally, combined across both Saturday and
   // Sunday's sessions instead of just the one selected date.
@@ -9186,8 +9236,8 @@ const Progress = {
     return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">🗓️ ${fmtDate(satDate)} – ${fmtDate(sunDate)}</b>
        <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} absent</span>
        <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
-       <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
-       <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
+       <span>📝 Homework ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
+       <span>✏️ Classwork ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
   },
   // Eligibility requires at least one GRADED entry this month (Qur'an, HW,
   // or CW) — not just an attendance record. Found and fixed 2026-09: with
@@ -9350,7 +9400,7 @@ const Progress = {
     const wk = this._weekendView ? ptWeekendPair(session) : null;
     if(s){
       const row = v.querySelector(`[data-row="${sid}"]`);
-      if(row) row.innerHTML = wk ? this._rowHTMLWeekend(s, s.level, wk.sat, wk.sun, monthKeys) : this._rowHTML(s, s.level, session, monthKeys, sat);
+      if(row){ row.innerHTML = wk ? this._rowHTMLWeekend(s, s.level, wk.sat, wk.sun, monthKeys) : this._rowHTML(s, s.level, session, monthKeys, sat); if(!wk) row.dataset.state = ptState(ptEntry(session,s.id)).k; }
     }
     const lc = $('#ptLiveCounter',v);
     if(lc) lc.innerHTML = wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat);
@@ -9368,6 +9418,7 @@ const Progress = {
           const [rsid,field]=b.dataset.cyc.split('_');
           this.cycle(session, rsid, field); this._patchAfterCycle(v, rsid);
         }; });
+        $$('[data-ptgood]',row).forEach(b=>b.onclick=()=>{ const rsid=b.dataset.ptgood; this.markGood(session,rsid); this._patchAfterCycle(v,rsid); });
         $$('[data-cycw]',row).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
           const [rsid,field,dateKey]=b.dataset.cycw.split('_');
           this.cycle(dateKey, rsid, field); this._patchAfterCycle(v, rsid);
@@ -9459,7 +9510,7 @@ const Progress = {
 
      ${shown.length ? LEVELS.map(L=>{ const g=levelGroups[L]; if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
-        <div class="grid g2">${g.map(s=>`<div class="card" data-row="${s.id}" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">${wk ? this._rowHTMLWeekend(s, L, wk.sat, wk.sun, monthKeys) : this._rowHTML(s, L, session, monthKeys, sat)}</div>`).join('')}</div>`;
+        <div class="grid g2">${g.map(s=>`<div class="card pt-card" data-row="${s.id}" ${wk?'':`data-state="${ptState(ptEntry(session,s.id)).k}"`} style="padding:12px 14px;display:flex;flex-direction:column;gap:9px">${wk ? this._rowHTMLWeekend(s, L, wk.sat, wk.sun, monthKeys) : this._rowHTML(s, L, session, monthKeys, sat)}</div>`).join('')}</div>`;
      }).join('') : '<div class="empty"><p>No students match.</p></div>'}
      `}
 
@@ -9514,6 +9565,7 @@ const Progress = {
       const [sid,field]=b.dataset.cyc.split('_');
       this.cycle(session, sid, field); this._patchAfterCycle(v, sid);
     }; });
+    $$('[data-ptgood]',v).forEach(b=>b.onclick=()=>{ const sid=b.dataset.ptgood; this.markGood(session,sid); this._patchAfterCycle(v,sid); });
     $$('[data-cycw]',v).forEach(b=>{ if(b.disabled) return; b.onclick=()=>{
       const [sid,field,dateKey]=b.dataset.cycw.split('_');
       this.cycle(dateKey, sid, field); this._patchAfterCycle(v, sid);
@@ -9580,6 +9632,15 @@ const Progress = {
   // the list already on screen.
   _repaint(v){ this.roster(v); },
 
+  // Fills ONLY the blanks: Present, Qur'an passed, classwork done, and (Saturdays)
+  // homework done. Never overwrites something already marked.
+  markGood(dateKey, sid){
+    const d=DB.data; d.attendance[dateKey]=d.attendance[dateKey]||{};
+    if(!d.attendance[dateKey][sid]) d.attendance[dateKey][sid]='P';
+    d.progress[dateKey]=d.progress[dateKey]||{}; const p=d.progress[dateKey][sid]=d.progress[dateKey][sid]||{quran:null,hw:null,cw:null};
+    if(!p.quran) p.quran='PASS'; if(!p.cw) p.cw='DONE'; if(PT_isSat(dateKey) && !p.hw) p.hw='DONE';
+    DB.save();
+  },
   cycle(dateKey, sid, field){
     const d=DB.data;
     if(field==='att'){
@@ -9698,7 +9759,7 @@ const Progress = {
       <div style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto">
         ${timeline.length? timeline.map(({dk,e})=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;background:var(--surface2)">
           <span style="font-size:12px;font-family:var(--f-mono)">${dk}</span>
-          <span class="pill-cyc ${e.quran}" style="pointer-events:none">${e.quran}</span>
+          <span class="pill-cyc ${e.quran}" style="pointer-events:none;width:auto;padding:0 10px">${ptRes(e.quran)}</span>
         </div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No Qur\u2019an results recorded yet.</p>'}
       </div>
     </div>`;
@@ -9724,8 +9785,8 @@ const Progress = {
           <span style="font-size:12px;font-family:var(--f-mono)">${dk}</span>
           <div style="display:flex;gap:5px">
             <span class="pill-att ${e.att==='A'?'A':e.att||''}" style="width:auto;padding:0 7px;pointer-events:none;font-size:10px">${PT_ATT_LABEL[e.att]||'—'}</span>
-            <span class="pill-cyc ${e.hw||''}" style="pointer-events:none;min-width:auto;padding:0 7px;height:26px;font-size:10px">${e.hw||'—'}</span>
-            <span class="pill-cyc ${e.cw||''}" style="pointer-events:none;min-width:auto;padding:0 7px;height:26px;font-size:10px">${e.cw||'—'}</span>
+            <span class="pill-cyc ${e.hw||''}" style="pointer-events:none;min-width:auto;padding:0 8px;height:26px;font-size:10.5px" title="Homework">Homework: ${e.hw?ptRes(e.hw):'—'}</span>
+            <span class="pill-cyc ${e.cw||''}" style="pointer-events:none;min-width:auto;padding:0 8px;height:26px;font-size:10.5px" title="Classwork">Classwork: ${e.cw?ptRes(e.cw):'—'}</span>
           </div>
         </div>`).join('') : '<p style="font-size:13px;color:var(--ink2)">No sessions recorded yet.</p>'}
       </div>
