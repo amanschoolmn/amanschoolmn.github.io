@@ -172,7 +172,7 @@ kbd{font-family:var(--f-mono);font-size:10.5px;background:var(--surface2);border
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
 .grid{display:grid;gap:14px}
 .g2{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-.g3{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
 .g4{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:600;transition:transform .1s,box-shadow .15s,background .15s;border:1px solid transparent}
 .btn:active{transform:scale(.97)}
@@ -311,6 +311,17 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .td-b.sel{outline:2.5px solid var(--gold)}.td-abs{margin-top:14px}.td-abs .btn{margin-left:6px}
 .hp-cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:12px 14px;margin-bottom:12px}.hp-cfg label{font-size:12px;color:var(--ink3);display:flex;flex-direction:column;gap:4px}.hp-cfg input,.hp-cfg select{padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:14px;font-family:inherit}
 .hp-row{display:flex;gap:9px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line)}.hp-row:last-child{border:0}.hp-row.over{background:linear-gradient(90deg,rgba(200,50,40,.08),transparent)}.hp-n{font-family:var(--f-mono);font-size:12px;color:var(--ink3);min-width:18px}.hp-t{font-family:var(--f-mono);font-size:11px;color:var(--gold);min-width:34px}.hp-b{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.pp-card{position:relative}.pp-tools{position:absolute;top:6px;right:8px;display:flex;gap:4px}.pp-lock,.pp-x{background:none;border:0;cursor:pointer;font-size:15px;padding:4px 6px;border-radius:6px;opacity:.75}.pp-lock:hover,.pp-x:hover{background:var(--surface2);opacity:1}.pp-lock.on{opacity:1}
+.pp-names span.abs{opacity:.45}.pp-card.absent{border-style:dashed}.pp-warn{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}.pp-warn span{font-size:11.5px;background:#fbefd2;color:#7a5200;border:1px solid #e8cf94;border-radius:999px;padding:2px 9px}
+.pp-bar{align-items:center;gap:8px;flex-wrap:wrap}.pp-seg{display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden}.pp-seg button{border:0;background:var(--surface);padding:8px 14px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink2)}.pp-seg button.on{background:var(--green,#1f4d3a);color:#fff;font-weight:700}
+.pp-chips{display:flex;flex-wrap:wrap;gap:8px}.pp-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:var(--surface2);border-radius:999px;padding:5px 12px 5px 6px;font:inherit;font-size:13.5px;cursor:pointer}.pp-chip.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,135,42,.35);background:#fbf3df}.pp-extra{max-width:340px;width:100%;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);font:inherit;font-size:13px}
+.fu-prog{padding:12px 16px;margin:10px 0}.fu-progtop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}.fu-bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}.fu-bar i{display:block;height:100%;background:var(--green,#1f4d3a);border-radius:99px}.fu-prog small{display:block;margin-top:6px;color:var(--ink3)}
+.fu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-top:12px}.fu-card{padding:14px 16px;display:flex;flex-direction:column;gap:8px}.fu-card.sent{opacity:.8}.fu-card.needs{border-style:dashed}
+.fu-top{display:flex;gap:12px;align-items:center}.fu-ph{display:flex;flex:none}.fu-ph>*{margin-left:-10px}.fu-ph>*:first-child{margin-left:0}.fu-id{flex:1;min-width:0}.fu-fam{font-size:16px}.fu-par{font-size:12.5px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fu-tel{color:var(--green,#1f4d3a);font-weight:600;text-decoration:none}
+.fu-pill{font-size:11px;padding:3px 9px;border-radius:99px;background:var(--surface2);color:var(--ink2);white-space:nowrap;flex:none;border:1px solid var(--line2)}.fu-pill.ok{background:#e3f1e6;color:#1f5a2e;border-color:#b9d9c0}.fu-pill.bad{background:#fbe4e1;color:#8b2418;border-color:#efbdb6}
+.fu-kids{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px}.fu-notes{display:flex;flex-wrap:wrap;gap:6px}.fu-notes span{font-size:11.5px;background:#fbf3df;color:#6b4a00;border:1px solid #ecd9a4;border-radius:99px;padding:2px 9px}
+.fu-sum{font-size:12px;color:var(--ink3)}.fu-prev{font-size:12.5px;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.fu-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}.fu-who{font-size:13px;color:var(--ink2);margin-bottom:8px}
+@media(max-width:640px){.fu-grid{grid-template-columns:minmax(0,1fr)}}.fu-card{min-width:0}
 .pp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:12px}.pp-card{padding:12px 14px}.pp-names{display:flex;gap:10px;align-items:center;justify-content:space-around;margin-bottom:8px}.pp-names span{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}.pp-names small{font-size:11px;color:var(--ink3)}.pp-names i{font-style:normal;font-size:20px;color:var(--gold)}
 .fu-row .btn{margin-left:auto}
 .whead+.td-it,.whead+.hp-row{margin-top:10px}
@@ -729,6 +740,49 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .notice.warn{background:color-mix(in srgb,var(--warn) 9%,transparent);border-color:color-mix(in srgb,var(--warn) 35%,transparent);color:var(--ink)}
 .notice.info{background:color-mix(in srgb,var(--info) 8%,transparent);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.gb-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:stretch}
+.gb-stat .v{font-family:var(--f-display);font-size:24px;font-weight:700;line-height:1.15}
+.gb-stat .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.gb-stat .s{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.gb-mini{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:6px}.gb-mini i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--green))}
+.gb-st{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.gb-st.none{background:var(--surface2);color:var(--ink3)}.gb-st.part{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520)}.gb-st.done{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.gb-sticky{position:sticky;top:0;z-index:30;background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:10px 14px;margin:0 0 14px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.gb-sticky .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.gb-sticky b{font-family:var(--f-display);font-size:16px}
+.gb-in{width:76px;text-align:right;font-family:var(--f-mono);padding:7px 9px;height:40px}
+.gb-nm{display:flex;align-items:center;gap:8px;min-width:0}
+.st-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+.st-head .eb{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--gold-text,#8a6520)}
+.st-head h1{font-family:var(--f-display);font-size:30px;line-height:1.1;margin:2px 0 0;color:var(--ink)}
+.st-head .sub{font-size:13px;color:var(--ink3);margin-top:3px}
+.st-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.st-stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.st-stat b{display:block;font-family:var(--f-display);font-size:24px;line-height:1.1;color:var(--green)}
+.st-stat span{font-size:11.5px;color:var(--ink3);font-weight:600}
+.st-stat.warn b{color:var(--bad)}.st-stat.on{outline:2px solid var(--gold)}
+.st-quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.st-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.st-bar input[type=search]{flex:1 1 180px;min-width:150px;max-width:280px}
+.st-bar select{width:auto;max-width:150px}
+.st-bar .sp{flex:1}
+.st-more{position:relative}
+.st-more>summary{list-style:none;cursor:pointer}.st-more>summary::-webkit-details-marker{display:none}
+.st-more[open]>summary{background:var(--surface2)}
+.st-more .pop{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(340px,86vw);background:var(--surface);border:1px solid var(--line2);border-radius:14px;box-shadow:0 12px 36px rgba(0,0,0,.18);padding:10px;display:flex;flex-direction:column;gap:2px}
+.st-more .pop .btn{justify-content:flex-start;width:100%;border:0;background:transparent;text-align:left}
+.st-more .pop .btn:hover{background:var(--surface2)}
+.st-more .pop .hd{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:8px 6px 2px}
+.st-card{cursor:pointer;display:flex;gap:12px;align-items:flex-start;border-left:4px solid var(--ok);padding:12px 14px}
+.st-card .nm{display:block;font-weight:700;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.st-card .mt{font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin:1px 0 6px}
+.st-flags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.st-flag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--ink2)}
+.st-flag.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.st-flag.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.st-flag.gold{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520)}
+.st-flag.info{background:color-mix(in srgb,var(--info) 16%,transparent);color:var(--info)}
+@media(max-width:640px){.st-more .pop{position:fixed;left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:75vh;overflow:auto;z-index:150}.st-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.st-head h1{font-size:26px}.st-bar select{max-width:none;flex:1 1 120px}}
 .filters select{width:auto;padding:7px 30px 7px 11px;font-size:12.5px}
 .filters input[type=search]{max-width:260px;padding:7.5px 12px;font-size:13px}
 
@@ -896,6 +950,16 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
 .pr-card.pr-compact .pr-note{font-size:12.5px;margin-bottom:2px;padding:0 10px}
 .pr-card.pr-compact .pr-arabic{font-size:15px;margin-bottom:12px}
 .pr-card.pr-compact .pr-contact{font-size:9.5px;margin-top:8px}
+.pr-modal{max-width:min(1120px,96vw)!important}
+.pr-layout{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:900px){.pr-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pr-prevcol{position:sticky;top:0;align-self:start}}
+.pr-items{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.pr-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line2);border-radius:10px;background:var(--surface2);cursor:pointer;font-size:14px}
+.pr-item input{width:auto;flex:none;margin:0;padding:0}.pr-item b{margin-left:auto;font-family:var(--f-mono)}
+.pr-hint{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.pr-details .pr-r.pr-mrow{padding:10px 0 10px 18px;font-size:17px}
+.pr-details .pr-r.pr-mrow .pr-k{text-transform:none;letter-spacing:0;font-family:'Crimson Pro',serif;font-size:17px;opacity:1}
+.pr-card.pr-compact .pr-details .pr-r.pr-mrow{padding:5px 0 5px 12px;font-size:12.5px}.pr-card.pr-compact .pr-details .pr-r.pr-mrow .pr-k{font-size:12.5px}
 .pr-status-picker{display:flex;gap:6px}
 .pr-status-picker button{flex:1;font-family:var(--f-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:9px 4px;border-radius:6px;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);cursor:pointer}
 .pr-status-picker button.on[data-v="reminder"]{background:#b8872a;color:#fff;border-color:transparent}
@@ -993,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 45 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 46 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -1015,6 +1079,12 @@ body.lay-editing .lay-navrow a svg{display:none}
 </div>
 <div id="overlays"></div>
 <div id="toasts" aria-live="polite"></div>
+<script>
+/* Storage shim: if the browser blocks localStorage/sessionStorage (in-chat previews, some private/sandboxed frames), fall back to in-memory so the app still opens and logs in. Data then lasts only until the page closes. */
+(function(){ ['localStorage','sessionStorage'].forEach(function(n){ var ok=true; try{ var s=window[n]; s.setItem('__t','1'); s.removeItem('__t'); }catch(e){ ok=false; }
+ if(ok) return; var m={}; var st={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null;},setItem:function(k,v){m[k]=String(v);},removeItem:function(k){delete m[k];},clear:function(){m={};},key:function(i){return Object.keys(m)[i]||null;},get length(){return Object.keys(m).length;}};
+ try{ Object.defineProperty(window,n,{value:st,configurable:true}); }catch(e){} window.__memStorage=true; }); })();
+</script>
 <script>
 "use strict";
 /* ================================================================
@@ -7309,6 +7379,8 @@ const Students = {
     let match = d.students.filter(s=>!find||s.name.toLowerCase().includes(find));
     if(levelFilter) match = match.filter(s=>s.level===levelFilter);
     if(favOnly) match = match.filter(s=>s.favorite);
+    if(Students._attnOnly){ const _a=(d.attendance[today()]||{}); match = match.filter(s=>_a[s.id]==='A' || (s.hw&&(s.hw.tries||0)>=3)); }
+    if(Students._bdayOnly){ match = match.filter(s=>{ const b=daysToBirthday(s.dob); return b!=null&&b>=0&&b<=14; }); }
     const stu = statusFilter==='inactive'? match.filter(s=>s.active===false) : statusFilter==='all'? match : match.filter(s=>s.active!==false);
     const inact = statusFilter==='all'? match.filter(s=>s.active===false) : [];
     const activeShown = statusFilter==='all'? stu.filter(s=>s.active!==false) : stu;
@@ -7318,16 +7390,25 @@ const Students = {
       if(s.level==='Level 2'){ const p=(s.mus&&s.mus.page)||0; return `<span class="tag tag-blue">Muṣḥaf p.${p||'—'}</span>`; }
       const st=hifzStats(s); return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>${esc(QS[st.cur].name)}</span><span>${st.pct.toFixed(0)}%</span></div><div class="bar"><i style="width:${st.pct}%"></i></div></div>`;
     };
-    const card = s => { const age=ageFromDob(s.dob); const bIn=daysToBirthday(s.dob);
+    const attToday = d.attendance[today()]||{};
+    const flagsOf = s => { const f=[]; const a=attToday[s.id];
+      if(a) f.push({t:PT_ATT_LABEL[a], k:a==='P'?'ok':a==='L'?'gold':a==='A'?'bad':'info'});
+      if(a==='A') f.push({t:'Follow up with family', k:'bad'});
+      if(s.hw && (s.hw.tries||0)>=3) f.push({t:'Stuck on homework · '+s.hw.tries+' failed attempts', k:'gold'});
+      const bd=daysToBirthday(s.dob); if(bd!=null&&bd>=0&&bd<=14) f.push({t:bd===0?'🎂 Birthday today':'🎂 Birthday in '+bd+'d', k:'gold'});
+      if(s.trialEnds&&s.trialEnds>=today()) f.push({t:'Trial until '+fmtDate(s.trialEnds), k:'info'});
+      return f; };
+    const needsAttn = s => s.active!==false && (attToday[s.id]==='A' || (s.hw&&(s.hw.tries||0)>=3));
+    const card = s => { const age=ageFromDob(s.dob);
       const lvlAccent = s.level==='Level 1'?'var(--ok)':s.level==='Level 2'?'var(--info)':'#7B4FA0';
-      return `<div class="card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="cursor:pointer;display:flex;gap:12px;align-items:center;border-left:3px solid ${lvlAccent}">
-        ${selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none">`:''}
+      const fl = s.active===false ? [] : flagsOf(s);
+      return `<div class="card st-card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="border-left-color:${lvlAccent}">
+        ${selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none;margin-top:12px">`:''}
         ${avatarHTML(s)}
-        <div style="min-width:0;flex:1"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
-        <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:3px">AMAN-${String(s.studentNo||0).padStart(3,'0')}${age!=null?' · '+age+'y':''}${s.gender?' · '+esc(s.gender):''}</div>
+        <div style="min-width:0;flex:1"><b class="nm" dir="auto">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
+        <div class="mt">AMAN-${String(s.studentNo||0).padStart(3,'0')}${age!=null?' · '+age+'y':''}${s.gender?' · '+esc(s.gender):''}</div>
         ${s.active===false?'<span class="tag tag-dim">left AMAN</span>':s.startDate&&s.startDate>today()?`<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`:prog(s)}
-        ${s.trialEnds&&s.trialEnds>=today()?`<span class="tag tag-gold" style="margin-top:3px">trial until ${fmtDate(s.trialEnds)}</span>`:''}
-        ${bIn!=null&&bIn>=0&&bIn<=14?`<span class="tag tag-gold" style="margin-top:3px">${bIn===0?'Birthday today':'Birthday in '+bIn+'d'}</span>`:''}</div></div>`; };
+        ${fl.length?`<div class="st-flags">${fl.map(x=>`<span class="st-flag ${x.k}">${esc(x.t)}</span>`).join('')}</div>`:''}</div></div>`; };
 
     const sortFns = { level:(a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level)||a.name.localeCompare(b.name),
       name:(a,b)=>a.name.localeCompare(b.name), recent:(a,b)=>(b.studentNo||0)-(a.studentNo||0) };
@@ -7347,24 +7428,54 @@ const Students = {
       bodyHTML = `<div class="grid g3">${activeShown.slice().sort(sortFns[sortBy]).map(card).join('')}</div>`;
     }
 
-    v.innerHTML = `${moduleHeroHTML('Student Information System', 'Students', d.students.length? d.students.filter(s=>s.active!==false).length+' active students'+(d.students.some(s=>s.active===false)?' · '+d.students.filter(s=>s.active===false).length+' inactive (records kept)':'')+' — level-aware progress, promotion signals, complete records.' : 'No students yet.', '🎓')}
-     <div class="filters no-print">
-       <button class="btn btn-p btn-sm" id="stAdd">＋ Add student</button>
-       <button class="btn btn-o btn-sm" id="stImport">⇪ Import</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
-       <button class="btn btn-o btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/progress">📊 Progress Tracker</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/cleaning">🧹 Cleaning Schedule</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/fieldtrip">🎒 Field Trip Checklist</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/gradebook">📗 Islamic Studies Gradebook</button>
-       <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
-       <button class="btn btn-o btn-sm" data-go="#/admissions">📥 Admissions</button>
-       <button class="btn btn-o btn-sm" id="stShare">🌟 Create Share Card</button>
+    const actAll = d.students.filter(s=>s.active!==false);
+    const presentToday = actAll.filter(s=>attToday[s.id]==='P'||attToday[s.id]==='L').length;
+    const markedToday = actAll.filter(s=>attToday[s.id]).length;
+    const attnCount = actAll.filter(needsAttn).length;
+    const bdays = actAll.filter(s=>{ const b=daysToBirthday(s.dob); return b!=null&&b>=0&&b<=14; }).length;
+    if(Students._attnOnly && statusFilter!=='inactive'){ /* filter applied below via shown lists */ }
+    v.innerHTML = `<div class="st-head no-print"><div><div class="eb">Student information system</div><h1>🎓 Students</h1>
+        <div class="sub">${actAll.length} active${d.students.some(s=>s.active===false)?' · '+d.students.filter(s=>s.active===false).length+' inactive (records kept)':''}</div></div>
+       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+         <button class="btn btn-p" id="stAdd">＋ Add student</button>
+         <details class="st-more"><summary class="btn btn-o">More ▾</summary><div class="pop">
+           <div class="hd">Records</div>
+           <button class="btn btn-sm" id="stImport">⇪ Import students</button>
+           <button class="btn btn-sm" id="stExport">⬇ Export CSV</button>
+           <button class="btn btn-sm" id="stEmerCard">🆘 Emergency card</button>
+           <button class="btn btn-sm" id="stShare">🌟 Create share card</button>
+           <button class="btn btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select several'}</button>
+           <div class="hd">Family updates</div>
+           <button class="btn btn-sm" id="stSyncUpdates">📝 Check family updates</button>
+           <button class="btn btn-sm" id="stUpdateCfg">⚙ Update sync settings <span style="margin-left:auto;font-size:11px;color:var(--ink3)">${d.settings.updateLastSync?'synced '+rel(d.settings.updateLastSync):'never synced'}</span></button>
+           <div class="hd">Other pages</div>
+           <button class="btn btn-sm" data-go="#/students/cleaning">🧹 Cleaning schedule</button>
+           <button class="btn btn-sm" data-go="#/students/fieldtrip">🎒 Field trip checklist</button>
+           <button class="btn btn-sm" data-go="#/admissions">📥 Admissions</button>
+           <div class="hd">Journey maps</div>
+           <div style="padding:2px 4px 6px">${QJ.buttonsHTML().replace('<span style="font-size:11.5px;color:var(--ink3)">🗺 Journey maps</span>','')}</div>
+         </div></details>
+       </div></div>
+     <div class="st-stats no-print">
+       <button class="st-stat" data-go="#/students/attendance"><b>${actAll.length}</b><span>Active students</span></button>
+       <button class="st-stat" data-go="#/students/attendance"><b>${markedToday?presentToday:'—'}</b><span>${markedToday?'Present today (of '+markedToday+' marked)':'Attendance not marked today'}</span></button>
+       <button class="st-stat ${attnCount?'warn':''} ${Students._attnOnly?'on':''}" id="stAttn"><b>${attnCount}</b><span>Need attention${Students._attnOnly?' · showing only these':''}</span></button>
+       <button class="st-stat" id="stBday"><b>${bdays}</b><span>Birthdays in 14 days</span></button>
      </div>
-     <div class="filters no-print" style="margin-top:-6px">
-       <button class="btn btn-o btn-sm" id="stSyncUpdates">📝 Check Family Updates</button>
-       <button class="btn btn-ghost btn-sm" id="stUpdateCfg">⚙ Update Sync Settings</button>
-       <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${d.settings.updateLastSync?'Last synced '+rel(d.settings.updateLastSync):'Never synced'}</span>
+     <div class="st-quick no-print">
+       <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
+       <button class="btn btn-o btn-sm" data-go="#/students/progress">📊 Progress tracker</button>
+       <button class="btn btn-o btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
+       <button class="btn btn-o btn-sm" data-go="#/students/gradebook">📗 Gradebook</button>
+       <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
+     </div>
+     <div class="st-bar no-print">
+       ${d.students.length?`<input type="search" id="stFind" placeholder="Find a student…" value="${esc(Students._find||'')}">`:''}
+       <span style="display:inline-flex;gap:6px;flex-wrap:wrap">${[['','All'],...LEVELS.map(L=>[L,L])].map(([L,t])=>`<button class="chip ${levelFilter===L?'on':''}" data-stl="${L}">${t}</button>`).join('')}</span>
+       <span class="sp"></span>
+       <select id="stStatus" aria-label="Filter by status"><option value="active" ${statusFilter==='active'?'selected':''}>Active</option><option value="inactive" ${statusFilter==='inactive'?'selected':''}>Inactive</option><option value="all" ${statusFilter==='all'?'selected':''}>All</option></select>
+       <select id="stSort" aria-label="Sort students by"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
+       <button class="chip ${favOnly?'on':''}" id="stFav">★ Favorites</button>
      </div>
      ${(()=>{ const pending = (d.pendingUpdates||[]); if(!pending.length) return '';
        const needsMatch = pending.filter(u=>!u.matchedStudentId || !d.students.some(s=>s.id===u.matchedStudentId)).length;
@@ -7380,17 +7491,6 @@ const Students = {
          </div>`;
        }).join('')}</div>
      </details>`; })()}
-     <div class="filters no-print" style="margin-top:-6px">
-       ${QJ.buttonsHTML()}
-       <button class="btn btn-ghost btn-sm" id="stEmerCard">🆘 Emergency card</button>
-       <button class="btn btn-ghost btn-sm" id="stExport">⬇ CSV</button>
-       <button class="btn btn-ghost btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select'}</button>
-       ${d.students.length?`<input type="search" id="stFind" placeholder="Find student…" value="${esc(Students._find||'')}" style="max-width:190px">`:''}
-       <select id="stLvl" aria-label="Filter by level" style="max-width:150px"><option value="">All levels</option>${LEVELS.map(L=>`<option value="${L}" ${L===levelFilter?'selected':''}>${L} ${LEVEL_SUB[L]}</option>`).join('')}</select>
-       <select id="stStatus" aria-label="Filter by status" style="max-width:120px"><option value="active" ${statusFilter==='active'?'selected':''}>Active</option><option value="inactive" ${statusFilter==='inactive'?'selected':''}>Inactive</option><option value="all" ${statusFilter==='all'?'selected':''}>All</option></select>
-       <select id="stSort" aria-label="Sort students by" style="max-width:140px"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
-       <button class="btn btn-ghost btn-sm" id="stFav" style="${favOnly?'color:var(--gold);font-weight:700':''}">★ Favorites</button>
-     </div>
      ${selectMode?`<div class="notice info no-print" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
         <span>${selected.size} selected</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -7410,7 +7510,10 @@ const Students = {
     $('#stExport',v).onclick=()=>Students.exportCSV();
     $('#stEmerCard',v).onclick=()=>Students.printEmergencyCard();
     $('#stFav',v).onclick=()=>{ Students._favOnly=!favOnly; Router.render(); };
-    $('#stLvl',v).onchange=e=>{ Students._levelFilter=e.target.value; Router.render(); };
+    const _mo=$('.st-more',v); if(_mo){ const off=e=>{ if(!document.body.contains(_mo)){ document.removeEventListener('click',off); return; } if(!_mo.contains(e.target)) _mo.open=false; }; document.addEventListener('click',off); $$('.pop .btn',_mo).forEach(b=>b.addEventListener('click',()=>{ _mo.open=false; })); }
+    $$('[data-stl]',v).forEach(b=>b.onclick=()=>{ Students._levelFilter=b.dataset.stl; Router.render(); });
+    $('#stAttn',v).onclick=()=>{ Students._attnOnly=!Students._attnOnly; Router.render(); };
+    $('#stBday',v).onclick=()=>{ Students._bdayOnly=!Students._bdayOnly; Router.render(); };
     $('#stStatus',v).onchange=e=>{ Students._statusFilter=e.target.value; Router.render(); };
     $('#stSort',v).onchange=e=>{ Students._sort=e.target.value; Router.render(); };
     $('#stSelect',v).onclick=()=>{ Students._selectMode=!selectMode; if(!Students._selectMode) selected.clear(); Router.render(); };
@@ -7964,16 +8067,12 @@ const Students = {
      student's only medical note might live in either one. */
   printEmergencyCard(){
     const d=DB.data;
-    const roster = d.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));
+    const roster = d.students.filter(s=>s.active!==false);
+    const fmtPh = p=>{ const dg=String(p||'').replace(/\D/g,''); const t=(dg.length===11&&dg[0]==='1')?dg.slice(1):dg; return t.length===10?'('+t.slice(0,3)+') '+t.slice(3,6)+'-'+t.slice(6):String(p||'').trim(); };
     const medText = s=>{
       const ap=s.application||{}; const parts=[];
       if((s.medical||'').trim()) parts.push(s.medical.trim());
       const allergy=(ap.allergy||'').trim(), allergyDetail=(ap.allergyDetail||'').trim();
-      // The application form's allergy field is usually just a yes/no flag
-      // ("Has allergies"/"No allergies") with the real info in allergyDetail
-      // — so a bare "Has allergies" is skipped in favor of the detail, but
-      // anything more specific (an allergen name entered directly) is kept
-      // alongside the detail rather than discarded.
       if(isAllergyPositive(allergy)){
         const label = /^has allerg(y|ies)$/i.test(allergy) ? '' : allergy;
         parts.push('Allergy: '+([label, allergyDetail].filter(Boolean).join(' — ')||'on file — no detail given'));
@@ -7982,39 +8081,69 @@ const Students = {
       if(hasRealAnswer(ap.meds)) parts.push('Meds: '+ap.meds.trim());
       return parts.join(' · ');
     };
-    const contactFor = s=>{
-      const ec=(s.emergencyContacts||[])[0];
-      if(ec) return {name:ec.name, relation:ec.relation, phone:ec.phone, guardian:false};
-      const g=(s.guardians||[])[0];
-      if(g) return {name:g.name, relation:g.relation||'Guardian', phone:g.phone, guardian:true};
-      return null;
-    };
+    const contactsOf = s=>{ const out=[];
+      (s.emergencyContacts||[]).forEach(c=>{ if(c&&(c.name||c.phone)) out.push({name:c.name||'',relation:c.relation||'',phone:c.phone||''}); });
+      (s.guardians||[]).forEach(g=>{ if(g&&(g.name||g.phone)) out.push({name:g.name||'',relation:g.relation||'Guardian',phone:g.phone||''}); });
+      return out; };
+    const ckey = c=>(String(c.phone||'').replace(/\D/g,'')||String(c.name||'').trim().toLowerCase());
+    // ---- group active students by family
+    const fmap={};
+    roster.forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (fmap[k]=fmap[k]||{key:k,solo:!famKey(s),members:[]}).members.push(s); });
+    const fams = Object.values(fmap).map(f=>{
+      f.members.sort((a,b)=>String(a.dob||'9999').localeCompare(String(b.dob||'9999'))||a.name.localeCompare(b.name,'ar'));
+      const cm=new Map(); const direct=new Set();
+      f.members.forEach(s=>{ const cs=contactsOf(s); if(cs.length) direct.add(s.id); cs.forEach(c=>{ const k=ckey(c); if(!k) return; const e=cm.get(k)||{c,owners:[]}; if(!e.c.phone&&c.phone) e.c=c; e.owners.push(s); cm.set(k,e); }); });
+      f.contacts=[...cm.values()]; f.noDirect=f.members.filter(s=>!direct.has(s.id));
+      f.label = f.solo ? (f.members[0].preferredName||f.members[0].name) : f.key;
+      f.pickup = [...new Set(f.members.map(s=>((s.application||{}).pickup||'').trim()).filter(Boolean))];
+      return f; }).sort((a,b)=>a.label.localeCompare(b.label,'ar'));
+    const missing = fams.filter(f=>!f.contacts.length);
     const flagged = roster.filter(s=>medText(s));
+    const famOf = s=>fams.find(f=>f.members.includes(s));
     const crestImg = (document.querySelector('.crest img')||{}).src || '';
+    const initialsOf = s=>String(s.name||'?').trim().charAt(0);
+    const photo = (s,px)=> s.photo ? `<img class="ph" style="width:${px}px;height:${px}px" src="${esc(s.photo)}" alt="">` : `<span class="ph ini" style="width:${px}px;height:${px}px;line-height:${px}px;font-size:${Math.round(px*.42)}px">${esc(initialsOf(s))}</span>`;
+    const tel = p=>{ const dg=String(p||'').replace(/\D/g,''); return dg?`<a class="tel" href="tel:${dg}">${esc(fmtPh(p))}</a> <a class="sms no-print" href="sms:${dg}">text</a>`:'<span class="nop">no phone</span>'; };
+    const contactLine = (e,f)=>{ const c=e.c; const shared = f.members.length>1 && e.owners.length<f.members.length;
+      return `<div class="cl"><b>${esc(c.name||'(unnamed)')}</b>${c.relation?` <span class="rel">(${esc(c.relation)})</span>`:''} — ${tel(c.phone)}${shared?` <span class="via">on file for ${esc(e.owners.map(o=>(o.preferredName||o.name).split(' ')[0]).join(', '))}</span>`:''}</div>`; };
+    const famContacts = f=> f.contacts.length ? f.contacts.map(e=>contactLine(e,f)).join('') : '<div class="cl none">— none on file —</div>';
+
+    const alertHTML = flagged.length ? `<div class="alerts"><div class="ah">⚠ Medical alerts — ${flagged.length} student${flagged.length===1?'':'s'}</div>
+      ${flagged.map(s=>{ const f=famOf(s); return `<div class="arow">${photo(s,46)}<div class="ab"><div class="an" dir="auto">${esc(s.preferredName||s.name)} <span class="lv">${esc(s.level)}</span></div><div class="am">${esc(medText(s))}</div>
+        <div class="ac">${f.contacts.length?f.contacts.slice(0,3).map(e=>contactLine(e,f)).join(''):'<span class="none">no contact on file — ask the family</span>'}</div></div></div>`; }).join('')}</div>` : '';
+    const missHTML = missing.length ? `<div class="miss"><b>${missing.length} famil${missing.length===1?'y has':'ies have'} no contact on file:</b> ${missing.map(f=>esc(f.label)+(f.members.length>1?' ('+f.members.length+')':'')).join(' · ')}</div>` : '';
+
     printWindow('AMAN — Emergency & Medical Quick Reference',
-      `*{box-sizing:border-box}body{font-family:'Crimson Pro',Georgia,serif;max-width:860px;margin:26px auto;padding:0 20px;color:#20261f;line-height:1.45}
-       .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a4a35;padding-bottom:12px;margin-bottom:14px}
+      `*{box-sizing:border-box}body{font-family:'Crimson Pro',Georgia,serif;max-width:900px;margin:26px auto;padding:0 20px;color:#20261f;line-height:1.4}
+       .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a4a35;padding-bottom:12px;margin-bottom:12px}
        .head img{width:50px;height:50px}
-       h1{font-family:'Playfair Display',Georgia,serif;font-size:19px;color:#123626;margin:0}
+       h1{font-family:'Playfair Display',Georgia,serif;font-size:20px;color:#123626;margin:0}
        .meta{font-size:12px;color:#5c665a}
-       h2{font-size:13px;color:#1a4a35;margin:16px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px}
-       table{width:100%;border-collapse:collapse;font-size:12px}
-       td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
-       th{font-size:10px;text-transform:uppercase;color:#5c665a;letter-spacing:.03em}
-       .warn{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:8px 12px;font-size:12px;margin:4px 0 12px}
-       .flagrow{background:#fdf3e8}
-       .med{color:#8a3b1f;font-weight:600}
-       .gtag{color:#999;font-size:10.5px}
-       @media print{@page{margin:0.5in} thead{display:table-header-group} tr{page-break-inside:avoid}}`,
-      `<div class="head">${crestImg?`<img src="${crestImg}" alt="">`:''}<div><h1>Emergency &amp; Medical Quick Reference</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared ${fmtDate(today())} · ${roster.length} active students</div></div></div>
-       <p style="font-size:12px">For fast reference during class or in an emergency. Keep up to date from each student's profile page — emergency contacts, guardians, and the Medical field.</p>
-       ${flagged.length?`<div class="warn">⚠ ${flagged.length} student${flagged.length===1?'':'s'} with allergy/medical notes on file — highlighted below.</div>`:''}
-       <h2>Roster — ${roster.length} active students</h2>
-       <table><thead><tr><th style="width:150px">Student</th><th style="width:65px">Level</th><th style="width:210px">Emergency contact</th><th>Allergy / medical notes</th></tr></thead><tbody>
-       ${roster.map(s=>{ const c=contactFor(s); const mt=medText(s);
-         const contactStr = c? `${esc(c.name||'(unnamed)')}${c.relation?' ('+esc(c.relation)+')':''}${c.phone?' — '+esc(c.phone):''}${c.guardian?' <span class="gtag">[guardian on file]</span>':''}` : '<span style="color:#b33">— none on file —</span>';
-         return `<tr class="${mt?'flagrow':''}"><td><b>${esc(s.preferredName||s.name)}</b></td><td>${esc(s.level)}</td><td>${contactStr}</td><td class="${mt?'med':''}">${mt?esc(mt):'<span style="color:#999">—</span>'}</td></tr>`;
-       }).join('')}</tbody></table>`);
+       .ph{border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block}.ini{background:#1a4a35;color:#fff;text-align:center;font-weight:700;font-family:sans-serif}
+       .alerts{border:2px solid #b33a2a;border-radius:10px;padding:10px 12px;margin:8px 0 12px;background:#fff6f3}
+       .ah{font-weight:700;color:#8a2417;font-size:14px;margin-bottom:6px}
+       .arow{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid #f0cfc8;break-inside:avoid;page-break-inside:avoid}.arow:first-of-type{border-top:0}
+       .an{font-weight:700;font-size:14.5px}.lv{font-size:10.5px;color:#777;font-weight:400;margin-left:4px}
+       .am{color:#8a2417;font-weight:700;font-size:13px}.ac{font-size:12px;margin-top:2px}
+       .miss{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:8px 12px;font-size:12px;margin:0 0 12px}
+       .fam{border:1px solid #d9d2bf;border-radius:10px;margin:0 0 9px;break-inside:avoid;page-break-inside:avoid;overflow:hidden}
+       .fam.nocontact{border-color:#d99;border-left:4px solid #b33}
+       .fh{background:#f3ecd9;padding:5px 12px;font-size:12px;display:flex;justify-content:space-between;gap:8px}.fh b{font-size:13.5px;color:#123626}
+       .fb{display:grid;grid-template-columns:1.15fr 1fr;gap:12px;padding:8px 12px}
+       .kid{display:flex;gap:9px;align-items:center;margin:3px 0}.kid .n{font-weight:700;font-size:13.5px}.kid .l{font-size:10.5px;color:#777}.kid .m{font-size:11.5px;color:#8a2417;font-weight:700}
+       .cl{font-size:12.5px;margin:2px 0}.rel{color:#666}.via{font-size:10.5px;color:#7a5518;font-style:italic}.none,.nop{color:#b33}
+       .ct .t{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:#777;margin-bottom:2px}
+       .note{font-size:10.5px;color:#7a5518;font-style:italic;margin-top:3px}
+       a.tel{color:inherit;text-decoration:none;font-weight:600}a.sms{font-size:10.5px;color:#1a4a35}
+       .foot{font-size:10.5px;color:#888;text-align:center;margin-top:14px}
+       @media(max-width:560px){.fb{grid-template-columns:1fr}}
+       @media print{@page{margin:0.5in;@bottom-center{content:"Emergency & Medical Quick Reference · page " counter(page);font-size:9px;color:#888}} .no-print{display:none}}`,
+      `<div class="head">${crestImg?`<img src="${crestImg}" alt="">`:''}<div><h1>Emergency &amp; Medical Quick Reference</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared ${fmtDate(today())} · ${roster.length} active students in ${fams.length} families</div></div></div>
+       ${alertHTML}${missHTML}
+       ${fams.map(f=>`<div class="fam ${f.contacts.length?'':'nocontact'}"><div class="fh"><b>${f.solo?'<bdi>'+esc(f.label)+'</bdi>':'<bdi>'+esc(f.label)+'</bdi> family'}</b><span>${f.members.length} student${f.members.length===1?'':'s'}</span></div>
+         <div class="fb"><div class="kids">${f.members.map(s=>{ const mt=medText(s); return `<div class="kid">${photo(s,38)}<div><div class="n" dir="auto">${esc(s.preferredName||s.name)}</div><div class="l">${esc(s.level)}</div>${mt?`<div class="m">${esc(mt)}</div>`:''}</div></div>`; }).join('')}</div>
+         <div class="ct"><div class="t">Emergency contacts</div>${famContacts(f)}${f.contacts.length&&f.noDirect.length&&f.members.length>1?`<div class="note">Not on file in ${f.noDirect.map(s=>esc((s.preferredName||s.name).split(' ')[0])).join(', ')}'s own record — shown from a sibling.</div>`:''}${f.pickup.length?`<div class="t" style="margin-top:6px">Authorized pickup</div><div class="cl">${f.pickup.map(esc).join(' · ')}</div>`:''}</div></div></div>`).join('')}
+       <div class="foot">Keep this current from each student's profile — emergency contacts, guardians and the Medical field. Contacts marked “from a sibling” are not saved to that student's record.</div>`);
     DB.log('Emergency & medical quick-reference card printed');
   },
   /* ---------- LEVEL-AWARE PROFILE ---------- */
@@ -8184,8 +8313,8 @@ const Students = {
          <table class="tbl"><thead><tr><th>Unit</th>${activeTypes.map(([,l])=>`<th style="text-align:right">${l}</th>`).join('')}<th style="text-align:right">Grade</th></tr></thead>
          <tbody>${units.map(u=>{
            const grade = gbUnitGrade(subject, u.id, s);
-           return `<tr><td>${esc(u.name)}</td>${activeTypes.map(([t])=>{ const st=gbCategoryStats(u.id,s.id,t); return `<td style="text-align:right;font-family:var(--f-mono);font-size:12px">${st&&st.pct!=null?st.pct.toFixed(0)+'%':'—'}</td>`; }).join('')}
-           <td style="text-align:right;font-family:var(--f-mono);font-weight:700">${grade!=null?grade.toFixed(1):'—'}</td></tr>`;
+           return `<tr><td>${esc(u.name)}</td>${activeTypes.map(([t])=>{ const st=gbCategoryStats(u.id,s.id,t); return `<td style="text-align:right;font-family:var(--f-mono);font-size:12px">${st&&st.pct!=null?'<span style="color:'+gbPctColor(st.pct)+'">'+st.pct.toFixed(0)+'%</span>':'—'}</td>`; }).join('')}
+           <td style="text-align:right;font-family:var(--f-mono);font-weight:700;white-space:nowrap">${grade!=null?'<span style="color:'+gbPctColor(grade)+'">'+grade.toFixed(1)+'% · '+ptGrade(grade)+'</span>':'—'}</td></tr>`;
          }).join('')}</tbody></table>
        </div>`;
      })()}
@@ -10525,6 +10654,7 @@ const FieldTrips = {
   }
 };
 
+const gbPctColor = p => p==null?'var(--ink3)': p>=80?'var(--ok)': p>=70?'var(--gold-text,#8a6520)':'var(--bad)';
 const GB_TAG_CLASS = {cw:'tag-dim', hw:'tag-blue', qz:'tag-gold', ts:'tag-purple', ex:'tag-red'};
 const Gradebook = {
   // Only one subject exists today (Islamic Studies), but every screen below
@@ -10681,14 +10811,15 @@ const Gradebook = {
     items.forEach(a=>{ const g=gbGroupLabel(a.title); (groups[g]=groups[g]||[]).push(a); });
     const groupKeys = Object.keys(groups).sort((x,y)=>gbGroupSortKey(x)-gbGroupSortKey(y));
     const tableFor = list => `<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
-       <table class="tbl"><thead><tr><th>Assignment</th><th style="text-align:right">Out of</th><th style="text-align:right">Graded</th><th>Date</th><th class="no-print"></th></tr></thead>
+       <table class="tbl"><thead><tr><th>Assignment</th><th style="text-align:right">Out of</th><th>Status</th><th style="text-align:right">Average</th><th>Date</th><th class="no-print"></th></tr></thead>
        <tbody>${list.map(a=>{
          const gc = students.filter(s=>a.scores&&a.scores[s.id]!=null&&a.scores[s.id]!=='').length;
          const num = gbAsnNumber(a.title);
          return `<tr data-gbasn="${a.id}" style="cursor:pointer" title="${esc(a.title)}">
            <td>${num?`<span class="tag tag-dim" style="margin-right:7px;font-size:10px">No. ${num.padStart(2,'0')}</span>`:''}<b>${esc(gbShortTitle(a.title))}</b></td>
            <td style="text-align:right;font-family:var(--f-mono)">${a.possible}</td>
-           <td style="text-align:right;font-family:var(--f-mono)">${gc}/${students.length}</td>
+           <td>${gc===0?'<span class="gb-st none">Not graded</span>':gc>=students.length?'<span class="gb-st done">✓ Done</span>':`<span class="gb-st part">${gc} of ${students.length}</span>`}</td>
+           <td style="text-align:right;font-family:var(--f-mono)">${(()=>{ const v2=students.map(s=>a.scores&&a.scores[s.id]).filter(x=>x!=null&&x!==''&&x!=='EXC').map(x=>x==='MISS'?0:Number(x)||0); return v2.length&&a.possible>0?'<span style="color:'+gbPctColor(v2.reduce((p,q)=>p+q,0)/v2.length/a.possible*100)+'">'+Math.round(v2.reduce((p,q)=>p+q,0)/v2.length/a.possible*100)+'%</span>':'—'; })()}</td>
            <td style="font-family:var(--f-mono);font-size:12px">${fmtDate(a.date)}</td>
            <td class="no-print"><button class="btn btn-ghost btn-sm" data-gbasndel="${a.id}" title="Delete" style="color:var(--bad)">🗑</button></td>
          </tr>`; }).join('')}</tbody></table>
@@ -10702,7 +10833,7 @@ const Gradebook = {
         <span class="tag ${GB_TAG_CLASS[type]}" style="font-size:11px">${esc(label)}</span>
         <b style="font-family:var(--f-display);font-size:15px">${esc(label)}</b>
         <span style="font-size:11.5px;color:var(--ink3)">${items.length} assignment${items.length!==1?'s':''}</span>
-        ${fullyGraded?`<span class="tag tag-dim" style="margin-left:auto">✓ fully graded</span>`:`<span class="tag tag-gold" style="margin-left:auto">${possibleCells-gradedCells} ungraded</span>`}
+        ${(()=>{ const dn=items.filter(x=>students.length&&students.every(s=>x.scores&&x.scores[s.id]!=null&&x.scores[s.id]!=='')).length; return fullyGraded?`<span class="gb-st done" style="margin-left:auto">✓ all ${items.length} graded</span>`:`<span style="margin-left:auto;min-width:120px;text-align:right"><span class="gb-st ${dn?'part':'none'}">${dn} of ${items.length} graded</span><div class="gb-mini"><i style="width:${items.length?dn/items.length*100:0}%"></i></div></span>`; })()}
       </summary>
       <div style="margin-top:12px">${body}</div>
     </details>`;
@@ -10724,21 +10855,24 @@ const Gradebook = {
     // size, % of all possible grades actually entered, running class
     // average) rather than making Nur infer any of it from the sectioned
     // tables below.
-    const gradedCells = assignments.reduce((a,x)=>a+students.filter(s=>x.scores&&x.scores[s.id]!=null&&x.scores[s.id]!=='').length,0);
-    const possibleCells = assignments.length*students.length;
-    const gradedPct = possibleCells ? Math.round(gradedCells/possibleCells*100) : 0;
+    const scoredBy=(a,s)=>a.scores&&a.scores[s.id]!=null&&a.scores[s.id]!=='';
+    const isDone=a=>students.length>0 && students.every(s=>scoredBy(a,s));
+    const isPart=a=>!isDone(a) && students.some(s=>scoredBy(a,s));
+    const asnDone=assignments.filter(isDone).length, asnPart=assignments.filter(isPart).length;
+    const anyGraded=assignments.filter(a=>students.some(s=>scoredBy(a,s))).length;
+    const nextAsn=assignments.find(isPart)||assignments.find(a=>!isDone(a));
     const classGrades = students.map(s=>gbUnitGrade(subject,u.id,s)).filter(g=>g!=null);
     const classAvg = classGrades.length ? classGrades.reduce((a,b)=>a+b,0)/classGrades.length : null;
-    const catalogStat = (label,val)=>`<div><div class="eyebrow">${esc(label)}</div><b style="font-family:var(--f-display);font-size:21px">${val}</b></div>`;
+    const catalogStat = (label,val,sub,bar)=>`<div class="gb-stat"><div class="l">${esc(label)}</div><div class="v">${val}</div>${sub?`<div class="s">${sub}</div>`:''}${bar!=null?`<div class="gb-mini"><i style="width:${bar}%"></i></div>`:''}</div>`;
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" id="gbBack">← ${esc(subject.name)} Gradebook</button>
      <div style="margin-top:12px">${moduleHeroHTML(subject.name, u.name, (u.level?u.level+' only. ':'')+'Assignments and grades for this unit.', '📗')}</div>
-     <div class="card" style="margin-bottom:16px;display:flex;gap:26px;flex-wrap:wrap">
-       ${catalogStat('Assignments', assignments.length)}
-       ${catalogStat('Students', students.length)}
-       ${catalogStat('Graded', gradedPct+'%')}
-       ${catalogStat('Class average', classAvg!=null?classAvg.toFixed(1):'—')}
-     </div>
+     <div class="card" style="margin-bottom:16px"><div class="gb-stats">
+       ${catalogStat('Assignments graded', asnDone+' <span style="font-size:15px;color:var(--ink3)">of '+assignments.length+'</span>', asnPart?asnPart+' in progress':'none in progress', assignments.length?asnDone/assignments.length*100:0)}
+       ${catalogStat('Students', students.length, 'taking this unit')}
+       ${catalogStat('Class average', classAvg!=null?classAvg.toFixed(1)+'%':'—', classAvg!=null?'from '+anyGraded+' graded assignment'+(anyGraded===1?'':'s'):'nothing graded yet')}
+       ${nextAsn?`<div class="gb-stat no-print" style="display:flex;flex-direction:column;justify-content:center;gap:4px"><div class="l">Up next</div><button class="btn btn-p btn-sm" id="gbNext" style="justify-content:center">Grade next →</button><div class="s" style="overflow-wrap:anywhere">${esc(gbShortTitle(nextAsn.title))}</div></div>`:`<div class="gb-stat"><div class="l">Up next</div><div class="v" style="color:var(--ok)">All done ✓</div></div>`}
+     </div></div>
      <div class="filters no-print"><button class="btn btn-p btn-sm" id="gbAddAsn">＋ Add assignment</button></div>
      ${assignments.length ? GB_TYPES.map(([type,label])=>this._typeSectionHTML(type,label,assignments,students)).join('') : '<div class="empty"><p>No assignments yet — add one above.</p></div>'}
      <div class="sect">📊 Grades this unit<span class="rule"></span></div>
@@ -10751,13 +10885,14 @@ const Gradebook = {
          <table class="tbl"><thead><tr><th>Student</th>${activeTypes.map(([,l])=>`<th style="text-align:right">${l}</th>`).join('')}<th style="text-align:right">Unit grade</th></tr></thead>
          <tbody>${g.map(s=>{
            const grade = gbUnitGrade(subject, u.id, s);
-           return `<tr><td><div style="display:flex;align-items:center;gap:8px">${avatarHTML(s,'width:28px;height:28px;font-size:10.5px;border-radius:50%;flex-shrink:0')}<span dir="rtl">${esc(s.name)}</span></div></td>${activeTypes.map(([t])=>{ const st=gbCategoryStats(u.id,s.id,t); return `<td style="text-align:right;font-family:var(--f-mono);font-size:12.5px">${st&&st.pct!=null?st.pct.toFixed(0)+'%':'—'}</td>`; }).join('')}
-           <td style="text-align:right;font-family:var(--f-mono);font-weight:700">${grade!=null?grade.toFixed(1):'—'}</td></tr>`;
+           return `<tr><td><div style="display:flex;align-items:center;gap:8px">${avatarHTML(s,'width:28px;height:28px;font-size:10.5px;border-radius:50%;flex-shrink:0')}<span dir="rtl">${esc(s.name)}</span></div></td>${activeTypes.map(([t])=>{ const st=gbCategoryStats(u.id,s.id,t); return `<td style="text-align:right;font-family:var(--f-mono);font-size:12.5px">${st&&st.pct!=null?'<span style="color:'+gbPctColor(st.pct)+'">'+st.pct.toFixed(0)+'%</span>':'—'}</td>`; }).join('')}
+           <td style="text-align:right;font-family:var(--f-mono);font-weight:700;white-space:nowrap">${grade!=null?'<span style="color:'+gbPctColor(grade)+'">'+grade.toFixed(1)+'% · '+ptGrade(grade)+'</span>':'—'}</td></tr>`;
          }).join('')}</tbody></table>
        </div>`; }).join('')}`;
     wireCommon(v);
     $('#gbBack',v).onclick=()=>{ this._unitId=null; Router.render(); };
     $('#gbAddAsn',v).onclick=()=>this.assignmentForm(subject,u);
+    const _gn=$('#gbNext',v); if(_gn) _gn.onclick=()=>{ this._assignmentId=nextAsn.id; Router.render(); };
     $$('[data-gbasn]',v).forEach(tr=>tr.addEventListener('click', e=>{ if(e.target.closest('[data-gbasndel]')) return; this._assignmentId=tr.dataset.gbasn; Router.render(); }));
     $$('[data-gbasndel]',v).forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
       confirmBox('Delete this assignment and every grade recorded for it?', ()=>{
@@ -10798,28 +10933,44 @@ const Gradebook = {
     const u = DB.data.gbUnits.find(x=>x.id===a.unitId);
     const students = ptSortStudents(DB.data.students.filter(s=>s.active!==false && (!u || gbUnitAppliesTo(u,s.level)) && gbIsEnrolled(s)), 'name');
     const levelGroups = {}; LEVELS.forEach(L=>{ levelGroups[L]=students.filter(s=>s.level===L); });
+    const sib = u ? gbAssignmentsFor(u.id) : [a]; const ix = sib.findIndex(x=>x.id===a.id);
+    const has = sid => a.scores[sid]!=null && a.scores[sid]!=='';
+    const att = (DB.data.attendance[a.date]||{});
+    const excAbs = () => students.filter(s=>att[s.id]==='E' && !has(s.id));
 
-    // One row's markup — regenerated after every edit (score, EXC, Missing)
-    // rather than patched piecemeal, since all three affect each other
-    // (typing a number clears EXC/Missing; toggling either clears the
-    // number) and a full re-render of just this <tr> is simplest to keep
-    // consistent.
     const rowHTML = s=>{
       const raw = a.scores[s.id];
       const isExc = raw==='EXC', isMiss = raw==='MISS';
       const numVal = (typeof raw==='number') ? raw : '';
-      const pct = isExc ? 'EXC' : isMiss ? '0%' : (numVal!==''&&a.possible>0) ? Math.round(numVal/a.possible*100)+'%' : '—';
-      const pctColor = isExc ? 'var(--info)' : isMiss ? 'var(--bad)' : 'var(--ink3)';
+      const p = isMiss ? 0 : (numVal!==''&&a.possible>0) ? numVal/a.possible*100 : null;
+      const pct = isExc ? 'Excused' : isMiss ? '0%' : p!=null ? Math.round(p)+'%' : '—';
+      const pctColor = isExc ? 'var(--info)' : isMiss ? 'var(--bad)' : gbPctColor(p);
+      const absent = att[s.id]==='A' ? 'Absent' : att[s.id]==='E' ? 'Excused absence' : '';
       return `<tr data-gbrow="${s.id}">
-        <td style="display:flex;align-items:center;gap:8px">${avatarHTML(s,'width:30px;height:30px;font-size:11px;border-radius:50%')}<span dir="rtl">${esc(s.name)}</span></td>
-        <td style="text-align:right;white-space:nowrap"><input type="number" min="0" max="${a.possible}" data-gbscore="${s.id}" value="${numVal}" ${isExc||isMiss?'disabled':''} style="width:64px;text-align:right;font-family:var(--f-mono)"> <span style="color:var(--ink3);font-size:11px">/ ${a.possible}</span></td>
-        <td style="text-align:right;width:44px;font-family:var(--f-mono);font-size:12px;color:${pctColor}" data-gbpct="${s.id}">${pct}</td>
-        <td class="no-print" style="white-space:nowrap"><button class="chip ${isExc?'on':''}" data-gbexc="${s.id}" style="font-size:10px;padding:4px 8px" title="Excused — doesn't count for or against them">EXC</button> <button class="chip ${isMiss?'on':''}" data-gbmiss="${s.id}" style="font-size:10px;padding:4px 8px" title="Never turned in — counts as zero">Missing</button></td>
+        <td><div class="gb-nm">${avatarHTML(s,'width:32px;height:32px;font-size:11px;border-radius:50%;flex-shrink:0')}<span dir="rtl">${esc(s.name)}</span>${absent?`<span class="st-flag ${att[s.id]==='A'?'bad':'info'}" style="margin-left:6px;white-space:nowrap">${absent} that day</span>`:''}</div></td>
+        <td style="text-align:right;white-space:nowrap"><input class="gb-in" type="number" inputmode="decimal" enterkeyhint="next" min="0" max="${a.possible}" data-gbscore="${s.id}" value="${numVal}" ${isExc||isMiss?'disabled':''}> <span style="color:var(--ink3);font-size:12px">/ ${a.possible}</span></td>
+        <td style="text-align:right;width:64px;font-family:var(--f-mono);font-size:13px;font-weight:700;color:${pctColor}" data-gbpct="${s.id}">${pct}</td>
+        <td class="no-print" style="white-space:nowrap;text-align:right"><button class="chip ${isExc?'on':''}" data-gbexc="${s.id}" style="font-size:12px;padding:6px 11px" title="Away — doesn't count for or against them">Excused</button> <button class="chip ${isMiss?'on':''}" data-gbmiss="${s.id}" style="font-size:12px;padding:6px 11px" title="Never turned in — counts as zero">Missing</button></td>
       </tr>`;
+    };
+    const barHTML = ()=>{
+      const n=students.filter(s=>has(s.id)).length;
+      const vals=students.map(s=>a.scores[s.id]).filter(x=>x!=null&&x!==''&&x!=='EXC').map(x=>x==='MISS'?0:Number(x)||0);
+      const avg=vals.length&&a.possible>0?Math.round(vals.reduce((p,q)=>p+q,0)/vals.length/a.possible*100):null;
+      return `<b>${n} of ${students.length} graded</b><span style="color:${gbPctColor(avg)};font-weight:700">${avg!=null?'· average '+avg+'%':'· no average yet'}</span><span class="gb-st ${n===0?'none':n>=students.length?'done':'part'}">${n===0?'Not started':n>=students.length?'✓ Done':'In progress'}</span><span id="gbSaved" style="font-size:11.5px;color:var(--ink3);margin-left:auto">Saves automatically</span>`;
     };
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" id="gbBack2">← ${esc(u?u.name:subject.name)}</button>
-     <div style="margin-top:12px">${moduleHeroHTML(GB_TYPE_LABEL[a.type]+' · out of '+a.possible, a.title, 'Enter a score, or mark EXC for an excused absence (won\u2019t count against them) or Missing for work never turned in (counts as zero).', '📗')}</div>
+     <div style="margin-top:12px">${moduleHeroHTML(GB_TYPE_LABEL[a.type]+' · out of '+a.possible, a.title, 'Type a score and press Enter to jump to the next student. Excused = away, doesn’t count against them. Missing = never turned in, counts as zero.', '📗')}</div>
+     <div class="gb-sticky no-print"><div class="row" id="gbBar">${barHTML()}</div>
+       <div class="row" style="margin-top:8px">
+         <button class="btn btn-o btn-sm" id="gbPrev" ${ix<=0?'disabled':''}>‹ Previous</button>
+         <button class="btn btn-o btn-sm" id="gbNextA" ${ix<0||ix>=sib.length-1?'disabled':''}>Next assignment ›</button>
+         <span style="flex:1"></span>
+         <button class="btn btn-o btn-sm" id="gbFill" title="Gives everyone who has no score yet full marks">Fill blanks with full marks (${a.possible})</button>
+         <button class="btn btn-ghost btn-sm" id="gbClear">Clear all</button>
+         <button class="btn btn-o btn-sm" id="gbExcAbs" style="display:none"></button>
+       </div></div>
      ${LEVELS.map(L=>{ const g=levelGroups[L]; if(!g.length) return '';
        return `<div class="sect">${L}<span class="rule"></span></div>
        <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
@@ -10828,38 +10979,54 @@ const Gradebook = {
        </div>`; }).join('')}`;
     wireCommon(v);
     $('#gbBack2',v).onclick=()=>{ this._assignmentId=null; Router.render(); };
+    const go = id=>{ this._assignmentId=id; Router.render(); };
+    $('#gbPrev',v).onclick=()=>{ if(ix>0) go(sib[ix-1].id); };
+    $('#gbNextA',v).onclick=()=>{ if(ix>=0&&ix<sib.length-1) go(sib[ix+1].id); };
 
+    const refreshBar = ()=>{
+      $('#gbBar',v).innerHTML = barHTML();
+      const sv=$('#gbSaved',v); if(sv) sv.textContent='Saved ✓';
+      const n=excAbs().length, b=$('#gbExcAbs',v);
+      b.style.display=n?'':'none'; b.textContent='Excused absences → Excused ('+n+')';
+    };
+    const snapshot = ()=>JSON.stringify(a.scores);
+    const restore = snap=>()=>{ a.scores=JSON.parse(snap); DB.save(); Router.render(); };
+    $('#gbFill',v).onclick=()=>{ const snap=snapshot(); let n=0; students.forEach(s=>{ if(!has(s.id)){ a.scores[s.id]=a.possible; n++; } });
+      if(!n){ toast('Everyone already has a score'); return; } DB.save(); toast('Gave '+n+' student'+(n===1?'':'s')+' full marks',restore(snap)); Router.render(); };
+    $('#gbClear',v).onclick=()=>{ if(!students.some(s=>has(s.id))){ toast('Nothing to clear'); return; }
+      confirmBox('Clear every score for this assignment? You can undo right after.', ()=>{ const snap=snapshot(); students.forEach(s=>{ delete a.scores[s.id]; }); DB.save(); toast('Cleared all scores',restore(snap)); Router.render(); }); };
+    $('#gbExcAbs',v).onclick=()=>{ const list=excAbs(); if(!list.length) return; const snap=snapshot(); list.forEach(s=>{ a.scores[s.id]='EXC'; }); DB.save(); toast('Marked '+list.length+' excused absence'+(list.length===1?'':'s')+' as Excused',restore(snap)); Router.render(); };
+
+    const focusNext = sid=>{
+      const all=[...v.querySelectorAll('[data-gbscore]')]; const i=all.findIndex(x=>x.dataset.gbscore===sid);
+      for(let k=i+1;k<all.length;k++){ if(!all[k].disabled){ all[k].focus(); try{ all[k].select(); }catch(_){} all[k].scrollIntoView({block:'center',behavior:'smooth'}); return; } }
+    };
+    const commit = (sid,inp)=>{
+      const raw=inp.value.trim();
+      if(raw===''){ delete a.scores[sid]; }
+      else{ let n=Number(raw); if(isNaN(n)){ toast('Enter a number'); inp.value=''; return false; } a.scores[sid]=Math.max(0, Math.min(a.possible, n)); }
+      DB.save(); return true;
+    };
     const wireRow = sid=>{
       const inp = v.querySelector('[data-gbscore="'+sid+'"]');
-      if(inp) inp.onchange=()=>{
-        const raw=inp.value.trim();
-        if(raw===''){ delete a.scores[sid]; }
-        else{
-          let n=Number(raw);
-          if(isNaN(n)){ toast('Enter a number'); inp.value=''; return; }
-          a.scores[sid]=Math.max(0, Math.min(a.possible, n));
-        }
-        DB.save(); refreshRow(sid);
-      };
+      if(inp){
+        inp.onfocus=()=>{ try{ inp.select(); }catch(_){} };
+        inp.onchange=()=>{ if(commit(sid,inp)) refreshRow(sid); };
+        inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); if(commit(sid,inp)){ inp.onchange=null; refreshRow(sid); focusNext(sid); } } };
+      }
       const excBtn = v.querySelector('[data-gbexc="'+sid+'"]');
-      if(excBtn) excBtn.onclick=()=>{
-        if(a.scores[sid]==='EXC') delete a.scores[sid]; else a.scores[sid]='EXC';
-        DB.save(); refreshRow(sid);
-      };
+      if(excBtn) excBtn.onclick=()=>{ if(a.scores[sid]==='EXC') delete a.scores[sid]; else a.scores[sid]='EXC'; DB.save(); refreshRow(sid); };
       const missBtn = v.querySelector('[data-gbmiss="'+sid+'"]');
-      if(missBtn) missBtn.onclick=()=>{
-        if(a.scores[sid]==='MISS') delete a.scores[sid]; else a.scores[sid]='MISS';
-        DB.save(); refreshRow(sid);
-      };
+      if(missBtn) missBtn.onclick=()=>{ if(a.scores[sid]==='MISS') delete a.scores[sid]; else a.scores[sid]='MISS'; DB.save(); refreshRow(sid); };
     };
     const refreshRow = sid=>{
       const tr = v.querySelector('[data-gbrow="'+sid+'"]');
       if(!tr) return;
       const s = students.find(x=>x.id===sid);
       tr.outerHTML = rowHTML(s);
-      wireRow(sid);
+      wireRow(sid); refreshBar();
     };
-    students.forEach(s=>wireRow(s.id));
+    students.forEach(s=>wireRow(s.id)); refreshBar();
   },
 };
 /* ================= MODULE: REVISION PLANNER (Level 3 murājaʿah) =================
@@ -11435,35 +11602,97 @@ const HP={
 };
 /* ---------- PEER PAIRS ---------- */
 const PP={
-  st(){ const s=DB.data.settings; return s.peerPairs=s.peerPairs||{ws:'',pairs:[],hist:{}}; },
+  st(){ const s=DB.data.settings; const p=s.peerPairs=s.peerPairs||{ws:'',pairs:[],hist:{}}; p.hist=p.hist||{}; p.locked=p.locked||[]; p.mode=p.mode||'auto'; p.extra=p.extra||[]; return p; },
+  key(a,b){ return [a,b].sort().join('|'); },
+  pkey(p){ return p.slice().sort().join('+'); },
+  byId(id){ return DB.data.students.find(x=>x.id===id); },
   strength(s){ let ver=0,streak=0,pct=0,dueN=0; try{ ver=RP.verified(s)||0; streak=RP.streak(s); pct=hifzStats(s).pct; dueN=RP.due(s).length; }catch(e){} return ver*70+streak*4+pct*.3-dueN*3; },
-  eligible(){ return CR.active().filter(s=>s.level==='Level 3'&&CR.present(s)&&!(RP.get(s).paused)); },
-  gen(){ const st=PP.st(), ws=CR.wk(), el=PP.eligible(), hist=st.hist||{}; const pairs=[];
-    const groups={}; el.forEach(s=>(groups[s.gender||'x']=groups[s.gender||'x']||[]).push(s));
-    Object.values(groups).forEach(g=>{ const arr=g.map(s=>({s,sc:PP.strength(s),age:ageFromDob(s.dob)||14})).sort((a,b)=>b.sc-a.sc);
-      const used=new Set();
-      for(let i=0;i<arr.length;i++){ if(used.has(i)) continue; used.add(i);
-        let pick=-1,best=1e9; for(let j=arr.length-1;j>i;j--){ if(used.has(j)) continue; const key=[arr[i].s.id,arr[j].s.id].sort().join('|'); const recent=hist[key]&&hist[key]>=RP.addDays(ws,-28); const ageGap=Math.abs(arr[i].age-arr[j].age); const cost=(recent?100:0)+Math.max(0,ageGap-3)*10+(arr.length-1-j)*0.5; if(cost<best){ best=cost; pick=j; } }
-        if(pick>=0){ used.add(pick); pairs.push([arr[i].s.id,arr[pick].s.id]); } else if(pairs.length&&pairs[pairs.length-1].length<3){ pairs[pairs.length-1].push(arr[i].s.id); } else pairs.push([arr[i].s.id]); } });
-    st.ws=ws; st.pairs=pairs; pairs.forEach(p=>{ for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) st.hist[[p[i],p[j]].sort().join('|')]=ws; }); DB.save(); },
+  eligible(){ const ex=PP.st().extra; return CR.active().filter(s=>CR.present(s)&&!(RP.get(s).paused)&&(s.level==='Level 3'||ex.includes(s.id))); },
+  warn(ids){ const st=PP.st(), ws=CR.wk(), out=[]; const ss=ids.map(PP.byId).filter(Boolean);
+    for(let i=0;i<ss.length;i++) for(let j=i+1;j<ss.length;j++){ const a=ss[i], b=ss[j];
+      if(a.gender&&b.gender&&a.gender!==b.gender) out.push('Different genders');
+      const aa=ageFromDob(a.dob), ab=ageFromDob(b.dob); if(aa!=null&&ab!=null&&Math.abs(aa-ab)>3) out.push('Age gap of '+Math.abs(aa-ab)+' years');
+      const h=st.hist[PP.key(a.id,b.id)]; if(h&&h>=RP.addDays(ws,-28)&&h!==ws) out.push('Paired recently ('+fmtDate(h)+')'); }
+    return out.filter((x,i)=>out.indexOf(x)===i); },
+  /* keep valid locked/manual pairs, auto-fill the rest */
+  gen(keepAll){ const st=PP.st(), ws=CR.wk(), el=PP.eligible(), elIds=new Set(el.map(s=>s.id)), hist=st.hist;
+    const keep=st.pairs.filter(p=>p.length>=2&&p.every(id=>elIds.has(id))&&(keepAll||st.locked.includes(PP.pkey(p))));
+    st.locked=st.locked.filter(k=>keep.some(p=>PP.pkey(p)===k));
+    const used=new Set(); keep.forEach(p=>p.forEach(id=>used.add(id)));
+    const pairs=keep.slice();
+    const groups={}; el.filter(s=>!used.has(s.id)).forEach(s=>(groups[s.gender||'x']=groups[s.gender||'x']||[]).push(s));
+    Object.values(groups).forEach(g=>{ const arr=g.map(s=>({s,sc:PP.strength(s),age:ageFromDob(s.dob)||14})).sort((a,b)=>b.sc-a.sc); const u=new Set();
+      for(let i=0;i<arr.length;i++){ if(u.has(i)) continue; u.add(i);
+        let pick=-1,best=1e9; for(let j=arr.length-1;j>i;j--){ if(u.has(j)) continue; const key=PP.key(arr[i].s.id,arr[j].s.id); const recent=hist[key]&&hist[key]>=RP.addDays(ws,-28); const ageGap=Math.abs(arr[i].age-arr[j].age); const cost=(recent?100:0)+Math.max(0,ageGap-3)*10+(arr.length-1-j)*0.5; if(cost<best){ best=cost; pick=j; } }
+        if(pick>=0){ u.add(pick); pairs.push([arr[i].s.id,arr[pick].s.id]); }
+        else { const lp=pairs[pairs.length-1]; if(lp&&lp.length===2&&!keep.includes(lp)&&PP.byId(lp[0]).gender===arr[i].s.gender) lp.push(arr[i].s.id); } } });
+    st.pairs=pairs; st.ws=ws; PP.record(); DB.save(); },
+  record(){ const st=PP.st(), ws=CR.wk(); st.pairs.forEach(p=>{ for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) st.hist[PP.key(p[i],p[j])]=ws; }); },
+  forget(p){ /* un-record history for a dissolved pair made this week */ const st=PP.st(), ws=CR.wk(); for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++){ const k=PP.key(p[i],p[j]); if(st.hist[k]===ws) delete st.hist[k]; } },
   focus(s){ const rows=RP.ready(s).concat(RP.due(s)); return rows.slice(0,2); },
   spot(){ const out=[]; CR.active().forEach(s=>(s.revHistory||[]).forEach((h,i)=>{ if(h.peer&&!h.checked&&h.date>=RP.addDays(today(),-14)) out.push({s,h,i}); })); return out; },
+  heard(s,juz,r,by){ const x=UNDO.snap(s); (s.heardAt=s.heardAt||[]); if(s.heardAt.indexOf(today())<0) s.heardAt.push(today());
+    if(juz&&r){ Rev.log(s,+juz,r); if(by&&s.revHistory&&s.revHistory[0]) s.revHistory[0].peer=by; }
+    DB.log('Peer-heard: '+s.name); DB.save(); return x; },
+  history(){ const st=PP.st(), ws=CR.wk(); const rows=Object.entries(st.hist).filter(([k,d])=>d>=RP.addDays(ws,-28)).sort((a,b)=>b[1].localeCompare(a[1]));
+    const nm=id=>{ const s=PP.byId(id); return s?CR.nm(s):'(removed)'; };
+    overlay(`<div class="modal" style="max-width:520px"><h3>Pair history · last 4 weeks</h3><p class="td-hint">Used to avoid repeating the same partners. Week of the last pairing.</p>${rows.length?rows.map(([k,d])=>`<div class="td-it"><div class="td-lab"><b dir="auto">${k.split('|').map(id=>esc(nm(id))).join(' ⇄ ')}</b><small>Week of ${esc(fmtDate(d))}</small></div></div>`).join(''):'<div class="empty"><h3>No pairs yet</h3></div>'}<div class="mfoot"><button class="btn btn-o" data-x="c">Close</button></div></div>`,true); },
+  print(){ const st=PP.st(), ws=CR.wk(), nm=id=>{ const s=PP.byId(id); return s?CR.nm(s):''; };
+    const rows=st.pairs.map((p,i)=>`<tr><td>${i+1}</td><td>${p.map(id=>esc(nm(id))).join(' &nbsp;⇄&nbsp; ')}</td><td></td></tr>`).join('');
+    const left=PP.eligible().filter(s=>!st.pairs.some(p=>p.includes(s.id)));
+    printWindow('Peer pairs — week of '+fmtDate(ws),'body{font-family:Georgia,serif;padding:24px}h1{margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:14px}td,th{border:1px solid #999;padding:10px;font-size:16px;text-align:left}th{background:#eee}td:first-child{width:36px}td:last-child{width:30%}','<h1>Peer pairs</h1><div>Week of '+esc(fmtDate(ws))+' · Al-Madrasatu An-Nuriyyah</div><table><tr><th>#</th><th>Partners (they hear each other)</th><th>Notes</th></tr>'+rows+'</table>'+(left.length?'<p><b>Not paired:</b> '+left.map(s=>esc(CR.nm(s))).join(', ')+'</p>':'')); },
   render(v){
-    const st=PP.st(), ws=CR.wk(), el=PP.eligible(); if(st.ws!==ws||!st.pairs.length) PP.gen();
-    const byId=id=>DB.data.students.find(x=>x.id===id), elIds=new Set(el.map(s=>s.id));
-    const stale=st.pairs.some(p=>p.some(id=>!elIds.has(id)))||el.some(s=>!st.pairs.some(p=>p.includes(s.id)));
-    const card=p=>{ const ss=p.map(byId).filter(Boolean); return `<div class="card pp-card"><div class="pp-names">${ss.map(s=>`<span>${avatarHTML(s,'width:34px;height:34px;border-radius:50%;font-size:12px')}<b dir="auto">${esc(CR.nm(s))}</b><small>${PP.strength(s)>=0?'':''}${CR.ds(CR.lastHeard(s))==null?'never heard':CR.ds(CR.lastHeard(s))+'d since heard'}</small></span>`).join('<i>⇄</i>')}</div>
-      ${ss.map((s,i)=>{ const peer=ss[(i+1)%ss.length]; if(!peer||peer===s) return ''; const f=PP.focus(s); return `<div class="td-sec"><div class="td-st">🤝 ${esc(CR.nm(peer))} hears ${esc(CR.nm(s))}</div>${f.length?f.map(j=>`<div class="td-it"><div class="td-lab"><b>Juzʼ ${j.n}</b><small>${j.k==='due'?(j.overdue?j.overdue+'d overdue':'due'):'finished at home'}</small></div>${TD.rate3('data-pprate="'+s.id+'|'+j.n+'|'+peer.id)}</div>`).join(''):'<small style="color:var(--ink3)">Nothing waiting — they can recite any Juzʼ to each other.</small>'}</div>`; }).join('')}</div>`; };
-    const sp=PP.spot();
+    const st=PP.st(), ws=CR.wk(); if(st.ws!==ws){ st.pairs=[]; st.locked=[]; st.extra=[]; st.ws=ws; if(st.mode!=='manual') PP.gen(); DB.save(); }
+    else if(!st.pairs.length&&st.mode!=='manual'&&PP.eligible().length>1&&!PP._empty){ PP.gen(); }
+    const el=PP.eligible(), elIds=new Set(el.map(s=>s.id)), byId=PP.byId;
+    const inPair=new Set(); st.pairs.forEach(p=>p.forEach(id=>inPair.add(id)));
+    const tray=el.filter(s=>!inPair.has(s.id));
+    const absentPairs=st.pairs.filter(p=>p.some(id=>!elIds.has(id)));
+    const sel=PP._sel;
+    const modeBtn=(m,l,t)=>`<button class="${st.mode===m?'on':''}" data-ppmode="${m}" title="${t}">${l}</button>`;
+    const cardMember=(s,absent)=>`<span class="${absent?'abs':''}">${avatarHTML(s,'width:34px;height:34px;border-radius:50%;font-size:12px')}<b dir="auto">${esc(CR.nm(s))}</b><small>${absent?'absent today':(CR.ds(CR.lastHeard(s))==null?'never heard':CR.ds(CR.lastHeard(s))+'d since heard')}</small></span>`;
+    const dirRow=(s,peer)=>{ const f=PP.focus(s); return `<div class="td-sec"><div class="td-st">🤝 ${esc(CR.nm(peer))} hears ${esc(CR.nm(s))}</div>${f.length?f.map(j=>`<div class="td-it"><div class="td-lab"><b>Juzʼ ${j.n}</b><small>${j.k==='due'?(j.overdue?j.overdue+'d overdue':'due'):'finished at home'}</small></div>${TD.rate3('data-pprate="'+s.id+'|'+j.n+'|'+peer.id)}</div>`).join(''):`<div class="td-it"><div class="td-lab"><small>Any Juzʼ they choose</small></div><button class="btn btn-o btn-sm" data-ppmark="${s.id}|${peer.id}">Mark heard</button></div>`}</div>`; };
+    const card=p=>{ const ss=p.map(byId).filter(Boolean), k=PP.pkey(p), locked=st.locked.includes(k), absent=p.some(id=>!elIds.has(id)), w=PP.warn(p);
+      return `<div class="card pp-card ${absent?'absent':''}"><div class="pp-tools no-print"><button class="pp-lock ${locked?'on':''}" data-pplock="${k}" title="${locked?'Locked — stays when you re-shuffle':'Lock this pair'}" aria-pressed="${locked}">${locked?'🔒':'🔓'}</button><button class="pp-x" data-ppun="${k}" title="Unpair" aria-label="Unpair">✕</button></div>
+      <div class="pp-names">${ss.map(s=>cardMember(s,!elIds.has(s.id))).join('<i>⇄</i>')}</div>
+      ${w.length?`<div class="pp-warn">${w.map(x=>`<span>⚠ ${esc(x)}</span>`).join('')}</div>`:''}
+      ${absent?`<div class="notice warn" style="margin:8px 0">⚠️ <div>Partner absent. <button class="chip" data-ppabs="${k}">Re-pair for today</button></div></div>`:ss.map((s,i)=>{ const peer=ss[(i+1)%ss.length]; return peer&&peer!==s?dirRow(s,peer):''; }).join('')}
+      ${!absent&&p.length===2&&sel?`<button class="btn btn-o btn-sm no-print" style="margin-top:8px" data-ppadd="${k}">+ Add ${esc(CR.nm(byId(sel)))} as a trio</button>`:''}</div>`; };
+    const sp=PP.spot(), cands=CR.active().filter(s=>CR.present(s)&&!elIds.has(s.id)&&!(RP.get(s).paused));
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">Class day · peer hearing</div><h2 class="page-title">Peer pairs</h2>
-      <p class="page-sub">Each week, a stronger student is paired with one who needs hearing — same gender, close in age, and never the same pair twice in a row. They hear each other’s Juzʼ; you spot-check.</p>
-      <div class="filters no-print"><button class="btn btn-o btn-sm" id="ppShuffle">🔀 Re-shuffle pairs</button><span class="td-hint" style="margin-left:auto">${el.length} Level 3 students here · pairs for the week of ${esc(fmtDate(ws))}</span></div>
-      ${stale?`<div class="notice warn no-print" style="margin-bottom:12px">⚠️ <div>Attendance changed since the pairs were made. <button class="chip" id="ppShuffle2">Re-shuffle for who is here</button></div></div>`:''}
+      <p class="page-sub">Partners hear each other’s Juzʼ and you spot-check. Automatic pairing matches a stronger student with one who needs hearing — same gender, close in age, new partners. Pair people yourself any time.</p>
+      <div class="filters no-print pp-bar"><div class="pp-seg" role="radiogroup" aria-label="Pairing mode">${modeBtn('auto','Automatic','Auto-pairs everyone')}${modeBtn('mixed','Mixed','You pair some, auto fills the rest')}${modeBtn('manual','Manual','You pair everyone')}</div>
+        ${st.mode!=='manual'?'<button class="btn btn-o btn-sm" id="ppShuffle">🔀 Re-shuffle</button>':''}${st.mode==='mixed'&&tray.length>1?'<button class="btn btn-o btn-sm" id="ppFill">✨ Auto-fill the rest</button>':''}
+        <button class="btn btn-o btn-sm" id="ppReset" title="Throw away custom pairs and let the app pair everyone">↺ Reset to automatic</button><button class="btn btn-o btn-sm" id="ppHist">🕘 Pair history</button><button class="btn btn-o btn-sm" id="ppPrint">🖨 Print pairs</button></div>
+      <div class="td-hint" style="margin:6px 0">${el.length} students here · week of ${esc(fmtDate(ws))} · ${st.mode==='auto'?'Pairs you lock 🔒 stay when you re-shuffle.':st.mode==='mixed'?'Pairs you make or lock stay; auto fills the rest.':'Tap one student, then another, to pair them.'}</div>
+      ${absentPairs.length&&st.mode!=='manual'?`<div class="notice warn no-print" style="margin-bottom:12px">⚠️ <div>${absentPairs.length} pair${absentPairs.length>1?'s have':' has'} a student who is absent today. <button class="chip" id="ppFixAbs">Re-pair for today</button></div></div>`:''}
+      ${tray.length?`<div class="card pp-tray no-print"><div class="whead"><h3>Not paired yet (${tray.length})</h3></div><p class="td-hint">${tray.length%2&&st.mode==='auto'?'Odd number today — one student is left out. ':''}Tap a student, then tap a partner. A pair of two can also take a third as a trio.</p><div class="pp-chips">${tray.map(s=>`<button class="pp-chip ${sel===s.id?'on':''}" data-pptray="${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px')}<span dir="auto">${esc(CR.nm(s))}</span></button>`).join('')}</div>${cands.length?`<div style="margin-top:8px"><select id="ppExtra" class="pp-extra"><option value="">+ Include another student…</option>${cands.map(s=>`<option value="${s.id}">${esc(CR.nm(s))} (${esc(s.level||'')})</option>`).join('')}</select></div>`:''}</div>`:(cands.length?`<div class="no-print" style="margin:8px 0"><select id="ppExtra" class="pp-extra"><option value="">+ Include another student…</option>${cands.map(s=>`<option value="${s.id}">${esc(CR.nm(s))} (${esc(s.level||'')})</option>`).join('')}</select></div>`:'')}
       ${sp.length?`<div class="card"><div class="whead"><h3>🔎 Spot-check (${sp.length})</h3></div><p class="td-hint">Rated by a classmate — confirm or hear it yourself.</p>${sp.map(({s,h,i})=>`<div class="td-it">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))} · Juzʼ ${h.juz}</b><small>${esc(REV_LABEL[h.rating]||h.rating)} · rated by ${esc(((byId(h.peer)||{}).preferredName||(byId(h.peer)||{}).name)||'a classmate')} · ${esc(fmtDate(h.date))}</small></div><button class="btn btn-p btn-sm" data-ppok="${s.id}|${i}">✓ Confirm</button><button class="btn btn-o btn-sm" data-ppno="${s.id}|${i}">Mark shaky</button></div>`).join('')}</div>`:''}
-      <div class="pp-grid">${st.pairs.map(card).join('')||'<div class="empty"><h3>No Level 3 students here today</h3></div>'}</div></div>`;
+      <div class="pp-grid">${st.pairs.map(card).join('')||(tray.length?'':'<div class="empty"><h3>No Level 3 students here today</h3></div>')}</div></div>`;
     wireCommon(v);
-    const shuf=()=>{ PP.gen(); PP.render(v); }; const a=$('#ppShuffle',v); a.onclick=()=>{ st.pairs=[]; shuf(); }; const b=$('#ppShuffle2',v); if(b) b.onclick=()=>{ st.pairs=[]; shuf(); };
-    $$('[data-pprate]',v).forEach(bt=>bt.onclick=()=>{ const [sid,N,r,by]=bt.dataset.pprate.split('|'), s=byId(sid); if(!s) return; const x=UNDO.snap(s); Rev.log(s,+N,r); if(s.revHistory[0]) s.revHistory[0].peer=by; DB.save(); toast(CR.nm(s)+' · Juzʼ '+N+' — '+r+' (peer-rated)',()=>{ UNDO.restore(x); PP.render(v); }); PP.render(v); });
+    const re=()=>{ PP._sel=null; PP.render(v); };
+    const undoable=(msg)=>{ const snap=JSON.stringify([st.pairs,st.locked,st.hist,st.mode]); DB.save(); toast(msg,()=>{ const [a,b,c,d]=JSON.parse(snap); st.pairs=a; st.locked=b; st.hist=c; st.mode=d; DB.save(); re(); }); };
+    const doPair=(a,b)=>{ const make=()=>{ const snap=JSON.stringify([st.pairs,st.locked,st.hist,st.mode]); const p=[a,b]; st.pairs.push(p); if(st.mode!=='manual') st.locked.push(PP.pkey(p)); PP.record(); DB.save(); toast('Paired '+CR.nm(byId(a))+' with '+CR.nm(byId(b)),()=>{ const [x,y,z,m]=JSON.parse(snap); st.pairs=x; st.locked=y; st.hist=z; st.mode=m; DB.save(); re(); }); re(); };
+      const w=PP.warn([a,b]); if(!w.length) return make();
+      const o=overlay(`<div class="modal" style="max-width:400px"><h3>Pair these two?</h3><p style="font-size:15px;color:var(--ink2)">${esc(CR.nm(byId(a)))} ⇄ ${esc(CR.nm(byId(b)))}</p><div class="pp-warn" style="margin-bottom:10px">${w.map(x=>`<span>⚠ ${esc(x)}</span>`).join('')}</div><div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="ppAny">Pair anyway</button></div></div>`,true);
+      $('#ppAny',o).onclick=()=>{ o.remove(); make(); }; };
+    $$('[data-ppmode]',v).forEach(b=>b.onclick=()=>{ st.mode=b.dataset.ppmode; if(st.mode==='auto') { PP.gen(); } DB.save(); re(); });
+    const sh=$('#ppShuffle',v); if(sh) sh.onclick=()=>{ const snap=JSON.stringify([st.pairs,st.locked,st.hist]); st.pairs.forEach(p=>{ if(!st.locked.includes(PP.pkey(p))) PP.forget(p); }); PP.gen(false); toast('Re-shuffled — locked pairs kept',()=>{ const [a,b,c]=JSON.parse(snap); st.pairs=a; st.locked=b; st.hist=c; DB.save(); re(); }); re(); };
+    const fl=$('#ppFill',v); if(fl) fl.onclick=()=>{ PP.gen(true); re(); };
+    $('#ppReset',v).onclick=()=>{ confirmBox('Throw away all custom and locked pairs this week and let the app pair everyone?',()=>{ st.pairs.forEach(PP.forget); st.pairs=[]; st.locked=[]; st.mode='auto'; PP.gen(); re(); }); };
+    $('#ppHist',v).onclick=PP.history; $('#ppPrint',v).onclick=PP.print;
+    const fx=$('#ppFixAbs',v); if(fx) fx.onclick=()=>{ st.pairs=st.pairs.filter(p=>{ const ok=p.every(id=>elIds.has(id)); if(!ok) PP.forget(p); return ok; }); st.locked=st.locked.filter(k=>st.pairs.some(p=>PP.pkey(p)===k)); PP.gen(false); re(); };
+    $$('[data-ppabs]',v).forEach(b=>b.onclick=()=>{ const k=b.dataset.ppabs, p=st.pairs.find(x=>PP.pkey(x)===k); if(!p) return; PP.forget(p); st.pairs=st.pairs.filter(x=>x!==p); st.locked=st.locked.filter(x=>x!==k); if(st.mode!=='manual'){ const rest=p.filter(id=>elIds.has(id)); PP.gen(true); } DB.save(); re(); });
+    $$('[data-pplock]',v).forEach(b=>b.onclick=()=>{ const k=b.dataset.pplock, i=st.locked.indexOf(k); if(i>=0) st.locked.splice(i,1); else st.locked.push(k); DB.save(); re(); });
+    $$('[data-ppun]',v).forEach(b=>b.onclick=()=>{ const k=b.dataset.ppun, p=st.pairs.find(x=>PP.pkey(x)===k); if(!p) return; PP.forget(p); st.pairs=st.pairs.filter(x=>x!==p); st.locked=st.locked.filter(x=>x!==k); PP._empty=true; undoable('Pair removed — students are in the tray'); re(); PP._sel=null; });
+    $$('[data-pptray]',v).forEach(b=>b.onclick=()=>{ const id=b.dataset.pptray; if(PP._sel===id){ PP._sel=null; return PP.render(v); } if(PP._sel&&PP._sel!==id){ const a=PP._sel; PP._sel=null; return doPair(a,id); } PP._sel=id; PP.render(v); });
+    $$('[data-ppadd]',v).forEach(b=>b.onclick=()=>{ const k=b.dataset.ppadd, p=st.pairs.find(x=>PP.pkey(x)===k); if(!p||!sel) return; const w=PP.warn([...p,sel]); const go=()=>{ const lk=st.locked.indexOf(k); p.push(sel); if(lk>=0) st.locked[lk]=PP.pkey(p); PP.record(); DB.save(); re(); }; if(!w.length) go(); else confirmBox('Add as a trio anyway? '+w.join('; ')+'.',go); });
+    const ex=$('#ppExtra',v); if(ex) ex.onchange=()=>{ if(ex.value){ st.extra.push(ex.value); DB.save(); PP.render(v); } };
+    $$('[data-pprate]',v).forEach(bt=>bt.onclick=()=>{ const [sid,N,by,r]=bt.dataset.pprate.split('|'), s=byId(sid); if(!s) return; const x=PP.heard(s,N,r,by); toast(CR.nm(s)+' · Juzʼ '+N+' — '+r+' (peer-rated)',()=>{ UNDO.restore(x); PP.render(v); }); PP.render(v); });
+    $$('[data-ppmark]',v).forEach(bt=>bt.onclick=()=>{ const [sid,by]=bt.dataset.ppmark.split('|'), s=byId(sid); if(!s) return; const jl=Rev.juzList(s);
+      const o=overlay(`<div class="modal" style="max-width:420px"><h3>${esc(CR.nm(byId(by)))} heard ${esc(CR.nm(s))}</h3><div class="field"><label>Juzʼ (optional, for the hearing log)</label><select id="ppJuz"><option value="">— no Juzʼ —</option>${jl.map(j=>`<option value="${j.n}">Juzʼ ${j.n}</option>`).join('')}</select></div><div class="td-it" id="ppQuick">${TD.rate3('data-ppq="x')}</div><div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="ppJust">Just mark heard</button></div></div>`,true);
+      const fin=(juz,r)=>{ const x=PP.heard(s,juz,r,by); o.remove(); toast(CR.nm(s)+' — heard ✓',()=>{ UNDO.restore(x); PP.render(v); }); PP.render(v); };
+      $('#ppJust',o).onclick=()=>fin('',''); $$('[data-ppq]',o).forEach(q=>q.onclick=()=>{ const juz=$('#ppJuz',o).value; if(!juz){ toast('Pick a Juzʼ to log a grade'); return; } fin(juz,q.dataset.ppq.split('|')[1]); }); });
     $$('[data-ppok]',v).forEach(bt=>bt.onclick=()=>{ const [sid,i]=bt.dataset.ppok.split('|'), s=byId(sid); s.revHistory[+i].checked=true; DB.save(); PP.render(v); });
     $$('[data-ppno]',v).forEach(bt=>bt.onclick=()=>{ const [sid,i]=bt.dataset.ppno.split('|'), s=byId(sid), h=s.revHistory[+i]; h.checked=true; Rev.log(s,h.juz,'shaky'); DB.save(); PP.render(v); });
   }
@@ -11505,19 +11734,76 @@ const FU={
     const ml=$('[data-x=mail]',ov); if(ml) ml.onclick=()=>{ ml.href='mailto:'+email+'?subject='+encodeURIComponent('AMAN update — '+CR.nm(s))+'&body='+encodeURIComponent(ta.value); sent(); };
     $('[data-x=sent]',ov).onclick=()=>{ sent(); ov.remove(); toast('Marked sent'); if(Router.parse().id==='family') FU.render(FU._v); }; },
   sentThis(s){ return s.famSent&&s.famSent.ws===CR.wk(); },
-  render(v){ FU._v=v; const all=CR.active().filter(s=>(FU.f!=='sent'&&FU.f!=='todo')||true), q=FU.q.toLowerCase();
-    let L=all.filter(s=>!q||(s.name+' '+(s.preferredName||'')).toLowerCase().includes(q)); if(['1','2','3'].includes(FU.f)) L=L.filter(s=>String(CR.lvl(s))===FU.f); if(FU.f==='todo') L=L.filter(s=>!FU.sentThis(s));
-    L.sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)); const nSent=all.filter(FU.sentThis).length;
+  /* ----- family-level helpers ----- */
+  fams(){ const map={}; CR.active().forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (map[k]=map[k]||{key:k,members:[]}).members.push(s); });
+    return Object.values(map).map(f=>{ f.members.sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name));
+      const pick=fn=>{ for(const s of f.members){ const x=fn(s); if(x) return x; } return ''; };
+      f.parent=pick(AI2.stuParent); f.phone=pick(AI2.stuPhone)||(famKey(f.members[0])?famContactPhone(f.key):''); f.email=pick(AI2.stuEmail);
+      f.pref=String(pick(s=>(s.application&&s.application.contactPref)||'')).toLowerCase();
+      f.label=famKey(f.members[0])||CR.nm(f.members[0]);
+      f.notes=FU.notable(f); f.score=f.notes.reduce((a,n)=>a+n.w,0); return f; }); },
+  rec(f){ return DB.data.families[f.key]=DB.data.families[f.key]||{phone:'',note:'',log:[],sponsorName:'',sponsorPhone:'',sponsorFamilyKey:''}; },
+  famSent(f){ const r=(DB.data.families[f.key]||{}).fuSent; return r&&r.ws===CR.wk()?r:null; },
+  markSent(f,via){ const r=FU.rec(f), old=r.fuSent; r.fuSent={ws:CR.wk(),at:Date.now(),via:via||''}; f.members.forEach(s=>{ s.famSent={ws:CR.wk(),at:Date.now()}; }); DB.save(); return ()=>{ if(old) r.fuSent=old; else delete r.fuSent; f.members.forEach(s=>{ delete s.famSent; }); DB.save(); }; },
+  notable(f){ const from=FU.from(), t=today(), d=DB.data, out=[];
+    f.members.forEach(s=>{ const nm=CR.nm(s);
+      (s.hwDone||[]).filter(x=>x.date>from).forEach(x=>out.push({w:5,t:'🎉 '+nm+' completed Sūrat '+((QS[x.n]||{}).name||x.n)}));
+      let ab=0,hwf=0; Object.keys(d.attendance).filter(k=>k>from&&k<=t).forEach(k=>{ if(d.attendance[k][s.id]==='A') ab++; const p=(d.progress||{})[k]&&d.progress[k][s.id]; if(p&&(p.hw==='INC'||p.quran==='FAIL')) hwf++; });
+      if(ab) out.push({w:3,t:nm+' absent '+ab+(ab>1?' days':' day')}); if(hwf) out.push({w:2,t:nm+': homework incomplete '+hwf+'×'}); });
+    return out; },
+  summary(f){ const from=FU.from(), t=today(), d=DB.data; return f.members.map(s=>{ const days=Object.keys(d.attendance).filter(k=>k>from&&k<=t&&d.attendance[k][s.id]); const pr=days.filter(k=>d.attendance[k][s.id]==='P'||d.attendance[k][s.id]==='L').length; return CR.nm(s)+(days.length?' · '+pr+'/'+days.length+' present':''); }).join('  |  '); },
+  part(s){ const t=FU.text(s), a=t.indexOf('in shā’ Allāh:\n\n'), b=t.lastIndexOf('\n\nJazākumullāhu khayran'); return a>=0&&b>a? t.slice(a+'in shā’ Allāh:\n\n'.length,b) : t; },
+  famText(f){ if(f.members.length===1) return FU.text(f.members[0]);
+    const par=f.parent; const hi='As-salāmu ʿalaykum'+(par?' '+par:'')+', ';
+    return hi+'here are this week’s updates for '+f.members.map(CR.nm).join(' and ')+', in shā’ Allāh:\n\n'+f.members.map(s=>'▸ '+CR.nm(s)+'\n'+FU.part(s)).join('\n\n')+'\n\nJazākumullāhu khayran for your support at home.'+FU.sign; },
+  way(f){ const em=f.email&&(/mail/.test(f.pref)||!f.phone); return em?'email':(f.phone?'text':''); },
+  send(f,how,text,after){ const u=FU.markSent(f,how); if(how==='text'){ location.href='sms:'+AI2.digits(f.phone)+'?&body='+encodeURIComponent(text); }
+    else if(how==='email'){ location.href='mailto:'+f.email+'?subject='+encodeURIComponent('AMAN weekly update — '+f.label)+'&body='+encodeURIComponent(text); }
+    else if(how==='copy'){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>{},()=>toast('Could not copy — open Review and select the text')); }
+    toast(f.label+' — marked sent ('+how+')',()=>{ u(); if(FU._v) FU.render(FU._v); }); if(after) after(); },
+  review(f,next){ const text=FU.famText(f), w=FU.way(f);
+    const ov=overlay(`<div class="modal" style="max-width:600px"><h3>Weekly update · <bdi>${esc(f.label)}</bdi> family</h3><div class="fu-who">${esc(f.parent||'No parent name')}${f.phone?` · <a href="tel:${esc(AI2.digits(f.phone))}">${esc(f.phone)}</a>`:' · no phone'}</div><textarea id="fu-t" rows="13" style="width:100%">${esc(text)}</textarea><p class="td-hint">Texts and emails open your own app — nothing is sent until you tap Send there. Tapping marks this family as sent.</p>
+      <div class="mfoot" style="flex-wrap:wrap"><button class="btn btn-o" data-x="c">Close</button>${next?'<button class="btn btn-o" data-x="skip">Skip →</button>':''}<button class="btn btn-o" data-x="copy">📋 Copy</button>${f.email?`<button class="btn ${w==='email'?'btn-p':'btn-o'}" data-x="mail">✉️ Email</button>`:''}${f.phone?`<button class="btn ${w==='text'?'btn-p':'btn-o'}" data-x="sms">💬 Text</button>`:''}<button class="btn btn-o" data-x="sent">✓ Mark sent</button></div></div>`,true);
+    const ta=$('#fu-t',ov), done=()=>{ ov.remove(); if(FU._v) FU.render(FU._v); if(next) next(); };
+    $('[data-x=c]',ov).onclick=()=>ov.remove(); const sk=$('[data-x=skip]',ov); if(sk) sk.onclick=()=>{ ov.remove(); next(true); };
+    $('[data-x=copy]',ov).onclick=()=>FU.send(f,'copy',ta.value,done);
+    const sm=$('[data-x=sms]',ov); if(sm) sm.onclick=()=>FU.send(f,'text',ta.value,done);
+    const ml=$('[data-x=mail]',ov); if(ml) ml.onclick=()=>FU.send(f,'email',ta.value,done);
+    $('[data-x=sent]',ov).onclick=()=>FU.send(f,'manual',ta.value,done); },
+  addContact(f){ const g0=((f.members[0].guardians||[])[0])||{};
+    const ov=overlay(`<div class="modal" style="max-width:420px"><h3>Contact · <bdi>${esc(f.label)}</bdi> family</h3><div class="field"><label>Parent / guardian name</label><input id="fc-n" value="${esc(f.parent||g0.name||'')}"></div><div class="field"><label>Phone</label><input id="fc-p" type="tel" value="${esc(f.phone||'')}"></div><div class="field"><label>Email (optional)</label><input id="fc-e" type="email" value="${esc(f.email||'')}"></div>${f.members.length>1?'<p class="td-hint">Saved for the whole family, so siblings share it.</p>':''}<div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="fc-s">Save</button></div></div>`,true);
+    $('#fc-s',ov).onclick=()=>{ const n=$('#fc-n',ov).value.trim(), p=$('#fc-p',ov).value.trim(), e=$('#fc-e',ov).value.trim(); if(!p&&!e){ toast('Add a phone or an email'); return; }
+      f.members.forEach(s=>{ s.guardians=s.guardians||[]; let g=s.guardians[0]; if(!g){ g={id:uid(),name:'',relation:'Guardian',phone:'',email:''}; s.guardians.push(g); } if(n&&!g.name) g.name=n; if(p&&!g.phone) g.phone=p; if(e&&!g.email) g.email=e; });
+      DB.save(); ov.remove(); toast('Contact saved'); FU.render(FU._v); }; },
+  nextFam(skipped){ const L=FU.fams().filter(f=>!FU.famSent(f)&&(f.phone||f.email)&&!(FU._skip||[]).includes(f.key)).sort(FU.cmp); return L[0]; },
+  cmp(a,b){ return (b.score-a.score)||String(a.label).localeCompare(b.label); },
+  startNext(){ const f=FU.nextFam(); if(!f){ FU._skip=[]; toast('That’s every family with a contact on file ✓'); return; } FU.review(f,sk=>{ if(sk===true) (FU._skip=FU._skip||[]).push(f.key); FU.startNext(); }); },
+  render(v){ FU._v=v; const q=FU.q.toLowerCase(), all=FU.fams(), nSent=all.filter(f=>FU.famSent(f)).length;
+    const needs=all.filter(f=>!f.phone&&!f.email); const left=all.filter(f=>!FU.famSent(f)&&(f.phone||f.email)).length;
+    let L=all.filter(f=>!q||(f.label+' '+f.members.map(s=>s.name+' '+(s.preferredName||'')).join(' ')).toLowerCase().includes(q));
+    if(['1','2','3'].includes(FU.f)) L=L.filter(f=>f.members.some(s=>String(CR.lvl(s))===FU.f)); if(FU.f==='todo') L=L.filter(f=>!FU.famSent(f)); if(FU.f==='sent') L=L.filter(f=>FU.famSent(f)); if(FU.f==='needs') L=L.filter(f=>!f.phone&&!f.email);
+    L.sort((a,b)=>(!!FU.famSent(a)-!!FU.famSent(b))||FU.cmp(a,b));
+    const pct=all.length?Math.round(nSent/all.length*100):0;
+    const card=f=>{ const sent=FU.famSent(f), no=!f.phone&&!f.email, w=FU.way(f), ph=f.phone?AI2.digits(f.phone):'';
+      return `<div class="card fu-card ${sent?'sent':''} ${no?'needs':''}"><div class="fu-top"><div class="fu-ph">${f.members.slice(0,3).map(s=>avatarHTML(s,'width:38px;height:38px;border-radius:50%;font-size:12px;border:2px solid var(--surface)')).join('')}</div><div class="fu-id"><b class="fu-fam"><bdi>${esc(f.label)}</bdi> family</b><div class="fu-par">${esc(f.parent||'No parent name')}${ph?` · <a href="tel:${esc(ph)}" class="fu-tel">📞 ${esc(f.phone)}</a>`:''}</div></div><span class="fu-pill ${sent?'ok':no?'bad':''}">${sent?'✓ Sent '+esc(fmtDate(new Date(sent.at).toISOString().slice(0,10))):no?'Needs contact':'Not sent'}</span></div>
+        <div class="fu-kids">${f.members.map(s=>`<span dir="auto">${esc(CR.nm(s))} ${CR.lvTag(s)}</span>`).join('')}</div>
+        ${f.notes.length?`<div class="fu-notes">${f.notes.slice(0,3).map(n=>`<span>${esc(n.t)}</span>`).join('')}</div>`:''}
+        <div class="fu-sum">${esc(FU.summary(f))}</div>
+        ${no?'':`<div class="fu-prev">${esc(FU.famText(f).split('\n').slice(2,4).join(' ').slice(0,150))}…</div>`}
+        <div class="fu-act no-print">${no?`<button class="btn btn-p btn-sm" data-fuadd="${esc(f.key)}">+ Add phone / parent</button>`:`${w==='email'?`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|email">✉️ Email</button>`:`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|text">💬 Text</button>`}<button class="btn btn-o btn-sm" data-fusend="${esc(f.key)}|copy">📋 Copy</button><button class="btn btn-o btn-sm" data-furev="${esc(f.key)}">Review</button>`}</div></div>`; };
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">Class day · families</div><h2 class="page-title">Family updates</h2>
-      <p class="page-sub">A clean weekly message for every family, written from the real record — attendance, what was memorized or read, revision, and what to do at home. Review, tap Text, done.</p>
-      <div class="filters no-print"><button class="btn btn-p btn-sm" id="fuNext" ${all.length-nSent?'':'disabled'}>▶ Start: next family (${all.length-nSent} left)</button><input id="fuQ" placeholder="Search a student…" value="${esc(FU.q)}" style="max-width:200px"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All'],['todo','Not sent yet'],['3','L3'],['2','L2'],['1','L1']].map(([k,l])=>`<button class="chip ${FU.f===k?'on':''}" data-fuf="${k}">${l}</button>`).join('')}</span><span class="td-hint" style="margin-left:auto">${nSent}/${all.length} sent this week</span></div>
-      <div class="card" style="padding:4px 14px">${L.map(s=>{ const ph=AI2.stuPhone(s); return `<div class="td-it fu-row">${avatarHTML(s,'width:32px;height:32px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))} ${CR.lvTag(s)}</b><small>${esc(AI2.stuParent(s)||'no parent name')}${ph?'':' · no phone'}${FU.sentThis(s)?' · ✓ sent '+esc(fmtDate(new Date(s.famSent.at).toISOString().slice(0,10))):''}</small></div><button class="btn btn-p btn-sm" data-fuopen="${s.id}">${FU.sentThis(s)?'View':'Write'}</button></div>`; }).join('')||'<p style="color:var(--ink3);padding:12px">No students match.</p>'}</div></div>`;
+      <p class="page-sub">One weekly message per family — written from the real record and covering all siblings. Review it, tap Text, done.</p>
+      <div class="card fu-prog no-print"><div class="fu-progtop"><b>${nSent} of ${all.length} families sent</b><button class="btn btn-p btn-sm" id="fuNext" ${left?'':'disabled'}>▶ Start: next family (${left} left)</button></div><div class="fu-bar"><i style="width:${pct}%"></i></div>${needs.length?`<small>${needs.length} ${needs.length>1?'families have':'family has'} no contact on file.</small>`:''}</div>
+      <div class="filters no-print"><input id="fuQ" placeholder="Search a family or student…" value="${esc(FU.q)}" style="max-width:220px"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All'],['todo','Not sent'],['sent','Sent'],['needs','Needs contact ('+needs.length+')'],['3','L3'],['2','L2'],['1','L1']].map(([k,l])=>`<button class="chip ${FU.f===k?'on':''}" data-fuf="${k}">${l}</button>`).join('')}</span></div>
+      <div class="fu-grid">${L.map(card).join('')||'<p style="color:var(--ink3);padding:12px">No families match.</p>'}</div></div>`;
     wireCommon(v);
-    const open=s=>FU.compose(s,FU.text(s),{title:'Weekly update',onSent:()=>{ s.famSent={ws:CR.wk(),at:Date.now()}; DB.save(); }});
-    $$('[data-fuopen]',v).forEach(b=>b.onclick=()=>open(DB.data.students.find(x=>x.id===b.dataset.fuopen)));
+    const byKey=k=>all.find(f=>f.key===k);
+    $$('[data-furev]',v).forEach(b=>b.onclick=()=>FU.review(byKey(b.dataset.furev)));
+    $$('[data-fuadd]',v).forEach(b=>b.onclick=()=>FU.addContact(byKey(b.dataset.fuadd)));
+    $$('[data-fusend]',v).forEach(b=>b.onclick=()=>{ const [k,how]=b.dataset.fusend.split('|'), f=byKey(k); FU.send(f,how,FU.famText(f),()=>FU.render(v)); });
     $$('[data-fuf]',v).forEach(b=>b.onclick=()=>{ FU.f=b.dataset.fuf; FU.render(v); });
     $('#fuQ',v).oninput=e=>{ FU.q=e.target.value; const pos=e.target.selectionStart; FU.render(v); const i=$('#fuQ',v); i.focus(); i.setSelectionRange(pos,pos); };
-    $('#fuNext',v).onclick=()=>{ const s=all.slice().sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).find(x=>!FU.sentThis(x)); if(s) open(s); };
+    $('#fuNext',v).onclick=()=>{ FU._skip=[]; FU.startNext(); };
   }
 };
 /* ---------- GOALS & ALERTS ---------- */
@@ -12789,31 +13075,51 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
      #pr-card directly, so the download is always full quality regardless of
      how small the on-screen preview is scaled. */
   flyerForm(famKey){
-    const fin = famFinance(famKey);
+    const fin = famFinance(famKey), debt = famDebt(famKey), rec = famRec(famKey);
     const fam = famList().find(f=>f.key===famKey) || {members:[]};
-    const students = fam.members.map(s=>s.name).join(' & ') || famKey;
+    const act = fam.members.filter(s=>s.active!==false);
+    const students = (act.length?act:fam.members).map(s=>s.name).join(' & ') || famKey;
     const nowM = today().slice(0,7);
-    const periodLabel = parseLocalDate(nowM+'-02').toLocaleDateString('en-US',{month:'long',year:'numeric'});
-    const dueDefault = parseLocalDate(nowM+'-01').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const amountDefault = Math.max(0, fin.monthly-fin.paidThisMonth) || fin.balance || fin.monthly;
-    const statusDefault = fin.monthStatus==='Partial' ? 'reminder' : 'overdue';
-    const cashappDefault = '$amanschoolmn  \u2022  (952) 217-3629', zelleDefault = 'amanschool.mn@gmail.com';
-    const o = overlay(`<div class="modal" style="max-width:540px">
+    const longYM = ym=>parseLocalDate(ym+'-02').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const shortDate = iso=>parseLocalDate(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const regB = Math.max(0, fin.regExpected-fin.regPaid);
+    const items = debt.months.map(m=>({k:m.ym, label:longYM(m.ym), owed:m.owed, on:true}));
+    if(regB>0) items.push({k:'reg', label:'Registration fee', owed:regB, on:true});
+    if(!items.length){ const cur=Math.max(0, fin.monthly-fin.paidThisMonth)||fin.balance||fin.monthly; items.push({k:nowM, label:longYM(nowM), owed:cur, on:true}); }
+    const selected = ()=>items.filter(i=>i.on);
+    const tuitionSel = ()=>selected().filter(i=>i.k!=='reg').sort((a,b)=>a.k.localeCompare(b.k));
+    const periodOf = ()=>{ const t=tuitionSel(); if(!t.length) return longYM(nowM); const a=t[0].label, b=t[t.length-1].label; return t.length===1?a:a.split(' ')[0]+(a.slice(-4)===b.slice(-4)?'':' '+a.slice(-4))+' – '+b; };
+    const oldestIso = ()=>{ const t=tuitionSel(); return (t.length?t[0].k:nowM)+'-01'; };
+    const dueOf = ()=>shortDate(oldestIso());
+    const daysOver = ()=>Math.max(0, daysBetweenISO(oldestIso(), today()));
+    const amountOf = ()=>selected().reduce((a,i)=>a+i.owed,0);
+    const statusFor = ()=>{ const n=tuitionSel().length; if(n>=3) return 'final'; if(n===2) return 'overdue'; return (fin.monthStatus==='Partial' || daysOver()<14) ? 'reminder' : 'overdue'; };
+    const statusDefault = statusFor();
+    const cashappDefault = '$amanschoolmn  •  (952) 217-3629', zelleDefault = 'amanschool.mn@gmail.com';
+    const contactDefault = 'Questions? Contact Br. Abdallah bin Abdirahman — (612) 444-2609';
+    const lastPay = famLastPayment(fin), prState = famPromiseState(famKey);
+    const planDefault = Math.max(10, Math.round((fin.monthly||amountOf())/10)*10) || 50;
+    const phone = (famContactPhone(famKey)||'').replace(/\D/g,'');
+    const o = overlay(`<div class="modal pr-modal">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">${famAvatarHTML(famKey,32)}<h3 style="margin:0">Payment reminder flyer</h3></div>
-      <p style="font-size:12.5px;color:var(--ink3);margin:0 0 16px 42px">${esc(famKey)} family \u2014 pre-filled from this family's tuition record, check it over then download.</p>
+      <p style="font-size:12.5px;color:var(--ink3);margin:0 0 14px 42px"><bdi>${esc(famKey)}</bdi> family — ${debt.months.length>1?debt.months.length+' months behind — ':''}pre-filled from this family’s tuition record. The preview updates as you type.</p>
+      <div class="pr-layout"><div class="pr-formcol">
+      <div class="field"><label>What this flyer covers</label><div class="pr-items" id="pr-items">${items.map((i,ix)=>`<label class="pr-item"><input type="checkbox" data-pri="${ix}" checked><span>${esc(i.label)}</span><b>$${i.owed}</b></label>`).join('')}</div>
+        <div class="pr-hint">${debt.months.length?'Untick a month to leave it off. Amounts are what is still unpaid after payments received.':'No unpaid months on record — showing the current month.'}</div></div>
       <div class="field"><label>Student(s)</label><input id="pr-student" value="${esc(students)}"></div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field"><label>Billing period</label><input id="pr-period" value="${esc(periodLabel)}"></div>
-        <div class="field"><label>Due date</label><input id="pr-due" value="${esc(dueDefault)}"></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px">
+        <div class="field"><label>Billing period</label><input id="pr-period" value="${esc(periodOf())}"></div>
+        <div class="field"><label>Oldest due date</label><input id="pr-due" value="${esc(dueOf())}"></div>
+        <div class="field"><label>Total due</label><input id="pr-amount" value="$${amountOf()}"></div>
       </div>
-      <div class="field"><label>Amount due</label><input id="pr-amount" value="$${amountDefault}"></div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label class="pr-item" style="margin-bottom:6px"><input type="checkbox" id="pr-plan"><span>Offer a payment plan</span><span style="margin-left:auto;display:inline-flex;align-items:center;gap:4px">$<input id="pr-planamt" type="number" min="1" step="5" value="${planDefault}" style="width:76px;padding:5px 8px"> /month</span></label></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
         <div class="field"><label>Cash App</label><input id="pr-cashapp" value="${esc(cashappDefault)}"></div>
         <div class="field"><label>Zelle</label><input id="pr-zelle" value="${esc(zelleDefault)}"></div>
       </div>
-      <div class="field"><label>Contact line</label><input id="pr-contact" value="Questions? Reply to this message."></div>
+      <div class="field"><label>Contact line</label><input id="pr-contact" value="${esc(contactDefault)}"></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field"><label id="prStatusLbl">Status</label><div class="pr-status-picker" id="prStatusPick" role="radiogroup" aria-labelledby="prStatusLbl">
+        <div class="field"><label id="prStatusLbl">Status <span id="pr-autost" style="font-weight:400;color:var(--ink3)">(suggested from months behind)</span></label><div class="pr-status-picker" id="prStatusPick" role="radiogroup" aria-labelledby="prStatusLbl">
           <button data-v="reminder" class="${statusDefault==='reminder'?'on':''}" type="button" role="radio" aria-checked="${statusDefault==='reminder'}">Reminder</button>
           <button data-v="overdue" class="${statusDefault==='overdue'?'on':''}" type="button" role="radio" aria-checked="${statusDefault==='overdue'}">Overdue</button>
           <button data-v="final" class="${statusDefault==='final'?'on':''}" type="button" role="radio" aria-checked="${statusDefault==='final'}">Final</button>
@@ -12823,11 +13129,12 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
           <button data-sz="half" type="button" role="radio" aria-checked="false">Half page</button>
         </div></div>
       </div>
+      </div><div class="pr-prevcol">
       <div class="pr-stage"><div class="pr-stage-frame" id="prStageFrame">
         <div class="pr-card-wrap" id="prCardWrap">
           <div class="pr-card" id="pr-card" data-status="${statusDefault}">
             <div class="pr-seal"><img src="${PR_SEAL}" alt=""></div>
-            <div class="pr-brandline"><div class="pr-name">Al-Madrasatu An-Nuriyyah</div><div class="pr-tagline">Youth Educated \u00b7 Family Cultivated \u00b7 World Illuminated</div></div>
+            <div class="pr-brandline"><div class="pr-name">Al-Madrasatu An-Nuriyyah</div><div class="pr-tagline">Youth Educated · Family Cultivated · World Illuminated</div></div>
             <div class="pr-ornament"><div class="pr-line"></div><div class="pr-dot"></div><div class="pr-line"></div></div>
             <div class="pr-badge-wrap"><span class="pr-badge" id="pr-badge" data-v="${statusDefault}"></span></div>
             <div class="pr-headline" id="pr-headline"></div>
@@ -12835,8 +13142,11 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
             <div class="pr-details">
               <div class="pr-r"><span class="pr-k">Student</span><span class="pr-v" id="pro-student"></span></div>
               <div class="pr-r"><span class="pr-k">Billing Period</span><span class="pr-v" id="pro-period"></span></div>
+              <div id="pro-months"></div>
               <div class="pr-r"><span class="pr-k">Due Date</span><span class="pr-v" id="pro-due"></span></div>
-              <div class="pr-r pr-amount" id="pro-amount-row"><span class="pr-k">Amount Due</span><span class="pr-v" id="pro-amount"></span></div>
+              <div class="pr-r" id="pro-days-row"><span class="pr-k">Days Overdue</span><span class="pr-v" id="pro-days"></span></div>
+              <div class="pr-r" id="pro-last-row"><span class="pr-k">Last Payment</span><span class="pr-v" id="pro-last"></span></div>
+              <div class="pr-r pr-amount" id="pro-amount-row"><span class="pr-k" id="pro-amount-k">Amount Due</span><span class="pr-v" id="pro-amount"></span></div>
             </div>
             <div class="pr-methods-label">Payment Method</div>
             <div class="pr-methods">
@@ -12844,40 +13154,70 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
               <div class="pr-method pr-zelle"><div class="pr-icon">Z</div><div class="pr-txt"><div class="pr-lbl">Zelle</div><div class="pr-val" id="pro-zelle"></div></div></div>
             </div>
             <div class="pr-note" id="pr-note"></div>
-            <div class="pr-arabic">\u062c\u064e\u0632\u064e\u0627\u0643\u064f\u0645\u064f \u0627\u0644\u0644\u0651\u0647\u064f \u062e\u064e\u064a\u0652\u0631\u064b\u0627</div>
+            <div class="pr-arabic">جَزَاكُمُ اللّهُ خَيْرًا</div>
             <div class="pr-footer-line"><div class="pr-line"></div></div>
             <div class="pr-contact" id="pro-contact"></div>
           </div>
         </div>
       </div></div>
       <div id="prResult" style="display:none;margin:14px 0;padding:12px;background:var(--surface2);border-radius:10px;text-align:center">
-        <p style="font-size:12.5px;color:var(--ink2);margin:0 0 10px">\u2705 Flyer ready. If tapping the button below doesn\u2019t start a download (common on iPhone), press and hold the image and choose <b>Save Image</b>.</p>
-        <img id="prResultImg" style="max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.2);margin-bottom:10px" alt="Generated flyer \u2014 press and hold to save">
-        <div><a id="prResultLink" class="btn btn-p" style="display:inline-block;text-decoration:none" download>\u2b07 Tap to Download</a></div>
-      </div>
-      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" id="prPrint">\ud83d\uddb6\ufe0f Print / Save as PDF</button><button class="btn btn-o" id="prCopyTxt">\ud83d\udccb Copy as text</button><button class="btn btn-p" id="prDownload">\u2b07 Download PNG</button></div>
+        <p style="font-size:12.5px;color:var(--ink2);margin:0 0 10px">✅ Flyer ready. If tapping the button below doesn’t start a download (common on iPhone), press and hold the image and choose <b>Save Image</b>.</p>
+        <img id="prResultImg" style="max-width:100%;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.2);margin-bottom:10px" alt="Generated flyer — press and hold to save">
+        <div><a id="prResultLink" class="btn btn-p" style="display:inline-block;text-decoration:none" download>⬇ Tap to Download</a></div>
+      </div></div></div>
+      <div class="mfoot" style="flex-wrap:wrap"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" id="prPrint">🖶️ Print / Save as PDF</button><button class="btn btn-o" id="prCopyTxt">📋 Copy as text</button>${phone?'<button class="btn btn-o" id="prTextIt">💬 Text it</button>':''}<button class="btn btn-p" id="prDownload">⬇ Download PNG</button></div>
       </div>`, true);
     const card=$('#pr-card',o), wrap=$('#prCardWrap',o), frame=$('#prStageFrame',o);
     let curStatus=statusDefault, curSize='full';
     const fitCard=()=>{ const avail=frame.clientWidth, cw=card.offsetWidth; if(!avail||!cw) return;
       const scale=Math.min(1, avail/cw); wrap.style.transform='scale('+scale+')'; frame.style.height=(card.offsetHeight*scale)+'px'; };
+    let amtDirty=false, stDirty=false, periodDirty=false, dueDirty=false;
+    const logFlyer = via=>{ rec.reminders=rec.reminders||[]; rec.reminders.unshift({date:today(), tone:curStatus==='reminder'?'gentle':'clear', via}); rec.reminders=rec.reminders.slice(0,30); DB.save(); };
+    const planOn = ()=>$('#pr-plan',o).checked, planAmt = ()=>'$'+(Number($('#pr-planamt',o).value)||planDefault);
     const renderCard=()=>{
-      $('#pro-student',o).textContent = $('#pr-student',o).value || '\u2014';
-      $('#pro-period',o).textContent = $('#pr-period',o).value || '\u2014';
-      $('#pro-due',o).textContent = $('#pr-due',o).value || '\u2014';
-      $('#pro-amount',o).textContent = $('#pr-amount',o).value || '\u2014';
-      $('#pro-cashapp',o).textContent = $('#pr-cashapp',o).value || '\u2014';
-      $('#pro-zelle',o).textContent = $('#pr-zelle',o).value || '\u2014';
+      const sel=selected();
+      $('#pro-student',o).textContent = $('#pr-student',o).value || '—';
+      $('#pro-period',o).textContent = $('#pr-period',o).value || '—';
+      $('#pro-due',o).textContent = $('#pr-due',o).value || '—';
+      $('#pro-amount',o).textContent = $('#pr-amount',o).value || '—';
+      $('#pro-amount-k',o).textContent = sel.length>1 ? 'Total Due' : 'Amount Due';
+      $('#pro-months',o).innerHTML = sel.length>1 ? sel.map(i=>`<div class="pr-r pr-mrow"><span class="pr-k">${esc(i.label)}</span><span class="pr-v">$${i.owed}</span></div>`).join('') : '';
+      const dv=daysOver(); $('#pro-days-row',o).style.display = dv>0 ? '' : 'none'; $('#pro-days',o).textContent = dv+' day'+(dv===1?'':'s');
+      $('#pro-last-row',o).style.display = lastPay ? '' : 'none'; if(lastPay) $('#pro-last',o).textContent = '$'+(+lastPay.amount||0)+' on '+shortDate(lastPay.date);
+      $('#pro-cashapp',o).textContent = $('#pr-cashapp',o).value || '—';
+      $('#pro-zelle',o).textContent = $('#pr-zelle',o).value || '—';
       $('#pro-contact',o).textContent = $('#pr-contact',o).value || '';
       const c = PR_COPY[curStatus];
       $('#pr-badge',o).textContent=c.badge; $('#pr-badge',o).dataset.v=curStatus;
-      $('#pr-headline',o).textContent=c.headline; $('#pr-subline',o).textContent=c.subline; $('#pr-note',o).textContent=c.note;
+      $('#pr-headline',o).textContent=c.headline; $('#pr-subline',o).textContent=c.subline;
+      $('#pr-note',o).textContent = planOn() ? 'Can’t pay it all at once? We can arrange '+planAmt()+' per month until it is cleared — please reach out.' : (prState&&prState.k==='active' ? 'Thank you — we are expecting $'+prState.pr.amount+' by '+shortDate(prState.pr.date)+'.' : c.note);
       $('#pro-amount-row',o).className='pr-r pr-amount '+curStatus;
       card.setAttribute('data-status', curStatus);
       fitCard();
     };
-    ['pr-student','pr-period','pr-due','pr-amount','pr-cashapp','pr-zelle','pr-contact'].forEach(id=>{ $('#'+id,o).oninput=renderCard; });
-    $$('#prStatusPick button',o).forEach(b=>b.onclick=()=>{ $$('#prStatusPick button',o).forEach(x=>{x.classList.remove('on'); x.setAttribute('aria-checked','false');}); b.classList.add('on'); b.setAttribute('aria-checked','true'); curStatus=b.dataset.v; renderCard(); });
+    const syncFromItems = ()=>{
+      if(!periodDirty) $('#pr-period',o).value = periodOf();
+      if(!dueDirty) $('#pr-due',o).value = dueOf();
+      if(!amtDirty) $('#pr-amount',o).value = '$'+amountOf();
+      if(!stDirty){ curStatus=statusFor(); $$('#prStatusPick button',o).forEach(x=>{ const on=x.dataset.v===curStatus; x.classList.toggle('on',on); x.setAttribute('aria-checked',String(on)); }); }
+      renderCard();
+    };
+    $$('[data-pri]',o).forEach(cb=>cb.onchange=()=>{ items[+cb.dataset.pri].on=cb.checked; if(!selected().length){ cb.checked=true; items[+cb.dataset.pri].on=true; toast('Keep at least one month on the flyer'); return; } syncFromItems(); });
+    $('#pr-amount',o).addEventListener('input',()=>{ amtDirty=true; });
+    $('#pr-period',o).addEventListener('input',()=>{ periodDirty=true; });
+    $('#pr-due',o).addEventListener('input',()=>{ dueDirty=true; });
+    ['pr-student','pr-period','pr-due','pr-amount','pr-cashapp','pr-zelle','pr-contact','pr-plan','pr-planamt'].forEach(id=>{ $('#'+id,o).oninput=renderCard; $('#'+id,o).onchange=renderCard; });
+    $$('#prStatusPick button',o).forEach(b=>b.onclick=()=>{ stDirty=true; $$('#prStatusPick button',o).forEach(x=>{x.classList.remove('on'); x.setAttribute('aria-checked','false');}); b.classList.add('on'); b.setAttribute('aria-checked','true'); curStatus=b.dataset.v; renderCard(); });
+    const buildSms = ()=>{
+      const sel=selected(), d={student:$('#pr-student',o).value, period:$('#pr-period',o).value, due:$('#pr-due',o).value, amount:$('#pr-amount',o).value, cashapp:$('#pr-cashapp',o).value, zelle:$('#pr-zelle',o).value};
+      let t;
+      if(sel.length<=1) t = PR_COPY[curStatus].sms(d);
+      else { const lead={reminder:'a friendly reminder that', overdue:'our records show that', final:'this is a final notice that'}[curStatus];
+        t = 'Assalamu alaikum'+(rec.sponsorName?' '+rec.sponsorName:'')+', '+lead+' '+d.student+'’s tuition is open for: '+sel.map(i=>i.label+' $'+i.owed).join(', ')+'. Total due: '+d.amount+'. Payment can be sent via Cash App '+d.cashapp+' or Zelle '+d.zelle+'.'; }
+      if(planOn()) t += ' If paying it all at once is hard, we can arrange '+planAmt()+' per month until it is cleared — just reply and let us know.';
+      if(sel.length>1) t += ' JazakumAllahu khairan — Al-Madrasatu An-Nuriyyah (AMAN)';
+      return t;
+    };
     $$('#prSizePick button',o).forEach(b=>b.onclick=()=>{ $$('#prSizePick button',o).forEach(x=>{x.classList.remove('on'); x.setAttribute('aria-checked','false');}); b.classList.add('on'); b.setAttribute('aria-checked','true'); curSize=b.dataset.sz; card.classList.toggle('pr-compact', curSize==='half'); fitCard(); });
     $('[data-x=c]',o).onclick=()=>{ const img=$('#prResultImg',o); if(img&&img.src&&img.src.startsWith('blob:')) URL.revokeObjectURL(img.src); o.remove(); };
     $('#prDownload',o).onclick=async()=>{
@@ -12921,7 +13261,7 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
             toast('Image generated, but showing it failed \u2014 try again');
           }
         }, 'image/png');
-        DB.log('Generated payment reminder flyer \u2014 '+famKey);
+        DB.log('Generated payment reminder flyer \u2014 '+famKey); logFlyer('flyer image');
       } catch(e) {
         btn.textContent = origLabel; btn.disabled = false;
         console.error('Flyer PNG generation failed:', e);
@@ -12938,15 +13278,15 @@ thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
       const css = extractCssRules('.pr-') + '\nbody{margin:0;padding:28px;display:flex;justify-content:center;background:#fff}'
         + "\n@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');";
       printWindow('AMAN Payment Reminder \u2014 '+famKey, css, card.outerHTML);
-      DB.log('Printed payment reminder flyer \u2014 '+famKey);
+      DB.log('Printed payment reminder flyer \u2014 '+famKey); logFlyer('print');
     };
     $('#prCopyTxt',o).onclick=()=>{
-      const d = { student:$('#pr-student',o).value, period:$('#pr-period',o).value, due:$('#pr-due',o).value, amount:$('#pr-amount',o).value, cashapp:$('#pr-cashapp',o).value, zelle:$('#pr-zelle',o).value };
-      const text = PR_COPY[curStatus].sms(d);
-      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>toast('Copied to clipboard'));
-      else toast('Could not copy \u2014 select the text manually');
+      const text = buildSms();
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>{ logFlyer('copied text'); toast('Copied — logged as a reminder'); });
+      else toast('Could not copy — select the text manually');
     };
-    renderCard();
+    const ti=$('#prTextIt',o); if(ti) ti.onclick=()=>{ logFlyer('text'); location.href='sms:'+phone+'?&body='+encodeURIComponent(buildSms()); };
+    syncFromItems();
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitCard);
   },
   /* ---------- shared payment / excuse form ---------- */
