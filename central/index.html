@@ -306,7 +306,7 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .toast-undo{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:inherit;border-radius:8px;padding:4px 12px;font-weight:700;font-size:13px;cursor:pointer}
 .td-att{padding:12px 14px;margin-bottom:12px}.td-atthead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.td-hint{font-size:12px;color:var(--ink3);margin:8px 0}
 .td-acs{display:flex;flex-wrap:wrap;gap:6px}.td-ac{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:4px 10px 4px 4px;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit}
-.td-ac i{font-style:normal;font-weight:800;font-size:11px;min-width:14px;text-align:center}.td-ac.P,.td-ac.L{border-color:var(--ok);background:rgba(46,125,79,.1)}.td-ac.A{border-color:var(--bad);background:rgba(200,50,40,.1)}.td-ac.E{border-color:var(--gold);background:rgba(184,135,42,.12)}.td-ac.u{opacity:.75}
+.td-ac i{font-style:normal;font-weight:700;font-size:11px;text-align:center;white-space:nowrap;opacity:.85}.td-ac.P,.td-ac.L{border-color:var(--ok);background:rgba(46,125,79,.1)}.td-ac.A{border-color:var(--bad);background:rgba(200,50,40,.1)}.td-ac.E{border-color:var(--gold);background:rgba(184,135,42,.12)}.td-ac.u{opacity:.75}
 .td-pg{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.td-pg input{width:64px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-family:inherit}
 .td-b.sel{outline:2.5px solid var(--gold)}.td-abs{margin-top:14px}.td-abs .btn{margin-left:6px}
 .hp-cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:12px 14px;margin-bottom:12px}.hp-cfg label{font-size:12px;color:var(--ink3);display:flex;flex-direction:column;gap:4px}.hp-cfg input,.hp-cfg select{padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:14px;font-family:inherit}
@@ -693,6 +693,8 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
    label just getting cut off mid-word with no explanation. */
 .tabs.has-more{-webkit-mask-image:linear-gradient(to right,#000 90%,transparent 100%);mask-image:linear-gradient(to right,#000 90%,transparent 100%)}
 .avatar{overflow:hidden;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--green-soft),var(--green-deep));color:#f4ead6;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;font-family:var(--f-display);flex-shrink:0}
+.att-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}.pill-att.pill-attf{width:auto;height:34px;padding:0 11px;font-size:12.5px;white-space:nowrap}
+@media(max-width:640px){.tbl tr[data-row]{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 6px}.tbl tr[data-row] td{display:block;padding:0!important;border:0!important}.tbl tr[data-row] td:nth-child(2){flex:1 1 120px;min-width:0}.tbl tr[data-row] td:last-child{width:100%}.att-btns{justify-content:flex-start}}
 .pill-att{width:32px;height:32px;border-radius:9px;border:1px solid var(--line2);font-weight:700;font-size:11.5px;color:var(--ink3);transition:all .1s}
 .pill-att.P{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
 .pill-att.A{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
@@ -702,7 +704,7 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .pill-cyc{min-width:44px;height:44px;padding:0 6px;border-radius:10px;border:1px solid var(--line2);font-weight:700;font-size:10.5px;color:var(--ink3);transition:all .1s;font-family:var(--f-mono);background:var(--surface)}
 .pill-cyc.PASS,.pill-cyc.DONE{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
 .pill-cyc.FAIL,.pill-cyc.INC{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
-.pill-attw{min-width:76px;font-size:11.5px;font-family:inherit;letter-spacing:.01em}.pill-cyc.LATE{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520);border-color:var(--gold)}
+.pill-attw{min-width:76px;white-space:nowrap;font-size:11.5px;font-family:inherit;letter-spacing:.01em}.pill-cyc.LATE{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520);border-color:var(--gold)}
 .pill-cyc.EXC{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
 .pill-cyc:disabled{opacity:.4;cursor:not-allowed}
 .tag-purple{background:color-mix(in srgb,#7B4FA0 15%,transparent);color:#7B4FA0}
@@ -5855,7 +5857,7 @@ const Teacher = {
     <div class="grid g2">
       <div class="widget" style="border-top:3px solid var(--ok)"><div class="whead"><h3>Today’s summary</h3></div>
         ${marked||qToday.length? `<div class="wlist">
-          <div class="wrow" data-go="#/students/attendance"><span>✅</span><span class="t">${present} present · ${Object.values(todayRec).filter(x=>x==='A').length} absent · ${Object.values(todayRec).filter(x=>x==='E').length} excused · ${Object.values(todayRec).filter(x=>x==='L').length} late</span></div>
+          <div class="wrow" data-go="#/students/attendance"><span>✅</span><span class="t">${present} present · ${Object.values(todayRec).filter(x=>x==='A').length} absent · ${Object.values(todayRec).filter(x=>x==='E').length} excused absence · ${Object.values(todayRec).filter(x=>x==='L').length} late</span></div>
           <div class="wrow" style="cursor:default"><span>📖</span><span class="t">${qToday.length} memorization entr${qToday.length===1?'y':'ies'} recorded</span></div></div>`
         :'<p style="font-size:13px;color:var(--ink2)">Take attendance and record progress — the summary builds itself here.</p>'}
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
@@ -6017,7 +6019,7 @@ const Teacher = {
               const name=s.preferredName||s.name;
               return `<button class="classmode-card" data-cmstu="${s.id}" aria-label="${esc(name)} — currently ${stName}. Tap to mark ${nextName}." style="background:${st?`color-mix(in srgb,${bg} 88%,transparent)`:bg};color:${fg};border-color:${st?'transparent':'var(--line2)'}">
                 <span style="font-size:15px;font-weight:600;line-height:1.25">${esc(name)}</span>
-                <span style="font-size:12px;font-family:var(--f-mono);opacity:.85;margin-top:6px" aria-hidden="true">${st||'tap to mark'}</span>
+                <span style="font-size:12px;font-family:var(--f-mono);opacity:.85;margin-top:6px" aria-hidden="true">${st?PT_ATT_LABEL[st]:'Tap to mark'}</span>
               </button>`; }).join('')}
           </div>
           ${!stu.length?'<div class="empty"><h3>No students to mark</h3></div>':''}
@@ -8472,9 +8474,9 @@ const Students = {
   // comment on the click handler for why (avatar green-flash on every tap).
   _attRowHTML(s, date, rec, reasons){
     return `<td style="width:44px">${avatarHTML(s)}</td><td>${esc(s.name)}${rec[s.id]==='E'&&reasons[s.id]?`<div style="font-size:11px;color:var(--info);font-style:italic;margin-top:2px">${esc(reasons[s.id])}</div>`:''}</td>
-          <td style="text-align:right;white-space:nowrap">
-           ${rec[s.id]==='E'?`<button class="btn btn-ghost btn-sm" data-reason="${s.id}" title="Add/edit reason" style="padding:5px 8px">📝</button>`:''}
-           ${['P','A','L','E'].map(k=>`<button class="pill-att ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',A:'Absent — unexcused',L:'Late',E:'Absent — excused'}[k]}">${k}</button>`).join(' ')}</td>`;
+          <td style="text-align:right"><div class="att-btns">
+           ${rec[s.id]==='E'?`<button class="btn btn-ghost btn-sm" data-reason="${s.id}" title="Add/edit reason" style="padding:5px 8px">📝 Reason</button>`:''}
+           ${['P','L','A','E'].map(k=>`<button class="pill-att pill-attf ${rec[s.id]===k?k:''}" data-att="${s.id}_${k}" title="${{P:'Present',L:'Late',A:'Absent — unexcused',E:'Absent — excused (with a reason)'}[k]}">${PT_ATT_LABEL[k]}</button>`).join('')}</div></td>`;
   },
   attendance(v){
     const d=DB.data;
@@ -8485,13 +8487,13 @@ const Students = {
     const reasons=d.attendanceReasons[date];
     const stu=d.students.filter(s=>s.active!==false && (!s.startDate||s.startDate<=date));
     const attCountsHTML = ()=>{ const c={P:0,A:0,L:0,E:0}; Object.values(rec).forEach(k=>{ if(c[k]!==undefined) c[k]++; });
-      return `<span>✅ ${c.P} present</span><span>🕐 ${c.L} late</span><span>⚠️ ${c.A} unexcused</span><span>📋 ${c.E} excused</span><span style="margin-left:auto;opacity:.85">${stu.length} student${stu.length===1?'':'s'} today</span>`; };
+      return `<span>✅ ${c.P} present</span><span>🕐 ${c.L} late</span><span>⚠️ ${c.A} absent</span><span>📋 ${c.E} excused absence</span><span style="margin-left:auto;opacity:.85">${stu.length} student${stu.length===1?'':'s'} today</span>`; };
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div style="margin-top:12px">${moduleHeroHTML('Attendance', 'Session Attendance', fmtDate(date)+' — tap a pill to mark, saves instantly.', '✅')}</div>
+     <div style="margin-top:12px">${moduleHeroHTML('Attendance', 'Session Attendance', fmtDate(date)+' — tap a status to mark, saves instantly. Tap it again to clear.', '✅')}</div>
      <div class="filters no-print">
       <input type="date" value="${date}" id="attDate" style="max-width:170px">
       <button class="btn btn-o btn-sm" id="allP">Mark all present</button>
-      <span style="font-size:12.5px;color:var(--ink2)">P present · A absent (unexcused) · L late · E excused absence</span></div>
+      <span style="font-size:12.5px;color:var(--ink2)">Present · Late · Absent (unexcused) · Excused absence</span></div>
      ${stu.length?`<div id="attCounts" class="card" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-bottom:14px">${attCountsHTML()}</div>`:''}
      ${stu.length? LEVELS.map(L=>{ const g=stu.filter(s=>s.level===L); if(!g.length) return '';
        return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
@@ -8629,7 +8631,7 @@ function ptWeekendPair(session){
 // (P/A/L/E); UA and EXC are just this module's friendlier on-screen labels
 // for the existing 'A' (unexcused) and 'E' (excused) codes.
 const PT_ATT_CYCLE = [undefined,'P','L','A','E'];
-const PT_ATT_LABEL = {P:'Present', L:'Late', A:'Absent', E:'Excused'};
+const PT_ATT_LABEL = {P:'Present', L:'Late', A:'Absent', E:'Excused absence'};
 const PT_Q_CYCLE = [null,'PASS','FAIL','EXC'];
 const PT_HW_CYCLE = [null,'DONE','INC','EXC'];
 const PT_CW_CYCLE = [null,'DONE','INC','EXC'];
@@ -8856,7 +8858,7 @@ function ptWeekendPrintHTML(year, month, satDate, sunDate, levelGroups, pctHidde
 <body>
 <div class="toolbar-actions"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
 <h1>Al-Madrasatu An-Nuriyyah \u2014 Weekend Progress</h1>
-<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (Present / Late / Absent / Excused) \u00b7 Qur\u2019an/HW/CW (PASS or DONE / FAIL or INC / EXC)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
+<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (Present / Late / Absent / Excused absence) \u00b7 Qur\u2019an/HW/CW (PASS or DONE / FAIL or INC / EXC)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
 ${sections || '<p style="font-size:13px;color:#686e5f">No students to show.</p>'}
 </body></html>`;
 }
@@ -9708,7 +9710,7 @@ const Progress = {
       : yearStats.ua===2 ? `<div class="notice warn"><span>⚠️</span><span>2 unexcused absences — one more triggers a removal warning.</span></div>` : '';
     return `${warn}
     <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:8px;margin:${warn?'12px':'0'} 0 14px">
-      ${[['Total',yearStats.total],['Present',yearStats.present],['Late',yearStats.late],['Excused',yearStats.exc],['Unexcused',yearStats.ua]].map(([l,val])=>`
+      ${[['Total',yearStats.total],['Present',yearStats.present],['Late',yearStats.late],['Excused absence',yearStats.exc],['Absent (unexcused)',yearStats.ua]].map(([l,val])=>`
       <div class="card" style="padding:10px;text-align:center">
         <div style="font-size:17px;font-weight:800;color:var(--green)">${val}</div>
         <div style="font-size:9.5px;font-weight:700;color:var(--ink3)">${l}</div>
@@ -11290,7 +11292,7 @@ const TD = {
     const tags=`${r.need?'':'<span class="tag tag-green">✓ all clear</span>'}${r.silent?`<span class="tag tag-red">${r.L===3?'no log 14d+':'no update 21d+'}</span>`:''}${r.L===3&&s.hw&&(s.hw.tries||0)>=3?`<span class="tag tag-red">stuck · ${s.hw.tries} fails</span>`:''}${r.L===3&&RP.streak(s)?`<span class="tag tag-gold">🔥 ${RP.streak(s)}wk</span>`:''}${r.paused?'<span class="tag tag-dim">⏸ revision paused</span>':''}${r.a==='L'?'<span class="tag tag-gold">late</span>':''}`;
     return `<div class="card td-card ${r.need?'':'ok'}" data-tdc="${s.id}"><div class="td-head">${avatarHTML(s,'width:40px;height:40px;border-radius:50%;flex-shrink:0')}<div style="min-width:0;flex:1"><b class="td-name" dir="auto">${esc(nm)}</b><div class="adm-tags" style="margin-top:3px">${CR.lvTag(s)}${tags}</div></div>${r.L===3?`<button class="btn btn-ghost btn-sm no-print" data-go="#/revplan/${s.id}">Plan →</button>`:`<button class="btn btn-ghost btn-sm no-print" data-go="#/students/${s.id}">Profile →</button>`}</div>${parts.join('')}</div>`;
   },
-  attChip(s){ const a=CR.attSt(s); return `<button class="td-ac ${a||'u'}" data-tdatt="${s.id}" title="Tap to change">${avatarHTML(s,'width:22px;height:22px;border-radius:50%;font-size:8px;flex-shrink:0')}<span dir="auto">${esc(CR.nm(s))}</span><i>${a||'·'}</i></button>`; },
+  attChip(s){ const a=CR.attSt(s); return `<button class="td-ac ${a||'u'}" data-tdatt="${s.id}" title="Tap to change">${avatarHTML(s,'width:22px;height:22px;border-radius:50%;font-size:8px;flex-shrink:0')}<span dir="auto">${esc(CR.nm(s))}</span><i>${a?PT_ATT_LABEL[a]:'Not marked'}</i></button>`; },
   render(v){
     TD._v=v; const t=today(), all=TD.rows(), act=CR.active(), rec=CR.att();
     const nP=act.filter(s=>rec[s.id]==='P'||rec[s.id]==='L').length, nA=act.filter(s=>rec[s.id]==='A'||rec[s.id]==='E').length, nU=act.length-nP-nA;
@@ -11306,11 +11308,11 @@ const TD = {
       <p class="page-sub">${esc(dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))} — mark who is here, then work down the list. One tap rates it, and every tap has an Undo.</p>
       <div class="no-print" style="margin:0 0 12px"><button class="btn btn-p btn-sm" id="tdCm">▶ Class mode</button> <span class="td-hint">One student at a time, big buttons — for hearing in class.</span></div>
       <div class="card td-att no-print"><div class="td-atthead"><b>① Attendance</b><span class="tag tag-green">${nP} here</span>${nA?`<span class="tag tag-red">${nA} absent</span>`:''}${nU?`<span class="tag tag-dim">${nU} not marked</span>`:''}<span style="margin-left:auto;display:flex;gap:6px"><button class="btn btn-o btn-sm" id="tdAllP" ${nU?'':'disabled'}>Mark the rest present</button><button class="btn btn-ghost btn-sm" id="tdAttT">${TD.attOpen?'Hide ▴':'Edit ▾'}</button></span></div>
-        ${TD.attOpen?`<p class="td-hint">Tap a name to cycle: not marked → ✓ present → late → absent → excused. Absent students move out of the list and get a follow-up message button.</p><div class="td-acs">${act.slice().sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).map(TD.attChip).join('')}</div>`:''}</div>
+        ${TD.attOpen?`<p class="td-hint">Tap a name to cycle: not marked → present → late → absent → excused absence. Absent students move out of the list and get a follow-up message button.</p><div class="td-acs">${act.slice().sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).map(TD.attChip).join('')}</div>`:''}</div>
       <div class="rp-kpis no-print">${kpi(nHear,'Juzʼ to hear (L3)','var(--gold)')}${kpi(nPoem,'Poem bayts due','var(--info)')}${kpi(nPos,'L1/L2 not updated yet','var(--bad)')}${kpi(nNeed+'/'+present.length,'Still need you','var(--ok)')}</div>
       <div class="filters no-print"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<button class="chip ${TD.lv===k?'on':''}" data-tdlv="${k}">${l} (${cnt(k)})</button>`).join('')}</span><span style="display:flex;gap:4px"><button class="chip ${TD.f==='need'?'on':''}" data-tdf="need">Needs me</button><button class="chip ${TD.f==='all'?'on':''}" data-tdf="all">Everyone</button></span></div>
       ${show.length?`<div class="td-grid">${show.map(TD.card).join('')}</div>`:`<div class="empty"><div class="big">🌟</div><h3>${present.length?'Everyone is all clear':'Nobody here yet'}</h3><p>${present.length?'Switch to “Everyone” to log anyway.':'Mark attendance above to start.'}</p></div>`}
-      ${absent.length?`<div class="card td-abs"><div class="whead"><h3>Absent today (${absent.length})</h3></div>${absent.map(r=>`<div class="td-it">${avatarHTML(r.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(r.s))}</b><small>${r.a==='E'?'excused':'unexcused'} · ${r.s.missSent===t?'✓ follow-up sent':'no follow-up yet'}${r.s.hw?' · 📌 '+esc(HW.label(r.s.hw))+' stays due':''}</small></div><button class="btn btn-o btn-sm" data-tdmiss="${r.s.id}">✉ Follow up</button><button class="btn btn-ghost btn-sm" data-tdhere="${r.s.id}">Actually here</button></div>`).join('')}</div>`:''}</div>`;
+      ${absent.length?`<div class="card td-abs"><div class="whead"><h3>Absent today (${absent.length})</h3></div>${absent.map(r=>`<div class="td-it">${avatarHTML(r.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(r.s))}</b><small>${r.a==='E'?'Excused absence':'Absent (unexcused)'} · ${r.s.missSent===t?'✓ follow-up sent':'no follow-up yet'}${r.s.hw?' · 📌 '+esc(HW.label(r.s.hw))+' stays due':''}</small></div><button class="btn btn-o btn-sm" data-tdmiss="${r.s.id}">✉ Follow up</button><button class="btn btn-ghost btn-sm" data-tdhere="${r.s.id}">Actually here</button></div>`).join('')}</div>`:''}</div>`;
     wireCommon(v); RP.wire(v); TD.wirePos(v,()=>TD.render(v));
     const rr=()=>TD.render(v); HW.wire(v,rr);
     $('#tdCm',v).onclick=()=>CM.open();
@@ -11415,7 +11417,7 @@ const FU={
   valAt(ser,d){ let v=null; ser.forEach(p=>{ if(p.d<=d) v=p.v; }); return v; },
   text(s){ const nm=CR.nm(s), from=FU.from(), t=today(), d=DB.data, L=CR.lvl(s), lines=[], next=[];
     const days=Object.keys(d.attendance).filter(k=>k>from&&k<=t&&d.attendance[k][s.id]).sort();
-    if(days.length){ const lab={P:'present',L:'late',A:'absent',E:'excused'}; lines.push('Attendance: '+days.map(k=>new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short'})+' '+lab[d.attendance[k][s.id]]).join(', ')); }
+    if(days.length){ const lab={P:'present',L:'late',A:'absent',E:'excused absence'}; lines.push('Attendance: '+days.map(k=>new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short'})+' '+lab[d.attendance[k][s.id]]).join(', ')); }
     const ls=FU.lessons(from,t); if(ls.length) lines.push('In class: '+ls.slice(0,3).join('; '));
     if(L===3){ const q7=d.quran.filter(q=>q.sid===s.id&&q.date>from), nw=[...new Set(q7.filter(q=>q.kind==='New').map(q=>q.what))].slice(0,3), rv=(s.revHistory||[]).filter(h=>h.date>from);
       { const ay=ML.ayatSum(q7.filter(q=>q.kind==='New')); lines.push(nw.length?'New memorization: '+nw.join('; ')+(ay?' ('+ay+' āyāt)':''):'New memorization: none recorded this week'); } if(rv.length) lines.push('Revision heard: '+rv.slice(0,4).map(h=>'Juzʼ '+h.juz+' ('+(REV_LABEL[h.rating]||h.rating)+')').join(', '));
@@ -14653,7 +14655,7 @@ const AnaReports = {
     const rows=act.map(s=>{ const vals=days.map(day=>d.attendance[day][s.id]).filter(Boolean);
       const P=vals.filter(x=>x==='P').length;
       return `<tr><td>${esc(s.name)}</td><td>${s.level.replace('Level ','L')}</td><td>${P}</td><td>${vals.filter(x=>x==='A').length}</td><td>${vals.filter(x=>x==='E').length}</td><td>${vals.filter(x=>x==='L').length}</td><td>${vals.length?Math.round(P/vals.length*100)+'%':'—'}</td></tr>`; }).join('');
-    repShell('Attendance Report · '+R.a+' → '+R.b, `<h2>${days.length} sessions</h2><table><thead><tr><th>Student</th><th>Lvl</th><th>P</th><th>A (unexcused)</th><th>E (excused)</th><th>L</th><th>Rate</th></tr></thead><tbody>${rows}</tbody></table>`); },
+    repShell('Attendance Report · '+R.a+' → '+R.b, `<h2>${days.length} sessions</h2><table><thead><tr><th>Student</th><th>Lvl</th><th>Present</th><th>Absent (unexcused)</th><th>Excused absence</th><th>Late</th><th>Rate</th></tr></thead><tbody>${rows}</tbody></table>`); },
   memo(R){ const d=DB.data;
     const L3=d.students.filter(s=>s.active!==false&&s.level==='Level 3');
     const rows=L3.map(s=>{ const st=hifzStats(s); const q=d.quran.filter(x=>x.sid===s.id&&inR(x.date,R.a,R.b));
