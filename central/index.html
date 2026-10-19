@@ -322,6 +322,22 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .ml-gb{display:flex;flex-direction:column;align-items:center;padding:5px 3px;border:1px solid var(--line);border-radius:9px;background:var(--card,#fff);color:var(--ink);cursor:pointer;font:inherit}.ml-gb b{font-size:13px}.ml-gb small{font-size:10px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.ml-gb.done{opacity:.55}.ml-gb.on{background:var(--green-deep,#1a4a35);border-color:transparent}.ml-gb.on b,.ml-gb.on small{color:#fff}
 .mb-list{max-height:55vh;overflow:auto;margin:8px 0}.mb-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--line)}.mb-n{flex:1 1 110px;min-width:0;font-size:13.5px}.mb-s{flex:1 1 130px;min-width:0}.mb-row .ml-ra input{width:52px}
 .mb-gs{display:inline-flex;gap:4px}.mb-g{width:38px;height:36px;border:1.5px solid var(--line);border-radius:9px;background:var(--card,#fff);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer}.mb-g.sel[data-g=Excellent]{background:var(--ok);color:#fff;border-color:transparent}.mb-g.sel[data-g=Good]{background:var(--gold);color:#fff;border-color:transparent}.mb-g.sel[data-g="Needs review"]{background:var(--bad);color:#fff;border-color:transparent}
+.ml-tg{display:flex;gap:6px;flex-wrap:wrap}.ml-cum{display:inline-flex;gap:5px;align-items:center;font-size:12px;color:var(--ink2);cursor:pointer}
+.ay-map{display:flex;flex-wrap:wrap;gap:2px;margin-top:6px}.ay,i.ay{display:inline-block;width:7px;height:11px;border-radius:2px;background:var(--line);font-style:normal}.ay.ok{background:var(--ok)}.ay.sh{background:var(--bad)}.ay.st{background:var(--gold);box-shadow:0 0 0 1.5px var(--bad)}
+.td-hint input[type=checkbox],.ml-cum input,.hw-card input[type=checkbox]{width:auto;flex:none;padding:0;margin:0}.ml-cum{white-space:nowrap}
+.td-b.ny{border-color:var(--line);color:var(--ink3)}
+.cm{position:fixed;inset:0;z-index:95;background:var(--bg);overflow:auto}.cm-in{max-width:760px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+.cm-top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink2)}
+.cm-body{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding-top:18px}.cm-name{font-size:30px;margin:6px 0 0;font-family:var(--f-display)}
+.cm-p{font:700 28px/1.2 var(--f-display);color:var(--green-deep,#1a4a35);margin:10px 0 2px}html[data-theme="dark"] .cm-p{color:var(--gold-bright,#e8c068)}.cm-ins{margin:0;color:var(--ink2);font-size:16px}
+.cm-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;margin:16px 0 10px}.cm-btns .td-b{min-height:76px;font-size:26px;justify-content:center}.cm-btns .td-b small{font-size:12px}
+.cm .mfoot{position:sticky;bottom:0;background:var(--bg);padding:10px 0;margin-top:14px}
+.cm-sub{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.hw-chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+@media(max-width:560px){.cm-btns{grid-template-columns:1fr 1fr}.cm-name{font-size:24px}.cm-p{font-size:23px}}.hw-r .td-b{padding:7px 5px}.hw-r .td-b small{white-space:nowrap}.hw-row>.btn{margin-left:auto}.hw-r{flex-wrap:wrap}.hw-row .td-lab{flex:1 1 150px}
+.hw-ays{display:flex;flex-wrap:wrap;gap:4px;max-height:170px;overflow:auto;padding:6px;border:1px solid var(--line);border-radius:12px}
+.hw-ay{min-width:36px;height:34px;border:1.5px solid var(--line);border-radius:8px;background:var(--card,#fff);color:var(--ink);font:600 12px var(--f-mono,monospace);cursor:pointer}.hw-ay.new{border-color:var(--gold)}.hw-ay.on{background:var(--bad);border-color:transparent;color:#fff}
+.hw-sz{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0 8px}.hw-sz small{color:var(--ink3);font-size:11.5px}
+@media(max-width:640px){.hw-row .td-r{width:100%}.hw-r .td-b{flex:1 1 0;min-width:0}}
 .rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 14px}
 .rp-kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--k,var(--line));border-radius:14px;padding:11px 14px}
 .rp-kpi b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;color:var(--k,var(--ink))}.rp-kpi span{font-size:11.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;font-weight:600}.rp-kpi small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
@@ -686,6 +702,7 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .pill-cyc{min-width:44px;height:44px;padding:0 6px;border-radius:10px;border:1px solid var(--line2);font-weight:700;font-size:10.5px;color:var(--ink3);transition:all .1s;font-family:var(--f-mono);background:var(--surface)}
 .pill-cyc.PASS,.pill-cyc.DONE{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);border-color:var(--ok)}
 .pill-cyc.FAIL,.pill-cyc.INC{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);border-color:var(--bad)}
+.pill-attw{min-width:76px;font-size:11.5px;font-family:inherit;letter-spacing:.01em}.pill-cyc.LATE{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520);border-color:var(--gold)}
 .pill-cyc.EXC{background:color-mix(in srgb,var(--info) 18%,transparent);color:var(--info);border-color:var(--info)}
 .pill-cyc:disabled{opacity:.4;cursor:not-allowed}
 .tag-purple{background:color-mix(in srgb,#7B4FA0 15%,transparent);color:#7B4FA0}
@@ -6829,12 +6846,12 @@ const Rev = {
     const base = REV_LABEL[j.rating]+' · '+(j.days===0?'today':j.days+'d ago');
     return j.k==='due' ? base+(j.rating==='forgot'?' · needs re-learning':' · overdue by '+j.overdue+'d') : j.k==='soon' ? base+' · due soon' : base;
   },
-  log(s,N,rating,date){
+  log(s,N,rating,date,opts){
     date = date||today(); s.revision=s.revision||{}; s.revHistory=s.revHistory||[];
     const cur=s.revision[N]; if(!cur || date>=cur.date) s.revision[N]={date,rating};
     if(s.revPlan&&s.revPlan.ptr) delete s.revPlan.ptr[N]; // a heard Juzʼ starts a fresh pass
     s.revHistory.unshift({date,juz:N,rating}); if(s.revHistory.length>120) s.revHistory.length=120;
-    DB.data.quran.push({sid:s.id, what:'Juzʼ '+N+' revision'+(rating==='forgot'?' — forgot parts':rating==='shaky'?' — shaky':''), kind:'Review', grade:rating==='strong'?'Excellent':'Needs review', date});
+    if(!(opts&&opts.skipLog)) DB.data.quran.push({sid:s.id, what:'Juzʼ '+N+' revision'+(rating==='forgot'?' — forgot parts':rating==='shaky'?' — shaky':''), kind:'Review', rc:'manzil', juz:N, grade:rating==='strong'?'Excellent':'Needs review', date});
     DB.log((s.preferredName||s.name)+' — revised Juzʼ '+N+' ('+REV_LABEL[rating]+')');
     DB.save();
   },
@@ -8612,7 +8629,7 @@ function ptWeekendPair(session){
 // (P/A/L/E); UA and EXC are just this module's friendlier on-screen labels
 // for the existing 'A' (unexcused) and 'E' (excused) codes.
 const PT_ATT_CYCLE = [undefined,'P','L','A','E'];
-const PT_ATT_LABEL = {P:'P', L:'L', A:'UA', E:'EXC'};
+const PT_ATT_LABEL = {P:'Present', L:'Late', A:'Absent', E:'Excused'};
 const PT_Q_CYCLE = [null,'PASS','FAIL','EXC'];
 const PT_HW_CYCLE = [null,'DONE','INC','EXC'];
 const PT_CW_CYCLE = [null,'DONE','INC','EXC'];
@@ -8692,7 +8709,7 @@ function ptReportCardHTML(s, monthlyRows, yearStats, comment){
     <div style="text-align:center"><div class="v" style="color:#1a4a35">${pct.toFixed(1)}%</div><div class="l">OVERALL</div></div>
     <div style="text-align:center"><div class="v" style="color:#8a6520">${grade}</div><div class="l">LETTER GRADE</div></div>
   </div>
-  <table><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">UA</th><th style="text-align:right">Late</th></tr></thead>
+  <table><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">Absent</th><th style="text-align:right">Late</th></tr></thead>
   <tbody>${rows}</tbody></table>
   ${comment?`<div class="comment"><b>Teacher comments:</b> ${esc(comment)}</div>`:''}
 </div>
@@ -8839,7 +8856,7 @@ function ptWeekendPrintHTML(year, month, satDate, sunDate, levelGroups, pctHidde
 <body>
 <div class="toolbar-actions"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
 <h1>Al-Madrasatu An-Nuriyyah \u2014 Weekend Progress</h1>
-<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (P/L/UA/EXC) \u00b7 Qur\u2019an/HW/CW (PASS or DONE / FAIL or INC / EXC)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
+<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (Present / Late / Absent / Excused) \u00b7 Qur\u2019an/HW/CW (PASS or DONE / FAIL or INC / EXC)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
 ${sections || '<p style="font-size:13px;color:#686e5f">No students to show.</p>'}
 </body></html>`;
 }
@@ -9073,7 +9090,7 @@ const Progress = {
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="pill-cyc ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'':''}" data-cyc="${s.id}_att" title="🕌 Attendance">${PT_ATT_LABEL[e.att]||'—'}</button>
+        <button class="pill-cyc pill-attw ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'LATE':''}" data-cyc="${s.id}_att" title="🕌 Attendance — tap to change">${PT_ATT_LABEL[e.att]||'Not marked'}</button>
         <button class="pill-cyc ${e.quran||''}" data-cyc="${s.id}_quran" title="📖 Qur'an">${e.quran||'—'}</button>
         <button class="pill-cyc ${e.hw||''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="📝 Homework">${sat?(e.hw||'—'):'—'}</button>
         <button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="✏️ Classwork">${e.cw||'—'}</button>
@@ -9106,7 +9123,7 @@ const Progress = {
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span style="font-size:10px;font-weight:700;color:var(--ink3);font-family:var(--f-mono);min-width:30px">${label}</span>
         ${closed ? `<span style="font-size:11px;color:var(--ink3);font-style:italic">⛔ Closed</span>` : `
-        <button class="pill-cyc ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'':''}" data-cycw="${s.id}_att_${dateKey}" title="🕌 Attendance">${PT_ATT_LABEL[e.att]||'—'}</button>
+        <button class="pill-cyc pill-attw ${e.att==='A'?'FAIL':e.att==='E'?'EXC':e.att==='P'?'PASS':e.att==='L'?'LATE':''}" data-cycw="${s.id}_att_${dateKey}" title="🕌 Attendance — tap to change">${PT_ATT_LABEL[e.att]||'Not marked'}</button>
         <button class="pill-cyc ${e.quran||''}" data-cycw="${s.id}_quran_${dateKey}" title="📖 Qur'an">${e.quran||'—'}</button>
         <button class="pill-cyc ${e.hw||''}" data-cycw="${s.id}_hw_${dateKey}" ${hwEnabled?'':'disabled'} title="📝 Homework">${hwEnabled?(e.hw||'—'):'—'}</button>
         <button class="pill-cyc ${e.cw||''}" data-cycw="${s.id}_cw_${dateKey}" title="✏️ Classwork">${e.cw||'—'}</button>
@@ -9147,7 +9164,7 @@ const Progress = {
       if(e.cw && e.cw!=='EXC'){ cT++; if(e.cw==='DONE') cD++; }
     });
     return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">${fmtDate(session)}</b>
-       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
+       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} absent</span>
        <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
        <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
        <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
@@ -9165,7 +9182,7 @@ const Progress = {
       });
     });
     return `<b style="font-family:var(--f-mono);font-size:11.5px;opacity:.85">🗓️ ${fmtDate(satDate)} – ${fmtDate(sunDate)}</b>
-       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} UA</span>
+       <span>✅ ${present} present</span><span>🕐 ${late} late</span><span>⚠️ ${ua} absent</span>
        <span>📖 ${qT?Math.round(qP/qT*100)+'%':'—'}</span>
        <span>📝 HW ${hT?Math.round(hD/hT*100)+'%':'—'}</span>
        <span>✏️ CW ${cT?Math.round(cD/cT*100)+'%':'—'}</span>`;
@@ -9626,7 +9643,7 @@ const Progress = {
     const curRow = monthlyRows.find(r=>r.month===cur) || monthlyRows[0];
     const som = ptSom(curRow);
     return `<div class="card" style="margin-bottom:14px;overflow-x:auto">
-      <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">UA</th><th style="text-align:right">Late</th></tr></thead>
+      <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">Absent</th><th style="text-align:right">Late</th></tr></thead>
       <tbody>${monthlyRows.map(r=>`<tr><td><b>${r.month}</b></td>
         <td style="text-align:right">${r.quranPct!=null?r.quranPct.toFixed(0):'—'}</td>
         <td style="text-align:right">${r.hwPct!=null?r.hwPct.toFixed(0):'—'}</td>
@@ -9726,7 +9743,7 @@ const Progress = {
         <div style="text-align:center"><div style="font-size:30px;font-weight:800;color:var(--green)">${pct.toFixed(1)}%</div><div style="font-size:10px;font-weight:700;color:var(--ink3)">OVERALL</div></div>
         <div style="text-align:center"><div style="font-size:30px;font-weight:800;color:var(--gold-text)">${grade}</div><div style="font-size:10px;font-weight:700;color:var(--ink3)">LETTER GRADE</div></div>
       </div>
-      <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">UA</th><th style="text-align:right">Late</th></tr></thead>
+      <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">Absent</th><th style="text-align:right">Late</th></tr></thead>
       <tbody>${monthlyRows.map(r=>`<tr><td><b>${r.month}</b></td>
         <td style="text-align:right">${r.quranPct!=null?r.quranPct.toFixed(0):'—'}</td>
         <td style="text-align:right">${r.hwPct!=null?r.hwPct.toFixed(0):'—'}</td>
@@ -10994,89 +11011,141 @@ const ML = {
   nm(s){ return s.preferredName||s.name; },
   cut(){ return ML.f.range==='all'?'':new Date(Date.now()-(+ML.f.range)*864e5).toISOString().slice(0,10); },
   all(){ const ids=new Set(ML.stu().map(s=>s.id)); return DB.data.quran.map((q,i)=>({q,i})).filter(x=>ids.has(x.q.sid)); },
-  list(){ const c=ML.cut(), f=ML.f; return ML.all().filter(({q})=>(!f.sid||q.sid===f.sid)&&(!f.kind||q.kind===f.kind)&&(!f.grade||q.grade===f.grade)&&(!c||q.date>=c)).sort((a,b)=>b.q.date.localeCompare(a.q.date)||b.i-a.i); },
-  last(sid){ let b=null; DB.data.quran.forEach((q,i)=>{ if(q.sid===sid&&(!b||q.date>b.date||(q.date===b.date))) b=q; }); return b; },
+  list(){ const c=ML.cut(), f=ML.f; return ML.all().filter(({q})=>(!f.sid||q.sid===f.sid)&&ML.kindMatch(q,f.kind)&&(!f.grade||q.grade===f.grade)&&(!c||q.date>=c)).sort((a,b)=>b.q.date.localeCompare(a.q.date)||b.i-a.i); },
+  last(sid){ let b=null; DB.data.quran.forEach((q,i)=>{ if(q.sid===sid&&!q.seed&&(!b||q.date>b.date||(q.date===b.date))) b=q; }); return b; },
   daysAgo(d){ return Math.max(0,Math.round((new Date(today())-new Date(d))/864e5)); },
   gtag(g){ return g==='Excellent'?'tag-green':g==='Good'?'tag-gold':'tag-red'; },
   /* ---- v37 helpers: ayah-aware log ---- */
   nOf(e){ if(e.n) return e.n; const w=String(e.what||''); const q=QS.slice(1).slice().sort((a,b)=>b.name.length-a.name.length).find(x=>w.startsWith(x.name)); return q?q.n:0; },
   rangeOf(e){ const n=ML.nOf(e), c=SURAH_AYAHS[n]||0; if(e.a&&e.b) return [e.a,e.b]; const w=String(e.what||''); if(/whole/i.test(w)) return [1,c]; let m=w.match(/(\d+)\s*[–\-]\s*(\d+)/); if(m) return [Math.min(+m[1],c),Math.min(+m[2],c)]; m=w.match(/\s(\d+)\s*$/); if(m) return [Math.min(+m[1],c),Math.min(+m[1],c)]; return [1,c]; },
   explicit(e){ return !!(e.a&&e.b)||/whole sūrah|\d+\s*[–\-]\s*\d+/.test(String(e.what||'')); },
-  fmt(n,a,b){ const q=QS[n], c=SURAH_AYAHS[n]; if(!a||!b) return q.name; if(a===1&&b===c) return q.name+' whole sūrah'; return q.name+' '+a+(b>a?'–'+b:''); },
+  fmt(n,a,b,cum){ const q=QS[n], c=SURAH_AYAHS[n]; if(!a||!b) return q.name; if(a===1&&b===c) return q.name+' whole sūrah'; return q.name+' '+a+(b>a?'–'+b:'')+(cum&&a>1?' (from āyah 1)':''); },
+  recited(e){ const r=ML.rangeOf(e); return e.cum?[1,r[1]]:r; },
+  connected(s,n){ const c=SURAH_AYAHS[n], cv=ML.cover(s,n); if(cv.covered<c) return false; return DB.data.quran.some(q=>q.sid===s.id&&q.kind==='New'&&ML.nOf(q)===n&&q.grade!=='Needs review'&&(()=>{ const r=ML.recited(q); return r[0]<=1&&r[1]>=c; })()); },
   ayatSum(es){ return es.filter(e=>ML.nOf(e)&&ML.explicit(e)).reduce((t,e)=>{ const r=ML.rangeOf(e); return t+Math.max(0,r[1]-r[0]+1); },0); },
-  cover(s,n){ const c=SURAH_AYAHS[n]||0, seen=new Array(c+2).fill(false); DB.data.quran.forEach(q=>{ if(q.sid===s.id&&q.kind==='New'&&ML.nOf(q)===n){ const r=ML.rangeOf(q); for(let i=Math.max(1,r[0]);i<=Math.min(c,r[1]);i++) seen[i]=true; } });
+  cover(s,n){ const c=SURAH_AYAHS[n]||0, seen=new Array(c+2).fill(false); DB.data.quran.forEach(q=>{ if(q.sid===s.id&&q.kind==='New'&&ML.nOf(q)===n){ const r=ML.recited(q); for(let i=Math.max(1,r[0]);i<=Math.min(c,r[1]);i++) seen[i]=true; } });
     let k=0,first=0; for(let i=1;i<=c;i++){ if(seen[i]) k++; else if(!first) first=i; } return {covered:k,total:c,first}; },
   rev(s){ try{ return hifzStats(s).pid==='reverse'; }catch(e){ return false; } },
   after(s,n){ const m=ML.rev(s)?n+1:n-1; return (m<1||m>114)?0:m; },
   ahead(s,n){ const cur=(s.hifz||{}).cur; if(!cur) return true; return ML.rev(s)?n>=cur:n<=cur; },
   lastNew(s){ let b=null,bi=-1; DB.data.quran.forEach((q,i)=>{ if(q.sid===s.id&&q.kind==='New'&&ML.nOf(q)&&(!b||q.date>=b.date)){ b=q; bi=i; } }); return b; },
-  nextUp(s){ const l=ML.lastNew(s); if(!l){ const n=(s.hifz||{}).cur||114; return {n,a:1,b:SURAH_AYAHS[n]}; } const n=ML.nOf(l), cv=ML.cover(s,n);
-    if(cv.covered<cv.total&&cv.first) return {n,a:cv.first,b:cv.total}; const m=ML.after(s,n); if(!m) return {n,a:1,b:cv.total}; return {n:m,a:1,b:SURAH_AYAHS[m]}; },
+  nextUp(s){ const l=ML.lastNew(s); if(!l){ const n=(s.hifz||{}).cur||114; return {n,a:1,b:SURAH_AYAHS[n],cum:false}; }
+    const n=ML.nOf(l), c=SURAH_AYAHS[n], cv=ML.cover(s,n), r=ML.rangeOf(l), len=Math.max(1,HW.size(s)||(r[1]-r[0]+1));
+    if(cv.covered<c&&cv.first) return {n,a:cv.first,b:Math.min(c,cv.first+len-1),cum:cv.first>1};
+    if(!ML.connected(s,n)) return {n,a:1,b:c,cum:false,final:true};
+    const m=ML.after(s,n); if(!m) return {n,a:1,b:c,cum:false}; return {n:m,a:1,b:Math.min(SURAH_AYAHS[m],len),cum:false}; },
   drift(s){ const l=ML.lastNew(s), cur=(s.hifz||{}).cur; if(!l||!cur) return 0; const n=ML.nOf(l); return (n!==cur&&ML.ahead(s,n))?n:0; },
+  SABQI_DAYS:14,
+  TAGS:['Forgot words','Wrong āyah','Hesitation','Tajwīd','Fluency','Joining portions'],
+  cat(q){ return q.kind==='New'?'Sabaq':q.rc==='sabqi'?'Sabqi':q.rc==='manzil'?'Manzil':'Review'; },
+  catTag(q){ const c=ML.cat(q); return `<span class="tag ${c==='Sabaq'?'tag-blue':c==='Sabqi'?'tag-purple':c==='Manzil'?'tag-gold':'tag-dim'}" title="${c==='Sabaq'?'New memorization':c==='Sabqi'?'Recent review':c==='Manzil'?'Older revision':'Review'}">${c}</span>`; },
+  kindMatch(q,k){ return !k||(k==='New'?q.kind==='New':k==='Sabqi'?q.rc==='sabqi':k==='Manzil'?q.rc==='manzil':q.kind==='Review'); },
+  autoRc(s,n,date){ const l=DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&ML.nOf(q)===n).sort((a,b)=>b.date.localeCompare(a.date))[0]; return (l&&l.date>=RP.addDays(date,-ML.SABQI_DAYS))?'sabqi':'manzil'; },
+  juzOf(p){ let j=1; for(let k=1;k<=30;k++) if(JUZ_PAGE[k]<=p) j=k; return j; },
+  endPage(n){ return n<114?Math.max(QS[n].p,QS[n+1].p):604; },
+  inOneJuz(n){ return ML.juzOf(QS[n].p)===ML.juzOf(ML.endPage(n)); },
+  pagesOf(n){ return Math.max(.3,(n<114?QS[n+1].p:605)-QS[n].p); },
+  ayahMap(s,n){ const c=SURAH_AYAHS[n], st=new Array(c+1).fill(0); DB.data.quran.map((q,i)=>({q,i})).filter(x=>x.q.sid===s.id&&ML.nOf(x.q)===n).sort((a,b)=>a.q.date.localeCompare(b.q.date)||a.i-b.i).forEach(({q})=>{ const r=ML.recited(q); for(let i=Math.max(1,r[0]);i<=Math.min(c,r[1]);i++) st[i]=q.grade==='Needs review'?2:1; }); return st; },
+  mapHTML(s,n){ const m=ML.ayahMap(s,n), sb=ML.connected(s,n)?{}:HW.stumbles(s,n); let o=''; for(let i=1;i<m.length;i++) o+=`<i class="ay ${sb[i]?'st':m[i]===1?'ok':m[i]===2?'sh':''}" title="āyah ${i}${sb[i]?' — stumbled ×'+sb[i]:''}"></i>`; return `<div class="ay-map" dir="ltr">${o}</div>`; },
+  linkRev(s,es,dt){ const out=[], js=[...new Set(es.map(e=>ML.nOf(e)).filter(n=>n&&ML.inOneJuz(n)).map(n=>ML.juzOf(QS[n].p)))], from=RP.addDays(dt,-21);
+    js.forEach(J=>{ const m=RP.juzMem(s,J); if(!m.n) return; let pg=0, tot=0; const worst=es.some(e=>ML.nOf(e)&&ML.juzOf(QS[ML.nOf(e)].p)===J&&e.grade==='Needs review');
+      for(let n=1;n<=114;n++){ if(!ML.inOneJuz(n)||ML.juzOf(QS[n].p)!==J) continue; const c=SURAH_AYAHS[n], seen=new Set();
+        DB.data.quran.forEach(q=>{ if(q.sid===s.id&&ML.nOf(q)===n&&q.date>=from&&q.date<=dt){ const r=ML.recited(q); for(let i=r[0];i<=r[1];i++) seen.add(i); } }); if(QS[n].p>=m.a&&QS[n].p<=m.b) tot+=ML.pagesOf(n); if(QS[n].p>=m.a&&QS[n].p<=m.b) pg+=ML.pagesOf(n)*seen.size/c; }
+      if(tot>0&&pg/tot>=.8){ Rev.log(s,J,worst?'shaky':'strong',dt,{skipLog:true}); out.push(J); } });
+    return out; },
+  pace(s){ const t=today(), c28=RP.addDays(t,-28), es=DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&q.date>=c28&&ML.nOf(q)&&ML.explicit(q)); const ay=ML.ayatSum(es); if(!es.length) return null;
+    const rate=ay/4, cur=(s.hifz||{}).cur; let left=0, J=0; if(cur){ J=ML.juzOf(QS[cur].p); const rev=ML.rev(s); for(let n=1;n<=114;n++){ if(ML.juzOf(QS[n].p)!==J) continue; if(rev?n<cur:n>cur) continue; const cv=ML.cover(s,n); left+=Math.max(0,SURAH_AYAHS[n]-cv.covered); } }
+    return {rate,left,J,eta:(rate>=.5&&left>0)?RP.addDays(t,Math.ceil(left/rate*7)):null}; },
+  tagStats(s,days){ const c=RP.addDays(today(),-(days||60)), cnt={}; let n=0; DB.data.quran.forEach(q=>{ if(q.sid===s.id&&q.date>=c&&q.tg&&q.tg.length){ n++; q.tg.forEach(t=>cnt[t]=(cnt[t]||0)+1); } }); return {cnt,n}; },
+  lastSession(s){ const es=DB.data.quran.filter(q=>q.sid===s.id&&ML.nOf(q)); if(!es.length) return null; const d=es.reduce((m,q)=>q.date>m?q.date:m,''); const day=es.filter(q=>q.date===d); const k=day[day.length-1]; return {tsel:k.kind==='New'?'New':k.rc==='sabqi'?'Sabqi':k.rc==='manzil'?'Manzil':'Auto',rows:day.filter(q=>q.kind===k.kind&&q.rc===k.rc).map(q=>{ const r=ML.rangeOf(q); return {n:ML.nOf(q),a:r[0],b:r[1],g:q.grade,cum:!!q.cum}; })}; },
   refresh(){ const id=Router.parse().id; if(id==='memlog') Router.render(); },
-  insights(){ const L=ML.stu(), t=today(), c21=RP.addDays(t,-21), weak=[], partial=[], coast=[], drift=[];
+  insights(){ const L=ML.stu(), t=today(), c21=RP.addDays(t,-21), c14=RP.addDays(t,-14), weak=[], partial=[], coast=[], drift=[], nocons=[], pattern=[], finalp=[], stuck=[], waiting=[];
     L.forEach(s=>{ const cnt={}; DB.data.quran.forEach(q=>{ if(q.sid===s.id&&q.grade==='Needs review'){ const n=ML.nOf(q); if(n) cnt[n]=(cnt[n]||0)+1; } }); Object.keys(cnt).forEach(n=>{ if(cnt[n]>=2) weak.push({s,n:+n,k:cnt[n]}); });
-      const ns=[...new Set(DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&ML.nOf(q)&&ML.explicit(q)).map(q=>ML.nOf(q)))]; ns.forEach(n=>{ const cv=ML.cover(s,n); if(cv.covered>0&&cv.covered<cv.total) partial.push({s,n,cv}); });
+      const ns=[...new Set(DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&ML.nOf(q)&&ML.explicit(q)).map(q=>ML.nOf(q)))]; ns.forEach(n=>{ const cv=ML.cover(s,n); if(cv.covered>0&&cv.covered<cv.total) partial.push({s,n,cv}); else if(cv.covered>=cv.total&&!ML.connected(s,n)) finalp.push({s,n}); });
       const ln=ML.lastNew(s); if(ln&&ln.date<c21&&DB.data.quran.some(q=>q.sid===s.id&&q.kind==='Review'&&q.date>=c21)) coast.push({s,d:ML.daysAgo(ln.date)});
-      const dn=ML.drift(s); if(dn) drift.push({s,n:dn}); });
-    return {weak,partial,coast,drift}; },
-  insightsHTML(){ const I=ML.insights(), tot=I.weak.length+I.partial.length+I.coast.length+I.drift.length;
+      if(DB.data.quran.some(q=>q.sid===s.id&&q.kind==='New'&&q.date>=c21)&&!DB.data.quran.some(q=>q.sid===s.id&&q.kind==='Review'&&q.date>=c14)) nocons.push({s});
+      const dn=ML.drift(s); if(dn) drift.push({s,n:dn});
+      if(s.hw){ if((s.hw.tries||0)>=3) stuck.push({s,h:s.hw}); else if(!(s.hw.tries)&&ML.daysAgo(s.hw.given)>=10) waiting.push({s,h:s.hw,d:ML.daysAgo(s.hw.given),ms:HW.missed(s)}); }
+      const ts=ML.tagStats(s,60), top=Object.keys(ts.cnt).sort((x,y)=>ts.cnt[y]-ts.cnt[x])[0]; if(top&&ts.cnt[top]>=3) pattern.push({s,tag:top,k:ts.cnt[top],of:ts.n}); });
+    return {weak,partial,coast,drift,nocons,pattern,finalp,stuck,waiting}; },
+  insightsHTML(){ const I=ML.insights(), tot=I.weak.length+I.partial.length+I.coast.length+I.drift.length+I.nocons.length+I.pattern.length+I.finalp.length+I.stuck.length+I.waiting.length;
     const row=(s,txt,extra)=>`<div class="td-it" style="padding:6px 0">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px;flex-shrink:0')}<div class="td-lab"><b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(ML.nm(s))}</b><small>${txt}</small></div>${extra||''}</div>`;
     const sec=(t,arr,f)=>arr.length?`<div class="td-sec"><div class="td-st">${t} (${arr.length})</div>${arr.map(f).join('')}</div>`:'';
     return `<details class="card no-print" style="margin-bottom:14px" ${tot?'open':''}><summary style="cursor:pointer"><b>🔍 What needs your attention</b> <span class="tag ${tot?'tag-gold':'tag-green'}">${tot?tot+' to look at':'all clear'}</span></summary>
+      ${sec('Stuck on a portion (3+ failed attempts)',I.stuck,x=>row(x.s,esc(HW.label(x.h))+' · '+x.h.tries+' failed attempts · given '+ML.daysAgo(x.h.given)+' days ago'+(HW.weak(x.s,x.h.n,x.h.b).length?' · weak: āyah '+esc(HW.weakTxt(HW.weak(x.s,x.h.n,x.h.b))):''),`<button class="btn btn-o btn-sm" data-hwshrink="${x.s.id}">Smaller portion</button>`))}
+      ${sec('Homework not heard for 10+ days',I.waiting,x=>row(x.s,esc(HW.label(x.h))+' · given '+x.d+' days ago'+(x.ms?' · missed '+x.ms+' class'+(x.ms>1?'es':''):''),`<button class="btn btn-o btn-sm" data-hwset="${x.s.id}">Change</button>`))}
+      ${sec('Ready for the final full pass (whole sūrah, start to end)',I.finalp,x=>row(x.s,esc(QS[x.n].name)+' · every portion is done',`<button class="btn btn-o btn-sm" data-mladd="${x.s.id}">Hear it</button>`))}
+      ${sec('Memorizing but not consolidating (no review in 14 days)',I.nocons,x=>row(x.s,'new sabaq recently, but no Sabqi/Manzil logged',`<button class="btn btn-o btn-sm" data-mladd="${x.s.id}">Log a review</button>`))}
+      ${sec('Same mistake keeps coming up',I.pattern,x=>row(x.s,'mostly “'+esc(x.tag)+'” · '+x.k+' of '+x.of+' flagged entries (60 days)'))}
       ${sec('Same sūrah graded “needs review” twice+',I.weak,x=>row(x.s,esc(QS[x.n].name)+' · '+x.k+' times'))}
       ${sec('Sūrahs started but not finished',I.partial,x=>row(x.s,esc(QS[x.n].name)+' · '+x.cv.covered+' of '+x.cv.total+' āyāt · '+(x.cv.total-x.cv.covered)+' left',`<button class="btn btn-o btn-sm" data-mladd="${x.s.id}">Continue</button>`))}
       ${sec('Reviewing but not memorizing anything new (21d+)',I.coast,x=>row(x.s,'no new memorization for '+x.d+' days'))}
       ${sec('Log is ahead of their recorded position',I.drift,x=>row(x.s,'log says '+esc(QS[x.n].name)+' · position says '+esc(QS[(x.s.hifz||{}).cur].name),`<button class="btn btn-o btn-sm" data-mlfix="${x.s.id}|${x.n}">Move position</button>`))}
-      ${tot?'':'<p style="margin:8px 0 0;color:var(--ok)">✓ Nothing flagged. (Unfinished-sūrah and weak-spot checks sharpen as new entries record āyāt.)</p>'}</details>`; },
+      ${tot?'':'<p style="margin:8px 0 0;color:var(--ok)">✓ Nothing flagged. (These checks sharpen as new entries record āyāt, categories and mistake tags.)</p>'}</details>`; },
   form(sid, keep, pre){
     const L=ML.stu(); if(!L.length){ toast('No Level 3 students'); return; } pre=pre||{};
     const ed=pre.edit!=null?DB.data.quran[pre.edit]:null; if(pre.edit!=null&&!ed) return;
-    let cur=L.find(s=>s.id===(ed?ed.sid:(pre.sid||sid)))||L[0], dirty=false, posTouched=false, kind=(ed&&ed.kind)||pre.kind||'New', gAll=(ed&&ed.grade)||pre.grade||'Excellent', rows=[];
+    let sug=null, cur=L.find(s=>s.id===(ed?ed.sid:(pre.sid||sid)))||L[0], dirty=false, posTouched=false, gAll=(ed&&ed.grade)||pre.grade||'Excellent', rows=[];
+    let tsel=ed?(ed.kind==='New'?'New':ed.rc==='sabqi'?'Sabqi':ed.rc==='manzil'?'Manzil':'Auto'):(pre.type||(pre.kind==='Review'?'Auto':'New')), kind=tsel==='New'?'New':'Review', tags=new Set((ed&&ed.tg)||pre.tg||[]);
     const date=(ed&&ed.date)||(keep&&keep.date)||today();
-    const mk=(n,a,b,g)=>{ const c=SURAH_AYAHS[n]; return {n,a:a==null?1:Math.max(1,Math.min(c,a)),b:b==null?c:Math.max(1,Math.min(c,b)),g:g||''}; };
-    const init=()=>{ if(ed){ const r=ML.rangeOf(ed); return [mk(ML.nOf(ed)||114,r[0],r[1])]; } if(pre.rows&&pre.rows.length) return pre.rows.map(r=>mk(r.n,r.a,r.b)); const nu=ML.nextUp(cur); return [mk(nu.n,nu.a,nu.b)]; };
+    const mk=(n,a,b,g,cum)=>{ const c=SURAH_AYAHS[n]; return {n,a:a==null?1:Math.max(1,Math.min(c,a)),b:b==null?c:Math.max(1,Math.min(c,b)),g:g||'',cum:cum==null?true:!!cum}; };
+    const init=()=>{ if(ed){ const r=ML.rangeOf(ed); return [mk(ML.nOf(ed)||114,r[0],r[1],'',!!ed.cum)]; } if(pre.rows&&pre.rows.length) return pre.rows.map(r=>mk(r.n,r.a,r.b)); const nu=HW.target(cur); sug=nu; return [mk(nu.n,nu.a,nu.b,'',nu.cum)]; };
     rows=init();
+    const gl=g=>(g==='Needs review'&&kind==='New'&&!ed)?'Failed — not passed':g;
     const surOpts=n=>QS.slice(1).map(q=>`<option value="${q.n}" ${q.n===n?'selected':''}>${q.n}. ${esc(q.name)}</option>`).join('');
     const o=overlay(`<div class="modal" style="max-width:640px"><h3>📝 ${ed?'Edit entry':'Log memorization'}</h3>
       <div class="field"><label>Student</label><select id="ml-s" ${ed?'disabled':''}>${L.map(s=>`<option value="${s.id}" ${s.id===cur.id?'selected':''}>${esc(ML.nm(s))}</option>`).join('')}</select></div>
       ${pre.heard?`<p class="td-hint" style="margin:-4px 0 8px">🎙 Heard: “${esc(pre.heard)}” — ${pre.sid?'':'student not recognized, pick one · '}check before saving.</p>`:''}
       <div id="ml-sug" class="td-hint"></div><div id="ml-rows"></div>
-      ${ed?'':`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button type="button" class="btn btn-ghost btn-sm" id="ml-add"></button><button type="button" class="btn btn-ghost btn-sm" id="ml-pick">☰ Pick several</button></div><div id="ml-grid" class="ml-grid" hidden></div>`}
-      <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px"><div class="field"><label>Type</label><select id="ml-k"><option ${kind==='New'?'selected':''}>New</option><option ${kind==='Review'?'selected':''}>Review</option></select></div>
-       <div class="field"><label>${ed?'Grade':'Grade (all)'}</label><select id="ml-g">${['Excellent','Good','Needs review'].map(g=>`<option ${gAll===g?'selected':''}>${g}</option>`).join('')}</select></div>
+      ${ed?'':`<div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button type="button" class="btn btn-ghost btn-sm" id="ml-add"></button><button type="button" class="btn btn-ghost btn-sm" id="ml-rep" hidden>↻ Same as last time</button><button type="button" class="btn btn-ghost btn-sm" id="ml-pick">☰ Pick several</button></div><div id="ml-grid" class="ml-grid" hidden></div>`}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px"><div class="field"><label>Type</label><select id="ml-k">${[['New','Sabaq — new memorization'],['Auto','Review — auto (Sabqi / Manzil)'],['Sabqi','Sabqi — recent review'],['Manzil','Manzil — older revision']].map(([v,l])=>`<option value="${v}" ${tsel===v?'selected':''}>${l}</option>`).join('')}</select></div>
+       <div class="field"><label>${ed?'Grade':'Grade (all)'}</label><select id="ml-g">${['Excellent','Good','Needs review'].map(g=>`<option value="${g}" ${gAll===g?'selected':''}>${gl(g)}</option>`).join('')}</select></div>
        <div class="field"><label>Date</label><input id="ml-d" type="date" value="${date}"></div></div>
+      <div class="field"><label>What went wrong? <span style="color:var(--ink3);font-weight:400">(optional)</span></label><div id="ml-tags" class="ml-tg">${ML.TAGS.map(t=>`<button type="button" class="chip ${tags.has(t)?'on':''}" data-tg="${esc(t)}">${t}</button>`).join('')}</div></div>
       <div class="field"><label>Note <span style="color:var(--ink3);font-weight:400">(optional)</span></label><input id="ml-n" value="${esc((ed&&ed.note)||'')}" placeholder="e.g. stumbles on the last two āyāt"></div>
       <label id="ml-posw" style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:4px 0 10px"><input type="checkbox" id="ml-pos" style="margin-top:3px"><span id="ml-post"></span></label>
+      <label id="ml-hww" style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:4px 0 10px"><input type="checkbox" id="ml-hw" checked style="margin-top:3px"><span>📌 Also assign the next homework portion (same size) — change it any time with “✎ Homework”</span></label>
       <div class="mfoot">${ed?'<button class="btn btn-o" data-x="done">Cancel</button><button class="btn btn-p" data-x="save">Save changes</button>':'<button class="btn btn-o" data-x="done">Done</button><button class="btn btn-p" data-x="next">Save & next student →</button><button class="btn btn-p" data-x="save">Save</button>'}</div></div>`,true);
     const R=$('#ml-rows',o);
-    const posUpd=()=>{ const w=$('#ml-posw',o), show=kind==='New'&&!ed&&rows.length; w.style.display=show?'flex':'none'; if(!show) return; const last=rows[rows.length-1], c=(cur.hifz||{}).cur, ah=ML.ahead(cur,last.n)&&last.n!==c; if(!posTouched) $('#ml-pos',o).checked=ah;
+    const posUpd=()=>{ const w=$('#ml-posw',o), show=kind==='New'&&!ed&&rows.length; w.style.display=show?'flex':'none'; $('#ml-hww',o).style.display=show?'flex':'none'; if(!show) return; const last=rows[rows.length-1], c=(cur.hifz||{}).cur, ah=ML.ahead(cur,last.n)&&last.n!==c; if(!posTouched) $('#ml-pos',o).checked=ah;
       $('#ml-post',o).innerHTML='Also move their current position to <b>'+esc(QS[last.n].name)+'</b>'+(c?' <span style="color:var(--ink3)">(now at '+esc(QS[c].name)+(ah?'':' — this is not ahead of it')+')</span>':''); };
     const draw=()=>{ const multi=rows.length>1, tot=rows.reduce((t,r)=>t+r.b-r.a+1,0);
-      R.innerHTML=rows.map((r,i)=>{ const c=SURAH_AYAHS[r.n]; return `<div class="ml-r" data-i="${i}"><select class="ml-rs" aria-label="Sūrah">${surOpts(r.n)}</select><span class="ml-ra"><input type="number" class="ml-rf" min="1" max="${c}" value="${r.a}" inputmode="numeric" aria-label="From āyah"><i>–</i><input type="number" class="ml-rt" min="1" max="${c}" value="${r.b}" inputmode="numeric" aria-label="To āyah"><small>/ ${c}</small></span><button type="button" class="btn btn-o btn-sm ml-rw ${r.a===1&&r.b===c?'on':''}">Whole</button>${multi?`<select class="ml-rg" aria-label="Grade">${['Excellent','Good','Needs review'].map(g=>`<option ${(r.g||gAll)===g?'selected':''}>${g}</option>`).join('')}</select><button type="button" class="btn btn-ghost btn-sm ml-rx" aria-label="Remove">✕</button>`:''}</div>`; }).join('')+(rows.length?`<p class="td-hint" style="margin:0 0 6px">${tot} āyāt${multi?' across '+rows.length+' sūrahs':''}</p>`:'');
-      if(!ed){ const last=rows[rows.length-1], m=ML.after(cur,last?last.n:((cur.hifz||{}).cur||114)); const ad=$('#ml-add',o); ad.textContent=m?'＋ Add '+QS[m].name:'＋ Add another sūrah'; ad.dataset.n=m||''; $('#ml-sug',o).textContent=dirty?'':'✨ Suggested from their last entry — change anything, or just Save.'; const g=$('#ml-grid',o); if(!g.hidden) drawGrid(); }
-      posUpd(); };
+      R.innerHTML=rows.map((r,i)=>{ const c=SURAH_AYAHS[r.n]; return `<div class="ml-r" data-i="${i}"><select class="ml-rs" aria-label="Sūrah">${surOpts(r.n)}</select><span class="ml-ra"><input type="number" class="ml-rf" min="1" max="${c}" value="${r.a}" inputmode="numeric" aria-label="From āyah"><i>–</i><input type="number" class="ml-rt" min="1" max="${c}" value="${r.b}" inputmode="numeric" aria-label="To āyah"><small>/ ${c}</small></span><button type="button" class="btn btn-o btn-sm ml-rw ${r.a===1&&r.b===c?'on':''}">Whole</button>${(kind==='New'&&r.a>1)?`<label class="ml-cum" title="He recites from the start of the sūrah up to the end of this portion"><input type="checkbox" class="ml-rc" ${r.cum?'checked':''}> passed from āyah 1</label>`:''}${multi?`<select class="ml-rg" aria-label="Grade">${['Excellent','Good','Needs review'].map(g=>`<option value="${g}" ${(r.g||gAll)===g?'selected':''}>${gl(g)}</option>`).join('')}</select><button type="button" class="btn btn-ghost btn-sm ml-rx" aria-label="Remove">✕</button>`:''}</div>`; }).join('')+(rows.length?`<p class="td-hint" style="margin:0 0 6px">${tot} āyāt${multi?' across '+rows.length+' sūrahs':''}</p>`:'')+((!ed&&kind==='New'&&rows.length===1)?`<div class="hw-sz"><small>Quick size:</small><button type="button" class="btn btn-ghost btn-sm" data-fr="0.5">½ page</button><button type="button" class="btn btn-ghost btn-sm" data-fr="1">1 page</button><button type="button" class="btn btn-ghost btn-sm" data-fr="2">2 pages</button></div>`:'');
+      if(!ed){ const last=rows[rows.length-1], m=ML.after(cur,last?last.n:((cur.hifz||{}).cur||114)); const ad=$('#ml-add',o); ad.textContent=m?'＋ Add '+QS[m].name:'＋ Add another sūrah'; ad.dataset.n=m||''; $('#ml-sug',o).textContent=dirty?'':(sug&&sug.final?'✨ All portions are done — suggesting the final pass of the whole sūrah from the beginning.':(sug&&sug.hw?'📌 This is their current homework — change anything, or just Save. “Failed” counts an attempt and keeps it due.':'✨ Suggested from their last entry — change anything, or just Save.')); const g=$('#ml-grid',o); if(!g.hidden) drawGrid(); }
+      $$('#ml-g option',o).forEach(op=>{ op.textContent=gl(op.value); }); posUpd(); };
     const order=()=>{ const c=(cur.hifz||{}).cur||114, a=[]; if(ML.rev(cur)){ for(let i=c;i<=114;i++) a.push(i); for(let i=1;i<c;i++) a.push(i); } else { for(let i=c;i>=1;i--) a.push(i); for(let i=114;i>c;i--) a.push(i); } return a; };
     const drawGrid=()=>{ const g=$('#ml-grid',o); g.innerHTML=order().map(n=>`<button type="button" class="ml-gb ${rows.some(r=>r.n===n)?'on':''} ${ML.cover(cur,n).covered>=SURAH_AYAHS[n]?'done':''}" data-gn="${n}" title="${esc(QS[n].name)}"><b>${n}</b><small>${esc(QS[n].name)}</small></button>`).join(''); };
     R.addEventListener('change',e=>{ const row=e.target.closest('.ml-r'); if(!row) return; const r=rows[+row.dataset.i], t=e.target; dirty=true; if(t.classList.contains('ml-rs')){ r.n=+t.value; r.a=1; r.b=SURAH_AYAHS[r.n]; }
       else if(t.classList.contains('ml-rf')||t.classList.contains('ml-rt')){ const c=SURAH_AYAHS[r.n]; let a=Math.round(+row.querySelector('.ml-rf').value)||1, b=Math.round(+row.querySelector('.ml-rt').value)||c; a=Math.max(1,Math.min(c,a)); b=Math.max(1,Math.min(c,b)); if(a>b){ const x=a; a=b; b=x; } r.a=a; r.b=b; }
-      else if(t.classList.contains('ml-rg')) r.g=t.value; draw(); });
+      else if(t.classList.contains('ml-rg')) r.g=t.value; else if(t.classList.contains('ml-rc')) r.cum=t.checked; draw(); });
     R.addEventListener('click',e=>{ const row=e.target.closest('.ml-r'); if(!row) return; const r=rows[+row.dataset.i]; if(e.target.closest('.ml-rw')){ dirty=true; r.a=1; r.b=SURAH_AYAHS[r.n]; draw(); } else if(e.target.closest('.ml-rx')){ dirty=true; rows.splice(+row.dataset.i,1); draw(); } });
+    R.addEventListener('click',e=>{ const b=e.target.closest('[data-fr]'); if(!b||rows.length!==1) return; const r=rows[0]; dirty=true; r.b=HW.upTo(r.n,r.a,+b.dataset.fr); draw(); });
     $('#ml-g',o).onchange=e=>{ gAll=e.target.value; rows.forEach(r=>r.g=''); dirty=true; draw(); };
-    $('#ml-k',o).onchange=e=>{ kind=e.target.value; posUpd(); };
+    $('#ml-k',o).onchange=e=>{ tsel=e.target.value; kind=tsel==='New'?'New':'Review'; draw(); };
+    $('#ml-tags',o).onclick=e=>{ const b=e.target.closest('[data-tg]'); if(!b) return; const t=b.dataset.tg; if(tags.has(t)) tags.delete(t); else tags.add(t); b.classList.toggle('on'); };
     $('#ml-pos',o).onchange=()=>{ posTouched=true; };
     if(!ed){ $('#ml-add',o).onclick=()=>{ dirty=true; const m=+$('#ml-add',o).dataset.n||114; rows.push(mk(m)); draw(); };
       $('#ml-pick',o).onclick=()=>{ const g=$('#ml-grid',o); g.hidden=!g.hidden; if(!g.hidden) drawGrid(); };
       $('#ml-grid',o).addEventListener('click',e=>{ const b=e.target.closest('[data-gn]'); if(!b) return; const n=+b.dataset.gn; if(!dirty) rows=[]; dirty=true; if(rows.some(r=>r.n===n)) rows=rows.filter(r=>r.n!==n); else rows.push(mk(n)); draw(); drawGrid(); }); }
     $('#ml-s',o).onchange=()=>{ cur=L.find(x=>x.id===$('#ml-s',o).value); if(!dirty&&!ed){ rows=init(); } draw(); };
+    const repBtn=()=>{ const b=$('#ml-rep',o); if(!b) return; const ls=ML.lastSession(cur); b.hidden=!ls; if(ls) b.title='Repeat: '+ls.rows.map(r=>QS[r.n].name).join(', '); };
+    if(!ed){ $('#ml-rep',o).onclick=()=>{ const ls=ML.lastSession(cur); if(!ls) return; dirty=true; rows=ls.rows.map(r=>mk(r.n,r.a,r.b,'',r.cum)); tsel=ls.tsel; kind=tsel==='New'?'New':'Review'; $('#ml-k',o).value=tsel; draw(); }; repBtn(); const so=$('#ml-s',o).onchange; $('#ml-s',o).onchange=()=>{ so(); repBtn(); }; }
     draw();
     const save=()=>{ if(!rows.length){ toast('Add a sūrah first'); return null; } const s=cur, dt=$('#ml-d',o).value||today(), nt=$('#ml-n',o).value.trim();
-      if(ed){ const r=rows[0], old=Object.assign({},ed), nw={sid:ed.sid,what:ML.fmt(r.n,r.a,r.b),n:r.n,a:r.a,b:r.b,kind,grade:r.g||gAll,date:dt}; if(nt) nw.note=nt; Object.keys(ed).forEach(k=>delete ed[k]); Object.assign(ed,nw); DB.log('Memorization log edited: '+s.name+' — '+nw.what); DB.save();
+      if(ed){ const r=rows[0], old=Object.assign({},ed), cm=kind==='New'&&r.cum&&r.a>1, nw={sid:ed.sid,what:ML.fmt(r.n,r.a,r.b,cm),n:r.n,a:r.a,b:r.b,kind,grade:r.g||gAll,date:dt}; if(cm) nw.cum=true; if(kind==='Review') nw.rc=tsel==='Sabqi'?'sabqi':tsel==='Manzil'?'manzil':ML.autoRc(s,r.n,dt); if(tags.size) nw.tg=[...tags]; if(nt) nw.note=nt; Object.keys(ed).forEach(k=>delete ed[k]); Object.assign(ed,nw); DB.log('Memorization log edited: '+s.name+' — '+nw.what); DB.save();
         toast('Entry updated',()=>{ Object.keys(ed).forEach(k=>delete ed[k]); Object.assign(ed,old); DB.save(); ML.refresh(); }); return s; }
-      const snap=UNDO.snap(s), names=[];
-      rows.forEach(r=>{ const e={sid:s.id,what:ML.fmt(r.n,r.a,r.b),n:r.n,a:r.a,b:r.b,kind,grade:r.g||gAll,date:dt}; if(nt) e.note=nt; DB.data.quran.push(e); names.push(e.what); });
-      if(kind==='New'&&$('#ml-pos',o).checked) updateHifzPosition(s,{cur:rows[rows.length-1].n});
-      DB.log('Memorization log: '+s.name+' — '+names.join(', ')); DB.save(); toast(ML.nm(s)+' ✓ '+(names.length>1?names.length+' sūrahs':names[0]),()=>{ UNDO.restore(snap); ML.refresh(); }); return s; };
+      const snap=UNDO.snap(s), names=[], made=[], comp=[]; let hwFail=null;
+      rows.forEach(r=>{ const g=r.g||gAll, cm=kind==='New'&&r.cum&&r.a>1;
+        if(kind==='New'&&g==='Needs review'&&!hwFail){ const m=HW.match(s,r.n,r.a,r.b); if(m||!s.hw){ if(!m) HW.assign(s,{n:r.n,a:r.a,b:r.b,cum:cm}); hwFail={tg:[...tags]}; return; } }
+        const matched=kind==='New'&&HW.match(s,r.n,r.a,r.b), was=kind==='New'&&ML.connected(s,r.n), allDone=kind==='New'&&r.a===1&&r.b===SURAH_AYAHS[r.n]&&ML.cover(s,r.n).covered>=SURAH_AYAHS[r.n];
+        const e={sid:s.id,what:ML.fmt(r.n,r.a,r.b,cm),n:r.n,a:r.a,b:r.b,kind,grade:g,date:dt}; if(cm) e.cum=true; if(allDone) e.fin=true; if(kind==='Review') e.rc=tsel==='Sabqi'?'sabqi':tsel==='Manzil'?'manzil':ML.autoRc(s,r.n,dt); if(tags.size) e.tg=[...tags]; if(nt) e.note=nt;
+        DB.data.quran.push(e); names.push(e.what); made.push(e); if(matched) HW.close(s,e); if(kind==='New'&&!was&&ML.connected(s,r.n)){ (s.hwDone=s.hwDone||[]).push({n:r.n,date:dt}); comp.push(r.n); } });
+      const lj=kind==='Review'?ML.linkRev(s,made,dt):[];
+      if(kind==='New'&&made.length&&$('#ml-pos',o).checked) updateHifzPosition(s,{cur:rows[rows.length-1].n});
+      let hx=''; if(hwFail){ HW.fail(s,hwFail); hx=' · attempt '+s.hw.tries+' failed — '+HW.label(s.hw)+' stays due'; }
+      else if(kind==='New'&&made.length&&$('#ml-hw',o).checked&&!s.hw){ HW.assign(s,ML.nextUp(s)); hx=' · next: '+HW.label(s.hw); }
+      if(comp.length){ celebrate(); hx+=' · 🎉 completed '+comp.map(n=>QS[n].name).join(', '); }
+      DB.log('Memorization log: '+s.name+' — '+(names.join(', ')||'failed attempt')); DB.save(); toast(ML.nm(s)+(made.length?' ✓ '+(names.length>1?names.length+' sūrahs':names[0]):'')+(lj.length?' · Juzʼ '+lj.join(', ')+' marked revised':'')+hx,()=>{ UNDO.restore(snap); ML.refresh(); }); return s; };
     const fin=()=>{ o.remove(); ML.refresh(); };
     $('[data-x=save]',o).onclick=()=>{ if(save()) fin(); };
     $('[data-x=done]',o).onclick=()=>{ if(!ed&&dirty&&rows.length) save(); fin(); };
@@ -11085,37 +11154,45 @@ const ML = {
   batch(){ const P=ML.stu().filter(s=>CR.present(s)); if(!P.length){ toast('No Level 3 students marked here today'); return; }
     const L=P.map(s=>({s,sc:HP.info(s).sc})).sort((a,b)=>b.sc-a.sc).map(x=>x.s), surOpts=n=>QS.slice(1).map(q=>`<option value="${q.n}" ${q.n===n?'selected':''}>${q.n}. ${esc(q.name)}</option>`).join('');
     const o=overlay(`<div class="modal" style="max-width:760px"><h3>⚡ Class batch</h3><p class="td-hint">Everyone marked here, longest-waiting first. Tap a grade for each student who recited — their suggested portion is pre-filled, change it if needed. Students with no grade are skipped.</p>
-      <div class="field" style="max-width:200px"><label>Type</label><select id="mb-k"><option>New</option><option>Review</option></select></div>
-      <div class="mb-list">${L.map(s=>{ const nu=ML.nextUp(s), c=SURAH_AYAHS[nu.n]; return `<div class="mb-row" data-sid="${s.id}">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}<b class="mb-n" dir="auto">${esc(ML.nm(s))}</b><select class="mb-s">${surOpts(nu.n)}</select><span class="ml-ra"><input type="number" class="mb-f" min="1" max="${c}" value="${nu.a}" inputmode="numeric"><i>–</i><input type="number" class="mb-t" min="1" max="${c}" value="${nu.b}" inputmode="numeric"></span><span class="mb-gs">${[['Excellent','✓'],['Good','~'],['Needs review','✗']].map(([g,i])=>`<button type="button" class="mb-g" data-g="${g}" title="${g}">${i}</button>`).join('')}</span></div>`; }).join('')}</div>
+      <label class="td-hint" style="display:flex;gap:6px;align-items:center;margin:0 0 8px"><input type="checkbox" id="mb-c" checked> Portions are passed from āyah 1 (cumulative) — uncheck if they recite only the new portion</label>
+      <label class="td-hint" style="display:flex;gap:6px;align-items:center;margin:0 0 8px"><input type="checkbox" id="mb-h" checked> After a pass, assign the next portion (same size). On Sabaq, ✗ is a <b>failed attempt</b> — the portion stays due.</label><div class="field" style="max-width:200px"><label>Type</label><select id="mb-k"><option value="New">Sabaq — new</option><option value="Auto">Review — auto</option><option value="Sabqi">Sabqi</option><option value="Manzil">Manzil</option></select></div>
+      <div class="mb-list">${L.map(s=>{ const nu=HW.target(s), c=SURAH_AYAHS[nu.n]; return `<div class="mb-row" data-sid="${s.id}">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}<b class="mb-n" dir="auto">${esc(ML.nm(s))}</b><select class="mb-s">${surOpts(nu.n)}</select><span class="ml-ra"><input type="number" class="mb-f" min="1" max="${c}" value="${nu.a}" inputmode="numeric"><i>–</i><input type="number" class="mb-t" min="1" max="${c}" value="${nu.b}" inputmode="numeric"></span><span class="mb-gs">${[['Excellent','✓'],['Good','~'],['Needs review','✗']].map(([g,i])=>`<button type="button" class="mb-g" data-g="${g}" title="${g}">${i}</button>`).join('')}</span></div>`; }).join('')}</div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="save">Save graded entries</button></div></div>`,true);
     o.addEventListener('change',e=>{ const row=e.target.closest('.mb-row'); if(!row) return; const s=$('.mb-s',row), f=$('.mb-f',row), t=$('.mb-t',row); if(e.target===s){ const c=SURAH_AYAHS[+s.value]; f.max=t.max=c; f.value=1; t.value=c; } else { const c=SURAH_AYAHS[+s.value]; f.value=Math.max(1,Math.min(c,Math.round(+f.value)||1)); t.value=Math.max(1,Math.min(c,Math.round(+t.value)||c)); } });
     o.addEventListener('click',e=>{ const b=e.target.closest('.mb-g'); if(!b) return; const on=b.classList.contains('sel'); $$('.mb-g',b.parentNode).forEach(x=>x.classList.remove('sel')); if(!on) b.classList.add('sel'); });
     $('[data-x=c]',o).onclick=()=>o.remove();
-    $('[data-x=save]',o).onclick=()=>{ const kind=$('#mb-k',o).value, dt=today(), snaps=[]; let k=0;
+    $('[data-x=save]',o).onclick=()=>{ const tsel=$('#mb-k',o).value, kind=tsel==='New'?'New':'Review', dt=today(), snaps=[]; let k=0, nf=0, lj=[], comp=[];
       $$('.mb-row',o).forEach(row=>{ const gb=$('.mb-g.sel',row); if(!gb) return; const s=DB.data.students.find(x=>x.id===row.dataset.sid), n=+$('.mb-s',row).value, c=SURAH_AYAHS[n]; let a=Math.max(1,Math.min(c,Math.round(+$('.mb-f',row).value)||1)), b=Math.max(1,Math.min(c,Math.round(+$('.mb-t',row).value)||c)); if(a>b){ const x=a; a=b; b=x; }
-        snaps.push(UNDO.snap(s)); DB.data.quran.push({sid:s.id,what:ML.fmt(n,a,b),n,a,b,kind,grade:gb.dataset.g,date:dt}); if(kind==='New'&&ML.ahead(s,n)&&n!==(s.hifz||{}).cur) updateHifzPosition(s,{cur:n}); k++; });
-      if(!k){ toast('Tap a grade for at least one student'); return; } DB.log('Class batch: '+k+' memorization entries'); DB.save(); o.remove(); toast(k+' entr'+(k===1?'y':'ies')+' saved',()=>{ snaps.slice().reverse().forEach(UNDO.restore); ML.refresh(); }); ML.refresh(); };
+        snaps.push(UNDO.snap(s)); const cm=kind==='New'&&a>1&&$('#mb-c',o).checked, g=gb.dataset.g;
+        if(kind==='New'&&g==='Needs review'){ const m=HW.match(s,n,a,b); if(m||!s.hw){ if(!m) HW.assign(s,{n,a,b,cum:cm}); HW.fail(s,{}); nf++; return; } }
+        const matched=kind==='New'&&HW.match(s,n,a,b), was=kind==='New'&&ML.connected(s,n), allDone=kind==='New'&&a===1&&b===c&&ML.cover(s,n).covered>=c;
+        const e={sid:s.id,what:ML.fmt(n,a,b,cm),n,a,b,kind,grade:g,date:dt}; if(cm) e.cum=true; if(allDone) e.fin=true; if(kind==='Review') e.rc=tsel==='Sabqi'?'sabqi':tsel==='Manzil'?'manzil':ML.autoRc(s,n,dt); DB.data.quran.push(e); if(matched) HW.close(s,e);
+        if(kind==='New'&&!was&&ML.connected(s,n)){ (s.hwDone=s.hwDone||[]).push({n,date:dt}); comp.push(s); }
+        if(kind==='New'&&ML.ahead(s,n)&&n!==(s.hifz||{}).cur) updateHifzPosition(s,{cur:n}); if(kind==='New'&&$('#mb-h',o).checked&&!s.hw) HW.assign(s,ML.nextUp(s)); if(kind==='Review') lj=lj.concat(ML.linkRev(s,[e],dt)); k++; });
+      if(!k&&!nf){ toast('Tap a grade for at least one student'); return; } DB.log('Class batch: '+k+' memorization entries'+(nf?', '+nf+' failed attempts':'')); DB.save(); o.remove(); if(comp.length) celebrate(); toast((k?k+' entr'+(k===1?'y':'ies')+' saved':'')+(nf?(k?' · ':'')+nf+' failed attempt'+(nf>1?'s':'')+' (stay due)':'')+(comp.length?' · 🎉 '+comp.map(x=>ML.nm(x)).join(', ')+' completed a sūrah':'')+(lj.length?' · Juzʼ '+[...new Set(lj)].join(', ')+' marked revised':''),()=>{ snaps.slice().reverse().forEach(UNDO.restore); ML.refresh(); }); ML.refresh(); };
   },
   wireRows(v){ $$('[data-mladd]',v).forEach(b=>b.onclick=()=>ML.form(b.dataset.mladd));
     $$('[data-mlfix]',v).forEach(b=>b.onclick=()=>{ const [id,n]=b.dataset.mlfix.split('|'), s=DB.data.students.find(x=>x.id===id); if(!s) return; const x=UNDO.snap(s); updateHifzPosition(s,{cur:+n}); toast(ML.nm(s)+' position → '+QS[+n].name,()=>{ UNDO.restore(x); Router.render(); }); Router.render(); });
     $$('[data-mledit]',v).forEach(b=>b.onclick=()=>ML.form(null,null,{edit:+b.dataset.mledit}));
     $$('[data-mldel]',v).forEach(b=>b.onclick=()=>{ const q=DB.data.quran[+b.dataset.mldel]; if(!q) return; confirmBox('Delete this log entry? “'+q.what+'”',()=>{ const i=DB.data.quran.indexOf(q); if(i>=0) DB.data.quran.splice(i,1); DB.save(); toast('Deleted',()=>{ DB.data.quran.splice(Math.min(i,DB.data.quran.length),0,q); DB.save(); Router.render(); }); Router.render(); }); }); },
   entryRow(q,i,withName){ const s=DB.data.students.find(x=>x.id===q.sid);
-    return `<div class="ml-row"><div class="ml-who">${withName?avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0'):''}<div style="min-width:0">${withName?`<b dir="auto">${esc(ML.nm(s))}</b>`:''}<div class="ml-what" dir="auto">${esc(q.what)}</div>${q.note?`<small>“${esc(q.note)}”</small>`:''}</div></div><div class="ml-tags"><span class="tag ${q.kind==='New'?'tag-blue':'tag-dim'}">${esc(q.kind)}</span><span class="tag ${ML.gtag(q.grade)}">${esc(q.grade)}</span><button class="btn btn-ghost btn-sm no-print" data-mledit="${i}" aria-label="Edit entry" title="Edit">✎</button><button class="btn btn-ghost btn-sm no-print" data-mldel="${i}" aria-label="Delete entry" title="Delete">✕</button></div></div>`; },
+    return `<div class="ml-row"><div class="ml-who">${withName?avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0'):''}<div style="min-width:0">${withName?`<b dir="auto">${esc(ML.nm(s))}</b>`:''}<div class="ml-what" dir="auto">${esc(q.what)}</div>${q.tg&&q.tg.length?`<small>⚑ ${q.tg.map(esc).join(' · ')}</small>`:''}${q.note?`<small>“${esc(q.note)}”</small>`:''}${q.tr>1?`<small>🔁 passed on attempt ${q.tr}</small>`:''}</div></div><div class="ml-tags">${ML.catTag(q)}<span class="tag ${ML.gtag(q.grade)}">${esc(q.grade)}</span><button class="btn btn-ghost btn-sm no-print" data-mledit="${i}" aria-label="Edit entry" title="Edit">✎</button><button class="btn btn-ghost btn-sm no-print" data-mldel="${i}" aria-label="Delete entry" title="Delete">✕</button></div></div>`; },
   timeline(v,sid){ ML._v=v; const s=DB.data.students.find(x=>x.id===sid), t=today(), c30=RP.addDays(t,-30);
     const es=DB.data.quran.map((q,i)=>({q,i})).filter(x=>x.q.sid===sid).sort((a,b)=>b.q.date.localeCompare(a.q.date)||b.i-a.i);
     const ns=[]; es.forEach(({q})=>{ const n=ML.nOf(q); if(n&&q.kind==='New'&&!ns.includes(n)) ns.push(n); });
     const cov=ns.map(n=>({n,cv:ML.cover(s,n),last:es.find(x=>x.q.kind==='New'&&ML.nOf(x.q)===n).q}));
     const ay=cov.reduce((a,x)=>a+x.cv.covered,0), n30=es.filter(x=>x.q.kind==='New'&&x.q.date>=c30).length, ex=es.length?Math.round(es.filter(x=>x.q.grade==='Excellent').length/es.length*100):0, l=es[0];
     const kpi=(n,lb,c)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${lb}</span></div>`;
+    const pc=ML.pace(s), paceCard=pc?`<div class="card" style="margin-bottom:14px"><div class="whead"><h3>📈 Pace</h3></div><p style="margin:0">${pc.rate.toFixed(1)} new āyāt per week (last 4 weeks).${pc.J?' '+pc.left+' āyāt left to finish Juzʼ '+pc.J+'.':''} ${pc.eta?'At this pace: <b>'+esc(fmtDate(pc.eta))+'</b>.':(pc.left?'Not enough recent pace to project a date.':'')}</p></div>`:'';
+    const ts=ML.tagStats(s,90), tk=Object.keys(ts.cnt).sort((x,y)=>ts.cnt[y]-ts.cnt[x]), tagCard=tk.length?`<div class="card" style="margin-bottom:14px"><div class="whead"><h3>⚑ What goes wrong (90 days)</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap">${tk.map(t=>`<span class="tag tag-red">${esc(t)} ×${ts.cnt[t]}</span>`).join('')}</div></div>`:'';
     v.innerHTML=`<div class="page-wm"><div class="eyebrow"><a href="#/memlog" style="color:inherit">← Memorization log</a></div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${avatarHTML(s,'width:54px;height:54px;border-radius:50%;font-size:18px;flex-shrink:0')}<div style="flex:1;min-width:0"><h2 class="page-title" style="margin:0" dir="auto">${esc(ML.nm(s))}</h2><p class="page-sub" style="margin:2px 0 0">${(s.hifz||{}).cur?'Currently at '+esc(QS[s.hifz.cur].name):'No position set'}${ML.drift(s)?' · ⚠ log is ahead of position':''}</p></div><button class="btn btn-p btn-sm no-print" data-mladd="${s.id}">＋ Log</button><button class="btn btn-o btn-sm no-print" data-go="#/students/${s.id}">Profile →</button></div>
       <div class="rp-kpis" style="margin-top:14px">${kpi(ay,'Āyāt recorded memorized','var(--ok)')}${kpi(n30,'New entries, 30d','var(--info)')}${kpi(ex+'%','Graded excellent','var(--gold)')}${kpi(l?ML.daysAgo(l.q.date)+'d':'—','Since last entry','var(--bad)')}</div>
-      <div class="card"><div class="whead"><h3>Sūrahs memorized</h3></div>${cov.length?cov.map(x=>{ const p=x.cv.covered/x.cv.total*100; return `<div class="td-it"><div class="td-lab"><b>${x.n}. ${esc(QS[x.n].name)}</b><small>${x.cv.covered>=x.cv.total?'complete':x.cv.covered+' of '+x.cv.total+' āyāt · '+(x.cv.total-x.cv.covered)+' left'} · last: ${esc(x.last.grade)}</small><div class="bar" style="height:7px;margin-top:5px"><i style="width:${p}%"></i></div></div><span class="tag ${ML.gtag(x.last.grade)}">${esc(x.last.grade)}</span></div>`; }).join(''):'<p style="color:var(--ink3);margin:0">No “New” entries yet.</p>'}<p class="td-hint">Entries logged before v37 have no āyāt numbers, so they count as the whole sūrah.</p></div>
+      ${HW.tlCard(s)}${paceCard}${tagCard}<div class="card"><div class="whead"><h3>Sūrahs memorized — āyah by āyah</h3></div><p class="td-hint" style="margin-top:0"><i class="ay ok"></i> solid &nbsp; <i class="ay sh"></i> needs review &nbsp; <i class="ay st"></i> stumbled &nbsp; <i class="ay"></i> not yet</p>${cov.length?cov.map(x=>{ return `<div class="td-it" style="align-items:flex-start"><div class="td-lab"><b>${x.n}. ${esc(QS[x.n].name)}</b><small>${ML.connected(s,x.n)?'✓ passed whole, start to end':x.cv.covered>=x.cv.total?'all portions done — needs one full pass from the beginning':x.cv.covered+' of '+x.cv.total+' āyāt · '+(x.cv.total-x.cv.covered)+' left'} · last: ${esc(x.last.grade)}</small>${ML.mapHTML(s,x.n)}</div><span class="tag ${ML.gtag(x.last.grade)}">${esc(x.last.grade)}</span></div>`; }).join(''):'<p style="color:var(--ink3);margin:0">No “New” entries yet.</p>'}<p class="td-hint">Entries logged before v37 have no āyāt numbers, so they count as the whole sūrah.</p></div>
       <div class="card" style="margin-top:14px;padding:6px 16px 14px"><div class="whead"><h3>All entries (${es.length})</h3></div>${es.map(({q,i})=>`<div class="ml-day" style="margin:8px 0 0"><span>${esc(fmtDate(q.date))}</span><i></i></div>`+ML.entryRow(q,i,false)).join('')||'<p style="color:var(--ink3)">Nothing logged yet.</p>'}</div></div>`;
-    wireCommon(v); ML.wireRows(v); },
+    wireCommon(v); ML.wireRows(v); HW.wire(v,()=>Router.render()); },
   csv(rows){
     const q=x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"';
-    const t=['Date,Student,Type,Portion,Grade,Note'].concat(rows.map(({q:e})=>{ const s=DB.data.students.find(x=>x.id===e.sid); return [e.date,s?s.name:'',e.kind,e.what,e.grade,e.note||''].map(q).join(','); })).join('\n');
+    const t=['Date,Student,Category,Portion,Āyāt,Grade,Mistakes,Note,Attempts'].concat(rows.map(({q:e})=>{ const s=DB.data.students.find(x=>x.id===e.sid); return [e.date,s?s.name:'',ML.cat(e),e.what,(ML.nOf(e)&&ML.explicit(e))?ML.ayatSum([e]):'',e.grade,(e.tg||[]).join('; '),e.note||'',e.tr||''].map(q).join(','); })).join('\n');
     const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv'})); a.download='AMAN-memorization-log-'+today()+'.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
   },
   render(v){
@@ -11132,12 +11209,13 @@ const ML = {
       <p class="page-sub">Every new sūrah and review, class-wide — one tap to log, always the same record the student profiles use.</p>
       <div class="rp-kpis no-print">${kpi(rows.length,'Entries'+(f.range==='all'?'':' · last '+f.range+'d'),'var(--info)')}${kpi(nNew,'New memorization','var(--ok)')}${kpi(nRev,'Reviews','var(--gold)')}${kpi(nNeed,'Graded “needs review”','var(--bad)')}</div>
       <div class="card no-print" style="margin-bottom:14px"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">Log by student</h3><span class="tag ${silent.length?'tag-red':'tag-green'}">${silent.length?silent.length+' with no entry in 14d+':'everyone logged recently'}</span></div><div class="ml-strip">${strip||'<p style="color:var(--ink3)">No Level 3 students.</p>'}</div></div>
+      ${HW.pageCard()}
       ${ML.insightsHTML()}
       <div class="filters no-print"><button class="btn btn-p btn-sm" id="mlNew">＋ Log memorization</button><button class="btn btn-o btn-sm" id="mlBatch">⚡ Class batch</button><button class="btn btn-o btn-sm" id="mlCsv">⇩ Export CSV</button>
-        <span class="ml-fs">${sel('mlS',f.sid,[['','All students']].concat(L.map(s=>[s.id,ML.nm(s)])))}${sel('mlK',f.kind,[['','New + Review'],['New','New only'],['Review','Reviews only']])}${sel('mlG',f.grade,[['','Any grade'],['Excellent','Excellent'],['Good','Good'],['Needs review','Needs review']])}${sel('mlR',f.range,[['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']])}</span></div>
+        <span class="ml-fs">${sel('mlS',f.sid,[['','All students']].concat(L.map(s=>[s.id,ML.nm(s)])))}${sel('mlK',f.kind,[['','All types'],['New','Sabaq (new)'],['Sabqi','Sabqi'],['Manzil','Manzil'],['Review','All reviews']])}${sel('mlG',f.grade,[['','Any grade'],['Excellent','Excellent'],['Good','Good'],['Needs review','Needs review']])}${sel('mlR',f.range,[['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']])}</span></div>
       <div class="card" style="padding:6px 16px 14px">${feed||'<div class="empty"><div class="big">📝</div><h3>No entries in this view</h3><p>Tap “＋ Log” next to a student to record what they recited.</p></div>'}</div></div>`;
     wireCommon(v);
-    ML.wireRows(v);
+    ML.wireRows(v); HW.wire(v,()=>ML.render(v)); { const cb=$('#hwCm',v); if(cb) cb.onclick=()=>CM.open(); }
     $('#mlNew',v).onclick=()=>ML.form(f.sid||null);
     $('#mlBatch',v).onclick=()=>ML.batch();
     $('#mlCsv',v).onclick=()=>{ if(!rows.length){ toast('Nothing to export'); return; } ML.csv(rows); };
@@ -11164,7 +11242,7 @@ const CR={
   nm(s){ return s.preferredName||s.name; },
   ds(d){ return d?Math.max(0,Math.round((new Date(today())-new Date(d))/864e5)):null; },
   lastHeard(s){ let b=null; const up=d=>{ if(d&&(!b||d>b)) b=d; };
-    DB.data.quran.forEach(q=>{ if(q.sid===s.id) up(q.date); }); (s.heardAt||[]).forEach(up); (s.gbLog||[]).forEach(x=>up(x.date)); (s.musLog||[]).forEach(x=>up(x.date)); (s.revHistory||[]).forEach(x=>up(x.date)); return b; },
+    DB.data.quran.forEach(q=>{ if(q.sid===s.id&&!q.seed) up(q.date); }); (s.heardAt||[]).forEach(up); (s.gbLog||[]).forEach(x=>up(x.date)); (s.musLog||[]).forEach(x=>up(x.date)); (s.revHistory||[]).forEach(x=>up(x.date)); return b; },
   wk(){ return RP.ws(); },
   tag(s){ return s.level==='Level 3'?'tag-purple':s.level==='Level 2'?'tag-blue':'tag-green'; },
   lvTag(s){ return `<span class="tag ${CR.tag(s)}">L${CR.lvl(s)}</span>`; }
@@ -11181,7 +11259,7 @@ const TD = {
   rows(){ const t=today(), c14=RP.addDays(t,-14), c21=RP.addDays(t,-21);
     return CR.active().map(s=>{ const L=CR.lvl(s), a=CR.attSt(s), absent=(a==='A'||a==='E');
       if(L===3){ const ready=RP.ready(s), due=RP.due(s).slice(0,4), poem=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(s,n).k==='due'), l=ML.last(s.id), p=RP.plan(s), silent=!l||l.date<c14, paused=!!RP.get(s).paused;
-        return {s,L,a,absent,ready,due,poem,last:l,p,silent,paused,need:!absent&&!!(ready.length||due.length||poem.length||silent)}; }
+        return {s,L,a,absent,ready,due,poem,last:l,p,silent,paused,need:!absent&&!!(ready.length||due.length||poem.length||silent||s.hw)}; }
       const c=TD.cfgOf(s), g=s[c.k]||{page:0,fluency:''}, log=s[c.lk]||[], lastE=[...log].sort((x,y)=>y.date.localeCompare(x.date))[0], done=log.some(x=>x.date===t);
       return {s,L,a,absent,c,g,last:lastE,silent:!lastE||lastE.date<c21,need:!absent&&!done,doneToday:done}; }); },
   needCount(){ try{ return TD.rows().filter(r=>r.need).length; }catch(e){ return 0; } },
@@ -11207,9 +11285,9 @@ const TD = {
       if(r.ready.length||r.due.length) parts.push(sec('🎧','Hear in class',r.ready.map(j=>juzRow(j,'ready')).join('')+r.due.map(j=>juzRow(j,'due')).join('')));
       if(r.poem.length) parts.push(sec('📜','Poem recall',r.poem.slice(0,3).map(bayt).join('')+(r.poem.length>3?`<button class="btn btn-ghost btn-sm" data-go="#/poem/${s.id}">+${r.poem.length-3} more bayts due →</button>`:'')));
       if(r.p&&!r.paused) parts.push(sec('🔁','Home revision',`<div class="td-it"><div class="td-lab"><b>${r.p.B} pg/day</b><small>~${RP.minutes(r.p.B)} min a day</small></div>${hasW?`<div class="rp-week td-wk"><span>${lw===RP.ws()?'This week':'Last week'}</span>${RP.DAYS.map((d,i)=>`<button class="rp-dot ${i<n?'on':''}" data-rpday="${s.id}|${i}" aria-label="${d}">${d[0]}</button>`).join('')}<span style="font-family:var(--f-mono);font-size:11px">${n}/5</span></div>`:(RP.issued(s)?`<span class="tag tag-green">✓ plan issued this week</span>`:`<button class="btn btn-o btn-sm" data-rpissue="${s.id}">Issue plan</button>`)}</div>`));
-      parts.push(sec('📝','Memorization',`<div class="td-it"><div class="td-lab"><b dir="auto">${r.last?esc(r.last.what):'No entries yet'}</b><small>${r.last?(CR.ds(r.last.date)===0?'today':CR.ds(r.last.date)+'d ago')+' · '+esc(r.last.kind)+' · '+esc(r.last.grade):'log their first recitation'}</small></div><button class="btn btn-p btn-sm" data-tdlog="${s.id}">＋ Log</button></div>`));
+      parts.push(sec('📝','Memorization',HW.cardBody(s,r.last)));
     } else parts.push(sec(r.L===1?'📗':'📖',r.c.nm,TD.posHTML(s)));
-    const tags=`${r.need?'':'<span class="tag tag-green">✓ all clear</span>'}${r.silent?`<span class="tag tag-red">${r.L===3?'no log 14d+':'no update 21d+'}</span>`:''}${r.L===3&&RP.streak(s)?`<span class="tag tag-gold">🔥 ${RP.streak(s)}wk</span>`:''}${r.paused?'<span class="tag tag-dim">⏸ revision paused</span>':''}${r.a==='L'?'<span class="tag tag-gold">late</span>':''}`;
+    const tags=`${r.need?'':'<span class="tag tag-green">✓ all clear</span>'}${r.silent?`<span class="tag tag-red">${r.L===3?'no log 14d+':'no update 21d+'}</span>`:''}${r.L===3&&s.hw&&(s.hw.tries||0)>=3?`<span class="tag tag-red">stuck · ${s.hw.tries} fails</span>`:''}${r.L===3&&RP.streak(s)?`<span class="tag tag-gold">🔥 ${RP.streak(s)}wk</span>`:''}${r.paused?'<span class="tag tag-dim">⏸ revision paused</span>':''}${r.a==='L'?'<span class="tag tag-gold">late</span>':''}`;
     return `<div class="card td-card ${r.need?'':'ok'}" data-tdc="${s.id}"><div class="td-head">${avatarHTML(s,'width:40px;height:40px;border-radius:50%;flex-shrink:0')}<div style="min-width:0;flex:1"><b class="td-name" dir="auto">${esc(nm)}</b><div class="adm-tags" style="margin-top:3px">${CR.lvTag(s)}${tags}</div></div>${r.L===3?`<button class="btn btn-ghost btn-sm no-print" data-go="#/revplan/${s.id}">Plan →</button>`:`<button class="btn btn-ghost btn-sm no-print" data-go="#/students/${s.id}">Profile →</button>`}</div>${parts.join('')}</div>`;
   },
   attChip(s){ const a=CR.attSt(s); return `<button class="td-ac ${a||'u'}" data-tdatt="${s.id}" title="Tap to change">${avatarHTML(s,'width:22px;height:22px;border-radius:50%;font-size:8px;flex-shrink:0')}<span dir="auto">${esc(CR.nm(s))}</span><i>${a||'·'}</i></button>`; },
@@ -11226,14 +11304,16 @@ const TD = {
     const dt=new Date(), cnt=L=>all.filter(r=>(L==='all'||String(r.L)===L)&&r.need).length;
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">${TD.isClass()?'Class day':'Prep'} · all levels</div><h2 class="page-title">Today</h2>
       <p class="page-sub">${esc(dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))} — mark who is here, then work down the list. One tap rates it, and every tap has an Undo.</p>
+      <div class="no-print" style="margin:0 0 12px"><button class="btn btn-p btn-sm" id="tdCm">▶ Class mode</button> <span class="td-hint">One student at a time, big buttons — for hearing in class.</span></div>
       <div class="card td-att no-print"><div class="td-atthead"><b>① Attendance</b><span class="tag tag-green">${nP} here</span>${nA?`<span class="tag tag-red">${nA} absent</span>`:''}${nU?`<span class="tag tag-dim">${nU} not marked</span>`:''}<span style="margin-left:auto;display:flex;gap:6px"><button class="btn btn-o btn-sm" id="tdAllP" ${nU?'':'disabled'}>Mark the rest present</button><button class="btn btn-ghost btn-sm" id="tdAttT">${TD.attOpen?'Hide ▴':'Edit ▾'}</button></span></div>
         ${TD.attOpen?`<p class="td-hint">Tap a name to cycle: not marked → ✓ present → late → absent → excused. Absent students move out of the list and get a follow-up message button.</p><div class="td-acs">${act.slice().sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).map(TD.attChip).join('')}</div>`:''}</div>
       <div class="rp-kpis no-print">${kpi(nHear,'Juzʼ to hear (L3)','var(--gold)')}${kpi(nPoem,'Poem bayts due','var(--info)')}${kpi(nPos,'L1/L2 not updated yet','var(--bad)')}${kpi(nNeed+'/'+present.length,'Still need you','var(--ok)')}</div>
       <div class="filters no-print"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<button class="chip ${TD.lv===k?'on':''}" data-tdlv="${k}">${l} (${cnt(k)})</button>`).join('')}</span><span style="display:flex;gap:4px"><button class="chip ${TD.f==='need'?'on':''}" data-tdf="need">Needs me</button><button class="chip ${TD.f==='all'?'on':''}" data-tdf="all">Everyone</button></span></div>
       ${show.length?`<div class="td-grid">${show.map(TD.card).join('')}</div>`:`<div class="empty"><div class="big">🌟</div><h3>${present.length?'Everyone is all clear':'Nobody here yet'}</h3><p>${present.length?'Switch to “Everyone” to log anyway.':'Mark attendance above to start.'}</p></div>`}
-      ${absent.length?`<div class="card td-abs"><div class="whead"><h3>Absent today (${absent.length})</h3></div>${absent.map(r=>`<div class="td-it">${avatarHTML(r.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(r.s))}</b><small>${r.a==='E'?'excused':'unexcused'} · ${r.s.missSent===t?'✓ follow-up sent':'no follow-up yet'}</small></div><button class="btn btn-o btn-sm" data-tdmiss="${r.s.id}">✉ Follow up</button><button class="btn btn-ghost btn-sm" data-tdhere="${r.s.id}">Actually here</button></div>`).join('')}</div>`:''}</div>`;
+      ${absent.length?`<div class="card td-abs"><div class="whead"><h3>Absent today (${absent.length})</h3></div>${absent.map(r=>`<div class="td-it">${avatarHTML(r.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(r.s))}</b><small>${r.a==='E'?'excused':'unexcused'} · ${r.s.missSent===t?'✓ follow-up sent':'no follow-up yet'}${r.s.hw?' · 📌 '+esc(HW.label(r.s.hw))+' stays due':''}</small></div><button class="btn btn-o btn-sm" data-tdmiss="${r.s.id}">✉ Follow up</button><button class="btn btn-ghost btn-sm" data-tdhere="${r.s.id}">Actually here</button></div>`).join('')}</div>`:''}</div>`;
     wireCommon(v); RP.wire(v); TD.wirePos(v,()=>TD.render(v));
-    const rr=()=>TD.render(v);
+    const rr=()=>TD.render(v); HW.wire(v,rr);
+    $('#tdCm',v).onclick=()=>CM.open();
     $('#tdAttT',v).onclick=()=>{ TD.attOpen=!TD.attOpen; rr(); };
     $('#tdAllP',v).onclick=()=>{ const r0=DB.data.attendance[t]=DB.data.attendance[t]||{}; act.forEach(s=>{ if(!r0[s.id]) r0[s.id]='P'; }); DB.log('Attendance: rest present · '+t); DB.save(); rr(); };
     $$('[data-tdatt]',v).forEach(b=>b.onclick=()=>{ const id=b.dataset.tdatt, r0=DB.data.attendance[t]=DB.data.attendance[t]||{}; const seq=['','P','L','A','E']; const nx=seq[(seq.indexOf(r0[id]||'')+1)%seq.length]; if(nx) r0[id]=nx; else delete r0[id]; if(nx!=='E'&&DB.data.attendanceReasons[t]) delete DB.data.attendanceReasons[t][id]; DB.save(); rr(); });
@@ -11251,35 +11331,41 @@ const HP={
   skip:new Set(),
   cfg(){ const st=DB.data.settings; return st.hearCfg=st.hearCfg||{min:60,per:3,gap:21,lv:'all'}; },
   info(s){ const L=CR.lvl(s), lh=CR.lastHeard(s), d=lh?CR.ds(lh):null, why=[]; let sc=d==null?60:Math.min(d,60);
-    if(L===3){ const rd=RP.ready(s).length, du=RP.due(s).length, pm=PT.sum(s).due; if(rd){ sc+=rd*5; why.push('🎧 '+rd+' Juzʼ ready'); } if(du){ sc+=du*3; why.push('⏱ '+du+' overdue'); } if(pm){ sc+=Math.min(pm,6); why.push('📜 '+pm+' bayts due'); } }
+    if(L===3){ const rd=RP.ready(s).length, du=RP.due(s).length, pm=PT.sum(s).due; if(rd){ sc+=rd*5; why.push('🎧 '+rd+' Juzʼ ready'); } if(du){ sc+=du*3; why.push('⏱ '+du+' overdue'); } if(pm){ sc+=Math.min(pm,6); why.push('📜 '+pm+' bayts due'); } { const t=HW.target(s); why.push('📌 '+HW.label(t)+((s.hw&&s.hw.tries)?' · attempt '+(s.hw.tries+1):'')); } }
     else { const c=TD.cfgOf(s), f=(s[c.k]||{}).fluency; if(f==='Developing'){ sc+=5; why.push('fluency: Developing'); } if(!f){ sc+=2; } }
     why.unshift(d==null?'never heard':d===0?'heard today':d+'d since last heard'); return {s,d,sc,why,heardToday:d===0,over:d==null||d>=HP.cfg().gap}; },
-  build(){ const c=HP.cfg(), slots=Math.max(0,Math.floor(c.min/Math.max(1,c.per)));
+  est(s){ const c=HP.cfg(), per=Math.max(1,c.per); if(CR.lvl(s)!==3||!s.hw) return per; try{ return Math.max(per,HW.mins(HW.target(s),c.pmin)); }catch(e){ return per; } },
+  build(){ const c=HP.cfg();
     const pool=CR.active().filter(s=>CR.present(s)&&(c.lv==='all'||String(CR.lvl(s))===c.lv)).map(HP.info);
     const done=pool.filter(x=>x.heardToday), todo=pool.filter(x=>!x.heardToday&&!HP.skip.has(x.s.id));
     todo.sort((a,b)=>(b.over-a.over)||(b.over?(((b.d==null?999:b.d)-(a.d==null?999:a.d))):(b.sc-a.sc)));
-    return {c,slots,done,queue:todo.slice(0,slots),rest:todo.slice(slots),skipped:pool.filter(x=>HP.skip.has(x.s.id)&&!x.heardToday)}; },
+    const queue=[], rest=[]; let used=0, full=false;
+    todo.forEach(x=>{ const m=HP.est(x.s); x.m=m; if(!full&&(queue.length===0?c.min>=c.per:used+m<=c.min)){ x.t0=used; used+=m; queue.push(x); } else { full=true; rest.push(x); } });
+    return {c,slots:queue.length,used,done,queue,rest,skipped:pool.filter(x=>HP.skip.has(x.s.id)&&!x.heardToday)}; },
   mark(s,v){ const x=UNDO.snap(s); (s.heardAt=s.heardAt||[]).push(today()); DB.log('Heard in class: '+s.name); DB.save(); toast(CR.nm(s)+' — heard ✓',()=>{ UNDO.restore(x); v&&HP.render(v); }); },
   row(x,i,showT){ const s=x.s, c=HP.cfg();
-    return `<div class="hp-row ${x.over?'over':''}"><span class="hp-n">${i+1}</span>${showT?`<span class="hp-t">${Math.floor(i*c.per/60)}:${String(i*c.per%60).padStart(2,'0')}</span>`:''}${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))} ${CR.lvTag(s)}</b><small>${x.why.map(esc).join(' · ')}</small></div><span class="hp-b"><button class="btn btn-p btn-sm" data-hphear="${s.id}">✓ Heard</button>${CR.lvl(s)===3?`<button class="btn btn-o btn-sm" data-hplog="${s.id}">＋ Log</button>`:`<button class="btn btn-o btn-sm" data-hppos="${s.id}">Page</button>`}<button class="btn btn-ghost btn-sm" data-hpskip="${s.id}" title="Skip today">↷</button></span></div>`; },
+    return `<div class="hp-row ${x.over?'over':''}"><span class="hp-n">${i+1}</span>${showT?`<span class="hp-t">${Math.floor((x.t0||0)/60)}:${String((x.t0||0)%60).padStart(2,'0')}</span>`:''}${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))} ${CR.lvTag(s)}</b><small>${x.why.map(esc).join(' · ')}${x.m&&x.m>c.per?' · ⏱ ~'+x.m+' min':''}</small></div><span class="hp-b"><button class="btn btn-p btn-sm" data-hphear="${s.id}">✓ Heard</button>${CR.lvl(s)===3?`${HW.btns(s)}<button class="btn btn-o btn-sm" data-hplog="${s.id}">＋ Log</button>`:`<button class="btn btn-o btn-sm" data-hppos="${s.id}">Page</button>`}<button class="btn btn-ghost btn-sm" data-hpskip="${s.id}" title="Skip today">↷</button></span></div>`; },
   render(v){
     const B=HP.build(), c=B.c, overRest=B.rest.filter(x=>x.over), kpi=(n,l,k)=>`<div class="rp-kpi" style="--k:${k}"><b>${n}</b><span>${l}</span></div>`;
     const nowMin=B.done.length*c.per;
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">Class day · time budget</div><h2 class="page-title">Hearing plan</h2>
       <p class="page-sub">You can’t hear everyone every class. Set your time, and the app orders who to hear first — anyone who has waited too long always goes to the front.</p>
-      <div class="card hp-cfg no-print"><label>Minutes for hearing<input type="number" id="hpMin" min="5" max="240" step="5" value="${c.min}"></label><label>Minutes per student<input type="number" id="hpPer" min="1" max="15" value="${c.per}"></label><label>Never longer than (days)<input type="number" id="hpGap" min="7" max="90" value="${c.gap}"></label><label>Who<select id="hpLv">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<option value="${k}" ${c.lv===k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+      <div class="card hp-cfg no-print"><label>Minutes for hearing<input type="number" id="hpMin" min="5" max="240" step="5" value="${c.min}"></label><label>Minutes per student<input type="number" id="hpPer" min="1" max="15" value="${c.per}"></label><label>Minutes per page recited<input type="number" id="hpPm" min="1" max="10" step="0.5" value="${c.pmin||2}"></label><label>Never longer than (days)<input type="number" id="hpGap" min="7" max="90" value="${c.gap}"></label><label>Who<select id="hpLv">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<option value="${k}" ${c.lv===k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+      <div class="filters no-print"><button class="btn btn-p btn-sm" id="hpCm">▶ Class mode</button><button class="btn btn-o btn-sm" data-hwq>✉ Homework messages</button><button class="btn btn-o btn-sm" data-hwprint>🖨 Homework sheets</button><button class="btn btn-ghost btn-sm" data-hwsetup>🧭 Set up students</button></div>
       <div class="rp-kpis no-print">${kpi(B.slots,'Students you can hear','var(--gold)')}${kpi(B.done.length,'Heard today','var(--ok)')}${kpi(B.queue.length+B.rest.length,'Still waiting','var(--info)')}${kpi(overRest.length,'Overdue & don’t fit','var(--bad)')}</div>
-      ${B.queue.length?`<div class="card"><div class="whead"><h3>Today’s queue</h3><span style="font-size:12px;color:var(--ink3)">${B.queue.length} students · about ${B.queue.length*c.per} min${nowMin?' · '+nowMin+' min used':''}</span></div>${B.queue.map((x,i)=>HP.row(x,i,true)).join('')}</div>`:`<div class="card"><p style="margin:0;color:var(--ok)">✓ ${B.slots?'Everyone present has been heard.':'Set minutes and minutes-per-student above.'}</p></div>`}
+      ${HW.summaryCard()}
+      ${B.queue.length?`<div class="card"><div class="whead"><h3>Today’s queue</h3><span style="font-size:12px;color:var(--ink3)">${B.queue.length} students · about ${B.used} min${nowMin?' · '+nowMin+' min used':''}</span></div>${B.queue.map((x,i)=>HP.row(x,i,true)).join('')}</div>`:`<div class="card"><p style="margin:0;color:var(--ok)">✓ ${B.slots?'Everyone present has been heard.':'Set minutes and minutes-per-student above.'}</p></div>`}
       ${overRest.length?`<div class="notice warn" style="margin:14px 0">⚠️ <div><b>${overRest.length} student${overRest.length===1?'':'s'} past ${c.gap} days won’t fit today:</b> ${overRest.slice(0,8).map(x=>esc(CR.nm(x.s))).join(', ')}${overRest.length>8?'…':''}. Try <button class="chip" data-go="#/peers">Peer pairs</button> or raise your minutes.</div></div>`:''}
       ${B.rest.length?`<details class="card" style="margin-top:14px"><summary><b>Next in line (${B.rest.length})</b></summary>${B.rest.map((x,i)=>HP.row(x,B.queue.length+i,false)).join('')}</details>`:''}
       ${B.done.length?`<details class="card" style="margin-top:14px"><summary><b>Heard today (${B.done.length})</b></summary>${B.done.map(x=>`<div class="hp-row">${avatarHTML(x.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(x.s))}</b><small>✓ heard today</small></div></div>`).join('')}</details>`:''}
       ${B.skipped.length?`<p class="td-hint">Skipped today: ${B.skipped.map(x=>esc(CR.nm(x.s))).join(', ')} <button class="chip" id="hpUnskip">Put back</button></p>`:''}</div>`;
     wireCommon(v);
     const set=(id,k,num)=>{ $('#'+id,v).onchange=e=>{ HP.cfg()[k]=num?Math.max(1,+e.target.value||1):e.target.value; DB.save(); HP.render(v); }; };
-    set('hpMin','min',1); set('hpPer','per',1); set('hpGap','gap',1); set('hpLv','lv',0);
+    set('hpMin','min',1); set('hpPer','per',1); set('hpPm','pmin',1); set('hpGap','gap',1); set('hpLv','lv',0);
     $$('[data-hphear]',v).forEach(b=>b.onclick=()=>{ HP.mark(DB.data.students.find(x=>x.id===b.dataset.hphear),v); HP.render(v); });
     $$('[data-hpskip]',v).forEach(b=>b.onclick=()=>{ HP.skip.add(b.dataset.hpskip); HP.render(v); });
     $$('[data-hplog]',v).forEach(b=>b.onclick=()=>ML.form(b.dataset.hplog));
+    HW.wire(v,()=>HP.render(v)); $('#hpCm',v).onclick=()=>CM.open();
     $$('[data-hppos]',v).forEach(b=>b.onclick=()=>TD.quick(b.dataset.hppos));
     const un=$('#hpUnskip',v); if(un) un.onclick=()=>{ HP.skip.clear(); HP.render(v); };
   }
@@ -11337,6 +11423,7 @@ const FU={
       try{ const pm=PT.sum(s); if(pm.memN>0||pm.learn>0) lines.push('Tawḥīd poem: '+pm.memN+' of 47 bayts memorized'+(pm.due?' ('+pm.due+' due for a recall check)':'')); }catch(e){}
       const hw=(RP.get(s).weeks||{})[RP.lw()]; if(hw!==undefined) lines.push('Home revision last week: '+hw+' of 5 days');
       const p=RP.plan(s); if(p&&!RP.get(s).paused) next.push('Home revision: about '+p.B+' pages a day, Monday–Friday (around '+RP.minutes(p.B)+' minutes)'); const rd=RP.ready(s).concat(RP.due(s)).slice(0,3); if(rd.length) next.push('To be heard in class: '+rd.map(j=>'Juzʼ '+j.n).join(', '));
+      if(s.hw) next.push('Memorization homework: '+HW.label(s.hw)+((s.hw.cum&&s.hw.a>1)?' — please recite from the beginning of the sūrah (āyah 1) each day':'')); { const dn=(s.hwDone||[]).filter(x=>x.date>from); if(dn.length) lines.push('🎉 Completed Sūrat '+dn.map(x=>QS[x.n].name).join(', ')+' — recited from beginning to end'); }
       const h=s.hifz||{}; if(h.strengths&&String(h.strengths).trim()) lines.push('Strength: '+String(h.strengths).trim()); if(h.improve&&String(h.improve).trim()) next.push('Focus: '+String(h.improve).trim());
     } else { const c=TD.cfgOf(s), g=s[c.k]||{page:0}, ser=(s[c.lk]||[]).map(x=>({d:x.date,v:x.page})).sort((a,b)=>a.d.localeCompare(b.d)), v0=FU.valAt(ser,from);
       lines.push(c.nm+': page '+(g.page||0)+' of '+c.T+(v0!=null&&g.page>v0?' (+'+(g.page-v0)+' this week)':'')); if(g.fluency) lines.push('Fluency: '+g.fluency); next.push('Next: continue from page '+(g.page||0)+' — a few minutes of reading aloud each day helps most'); }
@@ -11398,6 +11485,231 @@ const GA={
     const sv=()=>{ g.type=$('#gaType',v).value; const j=$('#gaJuz',v); if(j) g.juz=+j.value; g.date=$('#gaDate',v).value||g.date; DB.save(); GA.render(v); };
     $('#gaType',v).onchange=sv; $('#gaDate',v).onchange=sv; const jj=$('#gaJuz',v); if(jj) jj.onchange=sv; }
 };
+/* ---------- HOMEWORK (v42): assign → hear → Passed / Failed / Not yet ----------
+   s.hw     = current assignment {n,a,b,cum,fin,given,tries,ns,fails:[{date,st:[],tg:[]}],nsd:[]}
+   s.hwLog  = closed assignments {n,a,b,cum,fin,given,passed,tries,ns,grade,fails}
+   s.hwDone = sūrahs recited whole, start to end {n,date}
+   Passed  → writes the normal memorization entry (kind New) and closes the assignment.
+   Failed  → counts an attempt on the assignment; the same portion stays due. No log entry
+             (so a failed attempt never counts as memorized).
+   Not yet → absent / not reached: nothing is counted, the portion stays due. */
+const HW={
+  st(){ return DB.data.settings; },
+  target(s){ const h=s.hw; if(h) return {n:h.n,a:h.a,b:h.b,cum:!!h.cum,final:!!h.fin,hw:true}; return ML.nextUp(s); },
+  label(h){ const c=SURAH_AYAHS[h.n]; return ML.fmt(h.n,h.a,h.b,!!h.cum&&h.a>1)+(((h.fin||h.final)&&h.a===1&&h.b===c)?' — final pass':''); },
+  perPage(n){ const c=SURAH_AYAHS[n]; return Math.min(c,Math.max(3,c/Math.max(1,ML.pagesOf(n)))); },
+  upTo(n,a,fr){ const c=SURAH_AYAHS[n]; return Math.min(c,a+Math.max(1,Math.round(HW.perPage(n)*fr))-1); },
+  recAy(t){ return (t.cum&&t.a>1)?t.b:(t.b-t.a+1); },
+  mins(t,pm){ return Math.min(30,Math.max(1,Math.ceil(HW.recAy(t)/HW.perPage(t.n)*(pm||2)))); },
+  size(s){ if(s.hwSize>0) return s.hwSize; const L=DB.data.quran; for(let i=L.length-1;i>=0;i--){ const q=L[i]; if(q.sid!==s.id||q.kind!=='New'||q.fin||!ML.nOf(q)||!ML.explicit(q)) continue; const r=ML.rangeOf(q); return Math.max(1,r[1]-r[0]+1); } return 0; },
+  between(a,b){ return Math.round((new Date(b)-new Date(a))/864e5); },
+  assign(s,t,o){ o=o||{}; const c=SURAH_AYAHS[t.n], a=Math.max(1,Math.min(c,t.a||1)), b=Math.max(a,Math.min(c,t.b||c));
+    s.hw={n:t.n,a,b,cum:!!t.cum&&a>1,fin:!!t.final&&a===1&&b===c,given:o.date||today(),tries:0,ns:0,fails:[],nsd:[]};
+    DB.log('Homework assigned: '+s.name+' — '+HW.label(s.hw)); DB.save(); return s.hw; },
+  ensure(s){ return s.hw||HW.assign(s,ML.nextUp(s)); },
+  heard(s){ const t=today(); s.heardAt=s.heardAt||[]; if(s.heardAt.indexOf(t)<0) s.heardAt.push(t); },
+  match(s,n,a,b){ const h=s.hw; return !!h&&h.n===n&&a<=h.b&&b>=h.a; },
+  close(s,e){ const h=s.hw; if(!h) return 0; const tries=(h.tries||0)+1;
+    (s.hwLog=s.hwLog||[]).push({n:h.n,a:h.a,b:h.b,cum:!!h.cum,fin:!!h.fin,given:h.given,passed:e.date,tries,ns:h.ns||0,grade:e.grade,fails:h.fails||[]});
+    e.tr=tries; e.gv=h.given; if(h.fin) e.fin=true; delete s.hw; return tries; },
+  pass(s,grade,o){ o=o||{}; const h=HW.ensure(s), dt=o.date||today(), n=h.n, was=ML.connected(s,n), cm=!!h.cum&&h.a>1;
+    const e={sid:s.id,what:ML.fmt(n,h.a,h.b,cm),n,a:h.a,b:h.b,kind:'New',grade,date:dt}; if(cm) e.cum=true; if(o.tg&&o.tg.length) e.tg=o.tg.slice(); if(o.note) e.note=o.note;
+    DB.data.quran.push(e); const tries=HW.close(s,e); HW.heard(s); if(ML.ahead(s,n)&&n!==(s.hifz||{}).cur) updateHifzPosition(s,{cur:n});
+    const done=!was&&ML.connected(s,n); if(done) (s.hwDone=s.hwDone||[]).push({n,date:dt});
+    DB.log('Passed: '+s.name+' — '+e.what+' ('+grade+', attempt '+tries+')'); DB.save(); return {e,tries,done,n}; },
+  fail(s,o){ o=o||{}; const h=HW.ensure(s); h.tries=(h.tries||0)+1; (h.fails=h.fails||[]).push({date:o.date||today(),st:(o.st||[]).slice(),tg:(o.tg||[]).slice()}); HW.heard(s);
+    DB.log('Failed attempt '+h.tries+': '+s.name+' — '+HW.label(h)); DB.save(); return h; },
+  notYet(s){ const h=s.hw; if(h){ h.ns=(h.ns||0)+1; (h.nsd=h.nsd||[]).push(today()); DB.log('Not yet: '+s.name+' — '+HW.label(h)); DB.save(); } HP.skip.add(s.id); return h; },
+  missed(s){ const h=s.hw; if(!h) return 0; const at=DB.data.attendance, t=today(); return Object.keys(at).filter(d=>d>h.given&&d<=t&&(at[d]||{})[s.id]&&(at[d][s.id]==='A'||at[d][s.id]==='E')).length; },
+  stumbles(s,n){ const m={}, add=h=>{ if(h&&h.n===n) (h.fails||[]).forEach(f=>(f.st||[]).forEach(a=>{ m[a]=(m[a]||0)+1; })); }; add(s.hw); (s.hwLog||[]).forEach(add); return m; },
+  weak(s,n,upto){ if(ML.connected(s,n)) return []; const m=HW.stumbles(s,n); return Object.keys(m).map(a=>({a:+a,k:m[a]})).filter(x=>x.a<=upto).sort((x,y)=>y.k-x.k||x.a-y.a); },
+  weakTxt(w){ return w.slice(0,4).map(x=>x.a+(x.k>1?' ×'+x.k:'')).join(', '); },
+  text(s){ const h=s.hw, t=today(), nm=CR.nm(s), comp=(s.hwDone||[]).filter(x=>x.date===t); if(!h) return comp.length?HW.doneText(s,comp[0].n):'';
+    const ps=DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&q.date===t&&!q.seed).pop(), fl=(h.fails||[]).filter(f=>f.date===t).length, sur=QS[h.n].name, td=[]; let what;
+    if(comp.length) td.push('Alḥamdulillāh — '+nm+' recited all of Sūrat '+comp.map(x=>QS[x.n].name).join(' and ')+' from the beginning to the end in one go');
+    if(ps) td.push('Passed: '+ps.what+' ('+ps.grade+')'); if(fl) td.push('Today’s attempt at '+HW.label(h)+' needs a little more practice — please keep reciting it at home, in shā’ Allāh');
+    if(h.fin) what='Please have '+nm+' recite all of Sūrat '+sur+' from the beginning to the end in one go, every day.';
+    else if(h.cum&&h.a>1) what='Please have '+nm+' recite Sūrat '+sur+' every day from the beginning (āyah 1) all the way to āyah '+h.b+'. The new part is āyah '+h.a+(h.b>h.a?'–'+h.b:'')+'.';
+    else what='Please have '+nm+' practise Sūrat '+sur+', āyah '+h.a+(h.b>h.a?' to '+h.b:'')+', every day.';
+    const wk=HW.weak(s,h.n,h.b), w=wk.length?'\n• A small focus: āyah '+wk.slice(0,3).map(x=>x.a).join(', ')+' needs extra care':'';
+    return FU.hi(s)+'here is '+nm+'’s memorization update, in shā’ Allāh:\n\n'+(td.length?'Today in class:\n'+td.map(l=>'• '+l).join('\n')+'\n\n':'')+'Homework for next class:\n• '+what+w+'\n\nJazākumullāhu khayran for your support at home.'+FU.sign; },
+  doneText(s,n){ const nm=CR.nm(s); return FU.hi(s)+'alḥamdulillāh — today '+nm+' recited all of Sūrat '+QS[n].name+' from the beginning to the end in one go, in shā’ Allāh.\n\nMay Allāh bless '+nm+' and keep them firm upon the Qur’ān. Jazākumullāhu khayran for your support at home.'+FU.sign; },
+  /* ---- display ---- */
+  line(s,withName){ const h=s.hw, t=HW.target(s), lab=h?HW.label(h):HW.label(t);
+    if(h){ const ms=HW.missed(s), wk=HW.weak(s,h.n,h.b), nx=(h.tries||0)>=3;
+      return `<div class="td-lab">${withName?`<b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(CR.nm(s))}</b>`:''}<b dir="auto">📌 ${esc(lab)}</b><small>given ${esc(fmtDate(h.given))} · ${h.tries?'next is attempt '+(h.tries+1):'not heard yet'}${ms?' · missed '+ms+' class'+(ms>1?'es':''):''}${h.ns?' · not reached ×'+h.ns:''}${nx?' · ⚠ stuck':''}</small>${wk.length?`<small style="color:var(--bad)">weak spots: āyah ${esc(HW.weakTxt(wk))}</small>`:''}</div>`; }
+    return `<div class="td-lab">${withName?`<b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(CR.nm(s))}</b>`:''}<b dir="auto">Next: ${esc(lab)}</b><small>${ML.lastNew(s)?'no homework assigned yet — a button below assigns this and records the result':'no starting point yet — tap a result to set where he is'}</small></div>`; },
+  btns(s){ return `<span class="td-r hw-r">${[['E','✓','Excellent','strong','Passed — excellent'],['G','~','Good','shaky','Passed — good'],['F','✗','Failed','forgot','Failed — counts as an attempt; the same portion stays due'],['N','⏸','Not yet','ny','Absent or not reached — no attempt counted; stays due']].map(([c,i,l,k,t])=>`<button class="td-b ${k}" data-hw="${s.id}|${c}" title="${t}">${i}<small>${l}</small></button>`).join('')}</span>`; },
+  cardBody(s,last){ return `<div class="td-it">${HW.line(s)}${HW.btns(s)}</div><div class="td-it" style="margin-bottom:4px"><small style="color:var(--ink3);flex:1 1 140px">${last?'Last logged: '+esc(last.what)+' · '+(CR.ds(last.date)===0?'today':CR.ds(last.date)+'d ago')+' · '+esc(last.grade):'No entries yet'}</small><button class="btn btn-ghost btn-sm" data-hwset="${s.id}">✎ Homework</button><button class="btn btn-ghost btn-sm" data-tdlog="${s.id}">＋ Log</button></div>`; },
+  row(s){ return `<div class="td-it hw-row">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}${HW.line(s,true)}${HW.btns(s)}<button class="btn btn-ghost btn-sm" data-hwset="${s.id}" aria-label="Change homework" title="Change">✎</button></div>`; },
+  pageCard(){ const L=ML.stu(), has=L.filter(s=>s.hw), none=L.filter(s=>!s.hw), noHist=none.filter(s=>!ML.lastNew(s)), ready=none.filter(s=>ML.lastNew(s)), auto=!!HW.st().hwAuto, stuck=has.filter(s=>(s.hw.tries||0)>=3).length;
+    return `<details class="card no-print" style="margin-bottom:14px" ${has.length||noHist.length?'open':''}><summary style="cursor:pointer"><b>📌 Homework</b> <span class="tag ${has.length?'tag-gold':'tag-dim'}">${has.length} due</span>${stuck?` <span class="tag tag-red">${stuck} stuck</span>`:''}${noHist.length?` <span class="tag tag-blue">${noHist.length} need a starting point</span>`:''}</summary>
+      ${noHist.length?`<div class="notice warn" style="margin:8px 0">🧭 <div><b>${noHist.length} student${noHist.length===1?'':'s'} need a starting point.</b> Tell the app which sūrah each is on and how far he has passed from āyah 1; it then suggests the right next portion. <button class="btn btn-p btn-sm" data-hwsetup>🧭 Set up students</button></div></div>`:''}
+      <p class="td-hint">One portion is due per student. After you hear it: <b>✓ / ~</b> passed (with a grade) · <b>✗ Failed</b> counts as an attempt and the same portion stays due · <b>⏸ Not yet</b> is for a student who was absent or whom you didn’t get to — nothing is counted.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px"><button class="btn btn-p btn-sm" id="hwCm">▶ Class mode</button><button class="btn btn-o btn-sm" data-hwq>✉ Homework messages</button><button class="btn btn-o btn-sm" data-hwprint>🖨 Homework sheets</button><button class="btn btn-ghost btn-sm" data-hwsetup>🧭 Setup</button></div>
+      ${has.map(HW.row).join('')||'<p style="margin:6px 0;color:var(--ink3)">Nobody has homework yet.</p>'}
+      ${none.length?`<div class="td-sec"><div class="td-st">No homework yet (${none.length})</div><p class="td-hint" style="margin:0 0 6px">${none.map(s=>esc(CR.nm(s))).join(', ')}</p>${ready.length?`<button class="btn btn-o btn-sm" data-hwall>📌 Assign next portion to the ${ready.length} who have history</button>`:''}</div>`:''}
+      <label class="td-hint" style="display:flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" data-hwauto ${auto?'checked':''}> After a pass, assign the next portion (same size) automatically — skip the pop-up</label></details>`; },
+  tlCard(s){ const log=s.hwLog||[], h=s.hw, n=log.length, avgD=n?Math.round(log.reduce((t,x)=>t+Math.max(0,HW.between(x.given,x.passed)),0)/n):0, avgT=n?(log.reduce((t,x)=>t+(x.tries||1),0)/n):0, dn=s.hwDone||[];
+    return `<div class="card hw-card" style="margin-bottom:14px"><div class="whead"><h3>📌 Homework</h3></div>
+      <div class="td-it">${HW.line(s)}${HW.btns(s)}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button class="btn btn-o btn-sm" data-hwset="${s.id}">✎ ${h?'Change':'Assign'} homework</button>${h?`<button class="btn btn-o btn-sm" data-hwmsg="${s.id}">✉ Message family</button><button class="btn btn-ghost btn-sm" data-hwrm="${s.id}">Remove</button>`:''}</div>
+      ${dn.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${dn.map(x=>`<span class="tag tag-green">🎉 ${esc(QS[x.n].name)} · ${esc(fmtDate(x.date))}</span>`).join('')}</div>`:''}
+      ${n?`<p class="td-hint" style="margin:0 0 6px">${n} portion${n===1?'':'s'} passed · about ${avgD} day${avgD===1?'':'s'} each · ${avgT.toFixed(1)} attempt${avgT>=1.95?'s':''} on average</p>
+      ${log.slice(-8).reverse().map(x=>`<div class="td-it" style="margin-bottom:4px"><div class="td-lab"><b>${esc(HW.label(x))}</b><small>given ${esc(fmtDate(x.given))} → passed ${esc(fmtDate(x.passed))} (${Math.max(0,HW.between(x.given,x.passed))}d) · ${x.tries} attempt${x.tries===1?'':'s'}${x.ns?' · not reached ×'+x.ns:''}</small></div><span class="tag ${ML.gtag(x.grade)}">${esc(x.grade)}</span></div>`).join('')}`:'<p class="td-hint" style="margin:0">History appears here once a homework portion is passed.</p>'}</div>`; },
+  /* ---- actions ---- */
+  act(s,code,after){ const nm=CR.nm(s), snap=UNDO.snap(s);
+    if(code==='N'){ const had=s.hw?HW.label(s.hw):''; HW.notYet(s); toast(nm+' · '+(had?had+' stays due — no attempt counted':'skipped for today'),()=>{ UNDO.restore(snap); HP.skip.delete(s.id); after&&after(); }); after&&after(); return; }
+    if(!s.hw&&!ML.lastNew(s)){ HW.setupUI([s],{after}); return; }
+    if(code==='F'){ HW.failUI(s,{snap,after}); return; }
+    const res=HW.pass(s,code==='E'?'Excellent':'Good'); HW.afterPass(s,res,snap,after); },
+  afterPass(s,res,snap,after){ const nm=CR.nm(s), msg=res.e.what+' — passed ✓'+(res.tries>1?' (attempt '+res.tries+')':''), undo=()=>{ UNDO.restore(snap); after&&after(); };
+    const next=()=>{ if(HW.st().hwAuto){ HW.assign(s,ML.nextUp(s)); toast(nm+' · '+msg+' · next: '+HW.label(s.hw),undo); after&&after(); } else { after&&after(); HW.assignUI(s,{snap,after,msg}); } };
+    if(res.done){ celebrate(); HW.doneUI(s,res.n,{next}); } else next(); },
+  doneUI(s,n,o){ const nm=CR.nm(s), es=DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&ML.nOf(q)===n), first=es.reduce((m,q)=>(!m||q.date<m)?q.date:m,''), days=first?Math.max(0,HW.between(first,today())):0;
+    const ov=overlay(`<div class="modal" style="max-width:460px;text-align:center"><div style="font-size:46px;line-height:1.1">🎉</div><h3 dir="auto" style="margin:6px 0">${esc(nm)} completed Sūrat ${esc(QS[n].name)}</h3><p style="margin:0 0 4px">Recited start to end in one go.</p><p class="td-hint" style="margin:0 0 12px">${es.length} portion${es.length===1?'':'s'}${days>=7?' over about '+Math.round(days/7)+' weeks':''} · ${SURAH_AYAHS[n]} āyāt</p>
+      <div class="mfoot" style="justify-content:center"><button class="btn btn-o" data-x="fam">✉ Tell the family</button><button class="btn btn-p" data-x="go">Continue →</button></div></div>`,true);
+    $('[data-x=fam]',ov).onclick=()=>FU.compose(s,HW.doneText(s,n),{title:'Sūrah completed'});
+    $('[data-x=go]',ov).onclick=()=>{ ov.remove(); o.next(); }; },
+  failUI(s,o){ const nm=CR.nm(s), t=s.hw?HW.target(s):ML.nextUp(s), tr=(s.hw?s.hw.tries||0:0)+1, c=SURAH_AYAHS[t.n], sel=new Set(), tg=new Set(), wk=HW.weak(s,t.n,t.b);
+    const tags=ML.TAGS;
+    const ov=overlay(`<div class="modal" style="max-width:560px"><h3>✗ Failed attempt · ${esc(nm)}</h3><p style="margin:0 0 4px"><b dir="auto">${esc(HW.label(t))}</b> <span class="tag tag-red">attempt ${tr}</span></p>
+      <p class="td-hint" style="margin:0 0 6px">This counts as an attempt and the same portion stays due. Nothing is added to the memorized record.${wk.length?' Earlier weak spots: āyah '+esc(HW.weakTxt(wk))+'.':''}</p>
+      <div class="field"><label>Where did he stumble? <span style="color:var(--ink3);font-weight:400">(optional — tap the āyāt; gold outline = the new portion)</span></label><div class="hw-ays" dir="ltr">${[...Array(t.b)].map((_,i)=>`<button type="button" class="hw-ay ${i+1>=t.a?'new':''}" data-ay="${i+1}">${i+1}</button>`).join('')}</div></div>
+      <div class="field"><label>What went wrong? <span style="color:var(--ink3);font-weight:400">(optional)</span></label><div class="ml-tg">${tags.map(x=>`<button type="button" class="chip" data-tg="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="ok">Record failed attempt</button></div></div>`,true);
+    ov.addEventListener('click',e=>{ const a=e.target.closest('[data-ay]'); if(a){ const n=+a.dataset.ay; if(sel.has(n)) sel.delete(n); else sel.add(n); a.classList.toggle('on'); return; } const g=e.target.closest('[data-tg]'); if(g){ const x=g.dataset.tg; if(tg.has(x)) tg.delete(x); else tg.add(x); g.classList.toggle('on'); } });
+    $('[data-x=c]',ov).onclick=()=>ov.remove();
+    $('[data-x=ok]',ov).onclick=()=>{ const h=HW.fail(s,{st:[...sel].sort((x,y)=>x-y),tg:[...tg]}); ov.remove(); toast(nm+' · attempt '+h.tries+' failed — '+HW.label(h)+' stays due'+(h.tries>=3?' · stuck: consider a smaller portion':''),()=>{ UNDO.restore(o.snap); o.after&&o.after(); o.back&&o.back(); }); o.after&&o.after(); o.adv&&o.adv(); }; },
+  assignUI(s,o){ o=o||{}; const nm=CR.nm(s), snap=o.snap||UNDO.snap(s), base=o.pre||(s.hw?HW.target(s):ML.nextUp(s)), same=Math.max(1,o.len||HW.size(s)||(base.b-base.a+1));
+    const st={n:base.n,a:base.a,b:base.b,cum:base.cum==null?true:!!base.cum,fin:!!(base.final||base.fin)};
+    const surOpts=QS.slice(1).map(q=>`<option value="${q.n}">${q.n}. ${esc(q.name)}</option>`).join('');
+    const ov=overlay(`<div class="modal" style="max-width:580px"><h3>📌 Next homework · ${esc(nm)}</h3>${o.msg?`<p class="td-hint" style="margin:-2px 0 8px">✓ ${esc(o.msg)}</p>`:''}
+      <div class="ml-r"><select id="hw-s" class="ml-rs" aria-label="Sūrah">${surOpts}</select><span class="ml-ra"><input id="hw-a" type="number" min="1" inputmode="numeric" aria-label="From āyah"><i>–</i><input id="hw-b" type="number" min="1" inputmode="numeric" aria-label="To āyah"><small id="hw-of"></small></span><button type="button" class="btn btn-o btn-sm" id="hw-w">Whole</button><label class="ml-cum" id="hw-cw" title="He recites from the start of the sūrah up to the end of this portion"><input type="checkbox" id="hw-c"> recite from āyah 1</label></div>
+      <div class="hw-sz"><small>Size:</small><button type="button" class="btn btn-ghost btn-sm" data-fr="0.5">½ page</button><button type="button" class="btn btn-ghost btn-sm" data-fr="1">1 page</button><button type="button" class="btn btn-ghost btn-sm" data-fr="2">2 pages</button><button type="button" class="btn btn-ghost btn-sm" data-fr="same">Same as last (${same} āyāt)</button></div>
+      <p class="td-hint" id="hw-info" style="margin:0 0 4px"></p><p class="td-hint" id="hw-weak" style="margin:0 0 6px;color:var(--bad)"></p>
+      <label class="td-hint" style="display:flex;gap:6px;align-items:center;margin:4px 0 0"><input type="checkbox" id="hw-auto" ${HW.st().hwAuto?'checked':''}> Don’t ask me — after each pass, assign the same size automatically</label>
+      <div class="mfoot"><button class="btn btn-o" data-x="no">No homework</button><button class="btn btn-o" data-x="msg">✉ Assign & message family</button><button class="btn btn-p" data-x="ok">Assign</button></div></div>`,true);
+    const draw=()=>{ const c=SURAH_AYAHS[st.n]; st.a=Math.max(1,Math.min(c,Math.round(+st.a)||1)); st.b=Math.max(st.a,Math.min(c,Math.round(+st.b)||c)); if(st.a===1) st.cum=false;
+      $('#hw-s',ov).value=st.n; $('#hw-a',ov).value=st.a; $('#hw-b',ov).value=st.b; $('#hw-a',ov).max=$('#hw-b',ov).max=c; $('#hw-of',ov).textContent='/ '+c; $('#hw-w',ov).classList.toggle('on',st.a===1&&st.b===c);
+      $('#hw-cw',ov).style.display=st.a>1?'inline-flex':'none'; $('#hw-c',ov).checked=st.cum;
+      const t={n:st.n,a:st.a,b:st.b,cum:st.cum&&st.a>1}, r=HW.recAy(t); $('#hw-info',ov).textContent='He will recite '+(t.cum?'āyah 1 to '+st.b:(st.a===1&&st.b===c?'the whole sūrah':'āyah '+st.a+' to '+st.b))+' ('+r+' āyāt, about '+HW.mins(t,HP.cfg().pmin)+' min to hear). ≈ '+Math.round(HW.perPage(st.n))+' āyāt per page in this sūrah — an estimate.';
+      const w=HW.weak(s,st.n,st.b); $('#hw-weak',ov).textContent=w.length?'⚠ He stumbled before at āyah '+HW.weakTxt(w)+' — revisit '+(w.length>1?'those':'it')+' first.':''; };
+    st.cum=st.cum&&st.a>1; draw();
+    $('#hw-s',ov).onchange=e=>{ st.n=+e.target.value; st.a=1; st.b=SURAH_AYAHS[st.n]; st.fin=false; draw(); };
+    $('#hw-a',ov).onchange=e=>{ st.a=+e.target.value; if(st.b<st.a) st.b=st.a; st.fin=false; if(st.a>1) st.cum=true; draw(); }; $('#hw-b',ov).onchange=e=>{ st.b=+e.target.value; st.fin=false; draw(); };
+    $('#hw-w',ov).onclick=()=>{ st.a=1; st.b=SURAH_AYAHS[st.n]; draw(); }; $('#hw-c',ov).onchange=e=>{ st.cum=e.target.checked; draw(); };
+    ov.addEventListener('click',e=>{ const b=e.target.closest('[data-fr]'); if(!b) return; const f=b.dataset.fr, c=SURAH_AYAHS[st.n]; st.fin=false; st.b=f==='same'?Math.min(c,st.a+same-1):HW.upTo(st.n,st.a,+f); draw(); });
+    const commit=m=>{ const au=$('#hw-auto',ov).checked; if(au!==!!HW.st().hwAuto) HW.st().hwAuto=au; const c=SURAH_AYAHS[st.n];
+      HW.assign(s,{n:st.n,a:st.a,b:st.b,cum:st.cum&&st.a>1,final:st.fin&&st.a===1&&st.b===c}); if(!s.hw.fin){ s.hwSize=s.hw.b-s.hw.a+1; DB.save(); } ov.remove();
+      toast(nm+' · '+(o.msg?o.msg+' · ':'')+'next: '+HW.label(s.hw),()=>{ UNDO.restore(snap); o.after&&o.after(); }); o.after&&o.after();
+      if(m) FU.compose(s,HW.text(s),{title:'Homework',onSent:()=>{ s.hwSent=today(); DB.save(); }}); };
+    $('[data-x=ok]',ov).onclick=()=>commit(false); $('[data-x=msg]',ov).onclick=()=>commit(true);
+    $('[data-x=no]',ov).onclick=()=>{ const au=$('#hw-auto',ov).checked; if(au!==!!HW.st().hwAuto){ HW.st().hwAuto=au; DB.save(); } ov.remove(); if(o.msg) toast(nm+' · '+o.msg,()=>{ UNDO.restore(snap); o.after&&o.after(); }); o.after&&o.after(); }; },
+  wire(root,after){ const get=id=>DB.data.students.find(x=>x.id===id);
+    $$('[data-hw]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [id,c]=b.dataset.hw.split('|'), s=get(id); if(s) HW.act(s,c,after); });
+    $$('[data-hwset]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const s=get(b.dataset.hwset); if(s) HW.assignUI(s,{after}); });
+    $$('[data-hwshrink]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const s=get(b.dataset.hwshrink); if(!s||!s.hw) return; const h=s.hw, len=Math.max(1,Math.floor((h.b-h.a+1)/2)); HW.assignUI(s,{after,pre:{n:h.n,a:h.a,b:h.a+len-1,cum:h.cum},len}); });
+    $$('[data-hwmsg]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const s=get(b.dataset.hwmsg); if(s&&s.hw) FU.compose(s,HW.text(s),{title:'Homework',onSent:()=>{ s.hwSent=today(); DB.save(); }}); });
+    $$('[data-hwrm]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const s=get(b.dataset.hwrm); if(!s||!s.hw) return; const snap=UNDO.snap(s), lab=HW.label(s.hw); delete s.hw; DB.log('Homework removed: '+s.name); DB.save(); toast(CR.nm(s)+' · homework removed',()=>{ UNDO.restore(snap); after&&after(); }); after&&after(); });
+    $$('[data-hwall]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const snaps=[]; ML.stu().forEach(s=>{ if(!s.hw&&ML.lastNew(s)){ snaps.push(UNDO.snap(s)); HW.assign(s,ML.nextUp(s)); } }); if(!snaps.length) return; toast(snaps.length+' homework portion'+(snaps.length===1?'':'s')+' assigned',()=>{ snaps.slice().reverse().forEach(UNDO.restore); after&&after(); }); after&&after(); });
+    $$('[data-hwsetup]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); HW.setupUI(null,{after}); });
+    $$('[data-hwq]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); HW.queueUI(); });
+    $$('[data-hwprint]',root).forEach(b=>b.onclick=e=>{ e.stopPropagation(); HW.printSheets(); });
+    $$('[data-hwauto]',root).forEach(b=>b.onchange=()=>{ HW.st().hwAuto=b.checked; DB.save(); toast(b.checked?'After a pass, the next portion is assigned automatically':'You’ll be asked what to assign after each pass'); }); }
+};
+/* ---------- v43: setup pass · class summary · message queue · print sheets · class mode ---------- */
+Object.assign(HW,{
+  nextFor(s,n,z){ const c=SURAH_AYAHS[n], cv=ML.cover(s,n), sz=Math.max(1,z||HW.size(s)||10);
+    if(cv.covered<c&&cv.first){ const a=cv.first; return {n,a,b:Math.min(c,a+sz-1),cum:a>1}; }
+    if(!ML.connected(s,n)) return {n,a:1,b:c,cum:false,final:true};
+    const m=ML.after(s,n); if(!m) return {n,a:1,b:c,cum:false}; return {n:m,a:1,b:Math.min(SURAH_AYAHS[m],sz),cum:false}; },
+  thru(s,n){ const c=SURAH_AYAHS[n], m=ML.ayahMap(s,n); let k=0; for(let i=1;i<=c;i++){ if(m[i]) k=i; else break; } return k; },
+  /* ---- 1. setup pass ---- */
+  setupUI(list,o){ o=o||{}; let showAll=false; const base=list||ML.stu(), surOpts=n=>QS.slice(1).map(q=>`<option value="${q.n}" ${q.n===n?'selected':''}>${q.n}. ${esc(q.name)}</option>`).join('');
+    const pool=()=>base.filter(s=>list||showAll||!s.hw);
+    const rowHTML=s=>{ const cur=(s.hifz||{}).cur||114, l=ML.lastNew(s), n=l?ML.nOf(l):cur, c=SURAH_AYAHS[n], th=l?HW.thru(s,n):0, z=HW.size(s)||10;
+      return `<div class="mb-row sp-row" data-sid="${s.id}">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}<b class="mb-n" dir="auto">${esc(CR.nm(s))}</b><select class="mb-s sp-s" aria-label="Sūrah">${surOpts(n)}</select><span class="ml-ra" title="How far he has passed from āyah 1 in this sūrah (0 = not started it)"><small>passed to</small><input type="number" class="sp-t" min="0" max="${c}" value="${th}" inputmode="numeric" aria-label="Passed to āyah"><small class="sp-c">/ ${c}</small></span><span class="ml-ra"><small>portion</small><input type="number" class="sp-z" min="1" max="${c}" value="${z}" inputmode="numeric" aria-label="Portion size in āyāt"><small>āyāt</small></span>${s.hw?'<span class="tag tag-gold">has homework</span>':(l?'':'<span class="tag tag-dim">new</span>')}</div>`; };
+    const ov=overlay(`<div class="modal" style="max-width:780px"><h3>🧭 Set up where each student is</h3><p class="td-hint">For each student: the sūrah he is on, <b>how far he has passed from āyah 1</b> (0 = hasn’t started it), and his usual portion size. I’ll record that starting point and assign the right next portion. You only do this once.</p>
+      ${list?'':`<label class="td-hint" style="display:flex;gap:6px;align-items:center;margin:0 0 6px"><input type="checkbox" id="sp-all"> Show everyone, even those who already have homework (their homework is replaced)</label>`}
+      <div class="mb-list" id="sp-l"></div><div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="ok">Save & assign homework</button></div></div>`,true);
+    const draw=()=>{ const p=pool(); $('#sp-l',ov).innerHTML=p.length?p.map(rowHTML).join(''):'<p class="td-hint">Everyone already has homework. Tick “Show everyone” to re-place someone.</p>'; };
+    draw(); const al=$('#sp-all',ov); if(al) al.onchange=()=>{ showAll=al.checked; draw(); };
+    ov.addEventListener('change',e=>{ const row=e.target.closest('.sp-row'); if(!row) return; const s=DB.data.students.find(x=>x.id===row.dataset.sid), sel=$('.sp-s',row), t=$('.sp-t',row), z=$('.sp-z',row);
+      if(e.target===sel){ const n=+sel.value, c=SURAH_AYAHS[n]; t.max=z.max=c; t.value=HW.thru(s,n); $('.sp-c',row).textContent='/ '+c; } else { const c=SURAH_AYAHS[+sel.value]; t.value=Math.max(0,Math.min(c,Math.round(+t.value)||0)); z.value=Math.max(1,Math.min(c,Math.round(+z.value)||10)); } });
+    $('[data-x=c]',ov).onclick=()=>ov.remove();
+    $('[data-x=ok]',ov).onclick=()=>{ const snaps=[], sd=RP.addDays(today(),-45); let k=0;
+      $$('.sp-row',ov).forEach(row=>{ const s=DB.data.students.find(x=>x.id===row.dataset.sid); if(!s) return; const n=+$('.sp-s',row).value, c=SURAH_AYAHS[n], t=Math.max(0,Math.min(c,Math.round(+$('.sp-t',row).value)||0)), z=Math.max(1,Math.min(c,Math.round(+$('.sp-z',row).value)||10));
+        snaps.push(UNDO.snap(s));
+        if(t>0&&HW.thru(s,n)<t) DB.data.quran.push({sid:s.id,what:ML.fmt(n,1,t),n,a:1,b:t,kind:'New',grade:'Good',date:sd,seed:true,note:'Starting point (setup)'});
+        if(n!==(s.hifz||{}).cur) updateHifzPosition(s,{cur:n});
+        s.hwSize=z; HW.assign(s,HW.nextFor(s,n,z)); k++; });
+      if(!k){ ov.remove(); return; } DB.log('Homework setup: '+k+' students placed'); DB.save(); ov.remove();
+      toast(k+' student'+(k===1?'':'s')+' set up — homework assigned',()=>{ snaps.slice().reverse().forEach(UNDO.restore); o.after&&o.after(); }); o.after&&o.after(); }; },
+  /* ---- 3. today's results ---- */
+  todayRes(){ const t=today(), R={pass:[],fail:[],ny:[],abs:[],wait:[]};
+    CR.active().filter(s=>CR.lvl(s)===3).forEach(s=>{ const ents=DB.data.quran.filter(q=>q.sid===s.id&&q.kind==='New'&&q.date===t&&!q.seed), f=((s.hw&&s.hw.fails)||[]).concat(...(s.hwLog||[]).filter(x=>x.passed===t).map(x=>x.fails||[])).filter(x=>x.date===t), ny=!!(s.hw&&(s.hw.nsd||[]).indexOf(t)>=0), a=CR.attSt(s);
+      if(ents.length) R.pass.push({s,e:ents[ents.length-1],f:f.length}); else if(f.length) R.fail.push({s,n:f.length}); else if(ny) R.ny.push({s}); else if(s.hw&&(a==='A'||a==='E')) R.abs.push({s,a}); else if(s.hw&&a) R.wait.push({s}); });
+    return R; },
+  summaryHTML(R){ R=R||HW.todayRes(); const row=(s,txt)=>`<div class="td-it" style="margin-bottom:4px">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))}</b><small>${txt}</small></div></div>`;
+    const sec=(ico,t,arr,f)=>arr.length?`<div class="td-sec"><div class="td-st">${ico} ${t} (${arr.length})</div>${arr.map(f).join('')}</div>`:'';
+    const lab=s=>s.hw?esc(HW.label(s.hw)):'';
+    return `<div class="hw-chips"><span class="tag tag-green">✓ ${R.pass.length} passed</span><span class="tag tag-red">✗ ${R.fail.length} failed</span><span class="tag tag-dim">⏸ ${R.ny.length} not yet</span>${R.abs.length?`<span class="tag tag-gold">${R.abs.length} absent</span>`:''}${R.wait.length?`<span class="tag tag-blue">${R.wait.length} not heard</span>`:''}</div>`
+      +sec('✓','Passed',R.pass,x=>row(x.s,esc(x.e.what)+' · '+esc(x.e.grade)+(x.e.tr>1?' · attempt '+x.e.tr:'')+(x.s.hw?' · next: '+lab(x.s):'')))
+      +sec('✗','Failed — stays due',R.fail,x=>row(x.s,lab(x.s)+' · '+x.n+' attempt'+(x.n>1?'s':'')+' today'+((x.s.hw&&x.s.hw.tries>=3)?' · ⚠ stuck ('+x.s.hw.tries+' total)':'')+(x.s.hw&&HW.weak(x.s,x.s.hw.n,x.s.hw.b).length?' · weak: āyah '+esc(HW.weakTxt(HW.weak(x.s,x.s.hw.n,x.s.hw.b))):'')))
+      +sec('⏸','Not yet — stays due',R.ny,x=>row(x.s,lab(x.s)+' · no attempt counted'))
+      +sec('🚫','Absent — homework stays due',R.abs,x=>row(x.s,lab(x.s)+(x.a==='E'?' · excused':'')))
+      +sec('•','Here but not heard today',R.wait,x=>row(x.s,lab(x.s))); },
+  summaryCard(){ const R=HW.todayRes(); if(!(R.pass.length+R.fail.length+R.ny.length)) return '';
+    return `<div class="card" style="margin-bottom:14px"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">📋 Today’s results</h3><span class="no-print" style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-hwq>✉ Message families</button><button class="btn btn-o btn-sm" data-hwprint>🖨 Sheets</button></span></div>${HW.summaryHTML(R)}</div>`; },
+  /* ---- 4. message queue + print ---- */
+  queueUI(){ const t=today(), L=()=>ML.stu().filter(s=>s.hw||(s.hwDone||[]).some(x=>x.date===t));
+    const ov=overlay(`<div class="modal" style="max-width:640px"><h3>✉ Homework messages</h3><p class="td-hint">One message per family: what was passed today (if anything), and the homework for next class. Review, tap Text, done — nothing sends until you tap Send in Messages.</p>
+      <div class="filters" style="margin:0 0 8px"><button class="btn btn-p btn-sm" id="hq-next"></button></div><div id="hq-l"></div><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button></div></div>`,true);
+    const open=s=>{ const tx=HW.text(s); if(!tx){ toast('Nothing to send yet'); return; } FU.compose(s,tx,{title:'Homework',onSent:()=>{ s.hwSent=t; DB.save(); draw(); }}); };
+    const draw=()=>{ const l=L(), left=l.filter(s=>s.hwSent!==t), nx=$('#hq-next',ov); nx.textContent='▶ Next family ('+left.length+' left)'; nx.disabled=!left.length;
+      $('#hq-l',ov).innerHTML=l.length?l.map(s=>{ const ph=AI2.stuPhone(s); return `<div class="td-it">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))}</b><small>${s.hw?esc(HW.label(s.hw)):'completed a sūrah today'} · ${esc(AI2.stuParent(s)||'no parent name')}${ph?'':' · no phone'}${s.hwSent===t?' · ✓ sent':''}</small></div><button class="btn ${s.hwSent===t?'btn-o':'btn-p'} btn-sm" data-hq="${s.id}">${s.hwSent===t?'View':'Write'}</button></div>`; }).join(''):'<p class="td-hint">Nobody has homework assigned yet.</p>'; };
+    draw(); ov.addEventListener('click',e=>{ const b=e.target.closest('[data-hq]'); if(b){ const s=DB.data.students.find(x=>x.id===b.dataset.hq); if(s) open(s); } });
+    $('#hq-next',ov).onclick=()=>{ const s=L().find(x=>x.hwSent!==t); if(s) open(s); }; $('[data-x=c]',ov).onclick=()=>ov.remove(); },
+  printSheets(){ const L=ML.stu().filter(s=>s.hw); if(!L.length){ toast('No homework assigned yet'); return; }
+    const ins=h=>h.fin?'Every day, recite the whole sūrah from the beginning to the end.':(h.cum&&h.a>1?'Every day, recite from the beginning (āyah 1) up to āyah '+h.b+'. The new part is āyah '+h.a+(h.b>h.a?'–'+h.b:'')+'.':'Every day, practise āyah '+h.a+(h.b>h.a?' to '+h.b:'')+'.');
+    const slip=s=>{ const h=s.hw, wk=HW.weak(s,h.n,h.b); return `<div class="s"><div class="n" dir="auto">${esc(CR.nm(s))}</div><div class="p">${esc(HW.label(h))}</div><div class="i">${esc(ins(h))}</div>${wk.length?`<div class="w">Extra care: āyah ${esc(HW.weakTxt(wk))}</div>`:''}<div class="d">${['Mon','Tue','Wed','Thu','Fri'].map(d=>`<span><i></i>${d}</span>`).join('')}</div><div class="f">Parent initials: ________</div></div>`; };
+    const css=`body{font-family:'Crimson Pro',Georgia,serif;margin:0;color:#1f2a24}.hd{padding:14px 18px 0}.hd h1{font-family:'Playfair Display',Georgia,serif;font-size:22px;margin:0;color:#1a4a35}.hd p{margin:2px 0 0;color:#566;font-size:13px}.g{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 18px}.s{border:1.5px dashed #1a4a35;border-radius:10px;padding:10px 12px;break-inside:avoid;page-break-inside:avoid}.n{font:700 17px Amiri,Georgia,serif;color:#1a4a35}.p{font:700 18px 'Playfair Display',Georgia,serif;margin:6px 0 2px}.i{font-size:13.5px;color:#334}.w{font-size:12.5px;color:#9a3a2f;margin-top:3px}.d{display:flex;gap:8px;margin-top:8px;font-size:11px;color:#566}.d span{text-align:center}.d i{display:block;width:20px;height:20px;border:1.5px solid #1a4a35;border-radius:50%;margin:0 auto 2px}.f{margin-top:8px;font-size:11px;color:#778}`;
+    printWindow('Memorization homework',css,`<div class="hd"><h1>Memorization homework</h1><p>Week of ${esc(fmtDate(CR.wk()))} · Al-Madrasatu An-Nuriyyah</p></div><div class="g">${L.map(slip).join('')}</div>`); }
+});
+/* ---- 2. class mode ---- */
+const CM={
+  ids:[], rest:[], i:0, el:null,
+  open(){ const B=HP.build(); CM.ids=B.queue.map(x=>x.s.id); CM.rest=B.rest.map(x=>x.s.id); if(!CM.ids.length) CM.ids=CM.rest.splice(0,CM.rest.length); if(!CM.ids.length){ toast('Nobody is waiting — mark attendance first'); return; } CM.i=0;
+    if(!CM.el){ CM.el=document.createElement('div'); CM.el.className='cm'; document.body.appendChild(CM.el); CM.el.onclick=e=>{ const b=e.target.closest('[data-cm]'); if(b) CM.act(b.dataset.cm); }; } CM.draw(); },
+  close(){ if(CM.el){ CM.el.remove(); CM.el=null; } try{ Router.render(); }catch(e){} },
+  cur(){ return DB.data.students.find(x=>x.id===CM.ids[CM.i]); },
+  ins(t){ return t.final?'Recite the whole sūrah, start to end':(t.cum&&t.a>1?'Recite from āyah 1 to āyah '+t.b+' · new part: '+t.a+(t.b>t.a?'–'+t.b:''):'Recite āyah '+t.a+(t.b>t.a?' to '+t.b:'')); },
+  draw(){ const el=CM.el; if(!el) return; const n=CM.ids.length;
+    if(CM.i>=n){ el.innerHTML=`<div class="cm-in"><div class="cm-top"><b>Class mode · finished</b><button class="btn btn-o btn-sm" data-cm="close">Close</button></div><div class="cm-body" style="align-items:stretch;text-align:left"><h2 class="page-title" style="margin:0 0 8px">That’s everyone in the queue</h2>${HW.summaryHTML()}<div class="mfoot" style="justify-content:flex-start;margin-top:14px">${CM.rest.length?`<button class="btn btn-p" data-cm="more">Keep going — ${CM.rest.length} more waiting</button>`:''}<button class="btn ${CM.rest.length?'btn-o':'btn-p'}" data-cm="msg">✉ Message families</button><button class="btn btn-o" data-cm="print">🖨 Homework sheets</button><button class="btn btn-o" data-cm="close">Close</button></div></div></div>`; return; }
+    const s=CM.cur(), L3=CR.lvl(s)===3, h=s.hw, t=L3?HW.target(s):null, rem=CM.ids.slice(CM.i).reduce((a,id)=>a+HP.est(DB.data.students.find(x=>x.id===id)),0), ms=h?HW.missed(s):0, wk=h?HW.weak(s,h.n,h.b):[];
+    el.innerHTML=`<div class="cm-in"><div class="cm-top"><button class="btn btn-o btn-sm" data-cm="close">✕ Exit</button><b>${CM.i+1} of ${n}</b><span>about ${rem} min left</span></div>
+      <div class="cm-body">${avatarHTML(s,'width:84px;height:84px;border-radius:50%;font-size:28px')}<h2 class="cm-name" dir="auto">${esc(CR.nm(s))}</h2><div class="adm-tags">${CR.lvTag(s)}${h&&h.tries?`<span class="tag tag-red">attempt ${h.tries+1}</span>`:''}${h&&(h.tries||0)>=3?'<span class="tag tag-red">⚠ stuck</span>':''}${ms?`<span class="tag tag-gold">missed ${ms} class${ms>1?'es':''}</span>`:''}</div>
+      ${L3?`<div class="cm-p" dir="auto">${esc(HW.label(t))}</div><p class="cm-ins">${esc(CM.ins(t))}</p>${wk.length?`<p class="cm-ins" style="color:var(--bad)">Weak spots: āyah ${esc(HW.weakTxt(wk))}</p>`:''}${h?`<p class="td-hint" style="margin:0">given ${esc(fmtDate(h.given))}</p>`:'<p class="td-hint" style="margin:0">No homework yet — the result will set it.</p>'}
+        <div class="cm-btns">${[['E','✓','Excellent','strong'],['G','~','Good','shaky'],['F','✗','Failed','forgot'],['N','⏸','Not yet','ny']].map(([c,i,l,k])=>`<button class="td-b ${k}" data-cm="${c}">${i}<small>${l}</small></button>`).join('')}</div>
+        <p class="td-hint" style="margin:0 0 8px">Passing assigns the next portion automatically (same size). Failed counts an attempt. Not yet counts nothing.</p>
+        <div class="cm-sub"><button class="btn btn-o btn-sm" data-cm="back" ${CM.i?'':'disabled'}>← Back</button><button class="btn btn-o btn-sm" data-cm="skip">↷ Skip</button><button class="btn btn-o btn-sm" data-cm="portion">✎ Change portion</button><button class="btn btn-o btn-sm" data-cm="log">＋ Log</button></div>`
+      :`<div style="width:100%;max-width:520px;text-align:left;margin-top:8px">${TD.posHTML(s)}</div><div class="cm-sub" style="margin-top:12px"><button class="btn btn-o btn-sm" data-cm="back" ${CM.i?'':'disabled'}>← Back</button><button class="btn btn-p" data-cm="heard">✓ Heard — next</button><button class="btn btn-o btn-sm" data-cm="skip">↷ Skip</button></div>`}</div></div>`;
+    if(!L3) TD.wirePos(el,()=>CM.draw()); },
+  act(code){ const s=CM.cur(); if(code==='close') return CM.close(); if(code==='more'){ CM.ids=CM.ids.concat(CM.rest); CM.rest=[]; return CM.draw(); } if(code==='msg') return HW.queueUI(); if(code==='print') return HW.printSheets(); if(!s) return; const idx=CM.i;
+    if(code==='back'){ CM.i=Math.max(0,CM.i-1); return CM.draw(); }
+    if(code==='skip'){ HP.skip.add(s.id); CM.i++; return CM.draw(); }
+    if(code==='heard'){ HP.mark(s,null); CM.i++; return CM.draw(); }
+    if(code==='portion') return HW.assignUI(s,{after:()=>CM.draw()});
+    if(code==='log') return ML.form(s.id);
+    if(code==='N'){ const snap=UNDO.snap(s), had=s.hw?HW.label(s.hw):''; HW.notYet(s); toast(CR.nm(s)+' · '+(had?had+' stays due — no attempt counted':'skipped for today'),()=>{ UNDO.restore(snap); HP.skip.delete(s.id); CM.i=idx; CM.draw(); }); CM.i++; return CM.draw(); }
+    if(!s.hw&&!ML.lastNew(s)){ HW.setupUI([s],{after:()=>CM.draw()}); return; }
+    const snap=UNDO.snap(s);
+    if(code==='F'){ HW.failUI(s,{snap,after:()=>{},adv:()=>{ CM.i++; CM.draw(); },back:()=>{ CM.i=idx; CM.draw(); }}); return; }
+    const res=HW.pass(s,code==='E'?'Excellent':'Good'), undo=()=>{ UNDO.restore(snap); CM.i=idx; CM.draw(); };
+    if(res.done){ celebrate(); HW.doneUI(s,res.n,{next:()=>{ HW.assign(s,ML.nextUp(s)); toast(CR.nm(s)+' · '+res.e.what+' — passed ✓ · next: '+HW.label(s.hw),undo); CM.i++; CM.draw(); }}); return; }
+    HW.assign(s,ML.nextUp(s)); toast(CR.nm(s)+' · '+res.e.what+' — passed ✓'+(res.tries>1?' (attempt '+res.tries+')':'')+' · next: '+HW.label(s.hw),undo); CM.i++; CM.draw(); }
+};
 /* ---------- VOICE QUICK-LOG ---------- */
 const VL={
   W:{zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90},
@@ -11410,8 +11722,9 @@ const VL={
   num(tokens){ const out=[]; for(let i=0;i<tokens.length;){ const t=tokens[i]; if(/^\d+$/.test(t)){ out.push(+t); i++; continue; } if(t in VL.W||t==='hundred'){ let v=0,cur=0,used=false; while(i<tokens.length&&(tokens[i] in VL.W||tokens[i]==='hundred'||tokens[i]==='and')){ const w=tokens[i]; if(w==='hundred'){ cur=(cur||1)*100; } else if(w!=='and'){ cur+=VL.W[w]; } used=true; i++; } v+=cur; out.push(v); continue; } i++; } return out; },
   parse(text){ const raw=String(text||''), f=VL.fold(raw).replace(/[-–—]/g,' ').replace(/[^a-z0-9\u0600-\u06ff\s]/g,' '), tok=f.split(/\s+/).filter(Boolean), res={heard:raw};
     const g=f.includes('needs review')||f.includes('needs work')||/\b(weak|struggl|poor|not good)\w*/.test(f)?'Needs review':/\b(excellent|great|perfect|amazing|outstanding)\b/.test(f)?'Excellent':/\bgood\b/.test(f)?'Good':null; if(g) res.grade=g;
-    res.kind=/\b(review|revision|revised|revise)\b/.test(f)?'Review':'New';
-    const stop=new Set(['surah','sura','soorah','chapter','verse','verses','ayah','ayat','aya','from','to','through','until','till','and','the','of','a','new','review','good','excellent','great','needs','work','weak','perfect']);
+    res.kind=/\b(review|revision|revised|revise|sabqi|sabki|manzil|manzel)\b/.test(f)?'Review':'New';
+    if(/\b(sabqi|sabki|sabqy)\b/.test(f)) res.type='Sabqi'; else if(/\b(manzil|manzel|manzal)\b/.test(f)) res.type='Manzil'; else if(res.kind==='Review') res.type='Auto';
+    const stop=new Set(['sabqi','sabki','sabqy','manzil','manzel','manzal','sabaq','surah','sura','soorah','chapter','verse','verses','ayah','ayat','aya','from','to','through','until','till','and','the','of','a','new','review','good','excellent','great','needs','work','weak','perfect']);
     // sūrahs (every match, in order); numbers belong to the sūrah before them
     const keys=QS.slice(1).map(q=>({n:q.n,k:VL.surKey(q.name)})), cands=[];
     for(let i=0;i<tok.length;i++) for(let len=1;len<=3&&i+len<=tok.length;len++){ const w=tok.slice(i,i+len); if(w.some(x=>/^\d+$/.test(x)||x in VL.W||stop.has(x)||/[\u0600-\u06ff]/.test(x))) break; const k=VL.surKey(w.join('')); if(k.length<3) continue; let bb={s:0,n:0}; keys.forEach(c=>{ const s=VL.sim(k,c.k); if(s>bb.s) bb={s,n:c.n}; }); if(bb.s>=.72) cands.push({n:bb.n,i,len,s:bb.s}); }
