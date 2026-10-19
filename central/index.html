@@ -1057,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 46 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 46b · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -5589,9 +5589,8 @@ function extractCssRules(prefix){
   return css;
 }
 function printWindow(title, styleCss, bodyHtml){
-  const w=window.open('','_blank');
-  if(!w){ toast('Pop-up blocked — allow pop-ups for this site to print.'); return null; }
-  w.document.write(`<html><head><title>${esc(title)}</title>
+  /* In-app viewer (iframe + Back/Print bar) instead of window.open: on an iPad/iPhone home-screen install a new window is a full-screen page with no Back button. */
+  const html=`<html><head><title>${esc(title)}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     /* Print-safety defaults shared by every report/roster that goes through this
@@ -5606,9 +5605,21 @@ function printWindow(title, styleCss, bodyHtml){
     h1,h2,h3{page-break-after:avoid;break-after:avoid}
     @page{margin:0.6in}
     ${styleCss||''}</style>
-    </head><body>${bodyHtml}<script>window.print()<\/script></body></html>`);
-  w.document.close();
-  return w;
+    </head><body>${bodyHtml}</body></html>`;
+  let host=document.getElementById('pw-root'); if(host) host.remove();
+  host=document.createElement('div'); host.id='pw-root';
+  if(!document.getElementById('pw-root-style')){ const st=document.createElement('style'); st.id='pw-root-style';
+    st.textContent='#pw-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pw-root .pw-bar{display:flex;gap:8px;align-items:center;flex:none;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pw-root .pw-t{flex:1;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pw-root button{padding:10px 18px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pw-root .pw-go{background:#b8872a;color:#20261f}#pw-root .pw-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pw-root iframe{flex:1;width:100%;border:0;background:#fff}@media print{body>*:not(#pw-root){display:none!important}}';
+    document.head.appendChild(st); }
+  host.innerHTML='<div class="pw-bar"><button type="button" class="pw-x">\u2190 Back</button><span class="pw-t"></span><button type="button" class="pw-go">\uD83D\uDDA8\uFE0F Print / Save PDF</button></div><iframe title="Preview"></iframe>';
+  host.querySelector('.pw-t').textContent=title||'Preview';
+  document.body.appendChild(host);
+  const fr=host.querySelector('iframe'); fr.srcdoc=html;
+  const close=()=>{ host.remove(); document.removeEventListener('keydown',esc_); };
+  const esc_=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esc_);
+  host.querySelector('.pw-x').onclick=close;
+  host.querySelector('.pw-go').onclick=()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ window.print(); } };
+  return host;
 }
 function kbMissingReport(){
   const d=DB.data;
