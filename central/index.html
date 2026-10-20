@@ -1057,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 46b · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 46c · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -9787,11 +9787,17 @@ const Progress = {
       d.attendance[dateKey]=d.attendance[dateKey]||{};
       const nv=ptNext(PT_ATT_CYCLE, d.attendance[dateKey][sid]);
       if(nv===undefined) delete d.attendance[dateKey][sid]; else d.attendance[dateKey][sid]=nv;
+      // Absent / excused-absent: Qur'an, homework and class work become Excused (blanks only).
+      // Changing away from absent undoes only what was auto-filled.
+      d.progress[dateKey]=d.progress[dateKey]||{}; const p=d.progress[dateKey][sid];
+      if(nv==='A'||nv==='E'){ const q=d.progress[dateKey][sid]=p||{quran:null,hw:null,cw:null}; q.auto=q.auto||[];
+        ['quran','cw'].concat(PT_isSat(dateKey)?['hw']:[]).forEach(f=>{ if(!q[f]){ q[f]='EXC'; q.auto.push(f); } }); }
+      else if(p&&p.auto){ p.auto.forEach(f=>{ if(p[f]==='EXC') p[f]=null; }); delete p.auto; }
     } else {
       d.progress[dateKey]=d.progress[dateKey]||{};
       d.progress[dateKey][sid]=d.progress[dateKey][sid]||{quran:null,hw:null,cw:null};
       const cycle = field==='quran'?PT_Q_CYCLE:field==='hw'?PT_HW_CYCLE:PT_CW_CYCLE;
-      d.progress[dateKey][sid][field]=ptNext(cycle, d.progress[dateKey][sid][field]);
+      d.progress[dateKey][sid][field]=ptNext(cycle, d.progress[dateKey][sid][field]); { const q=d.progress[dateKey][sid]; if(q.auto) q.auto=q.auto.filter(f=>f!==field); }
     }
     DB.save();
   },
