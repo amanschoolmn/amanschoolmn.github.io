@@ -1057,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 46c · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 47 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -8968,74 +8968,157 @@ function ptPillColor(kind, val){
   if(val==='EXC') return '#33607e';
   return '#9a9488';
 }
-function ptPrintDayCell(e, closed){
-  if(closed) return `<div class="closedcell">Closed</div>`;
-  return `<div class="daywrap">
-    <span class="pchip" style="color:${ptPillColor('att',e.att)};border-color:${ptPillColor('att',e.att)}">${PT_ATT_LABEL[e.att]||'—'}</span>
-    <span class="pchip" style="color:${ptPillColor('quran',e.quran)};border-color:${ptPillColor('quran',e.quran)}">${e.quran?ptRes(e.quran):'—'}</span>
-    <span class="pchip" style="color:${ptPillColor('hw',e.hw)};border-color:${ptPillColor('hw',e.hw)}">${e.hw?ptRes(e.hw):'—'}</span>
-    <span class="pchip" style="color:${ptPillColor('cw',e.cw)};border-color:${ptPillColor('cw',e.cw)}">${e.cw?ptRes(e.cw):'—'}</span>
-  </div>`;
+/* ---------- Weekend sheets: group sheet + per-family cards (shared helpers) ---------- */
+const PT_LV_COLOR = {'Level 1':{c:'#23728f',bg:'#e3f0f5'},'Level 2':{c:'#a8741a',bg:'#f8eed6'},'Level 3':{c:'#1f6b43',bg:'#e2f0e7'}};
+function ptWkChip(kind,val,hasDay){
+  if(!val) return `<span class="ch ch-none">${hasDay===false?'':'–'}</span>`;
+  const word = kind==='att' ? ({P:'Present',L:'Late',A:'Absent',E:'Excused'}[val]||val) : (PT_RES[val]||val);
+  const cls = kind==='att' ? ({P:'ok',L:'late',A:'bad',E:'info'}[val]) : ({PASS:'ok',DONE:'ok',FAIL:'bad',INC:'bad',EXC:'info'}[val]);
+  return `<span class="ch ch-${cls}">${esc(word)}</span>`;
 }
-function ptPrintStudentRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, pctHidden, pctRevealed){
-  const eSat = ptEntry(satDate, s.id), eSun = ptEntry(sunDate, s.id);
-  const st = ptStats(s.id, monthKeys);
-  const age = s.dob ? Math.floor(ptAgeYears(s)) : null;
-  const showPct = !pctHidden || (pctRevealed && pctRevealed.has(s.id));
-  return `<tr>
-    <td><div class="who">
-      <div class="photo">${s.photo?`<img src="${s.photo}" alt="">`:esc(initials(s.name))}</div>
-      <div class="name" dir="rtl">${esc(s.name)}${age!=null?`<span class="age">${age}y</span>`:''}</div>
-    </div></td>
-    <td>${ptPrintDayCell(eSat, satClosed)}</td>
-    <td>${ptPrintDayCell(eSun, sunClosed)}</td>
-    <td class="pct">${showPct ? `<div>Qur\u2019an ${st.quranPct!=null?st.quranPct.toFixed(0)+'%':'—'}</div><div>HW ${st.hwPct!=null?st.hwPct.toFixed(0)+'%':'—'}</div><div>CW ${st.cwPct!=null?st.cwPct.toFixed(0)+'%':'—'}</div>` : `<span class="hiddenpct">Hidden</span>`}</td>
-  </tr>`;
+function ptWkCss(){ return `
+  .sheet{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fff;color:#20261f;padding:22px 24px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet *{box-sizing:border-box}
+  .hd{display:flex;align-items:center;gap:16px;background:#123626;color:#f4ead6;border-radius:14px;padding:16px 20px;position:relative;overflow:hidden}
+  .hd::after{content:'';position:absolute;inset:6px;border:1px solid rgba(232,200,130,.35);border-radius:10px;pointer-events:none}
+  .hd img{width:64px;height:64px;border-radius:50%;flex:none}
+  .hd .t1{font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:700;line-height:1.15}
+  .hd .t2{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#e8c882;margin-top:3px}
+  .hd .ttl{margin-left:auto;text-align:right}.hd .ttl b{display:block;font-size:15px}.hd .ttl span{font-size:12px;color:#e8d9b8}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+  .stat{border:1px solid #e2d7bd;border-radius:10px;padding:8px 10px;background:#fbf7ec}.stat b{display:block;font-size:19px;color:#1a4a35}.stat span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#686e5f}
+  .shine{border:1px solid #ecd9a4;background:#fbf3df;border-radius:10px;padding:8px 12px;margin-bottom:10px}.shine h4{margin:0 0 6px;font-size:12px;color:#7a5200}
+  .shine .row{display:flex;flex-wrap:wrap;gap:6px 14px}.shine .p{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+  .ph{width:26px;height:26px;border-radius:50%;overflow:hidden;flex:none;background:#e7cf9b;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1a4a35}.ph img{width:100%;height:100%;object-fit:cover}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10.5px;color:#4b5246;margin:6px 0 4px;align-items:center}
+  .ch{display:inline-block;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:700;white-space:nowrap;border:1px solid transparent}
+  .ch-ok{background:#e4f2e9;color:#1f5a36;border-color:#b9d9c3}.ch-late{background:#fbf0d5;color:#7a5200;border-color:#ecd9a4}.ch-bad{background:#fbe6e2;color:#9b2f22;border-color:#efbdb5}.ch-info{background:#e3edf5;color:#2f5f82;border-color:#b9cfe0}.ch-none{color:#b3ad9f;font-weight:400;padding:2px 8px}
+  .lv{margin-top:16px;break-inside:auto}
+  .lvh{display:flex;align-items:center;gap:10px;border-radius:10px 10px 0 0;padding:8px 12px;border-left:6px solid;font-weight:700;font-size:14.5px}
+  .lvh .sub{font-weight:400;font-size:11px;color:#4b5246}.lvh .cnt{margin-left:auto;font-size:11px;font-weight:600}
+  table.wk{width:100%;border-collapse:collapse;font-size:11.5px}
+  table.wk th{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:#5a6153;padding:5px 3px;border-bottom:1px solid #d3c6a6;text-align:center;font-weight:700}
+  table.wk th.day{font-size:11px;color:#fff;letter-spacing:.06em;border-bottom:0;padding:5px}
+  table.wk th.l{text-align:left}
+  table.wk td{padding:6px 3px;border-bottom:1px solid #ece3cc;text-align:center;vertical-align:middle}
+  table.wk tr:nth-child(even) td{background:#fcfaf3}
+  table.wk td.sep,table.wk th.sep{border-left:2px solid #e2d7bd}
+  .who{display:flex;align-items:center;gap:8px;min-width:150px;text-align:left}.who .ph{width:32px;height:32px;font-size:10px}
+  .nm{font-weight:700;font-size:12.5px;direction:rtl;unicode-bidi:plaintext}.age{font-size:10px;font-weight:400;color:#686e5f;margin-left:5px;direction:ltr;display:inline-block}
+  .closed{color:#a13a2e;font-style:italic;font-size:11px}
+  .mo{font-size:10.5px;line-height:1.45;text-align:left;min-width:92px}.mo b{color:#1a4a35}
+  tr.away td{opacity:.8}
+  .foot{margin-top:16px;border-top:2px solid #1a4a35;padding-top:8px;display:flex;justify-content:space-between;gap:12px;font-size:10.5px;color:#4b5246}
+  .foot .ar{font-size:15px;color:#1a4a35;font-family:'Amiri','Geeza Pro','Traditional Arabic',serif}
+  .fam{border:1px solid #d9ccaa;border-radius:16px;overflow:hidden;margin:0 0 16px;break-inside:avoid;background:#fff}
+  .fam.pg{break-after:page;page-break-after:always;margin-bottom:0}
+  .fh{display:flex;align-items:center;gap:12px;background:#123626;color:#f4ead6;padding:12px 16px}.fh img{width:44px;height:44px;border-radius:50%}
+  .fh .fn{font-family:Georgia,serif;font-size:18px;font-weight:700}.fh .fd{font-size:10.5px;color:#e8d9b8}.fh .r{margin-left:auto;text-align:right;font-size:11px;color:#e8c882;letter-spacing:.08em;text-transform:uppercase}
+  .kid{padding:12px 16px;border-top:1px solid #ece3cc;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+  .kid:first-of-type{border-top:0}
+  .kid .ph{width:48px;height:48px;font-size:14px;grid-row:span 3}
+  .kid .kn{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;direction:rtl;unicode-bidi:plaintext;justify-content:flex-end}
+  .lp{display:inline-block;font-size:10px;font-weight:700;border-radius:99px;padding:2px 9px;direction:ltr}
+  .story{font-size:13px;line-height:1.5;color:#2b322a;border-left:4px solid;padding:6px 10px;border-radius:0 8px 8px 0}
+  .story.good{border-color:#3d9a63;background:#eef7f1}.story.warn{border-color:#d19a2b;background:#fbf4e1}.story.bad{border-color:#c1574a;background:#fbeeeb}.story.info{border-color:#5b8db3;background:#eef4f9}.story.none{border-color:#c9c2b0;background:#f7f4ec}
+  table.mini{border-collapse:collapse;font-size:10.5px}.mini th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#686e5f;padding:2px 6px;text-align:center;font-weight:700}.mini td{padding:3px 4px;text-align:center}.mini td.d{font-weight:700;text-align:left;color:#4b5246;font-size:10.5px}
+  .mline{font-size:11px;color:#4b5246}
+  .ff{padding:10px 16px;background:#fbf7ec;border-top:1px solid #ece3cc;display:flex;justify-content:space-between;gap:10px;font-size:10.5px;color:#4b5246}.ff .ar{font-size:14px;color:#1a4a35;font-family:'Amiri','Geeza Pro',serif}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.hd .t1{font-size:17px}table.wk{font-size:10.5px}}
+  @media print{.sheet{padding:0}.lv{break-inside:auto}table.wk tr{break-inside:avoid;page-break-inside:avoid}table.wk thead{display:table-header-group}.fam{break-inside:avoid}@page{margin:.4in}}`; }
+function ptWkMonthLine(s, monthKeys, showPct){
+  const st=ptStats(s.id, monthKeys), parts=[];
+  if(st.total>0) parts.push(`<b>Here ${st.present} of ${st.total}</b> day${st.total>1?'s':''}`);
+  if(st.streak>=2) parts.push(`🔥 ${st.streak} Qur’an passes in a row`);
+  if(showPct){ const p=[]; if(st.quranPct!=null) p.push('Qur’an '+Math.round(st.quranPct)+'%'); if(st.hwPct!=null) p.push('HW '+Math.round(st.hwPct)+'%'); if(st.cwPct!=null) p.push('CW '+Math.round(st.cwPct)+'%'); if(p.length) parts.push(p.join(' · ')); }
+  return parts.length? parts.join('<br>') : '<span style="color:#9a9488">No sessions yet</span>';
+}
+function ptPhotoHTML(s){ return `<div class="ph">${s.photo?`<img src="${s.photo}" alt="">`:esc(initials(s.name))}</div>`; }
+function ptWkFooter(){ return `<div class="foot"><div>Questions? Contact Br. Abdallah bin Abdirahman — (612) 444-2609<br>Prepared ${esc(fmtDate(today()))}</div><div class="ar" dir="rtl">جَزَاكُمُ اللّهُ خَيْرًا</div></div>`; }
+function ptWkRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, showPct){
+  const eS=ptEntry(satDate,s.id), eU=ptEntry(sunDate,s.id), age=s.dob&&isFinite(ptAgeYears(s))?Math.floor(ptAgeYears(s)):null;
+  const away = (eS.att==='A'||eS.att==='E')&&(eU.att==='A'||eU.att==='E');
+  const cells=(e,closed,sat)=> closed? `<td colspan="4" class="closed sep">Closed</td>` :
+    `<td class="sep">${ptWkChip('att',e.att)}</td><td>${ptWkChip('quran',e.quran)}</td><td>${sat?ptWkChip('hw',e.hw):(e.hw?ptWkChip('hw',e.hw):'<span class="ch ch-none">·</span>')}</td><td>${ptWkChip('cw',e.cw)}</td>`;
+  return `<tr class="${away?'away':''}"><td><div class="who">${ptPhotoHTML(s)}<div class="nm">${esc(s.name)}${age!=null?`<span class="age">${age}y</span>`:''}</div></div></td>${cells(eS,satClosed,true)}${cells(eU,sunClosed,false)}<td class="sep"><div class="mo">${ptWkMonthLine(s,monthKeys,showPct)}</div></td></tr>`;
 }
 function ptWeekendPrintHTML(year, month, satDate, sunDate, levelGroups, pctHidden, pctRevealed){
-  const monthKeys = ptMonthKeys(year, month);
-  const satClosed = closureFor(satDate), sunClosed = closureFor(sunDate);
-  const sections = LEVELS.map(L=>{
-    const g = levelGroups[L]||[];
-    if(!g.length) return '';
-    return `<h2>${esc(L)} <span class="sub">${esc(LEVEL_SUB[L]||'')} · ${g.length}</span></h2>
-    <table>
-      <thead><tr><th>Student</th><th>Sat · ${fmtDate(satDate)}</th><th>Sun · ${fmtDate(sunDate)}</th><th>This month</th></tr></thead>
-      <tbody>${g.map(s=>ptPrintStudentRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, pctHidden, pctRevealed)).join('')}</tbody>
-    </table>`;
-  }).join('');
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Weekend Progress \u2014 ${fmtDate(satDate)}\u2013${fmtDate(sunDate)}</title>
-<style>
-  *{box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fff;color:#20261f;margin:0;padding:28px}
-  .toolbar-actions{position:sticky;top:0;background:#123626;padding:10px 16px;display:flex;gap:10px;justify-content:center;margin:-28px -28px 20px;z-index:100}
-  .toolbar-actions button{padding:9px 18px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:13.5px;background:#b8872a;color:#20261f}
-  @media print{.toolbar-actions{display:none}body{padding:0}}
-  h1{font-size:19px;color:#1a4a35;margin:0 0 2px}
-  .subhd{font-size:12px;color:#686e5f;margin-bottom:6px}
-  h2{font-size:14.5px;color:#1a4a35;border-bottom:2px solid #1a4a35;padding-bottom:5px;margin:22px 0 10px}
-  h2 .sub{font-size:11px;font-weight:400;color:#686e5f}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px}
-  th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#686e5f;padding:6px 8px;border-bottom:1px solid #d3c6a6}
-  td{padding:8px;border-bottom:1px solid #e2d7bd;vertical-align:middle}
-  .who{display:flex;align-items:center;gap:8px;min-width:140px}
-  .photo{width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#e7cf9b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a4a35}
-  .photo img{width:100%;height:100%;object-fit:cover}
-  .name{direction:rtl;font-weight:600}
-  .age{direction:ltr;display:inline-block;margin-left:6px;font-size:10px;font-weight:400;color:#686e5f}
-  .daywrap{display:flex;gap:4px;flex-wrap:wrap}
-  .pchip{display:inline-block;border:1px solid;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
-  .closedcell{color:#a13a2e;font-style:italic;font-size:11.5px}
-  .pct{font-size:10.5px;color:#3a4139;line-height:1.5}
-  .hiddenpct{font-style:italic;color:#9a9488}
-  @media print{tr{page-break-inside:avoid}}
-</style></head>
-<body>
-<div class="toolbar-actions"><button onclick="window.print()">\ud83d\udda8\ufe0f Print / Save as PDF</button></div>
-<h1>Al-Madrasatu An-Nuriyyah \u2014 Weekend Progress</h1>
-<div class="subhd">${fmtDate(satDate)} \u2013 ${fmtDate(sunDate)} \u00b7 Attendance (Present / Late / Absent / Excused absence) \u00b7 Qur\u2019an, homework and classwork (Passed or Done / Failed or Incomplete / Excused)${pctHidden?' \u00b7 percentages hidden except where individually revealed':''}</div>
-${sections || '<p style="font-size:13px;color:#686e5f">No students to show.</p>'}
-</body></html>`;
+  const monthKeys=ptMonthKeys(year,month), satClosed=closureFor(satDate), sunClosed=closureFor(sunDate);
+  const all=LEVELS.flatMap(L=>levelGroups[L]||[]);
+  const mark=(f)=>all.reduce((a,s)=>a+[satDate,sunDate].filter(d=>f(ptEntry(d,s.id))).length,0);
+  const hereN=all.filter(s=>[satDate,sunDate].some(d=>['P','L'].includes(ptEntry(d,s.id).att))).length;
+  const qN=mark(e=>e.quran==='PASS'), hN=mark(e=>e.hw==='DONE'), cN=mark(e=>e.cw==='DONE');
+  const shine=all.filter(s=>{ const es=[satDate,sunDate].map(d=>ptEntry(d,s.id)); const marks=es.filter(e=>e.att); return es.some(e=>e.att==='P'||e.att==='L') && !es.some(e=>e.quran==='FAIL'||e.hw==='INC'||e.cw==='INC'||e.att==='A') && es.some(e=>e.quran==='PASS') && es.some(e=>e.cw==='DONE'); });
+  const nmFirst=s=>String(s.preferredName||s.name).split(/\s+/)[0];
+  const dayTh=(label,date,closed,color)=>`<th class="day" colspan="4" style="background:${color}">${label} · ${esc(fmtDate(date))}${closed?' · Closed':''}</th>`;
+  const sub=`<th class="sep">✅ Attendance</th><th>📖 Qur’an</th><th>✍️ Homework</th><th>📝 Class work</th>`;
+  const sections=LEVELS.map(L=>{ const g=levelGroups[L]||[]; if(!g.length) return ''; const c=PT_LV_COLOR[L]||{c:'#1a4a35',bg:'#eee'};
+    const here=g.filter(s=>[satDate,sunDate].some(d=>['P','L'].includes(ptEntry(d,s.id).att))).length;
+    return `<div class="lv"><div class="lvh" style="background:${c.bg};border-color:${c.c};color:${c.c}">${esc(L)} <span class="sub">${esc(LEVEL_SUB[L]||'')}</span><span class="cnt">${here} of ${g.length} here this weekend</span></div>
+    <table class="wk"><thead><tr><th class="l" rowspan="2" style="vertical-align:bottom">Student</th>${dayTh('Saturday',satDate,satClosed,c.c)}${dayTh('Sunday',sunDate,sunClosed,c.c)}<th class="day sep" style="background:${c.c}">This month</th></tr>
+    <tr>${satClosed?'<th class="sep" colspan="4"></th>':sub}${sunClosed?'<th class="sep" colspan="4"></th>':sub}<th class="sep">So far</th></tr></thead>
+    <tbody>${g.map(s=>ptWkRow(s,satDate,sunDate,satClosed,sunClosed,monthKeys,!pctHidden||(pctRevealed&&pctRevealed.has(s.id)))).join('')}</tbody></table></div>`; }).join('');
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Weekend Progress — ${fmtDate(satDate)}–${fmtDate(sunDate)}</title><style>${ptWkCss()}
+  body{margin:0}.toolbar-actions{display:none}</style></head><body><div class="sheet">
+  <div class="hd"><img src="${PR_SEAL}" alt=""><div><div class="t1">Al-Madrasatu An-Nuriyyah</div><div class="t2">Youth Educated · Family Cultivated · World Illuminated</div></div><div class="ttl"><b>Weekend Progress</b><span>${esc(fmtDate(satDate))} – ${esc(fmtDate(sunDate))}</span></div></div>
+  <div class="stats"><div class="stat"><b>${hereN} of ${all.length}</b><span>Students here</span></div><div class="stat"><b>${qN}</b><span>Qur’an passed</span></div><div class="stat"><b>${hN}</b><span>Homework done</span></div><div class="stat"><b>${cN}</b><span>Class work done</span></div></div>
+  ${shine.length?`<div class="shine"><h4>⭐ Shining this weekend — present, Qur’an passed, class work done</h4><div class="row">${shine.slice(0,16).map(s=>`<span class="p">${ptPhotoHTML(s)}<span dir="auto">${esc(nmFirst(s))}</span></span>`).join('')}${shine.length>16?`<span class="p">+${shine.length-16} more</span>`:''}</div></div>`:''}
+  <div class="legend"><b>Key:</b> <span class="ch ch-ok">Present / Passed / Done</span> <span class="ch ch-late">Late</span> <span class="ch ch-bad">Absent / Failed / Incomplete</span> <span class="ch ch-info">Excused</span> <span class="ch ch-none">– not marked</span></div>
+  ${sections||'<p>No students to show.</p>'}
+  ${ptWkFooter()}</div></body></html>`;
+}
+/* ---- plain-language story for one child ---- */
+function ptStory(s, satDate, sunDate, satClosed, sunClosed, monthKeys){
+  const nm='\u2068'+String(s.preferredName||s.name).split(/\s+/)[0]+'\u2069', she=s.gender==='Sister', P=she?'She':'He', p=she?'her':'his';
+  const days=[['Saturday',satDate,satClosed],['Sunday',sunDate,sunClosed]].filter(d=>!d[2]).map(([lab,date])=>({lab,e:ptEntry(date,s.id)}));
+  const withData=days.filter(d=>d.e.att||d.e.quran||d.e.hw||d.e.cw);
+  if(!withData.length) return {tone:'none', text:'Nothing has been recorded for '+nm+' this weekend yet.'};
+  const join=a=>a.length<=1?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+  const here=days.filter(d=>d.e.att==='P'||d.e.att==='L'), lateD=days.filter(d=>d.e.att==='L'), absent=days.filter(d=>d.e.att==='A'), exc=days.filter(d=>d.e.att==='E');
+  let out=[], tone='good';
+  if(!here.length){ if(exc.length&&!absent.length) return {tone:'info', text:nm+' had an excused absence this weekend — nothing counts against '+(she?'her':'him')+', and we’ll pick up where '+(she?'she':'he')+' left off next class.'};
+    return {tone:'bad', text:nm+' was absent this weekend — we missed '+(she?'her':'him')+'. Please check in so '+(she?'she':'he')+' can catch up before next class.'}; }
+  const hereBoth=here.length===days.length;
+  out.push(hereBoth? nm+' was here both days' : nm+' was here on '+join(here.map(d=>d.lab))); 
+  if(!hereBoth && absent.length) tone='warn';
+  let s1=out[0]+(lateD.length?' (late on '+join(lateD.map(d=>d.lab))+')':'')+'.';
+  const q=days.filter(d=>d.e.quran), qp=q.filter(d=>d.e.quran==='PASS'), qf=q.filter(d=>d.e.quran==='FAIL');
+  const hw=days.filter(d=>d.e.hw), hd=hw.filter(d=>d.e.hw==='DONE'), hi=hw.filter(d=>d.e.hw==='INC');
+  const cw=days.filter(d=>d.e.cw), cd=cw.filter(d=>d.e.cw==='DONE'), ci=cw.filter(d=>d.e.cw==='INC');
+  const good=[], work=[];
+  if(qp.length) good.push('passed '+p+' Qur’an'+(qp.length===2?' both days':' on '+qp[0].lab));
+  if(hd.length) good.push('finished '+p+' homework'); if(cd.length&&!ci.length) good.push('completed '+p+' class work');
+  if(qf.length) work.push('Qur’an recitation needs more practice'+(qf.length===2?'':' ('+qf[0].lab+')')); if(hi.length) work.push('homework isn’t finished yet'); if(ci.length) work.push('class work isn’t finished yet');
+  let t=s1; if(good.length) t+=' '+P+' '+join(good)+'.'; if(work.length){ t+=' To work on: '+join(work)+'.'; tone=(qf.length||hi.length)?'warn':tone; }
+  const st=ptStats(s.id, monthKeys); if(st.streak>=3) t+=' 🔥 That’s '+st.streak+' Qur’an passes in a row.';
+  if(tone==='good'&&good.length>=2&&!work.length) t='⭐ A great weekend! '+t;
+  return {tone, text:t};
+}
+function ptFamilyCardsHTML(year, month, satDate, sunDate, students, onePerPage){
+  const monthKeys=ptMonthKeys(year,month), satClosed=closureFor(satDate), sunClosed=closureFor(sunDate), map={};
+  students.forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (map[k]=map[k]||{key:k,label:famKey(s)||String(s.preferredName||s.name).split(/\s+/)[0],members:[]}).members.push(s); });
+  const fams=Object.values(map).sort((a,b)=>String(a.label).localeCompare(String(b.label),'ar'));
+  const dayLab=(l,d,c)=>`${l} · ${esc(fmtDate(d))}${c?' (closed)':''}`;
+  const card=f=>{ f.members.sort((a,b)=>LEVELS.indexOf(b.level)-LEVELS.indexOf(a.level)||String(a.name).localeCompare(String(b.name),'ar'));
+    const kids=f.members.map(s=>{ const lc=PT_LV_COLOR[s.level]||{c:'#1a4a35',bg:'#eee'}, e1=ptEntry(satDate,s.id), e2=ptEntry(sunDate,s.id), story=ptStory(s,satDate,sunDate,satClosed,sunClosed,monthKeys);
+      const row=(lab,e,closed,sat)=> closed?`<tr><td class="d">${lab}</td><td colspan="4" class="closed">Closed</td></tr>`:`<tr><td class="d">${lab}</td><td>${ptWkChip('att',e.att)}</td><td>${ptWkChip('quran',e.quran)}</td><td>${sat||e.hw?ptWkChip('hw',e.hw):'<span class="ch ch-none">·</span>'}</td><td>${ptWkChip('cw',e.cw)}</td></tr>`;
+      return `<div class="kid">${ptPhotoHTML(s)}<div class="kn"><span>${esc(s.name)}</span><span class="lp" style="background:${lc.bg};color:${lc.c}">${esc(s.level)} · ${esc(LEVEL_SUB[s.level]||'')}</span></div>
+        <div class="story ${story.tone}">${esc(story.text)}</div>
+        <div><table class="mini"><thead><tr><th></th><th>✅ Attendance</th><th>📖 Qur’an</th><th>✍️ Homework</th><th>📝 Class work</th></tr></thead><tbody>${row('Sat',e1,satClosed,true)}${row('Sun',e2,sunClosed,false)}</tbody></table><div class="mline" style="margin-top:4px">${ptWkMonthLine(s,monthKeys,false).replace(/<br>/g,' &nbsp;·&nbsp; ')}</div></div></div>`; }).join('');
+    return `<div class="fam ${onePerPage?'pg':''}"><div class="fh"><img src="${PR_SEAL}" alt=""><div><div class="fn"><bdi>${esc(f.label)}</bdi> family</div><div class="fd">Weekend progress · ${esc(fmtDate(satDate))} – ${esc(fmtDate(sunDate))}</div></div><div class="r">Al-Madrasatu<br>An-Nuriyyah</div></div>${kids}<div class="ff"><div>Questions? Contact Br. Abdallah bin Abdirahman — (612) 444-2609</div><div class="ar" dir="rtl">جَزَاكُمُ اللّهُ خَيْرًا</div></div></div>`; };
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Family cards — ${fmtDate(satDate)}</title><style>${ptWkCss()}.toolbar-actions{display:none}</style></head><body><div class="sheet" style="max-width:760px;margin:0 auto">${fams.map(card).join('')||'<p>No families selected.</p>'}</div></body></html>`;
+}
+function ptFamilyCardsModal(year, month, satDate, sunDate, students){
+  const map={}; students.forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (map[k]=map[k]||{key:k,label:famKey(s)||String(s.preferredName||s.name),members:[]}).members.push(s); });
+  const fams=Object.values(map).sort((a,b)=>String(a.label).localeCompare(String(b.label),'ar'));
+  const o=overlay(`<div class="modal" style="max-width:520px"><h3>👨‍👩‍👧 Family progress cards</h3><p class="td-hint" style="margin:0 0 10px">One card per family with siblings together — a plain-language line for each child, plus the labeled grid. Pick who to include.</p>
+    <label class="pr-item" style="margin-bottom:8px"><input type="checkbox" id="fcAll" checked><span><b>All families (${fams.length})</b></span></label>
+    <div style="max-height:34vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px">${fams.map((f,i)=>`<label class="pr-item" style="padding:6px 10px"><input type="checkbox" class="fcF" data-i="${i}" checked><span><bdi>${esc(f.label)}</bdi> <small style="color:var(--ink3)">${f.members.length}</small></span></label>`).join('')}</div>
+    <label class="pr-item" style="margin-top:10px"><input type="checkbox" id="fcOne" checked><span>One family per page <small style="color:var(--ink3)">(best for sending each family its own card)</small></span></label>
+    <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" id="fcGo">Open cards</button></div></div>`, true);
+  $('#fcAll',o).onchange=e=>$$('.fcF',o).forEach(c=>c.checked=e.target.checked);
+  $('#fcGo',o).onclick=()=>{ const ch=$$('.fcF',o).filter(c=>c.checked).map(c=>fams[+c.dataset.i]); if(!ch.length){ toast('Pick at least one family'); return; }
+    o.remove(); printHTMLDocument(ptFamilyCardsHTML(year,month,satDate,sunDate,ch.flatMap(f=>f.members),$('#fcOne',o).checked)); };
 }
 
 /* ================= STUDENT OF THE MONTH HUB =================
@@ -9606,7 +9689,7 @@ const Progress = {
        <button class="btn btn-o btn-sm" id="ptClosures">📅 Manage closures</button>
        <button class="btn ${this._pctHidden?'btn-p':'btn-o'} btn-sm" id="ptPctHide">${this._pctHidden?PT_ICO_EYE+' Percentages hidden':PT_ICO_EYE_OFF+' Hide percentages for screenshot'}</button>
        <button class="btn ${this._weekendView?'btn-p':'btn-o'} btn-sm" id="ptWeekendView">${this._weekendView?'📅 Single day':'🗓️ Show Sat + Sun'}</button>
-       ${wk?`<button class="btn btn-p btn-sm" id="ptWeekendPrint">🖨️ Print / Save as PDF</button>`:''}
+       ${wk?`<button class="btn btn-p btn-sm" id="ptWeekendPrint">🖨️ Group sheet (PDF)</button><button class="btn btn-o btn-sm" id="ptFamCards">👨‍👩‍👧 Family cards</button>`:''}
      </div>
      ${this._pctHidden?`<p class="page-sub" style="margin-top:-6px">Percentages are hidden class-wide. Tap Reveal on one student at a time before you screenshot, then Hide it again for the next.</p>`:''}
      ${wk?`<p class="page-sub" style="margin-top:-6px">Showing the weekend of ${fmtDate(wk.sat)} – ${fmtDate(wk.sun)} — both days on one card, good for a single screenshot.</p>`:''}
@@ -9716,6 +9799,7 @@ const Progress = {
     $$('[data-ptsort]',v).forEach(b=>b.onclick=()=>{ this._ptSort=b.dataset.ptsort; this._repaint(v); });
     const wPrint = $('#ptWeekendPrint',v);
     if(wPrint) wPrint.onclick=()=>printHTMLDocument(ptWeekendPrintHTML(year, month, wk.sat, wk.sun, levelGroups, this._pctHidden, this._pctRevealed));
+    const fcB=$('#ptFamCards',v); if(fcB) fcB.onclick=()=>ptFamilyCardsModal(year, month, wk.sat, wk.sun, LEVELS.flatMap(L=>levelGroups[L]||[]));
     $$('[data-ptpct]',v).forEach(b=>b.onclick=()=>{
       const sid=b.dataset.ptpct;
       if(this._pctRevealed.has(sid)) this._pctRevealed.delete(sid); else this._pctRevealed.add(sid);
