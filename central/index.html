@@ -1057,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 48 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 48b · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -5589,7 +5589,7 @@ function extractCssRules(prefix){
   return css;
 }
 function printWindow(title, styleCss, bodyHtml){
-  /* In-app viewer (iframe + Back/Print bar) instead of window.open: on an iPad/iPhone home-screen install a new window is a full-screen page with no Back button. */
+  /* In-app viewer (Back + Print). Printing goes through the page itself so iPad/iPhone home-screen installs print the document, not the app. */
   const html=`<html><head><title>${esc(title)}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
@@ -5606,20 +5606,7 @@ function printWindow(title, styleCss, bodyHtml){
     @page{margin:0.6in}
     ${styleCss||''}</style>
     </head><body>${bodyHtml}</body></html>`;
-  let host=document.getElementById('pw-root'); if(host) host.remove();
-  host=document.createElement('div'); host.id='pw-root';
-  if(!document.getElementById('pw-root-style')){ const st=document.createElement('style'); st.id='pw-root-style';
-    st.textContent='#pw-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pw-root .pw-bar{display:flex;gap:8px;align-items:center;flex:none;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pw-root .pw-t{flex:1;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pw-root button{padding:10px 18px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pw-root .pw-go{background:#b8872a;color:#20261f}#pw-root .pw-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pw-root iframe{flex:1;width:100%;border:0;background:#fff}@media print{body>*:not(#pw-root){display:none!important}}';
-    document.head.appendChild(st); }
-  host.innerHTML='<div class="pw-bar"><button type="button" class="pw-x">\u2190 Back</button><span class="pw-t"></span><button type="button" class="pw-go">\uD83D\uDDA8\uFE0F Print / Save PDF</button></div><iframe title="Preview"></iframe>';
-  host.querySelector('.pw-t').textContent=title||'Preview';
-  document.body.appendChild(host);
-  const fr=host.querySelector('iframe'); fr.srcdoc=html;
-  const close=()=>{ host.remove(); document.removeEventListener('keydown',esc_); };
-  const esc_=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esc_);
-  host.querySelector('.pw-x').onclick=close;
-  host.querySelector('.pw-go').onclick=()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ window.print(); } };
-  return host;
+  return ptViewer(title||'Preview', html, 'doc');
 }
 function kbMissingReport(){
   const d=DB.data;
@@ -9152,25 +9139,38 @@ async function ptDeliverImages(blobs, names, title){
   const o=overlay(`<div class="modal" style="max-width:640px"><h3>🖼️ ${blobs.length} image${blobs.length>1?'s':''} ready</h3><p class="td-hint">Press and hold an image, then choose <b>Save Image</b> (or tap Download). Then post it in WhatsApp.</p>
     <div style="display:grid;gap:12px;max-height:60vh;overflow:auto">${urls.map((u,i)=>`<div><img src="${u}" style="width:100%;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.2)" alt="${esc(names[i])}"><div style="margin-top:6px"><a class="btn btn-o btn-sm" href="${u}" download="${esc(names[i])}.png" style="text-decoration:none">⬇ Download ${esc(names[i])}</a></div></div>`).join('')}</div><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button></div></div>`, true);
 }
+function ptSplitDoc(html){
+  const d=new DOMParser().parseFromString(html,'text/html');
+  let css=[...d.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  css=css.replace(/@page[^{]*\{[^}]*\}/g,'').replace(/(^|[\s,}{])(html|body)(?=[\s,{.:#\[>+~])/g,'$1.pv-doc');
+  const links=[...d.querySelectorAll('link[rel=stylesheet]')].map(l=>l.outerHTML).join('');
+  return {css,links,body:d.body?d.body.innerHTML:html};
+}
+/* hidden iframe used only to draw images (html2canvas can't see into a shadow root) */
+async function ptWithCaptureDoc(html, fn){
+  const fr=document.createElement('iframe'); fr.style.cssText='position:fixed;left:-20000px;top:0;width:900px;height:1200px;border:0;visibility:hidden'; document.body.appendChild(fr);
+  try{ await new Promise(r=>{ fr.onload=r; fr.srcdoc=html; }); await new Promise(r=>setTimeout(r,250)); return await fn(fr.contentDocument); } finally{ fr.remove(); }
+}
 function ptViewer(title, html, kind){
-  let host=document.getElementById('pv-root'); if(host) host.remove();
+  let host=document.getElementById('pv-root'); if(host) host.remove(); const oldPg=document.getElementById('pv-page-style'); if(oldPg) oldPg.remove();
   host=document.createElement('div'); host.id='pv-root';
   if(!document.getElementById('pv-root-style')){ const st=document.createElement('style'); st.id='pv-root-style';
-    st.textContent='#pv-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pv-root .pv-bar{display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pv-root .pv-t{flex:1;min-width:80px;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pv-root button{padding:10px 16px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pv-root .pv-go{background:#b8872a;color:#20261f}#pv-root .pv-img{background:#f4ead6;color:#123626}#pv-root .pv-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pv-root iframe{flex:1;width:100%;border:0;background:#fff}';
+    st.textContent='#pv-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pv-root .pv-bar{display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pv-root .pv-t{flex:1;min-width:80px;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pv-root button{padding:10px 16px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pv-root .pv-go{background:#b8872a;color:#20261f}#pv-root .pv-img{background:#f4ead6;color:#123626}#pv-root .pv-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pv-root .pv-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff}@media print{html,body{height:auto!important;overflow:visible!important}body>*:not(#pv-root){display:none!important}#pv-root{position:static!important;display:block!important;background:#fff!important}#pv-root .pv-bar{display:none!important}#pv-root .pv-body{overflow:visible!important}}';
     document.head.appendChild(st); }
-  host.innerHTML='<div class="pv-bar"><button type="button" class="pv-x">← Back</button><span class="pv-t"></span><button type="button" class="pv-img">🖼️ Save as images</button><button type="button" class="pv-go">🖨️ Print / PDF</button></div><iframe title="Preview"></iframe>';
+  const pg=document.createElement('style'); pg.id='pv-page-style'; pg.textContent='@page{margin:.4in}'; document.head.appendChild(pg);
+  host.innerHTML='<div class="pv-bar"><button type="button" class="pv-x">← Back</button><span class="pv-t"></span><button type="button" class="pv-img">🖼️ Save as images</button><button type="button" class="pv-go">🖨️ Print / PDF</button></div><div class="pv-body"></div>';
   host.querySelector('.pv-t').textContent=title; document.body.appendChild(host);
-  const fr=host.querySelector('iframe'); fr.srcdoc=html;
-  const close=()=>{ host.remove(); document.removeEventListener('keydown',esc_); }; const esc_=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esc_);
+  const parts=ptSplitDoc(html), root=host.querySelector('.pv-body').attachShadow({mode:'open'});
+  root.innerHTML=`${parts.links}<style>${parts.css}\n.pv-doc{margin:0;background:#fff}</style><div class="pv-doc">${parts.body}</div>`;
+  const close=()=>{ host.remove(); pg.remove(); document.removeEventListener('keydown',esc_); }; const esc_=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esc_);
   host.querySelector('.pv-x').onclick=close;
-  host.querySelector('.pv-go').onclick=()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ window.print(); } };
+  host.querySelector('.pv-go').onclick=()=>window.print();
   const run=async(fn)=>{ try{ toast('Making images…'); await ptLoadH2C(); await fn(); }catch(e){ console.error(e); toast('Could not make images — this needs an internet connection. Print / PDF still works.'); } };
-  const doc=()=>fr.contentDocument;
   const imgBtn=host.querySelector('.pv-img');
-  if(kind==='parent'){ imgBtn.textContent='🖼️ Save as images (per level)'; imgBtn.onclick=()=>run(async()=>{ const d=doc(), head=d.getElementById('shotHead'), foot=d.getElementById('shotFoot'), blobs=[], names=[];
-      const lvs=[...d.querySelectorAll('.lv')]; for(let i=0;i<lvs.length;i++){ blobs.push(await ptShotEl(d,[head,lvs[i],foot],820,'par')); names.push('AMAN-Weekend-Progress-Level-'+(i+1)); } await ptDeliverImages(blobs,names,'Weekend Progress'); }); }
-  else if(kind==='cards'){ imgBtn.textContent='🖼️ Save all cards as images'; imgBtn.onclick=()=>run(async()=>{ const d=doc(), cards=[...d.querySelectorAll('.famwrap')], blobs=[], names=[]; for(const c of cards){ blobs.push(await ptShotEl(d,c.querySelector('.fam'),720)); names.push('AMAN-Family-'+(c.querySelector('.fn bdi')||{}).textContent); } await ptDeliverImages(blobs,names,'Family progress'); });
-    fr.onload=()=>{ const d=doc(); d.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>run(async()=>{ const c=b.closest('.famwrap'); const blob=await ptShotEl(d,c.querySelector('.fam'),720); await ptDeliverImages([blob],['AMAN-Family-'+(c.querySelector('.fn bdi')||{}).textContent],'Weekend progress'); })); }; }
+  if(kind==='parent'){ imgBtn.textContent='🖼️ Save as images (per level)'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(html,async d=>{ const head=d.getElementById('shotHead'), foot=d.getElementById('shotFoot'), blobs=[], names=[];
+      const lvs=[...d.querySelectorAll('.lv')]; for(let i=0;i<lvs.length;i++){ blobs.push(await ptShotEl(d,[head,lvs[i],foot],820,'par')); names.push('AMAN-Weekend-Progress-'+(lvs[i].querySelector('.lvh')?lvs[i].querySelector('.lvh').firstChild.textContent.trim().replace(/\s+/g,'-'):'Level-'+(i+1))); } await ptDeliverImages(blobs,names,'Weekend Progress'); })); }
+  else if(kind==='cards'){ imgBtn.textContent='🖼️ Save all cards as images'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(html,async d=>{ const cards=[...d.querySelectorAll('.famwrap')], blobs=[], names=[]; for(const c of cards){ blobs.push(await ptShotEl(d,c.querySelector('.fam'),720)); names.push('AMAN-Family-'+(c.querySelector('.fn bdi')||{}).textContent); } await ptDeliverImages(blobs,names,'Family progress'); }));
+    root.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>run(()=>ptWithCaptureDoc(html,async d=>{ const c=d.querySelectorAll('.famwrap')[+b.dataset.share]; const blob=await ptShotEl(d,c.querySelector('.fam'),720); await ptDeliverImages([blob],['AMAN-Family-'+(c.querySelector('.fn bdi')||{}).textContent],'Weekend progress'); }))); }
   else imgBtn.remove();
   return host;
 }
