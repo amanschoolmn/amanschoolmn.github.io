@@ -189,7 +189,7 @@ html[data-theme="dark"] .btn-p{background:var(--gold-bright);color:#14211a}
 .chip:hover{border-color:var(--gold)}
 .chip.on{background:var(--green);border-color:var(--green);color:#fff}
 html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(--gold-bright);color:#14211a}
-.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:600;font-family:var(--f-mono);letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap;flex-shrink:0}
 .tag-green{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
 .tag-gold{background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--warn)}
 .tag-red{background:color-mix(in srgb,var(--bad) 13%,transparent);color:var(--bad)}
@@ -1044,6 +1044,32 @@ body.lay-editing .lay-navrow a svg{display:none}
 .tcc-lines{display:flex;flex-direction:column;gap:5px}
 .tcc-line{display:flex;gap:8px;font-size:12.5px;color:var(--ink2);line-height:1.4}
 .tcc-acts{display:flex;flex-wrap:wrap;gap:6px}
+
+/* v58 shared look: one set of status colours, quiet chips, real charts */
+:root{--orange:#b9591b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--orange:#e8924f}}
+:root[data-theme=dark]{--orange:#e8924f}
+.c-ok{color:var(--ok)}.c-warn{color:var(--warn)}.c-or{color:var(--orange)}.c-bad{color:var(--bad)}.c-info{color:var(--info)}.c-dim{color:var(--ink3)}
+.bg-ok{background:color-mix(in srgb,var(--ok) 15%,transparent)}.bg-warn{background:color-mix(in srgb,var(--gold) 20%,transparent)}.bg-or{background:color-mix(in srgb,var(--orange) 16%,transparent)}.bg-bad{background:color-mix(in srgb,var(--bad) 15%,transparent)}.bg-info{background:color-mix(in srgb,var(--info) 14%,transparent)}
+.ux-note{font-size:12.5px;color:var(--ink2);margin:6px 0 0;line-height:1.45}
+.ux-take{font-size:13.5px;font-weight:600;margin:0 0 8px;color:var(--ink)}
+.ux-foot{font-size:11px;color:var(--ink3);margin-top:6px}
+.ux-ring{position:relative;display:inline-block;flex-shrink:0}.ux-ring b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;line-height:1.05}.ux-ring b small{font-size:10.5px;font-weight:600;color:var(--ink3)}
+.ux-dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ux-info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--line);font-size:10px;color:var(--ink3);cursor:help;flex-shrink:0;background:var(--surface2)}
+.ux-grp{display:flex;gap:-4px;align-items:center}.ux-grp>*{margin-left:-6px;border:2px solid var(--surface)}.ux-grp>*:first-child{margin-left:0}
+.pl-stage{flex:1;min-width:120px;border-radius:14px;padding:12px 14px;text-align:center;cursor:pointer;border:1px solid var(--line);background:var(--surface)}
+.pl-stage .n{font-size:28px;font-weight:700;line-height:1.1}
+.pl-ready{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;margin-top:8px}
+.st-tbl td,.st-tbl th{padding:8px 10px}
+.st-cell{display:inline-block;min-width:46px;text-align:center;padding:3px 8px;border-radius:8px;font-weight:700;font-size:12.5px}
+.st-name small{display:block;font-size:11px;color:var(--ink3);font-weight:400}
+.st-flag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:99px;margin:1px 2px 1px 0}
+.fgrp{border-bottom:1px solid var(--line)}.fgrp>summary{list-style:none;cursor:pointer}.fgrp>summary::-webkit-listitem{display:none}.fgrp>summary::-webkit-details-marker{display:none}.fgrp-kids{padding-left:18px;background:color-mix(in srgb,var(--surface2) 60%,transparent)}
+.wr-card{width:560px;max-width:100%;padding:30px 30px 24px;border-radius:22px;background:linear-gradient(160deg,#fbf6e9,#f3e7c6);color:#2a2213;font-family:var(--f-body);box-sizing:border-box}
+.wr-card h2{margin:0;font-size:26px;letter-spacing:.2px}.wr-card .sub{font-size:13px;color:#6b5a30;margin-bottom:16px}
+.wr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.wr-tile{background:rgba(255,255,255,.65);border-radius:14px;padding:12px 14px}.wr-tile b{display:block;font-size:26px;line-height:1.1}.wr-tile span{font-size:12px;color:#6b5a30}
+.wr-shout{background:rgba(255,255,255,.65);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5}.wr-foot{margin-top:14px;font-size:11.5px;color:#6b5a30;text-align:center}
 </style>
 </head>
 <body>
@@ -1071,7 +1097,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 57 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 58 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -4897,10 +4923,30 @@ render(v){
     const snz = d.settings.focusSnooze||{};
     const visible = items.filter(x=>!doneKeys.includes(x.key) && !(snz[x.key] && snz[x.key]>=tdy));
     const doneToday = items.length - visible.length;
-    const rowIcon = x => x.photo ? avatarHTML(x.photo,'width:22px;height:22px;border-radius:50%;font-size:8.5px;flex-shrink:0') : `<span>${x.i}</span>`;
-    return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${visible.length?'tag-gold':'tag-green'}">${visible.length||'all clear'}</span></div>
-     ${visible.length? `<div class="wlist">${visible.slice(0,9).map(x=>`<div class="wrow frow" data-go="${x.go}">${rowIcon(x)}<span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span><button class="btn btn-ghost btn-sm no-print" data-focusdone="${esc(x.key)}" title="${/^task_/.test(x.key)?'Complete this task':/^(treat_|att_|tuition_)/.test(x.key)?'Mark done':'Hide for 7 days'}">✓</button></div>`).join('')}</div>`
+    const stuOf = x => { if(x.photo) return x.photo; const m=x.key.match(/^(?:behind|conc|treat|rw)_([^_]+)/); return m? stu.find(z=>z.id===m[1]) : null; };
+    const rowIcon = x => { const p=stuOf(x); return p ? avatarHTML(p,'width:22px;height:22px;border-radius:50%;font-size:8.5px;flex-shrink:0') : `<span>${x.i}</span>`; };
+    const doneTitle = x => /^task_/.test(x.key)?'Complete this task':/^(treat_|att_|tuition_)/.test(x.key)?'Mark done':'Hide for 7 days';
+    const rowHTML = x => `<div class="wrow frow" data-go="${x.go}">${rowIcon(x)}<span class="t">${esc(x.t)}</span>${x.why?UX.info(x.why):''}<span class="tag tag-dim">${esc(x.tag)}</span><button class="btn btn-ghost btn-sm no-print" data-focusdone="${esc(x.key)}" title="${doneTitle(x)}">✓</button></div>`;
+    const GTXT = { 'check':n=>n+' students with no memorization entry in 14+ days', 'attendance':n=>n+' students with repeated absences', 'missing':n=>n+' files need re-linking', 'draft':n=>n+' resources waiting on a decision', 'planned':n=>n+' curriculum gaps still to build', 'tuition':n=>n+' families with tuition due', 'treat!':n=>n+' students reached Juzʼ goals — treat Level 3 to donuts!', 'party!':n=>n+' students finished the Green Book — party time for Level 1!' };
+    const GICON = { 'check':'📖', 'attendance':'⚠️', 'missing':'📎', 'draft':'✏️', 'planned':'🧩', 'tuition':'💵', 'treat!':'🍩', 'party!':'🎉' };
+    const renderList = list => {
+      const out=[], done=new Set();
+      list.forEach(x=>{ if(done.has(x.key)) return;
+        const same = GTXT[x.tag] ? list.filter(y=>y.tag===x.tag) : [x];
+        if(same.length<2){ out.push(rowHTML(x)); return; }
+        same.forEach(y=>done.add(y.key));
+        const people = same.map(stuOf).filter(Boolean);
+        const seen=new Set(), uniq=people.filter(p=>!seen.has(p.id)&&seen.add(p.id));
+        out.push(`<details class="fgrp"><summary class="wrow frow"><span>${GICON[x.tag]||x.i}</span><span class="t">${esc(GTXT[x.tag](same.length))}</span><span class="ux-grp">${uniq.slice(0,5).map(p=>avatarHTML(p,'width:22px;height:22px;border-radius:50%;font-size:8.5px;flex-shrink:0')).join('')}</span><span class="ai-sub no-print">▾</span><button class="btn btn-ghost btn-sm no-print" data-focusgroup title="Mark all done / hide all">✓ all</button></summary><div class="fgrp-kids">${same.map(rowHTML).join('')}</div></details>`);
+      });
+      return out.join('');
+    };
+    const isCel = x => /^(treat_|rw_|bday_)/.test(x.key);
+    const need = visible.filter(x=>!isCel(x)), cel = visible.filter(isCel);
+    return `<div class="whead"><h3>⚡ Needs attention</h3><span class="tag ${need.length?'tag-gold':'tag-green'}">${need.length||'all clear'}</span></div>
+     ${need.length? `<div class="wlist">${renderList(need)}</div>`
      : `<p style="font-family:var(--f-body);font-size:15px;color:var(--ok)">Nothing needs you right now, al-ḥamdu lillāh. Plan ahead or review a student.</p>`}
+     ${cel.length? `<div class="whead" style="margin-top:14px"><h3 style="font-size:15px">🎉 Celebrate</h3><span class="tag tag-green">${cel.length}</span></div><div class="wlist">${renderList(cel)}</div>`:''}
      ${doneToday? `<p class="no-print" style="font-size:11px;color:var(--ink3);margin-top:8px">${doneToday} item${doneToday>1?'s':''} hidden · <button class="btn btn-ghost btn-sm" id="focusUndo" style="padding:1px 6px;font-size:11px">undo</button></p>`:''}`;
   };
   W.momentum = ()=>{
@@ -4948,7 +4994,7 @@ render(v){
       ['☑️', openTasks.length, 'Open tasks', '#/admin/tasks', 'var(--warn)'],
       ['🗂️', res.length, 'Resources', '#/library', '#7B4FA0'],
     ];
-    return `<div class="kpis">${cards.map(([i,val,lab,go,cv])=>`<button class="kpi-card" data-go="${go}" style="border-top:3px solid ${cv}"><span class="ki">${i}</span><b>${val}</b><span>${lab}</span></button>`).join('')}</div>`;
+    return `<div class="kpis">${cards.map(([i,val,lab,go,cv])=>`<button class="kpi-card" data-go="${go}" style="border-top:3px solid ${cv}"><span class="ki">${i}</span><b>${val}</b><span>${lab}</span></button>`).join('')}</div><p class="ux-foot" style="margin:4px 2px 0">Attendance % = present or late ÷ (present + late + absent); excused not counted.</p>`;
   };
   W.quick = ()=> `<div class="whead"><h3>Quick actions</h3></div><div style="display:flex;flex-wrap:wrap;gap:8px">
      <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
@@ -5165,6 +5211,17 @@ render(v){
     Object.keys(sn).forEach(k=>{ if(sn[k]<tdy) delete sn[k]; });
     DB.save(); toast(perm?'Marked done':'Hidden for 7 days'); Router.render();
   }));
+  $$('[data-focusgroup]',v).forEach(b=>b.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation();
+    const det=b.closest('details'); const kids=$$('[data-focusdone]',det); const keys=kids.map(k=>k.dataset.focusdone);
+    const sn=d.settings.focusSnooze=d.settings.focusSnooze||{};
+    const dn=(d.settings.focusDone && d.settings.focusDone.date===tdy)? d.settings.focusDone : (d.settings.focusDone={date:tdy,keys:[]});
+    keys.forEach(key=>{
+      if(/^rw_/.test(key)){ const g=Rewards.groups().find(x=>'rw_'+x.s.id+'_'+x.date+'_'+x.type===key); if(g) Rewards.done(g.s.id,g.ids,true); return; }
+      if(/^treat_/.test(key)){ const m=key.match(/^treat_(.+?)_(\d+)_(.+)$/); const s=m&&d.students.find(x=>x.id===m[1]); const g=s&&(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated&&String(x.juz)===m[2]); if(g) g.celebrated=true; return; }
+      if(/^(att_|tuition_)/.test(key)){ sn[key]='9999-12-31'; return; }
+      const x=new Date(); x.setDate(x.getDate()+7); sn[key]=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); });
+    DB.save(); toast(keys.length+' items cleared'); Router.render();
+  }));
   (()=>{ const focusUndo=$('#focusUndo',v); if(focusUndo) focusUndo.addEventListener('click', e=>{
     e.stopPropagation();
     d.settings.focusDone = {date:tdy, keys:[]}; d.settings.focusSnooze={}; DB.save(); toast('Restored'); Router.render();
@@ -5268,6 +5325,56 @@ render(v){
     $('[data-x=done]',o).onclick=()=>{ o.remove(); Router.render(); };
   };
 }});
+
+/* v58 UX helpers: ring + real bar chart with axes/value labels */
+const UX = {
+  ring(n,total,size,color){ size=size||96; const r=size/2-8, c=2*Math.PI*r, p=total?Math.min(1,n/total):0;
+    return `<span class="ux-ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="8"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color||'var(--ok)'}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c*p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/></svg><b>${n}<small>of ${total}</small></b></span>`; },
+  info(text){ return `<span class="ux-info no-print" title="${esc(text)}" tabindex="0" aria-label="${esc(text)}">i</span>`; },
+  bars(vals,labels,o){ o=o||{}; const W=o.w||620,H=o.h||170,pl=30,pb=24,pt=16,n=vals.length,max=Math.max(o.max||0,...vals,1),nice=max<=5?5:Math.ceil(max/5)*5,cw=(W-pl-6)/n,bw=Math.min(40,cw*0.62);
+    const y=v=>pt+(H-pt-pb)*(1-v/nice);
+    const grid=[0,nice/2,nice].map(v=>`<line x1="${pl}" x2="${W-6}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)"${v?' stroke-dasharray="3 4"':''}/><text x="${pl-5}" y="${y(v)+3}" text-anchor="end" style="fill:var(--ink3);font:10px var(--f-body)">${Math.round(v*10)/10}</text>`).join('');
+    const b=vals.map((v,i)=>{ const cx=pl+cw*i+cw/2, last=i===n-1; return `<g><title>${esc(labels[i]||'')}: ${v}${o.unit||''}</title><rect x="${(cx-bw/2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,y(0)-y(v)).toFixed(1)}" rx="4" style="fill:${last?'var(--ok)':'color-mix(in srgb,var(--ok) 45%,var(--surface))'}"/><text x="${cx.toFixed(1)}" y="${(y(v)-4).toFixed(1)}" text-anchor="middle" style="fill:var(--ink);font:600 10.5px var(--f-body)">${v}</text><text x="${cx.toFixed(1)}" y="${H-7}" text-anchor="middle" style="fill:var(--ink3);font:10px var(--f-body)">${esc(labels[i]||'')}</text></g>`; }).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-height:${H+20}px" role="img" aria-label="${esc(o.label||'chart')}">${grid}${b}</svg>`; },
+  tone(pct){ return pct==null?'dim':pct>=90?'ok':pct>=80?'warn':pct>=70?'or':'bad'; }
+};
+
+/* ===== Week in review: a positive, shareable card (first names only; nothing about struggling students) ===== */
+const Wk = {
+  data(){
+    const d=DB.data, t=today(), from=RP.addDays(t,-6);
+    const act=d.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>t));
+    const days=Object.keys(d.attendance).filter(x=>x>=from && x<=t).sort();
+    let pl=0,den=0; const per={};
+    days.forEach(day=>{ Object.entries(d.attendance[day]).forEach(([sid,c])=>{ if(c==='E'||!c) return; den++; (per[sid]=per[sid]||{n:0,a:0}).n++; if(c==='P'||c==='L') pl++; else per[sid].a++; }); });
+    const perfect=act.filter(s=>per[s.id] && per[s.id].n>=Math.max(1,days.length-0) && per[s.id].a===0);
+    const entries=d.quran.filter(q=>q.date>=from && q.date<=t).length;
+    let passes=0; Object.keys(d.progress||{}).forEach(day=>{ if(day<from||day>t) return; Object.values(d.progress[day]).forEach(p=>{ if(p && p.quran==='PASS') passes++; }); });
+    const goals=[]; act.forEach(s=>(s.hifzGoalHistory||[]).forEach(g=>{ if(g.status==='met' && g.resolvedDate && g.resolvedDate>=from && g.resolvedDate<=t) goals.push({s,g}); }));
+    const promos=(d.activity||[]).filter(a=>/^Promoted /.test(a.text) && a.t>=from).map(a=>a.text);
+    return {from,t,sessions:days.length,rate:den?Math.round(pl/den*100):null,perfect,entries,passes,goals,promos};
+  },
+  html(){
+    const w=Wk.data(), fmt=x=>fmtDate(x), first=s=>esc(ptFirst(s));
+    const tiles=[]; if(w.rate!=null) tiles.push([w.rate+'%','attendance']); if(w.perfect.length) tiles.push([w.perfect.length,'perfect attendance']);
+    if(w.entries) tiles.push([w.entries,'Qurʼān entries']); if(w.passes) tiles.push([w.passes,'passes']);
+    if(w.goals.length) tiles.push([w.goals.length,'goals reached']); if(w.promos.length) tiles.push([w.promos.length,'promotion'+(w.promos.length>1?'s':'')]);
+    const shout=[];
+    if(w.perfect.length) shout.push(`🌟 Perfect attendance: ${w.perfect.slice(0,10).map(first).join(', ')}${w.perfect.length>10?' and more':''}`);
+    if(w.goals.length) shout.push(`🎯 Goal reached: ${w.goals.slice(0,8).map(x=>first(x.s)+(x.g.juz?' (Juzʼ '+esc(String(x.g.juz))+')':'')).join(', ')}`);
+    return `<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#fff;font-family:Georgia,'Times New Roman',serif}
+.wr{width:540px;max-width:100%;padding:30px 30px 24px;background:linear-gradient(160deg,#fbf6e9,#f3e7c6);color:#2a2213;box-sizing:border-box;border-radius:22px}
+.wr h2{margin:0;font-size:27px}.wr .sub{font-size:13px;color:#6b5a30;margin:2px 0 14px;font-family:system-ui,sans-serif}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.t{background:rgba(255,255,255,.7);border-radius:14px;padding:12px 14px}.t b{display:block;font-size:28px;line-height:1.1;color:#1d5a3a}.t span{font-size:12px;color:#6b5a30;font-family:system-ui,sans-serif}
+.s{background:rgba(255,255,255,.7);border-radius:14px;padding:11px 14px;margin-top:9px;font-size:14.5px;line-height:1.5}.f{margin-top:16px;font-size:12px;color:#6b5a30;text-align:center;font-family:system-ui,sans-serif}
+</style></head><body><div class="wr"><h2>Our week at AMAN ✨</h2><div class="sub">${esc(fmt(w.from))} – ${esc(fmt(w.t))} · Al-Madrasatu An-Nuriyyah</div>
+${tiles.length?`<div class="g">${tiles.map(([n,l])=>`<div class="t"><b>${n}</b><span>${l}</span></div>`).join('')}</div>`:'<div class="s">A quiet week — in shāʾ Allāh a fuller one next time.</div>'}
+${shout.map(x=>`<div class="s">${x}</div>`).join('')}${w.promos.length?`<div class="s">🎓 ${w.promos.length} student${w.promos.length>1?'s':''} moved up a level this week — mā shāʾ Allāh!</div>`:''}
+<div class="f">Barakallāhu fīkum for your support at home 🤍</div></div></body></html>`;
+  },
+  open(){ ptViewer('Week in review', ()=>Wk.html(), 'wr', {}); }
+};
 const Dashboard = {_clk:null};
 /* inline SVG mini bar chart — dependency-free, theme-aware */
 function spark(vals, label, fixedMax){
@@ -5286,7 +5393,7 @@ function wResList(title, arr, meta, emptyMsg){
 function attSummary(){
   const a=DB.data.attendance; let P=0,A=0,L=0,E=0,sessions=0;
   for(const day in a){ sessions++; for(const sid in a[day]){ const v=a[day][sid]; if(v==='P')P++; else if(v==='A')A++; else if(v==='L')L++; else if(v==='E')E++; } }
-  const tot=P+A+L+E; return {P,A,L,E,sessions,rate: tot?Math.round(P/tot*100):0};
+  const tot=P+A+L; return {P,A,L,E,sessions,rate: tot?Math.round((P+L)/tot*100):0};
 }
 function unitsPct(key){ const p=DB.data.planner['prog_'+key]; return p==null? {na:33,tawhid:100,mad:20}[key] ?? 0 : +p; }
 function wireCommon(v){
@@ -9222,6 +9329,7 @@ function ptViewer(title, htmlIn, kind, ctx){
     mk('\ud83d\udccb Copy text',()=>{ const t=ctx.text(); if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>{ ctx.onSend('copied text'); },()=>toast('Could not copy')); });
     if(ctx.phone) mk('\ud83d\udcac Text',()=>{ ctx.onSend('text'); location.href='sms:'+String(ctx.phone).replace(/\D/g,'')+'?&body='+encodeURIComponent(ctx.text()); });
     mk('\u2713 Mark sent',()=>ctx.onSend('manual')); }
+  else if(kind==='wr'){ imgBtn.textContent='🖼️ Save as image'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const b=await ptShotEl(d,d.querySelector('.wr'),600); await ptDeliverImages([b],['AMAN-Week-in-Review'],'Week in review'); })); }
   else imgBtn.remove();
   return host;
 }
@@ -12947,30 +13055,38 @@ const Admin = {
     const withMiss = act.map(s=>({s, miss:regComplete(s)}));
     const done = withMiss.filter(x=>!x.miss.length);
     const incomplete = withMiss.filter(x=>x.miss.length);
-    // shared row: icon + name (+optional date tag), missing/complete tags
-    // always wrap onto their own line via .rowtags — this is what was
-    // breaking on phones: a long "starts <date>" tag getting squeezed into
-    // an unreadable circle, and a "missing: …" string running off-screen.
-    const stuRow = (s, dateTag, miss, okLabel)=> `<div class="wrow-wrap ${miss.length?'frow':''}" data-go="#/students/${s.id}">
-      <span>${miss.length?(dateTag?'🌱':'📋'):'✅'}</span>
-      <span class="t">${esc(s.name)}${dateTag?' · '+esc(s.level):''}</span>
-      ${dateTag||''}
-      <div class="rowtags">${miss.length? miss.map(m=>`<span class="tag tag-gold">${esc(m)}</span>`).join('') : `<span class="tag tag-green">${okLabel}</span>`}</div>
-    </div>`;
-    el.innerHTML = `<div class="grid g3" style="margin-bottom:16px">
-      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>Enrolled</h3><span style="font-size:16px">🎓</span></div><div class="kpi">${act.length}</div></div>
-      <div class="widget" style="border-top:3px solid ${done.length===act.length?'var(--ok)':'var(--gold)'}"><div class="whead"><h3>Records complete</h3><span style="font-size:16px">✅</span></div><div class="kpi">${done.length}<small>of ${act.length}</small></div></div>
-      <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>Incoming</h3><span style="font-size:16px">🌱</span></div><div class="kpi">${incoming.length}<small>${incoming[0]?'start '+fmtDate(incoming[0].startDate):'none scheduled'}</small></div></div></div>
-     ${incoming.length?`<div class="sect">🌱 Incoming students<span class="rule"></span></div>
-      <div class="wlist" style="margin-bottom:14px">${incoming.map(s=>stuRow(s, `<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`, regComplete(s), 'record complete ✓')).join('')}</div>`:''}
-     <div class="sect">📋 Registration completeness<span class="rule"></span><span style="font-size:11.5px;color:var(--ink3);font-weight:400">tap a student to complete their record</span></div>
-     ${incomplete.length? `<div class="wlist">${incomplete.map(x=>stuRow(x.s, null, x.miss, 'complete')).join('')}</div>`
-       : `<div class="empty"><div class="big">✅</div><h3>Every active record is complete</h3><p>DOB, guardian, phone, emergency contact, and photo are all on file, mā shāʾ Allāh.</p></div>`}
-     ${done.length? `<details style="margin-top:${incomplete.length?'10px':'0'}" class="no-print"><summary style="cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:700">✓ Complete · ${done.length}</summary><div class="wlist" style="margin-top:8px">${done.map(x=>stuRow(x.s, null, x.miss, 'complete')).join('')}</div></details>`:''}
-     ${gone.length?`<div class="sect">🚪 Withdrawn<span class="rule"></span></div>
-      <div class="wlist">${gone.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span>🚪</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="m">records kept</span></div>`).join('')}</div>`:''}
-     <p style="font-size:12px;color:var(--ink3);margin-top:14px">Waiting list: planned for the online-registration version (v7 roadmap) — not built as an empty shell.</p>`;
+    const flt = Admin._enFilter && incomplete.some(x=>x.miss.includes(Admin._enFilter)) ? Admin._enFilter : null;
+    const counts={}; incomplete.forEach(x=>x.miss.forEach(m=>counts[m]=(counts[m]||0)+1));
+    const shown = flt? incomplete.filter(x=>x.miss.includes(flt)) : incomplete;
+    const fams = (typeof FU!=='undefined' && FU.fams)? FU.fams() : [];
+    const famOf = s => fams.find(f=>f.members.some(m=>m.id===s.id));
+    const groups = {};
+    shown.forEach(x=>{ const f=famOf(x.s), k=f? f.label : (x.s.name||'').split(' ').slice(-1)[0]; (groups[k]=groups[k]||{label:k,fam:f,rows:[]}).rows.push(x); });
+    const av = s => avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px;flex-shrink:0');
+    const famCard = g => {
+      const bySet={}; g.rows.forEach(x=>{ const k=x.miss.join('|'); (bySet[k]=bySet[k]||{miss:x.miss,list:[]}).list.push(x.s); });
+      const needsContact = g.rows.some(x=>x.miss.includes('phone')||x.miss.includes('guardian'));
+      return `<div class="card" style="margin-bottom:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="font-size:14.5px"><bdi>${esc(g.label)}</bdi> family</b><span class="ai-sub">${g.rows.length} record${g.rows.length>1?'s':''} to finish</span>${needsContact&&g.fam?`<button class="btn btn-o btn-sm no-print" style="margin-left:auto" data-addcontact="${g.fam.members[0].id}">＋ Add contact</button>`:''}</div>
+        ${Object.values(bySet).map(o=>`<div class="wrow-wrap frow" data-go="#/students/${o.list[0].id}" style="cursor:pointer"><span class="ux-grp">${o.list.map(av).join('')}</span><span class="t">${o.list.map(s=>esc(ptFirst(s))).join(', ')}</span><div class="rowtags">${o.miss.map(m=>`<span class="tag bg-warn c-warn">${esc(m)}</span>`).join('')}</div></div>`).join('')}</div>`;
+    };
+    const chip = (k,label,n) => `<button class="chip ${(flt||'')===k?'on':''}" data-enfilter="${esc(k)}" style="${(flt||'')===k?'background:var(--ink);color:var(--surface)':''}">${esc(label)} · ${n}</button>`;
+    el.innerHTML = `<div class="card" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+       ${UX.ring(done.length, act.length, 104, done.length===act.length?'var(--ok)':'var(--gold)')}
+       <div style="flex:1;min-width:200px"><div style="font-size:17px;font-weight:700">${done.length===act.length?'Every record is complete':done.length+' of '+act.length+' records complete'}</div>
+        <p class="ux-note">${incomplete.length? incomplete.length+' student'+(incomplete.length>1?'s':'')+' across '+new Set(incomplete.map(x=>{ const f=famOf(x.s); return f?f.key:x.s.id; })).size+' families still need something.' : 'DOB, guardian, phone, emergency contact and photo are all on file, mā shāʾ Allāh.'}</p>
+        <p class="ux-note">${act.length} enrolled${incoming.length?' · '+incoming.length+' starting soon':''}${gone.length?' · '+gone.length+' withdrawn':''}</p></div>
+       ${incomplete.length&&fams.length?`<button class="btn btn-p no-print" id="enFind">🔎 Find contacts</button>`:''}</div>
+     ${incoming.length?`<div class="sect">🌱 Incoming students<span class="rule"></span></div><div class="wlist" style="margin-bottom:14px">${incoming.map(s=>{ const m=regComplete(s); return `<div class="wrow-wrap ${m.length?'frow':''}" data-go="#/students/${s.id}"><span>🌱</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span><div class="rowtags">${m.length?m.map(x=>`<span class="tag bg-warn c-warn">${esc(x)}</span>`).join(''):'<span class="tag tag-green">record complete ✓</span>'}</div></div>`; }).join('')}</div>`:''}
+     ${incomplete.length? `<div class="sect">📋 Still to finish<span class="rule"></span></div>
+       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${chip('','All',incomplete.length)}${Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,n])=>chip(k,k,n)).join('')}</div>
+       ${Object.values(groups).sort((a,b)=>b.rows.length-a.rows.length||a.label.localeCompare(b.label)).map(famCard).join('')}` : ''}
+     ${done.length? `<details class="no-print" style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">✓ Complete · ${done.length}</summary><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${done.map(x=>`<span class="chip" data-go="#/students/${x.s.id}" style="display:inline-flex;gap:6px;align-items:center;cursor:pointer">${av(x.s)}${esc(ptFirst(x.s))}</span>`).join('')}</div></details>`:''}
+     ${gone.length?`<details class="no-print" style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">🚪 Withdrawn · ${gone.length}</summary><div class="wlist" style="margin-top:8px">${gone.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span>🚪</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="m">records kept</span></div>`).join('')}</div></details>`:''}`;
     wireCommon(el);
+    $$('[data-enfilter]',el).forEach(b=>b.onclick=()=>{ Admin._enFilter=b.dataset.enfilter||null; Admin.enroll(el); });
+    const ef=$('#enFind',el); if(ef) ef.onclick=()=>FU.finder(()=>Admin.enroll(el));
+    $$('[data-addcontact]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const f=fams.find(x=>x.members.some(m=>m.id===b.dataset.addcontact)); if(f) FU.addContact(f); });
   },
   /* ---------- EVENTS & TRIPS (checklists, permissions, post-notes) ---------- */
   calendar(el){
@@ -15168,21 +15284,21 @@ function deltaMini(cur, prev){
 }
 function attRate(a,b){ let P=0,T=0,sess=0;
   for(const day in DB.data.attendance){ if(!inR(day,a,b)) continue; sess++;
-    for(const sid in DB.data.attendance[day]){ T++; if(DB.data.attendance[day][sid]==='P')P++; } }
+    for(const sid in DB.data.attendance[day]){ const c=DB.data.attendance[day][sid]; if(c==='E')continue; T++; if(c==='P'||c==='L')P++; } }
   return {rate: T?Math.round(P/T*100):null, sess, marks:T}; }
 function stuFlags(a,b){ // transparent rules: behind / ahead / attention
   const d=DB.data, act=d.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>today()));
   const lastQ={}; d.quran.forEach(q=>{ if(!lastQ[q.sid]||q.date>lastQ[q.sid]) lastQ[q.sid]=q.date; });
   const cut14=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
   return act.map(s=>{
-    const att=Object.entries(d.attendance).filter(([day])=>inR(day,a,b)).map(([,rec])=>rec[s.id]).filter(Boolean);
-    const attP=att.length? Math.round(att.filter(x=>x==='P').length/att.length*100) : null;
+    const att=Object.entries(d.attendance).filter(([day])=>inR(day,a,b)).map(([,rec])=>rec[s.id]).filter(x=>x&&x!=='E');
+    const attP=att.length? Math.round(att.filter(x=>x==='P'||x==='L').length/att.length*100) : null;
     const q=d.quran.filter(x=>x.sid===s.id && inR(x.date,a,b));
     const needsRev=q.filter(x=>x.grade==='Needs review').length;
     const flags=[];
     if(attP!=null && attP<70) flags.push(['behind','attendance '+attP+'%']);
     if(s.level==='Level 3' && d.quran.length && (!lastQ[s.id]||lastQ[s.id]<cut14)) flags.push(['behind','no entry 14d+']);
-    if(q.length && needsRev/q.length>=0.5) flags.push(['behind','½+ entries need review']);
+    if(q.length && needsRev/q.length>=0.5) flags.push(['behind','half or more entries need review']);
     if(q.length>=4 && needsRev===0 && (attP==null||attP>=90)) flags.push(['ahead','consistent + excellent']);
     const prog = s.level==='Level 1'? Math.round(((s.gb&&s.gb.page)||0)/GB_TOTAL*100)
       : s.level==='Level 2'? ((s.mus&&s.mus.page)||0)
@@ -15345,32 +15461,39 @@ const AnaX = {
     $$('[data-drill]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); AnaX.drill(b.dataset.drill,R); });
     $$('[data-health]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); AnaX.healthModal(b.dataset.health,R); });
     const ga=$('#goalAdd',el); if(ga) ga.onclick=()=>AnaX.goalForm(R);
+    const wb=$('#wrBtn',el); if(wb) wb.onclick=()=>Wk.open();
     $$('[data-goaldel]',el).forEach(b=>b.onclick=()=>{ const a=DB.data.settings.anaGoals||[]; DB.data.settings.anaGoals=a.filter(g=>g.id!==b.dataset.goaldel); DB.save(); Router.render(); });
   },
   /* ---------- 5. pace & projections ---------- */
   paceCard(rows){
-    const items=rows.map(x=>({s:x.s,p:AnaX.pace(x.s)})).sort((a,b)=>(a.p.eta?a.p.eta.weeks:1e9)-(b.p.eta?b.p.eta.weeks:1e9));
+    const items=rows.map(x=>({s:x.s,p:AnaX.pace(x.s)})).sort((a,b)=>{ const da=a.p.cur>=a.p.total, db=b.p.cur>=b.p.total; if(da!==db) return da?1:-1; return (a.p.eta?a.p.eta.weeks:1e9)-(b.p.eta?b.p.eta.weeks:1e9); });
     const med=lv=>{ const v=items.filter(i=>i.s.level===lv&&i.p.eta).map(i=>i.p.eta.pace).sort((a,b)=>a-b); return v.length?v[Math.floor(v.length/2)]:null; };
     const meds=['Level 1','Level 2','Level 3'].map(l=>[l,med(l)]).filter(x=>x[1]!=null);
     return `<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>🏁 Pace & projections</h3><span class="ai-sub">from each student's own dated updates (last ~8 weeks)</span></div>
-      ${meds.length?`<p style="font-size:12.5px;color:var(--ink2);margin:0 0 8px">Typical pace: ${meds.map(([l,p])=>`<b>${l.replace('Level ','L')}</b> ${p} pg/wk`).join(' · ')}</p>`:''}
-      <div style="max-height:380px;overflow:auto">${items.map(({s,p})=>{ const pct=Math.min(100,p.cur/p.total*100); const e=p.eta;
-        return `<div class="wrow" data-go="#/students/${s.id}" style="gap:10px"><span class="t" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}">${esc(s.name)}</span><span class="tag tag-dim">${s.level.replace('Level ','L')}</span>
+      ${meds.length?`<p class="ux-note" style="margin:0 0 8px">Typical pace: ${meds.map(([l,p])=>`<b>${l.replace('Level ','L')}</b> ${p} pg/wk`).join(' · ')}</p>`:''}
+      <div style="max-height:380px;overflow:auto">${items.map(({s,p})=>{ const pct=Math.min(100,p.cur/p.total*100); const e=p.eta, fin=p.cur>=p.total;
+        return `<div class="wrow" data-go="#/students/${s.id}" style="gap:10px"><span class="t" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.name)}">${esc(s.name)}</span><span class="ux-dot" style="background:${AnaX.lvColor(s.level)}" title="${esc(s.level)}"></span>
           <div style="flex:1;min-width:60px"><div class="bar" style="height:9px"><i style="width:${pct}%"></i></div></div>
-          <span style="font-size:11.5px;min-width:130px;text-align:right;color:var(--ink2)">${e?`~${e.weeks} wk · ${esc(fmtDate(e.date.toISOString().slice(0,10)))} <span class="ai-sub">(${e.pace}/wk)</span>`:'<span class="ai-sub">needs 2+ dated updates</span>'}</span></div>`; }).join('')}</div></div>`;
+          <span style="font-size:11.5px;min-width:130px;text-align:right;color:var(--ink2)">${fin?'<b class="c-ok">done ✓</b>':e&&e.weeks>0?`~${e.weeks} wk · ${esc(fmtDate(e.date.toISOString().slice(0,10)))} <span class="ai-sub">(${e.pace}/wk)</span>`:'<span class="ai-sub">needs 2+ dated updates</span>'}</span></div>`; }).join('')}</div></div>`;
   },
-  /* ---------- 6. promotion pipeline ---------- */
+  lvColor(l){ return l==='Level 1'?'var(--info)':l==='Level 2'?'var(--gold)':'var(--ok)'; },
+  /* ---------- 6. promotion pipeline (hero) ---------- */
   pipelineCard(R){
-    const act=DB.data.students.filter(s=>s.active!==false), by=l=>act.filter(s=>s.level===l);
+    const act=DB.data.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>today())), by=l=>act.filter(s=>s.level===l);
     const L1=by('Level 1'), L2=by('Level 2'), L3=by('Level 3');
     const l1=L1.map(s=>({s,pace:AnaX.pace(s)})).sort((a,b)=>b.pace.cur-a.pace.cur);
-    const ready1=l1.filter(x=>x.pace.cur>=GB_TOTAL).length, soon1=l1.filter(x=>x.pace.cur<GB_TOTAL&&x.pace.eta&&x.pace.eta.weeks<=8).length;
+    const ready1=l1.filter(x=>x.pace.cur>=GB_TOTAL), soon1=l1.filter(x=>x.pace.cur<GB_TOTAL&&x.pace.eta&&x.pace.eta.weeks>0&&x.pace.eta.weeks<=8);
     const l2=L2.map(s=>{ const log=[...(s.musLog||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3); let n=0; for(const x of log){ if(x.fluency==='Strong') n++; else break; } return {s,n}; });
-    const box=(t,n,sub,go)=>`<div class="card" style="text-align:center;flex:1;min-width:110px;cursor:pointer" data-go="${go}"><div class="kpi" style="font-size:26px">${n}</div><div style="font-size:12.5px;font-weight:700">${t}</div><div class="ai-sub">${sub}</div></div>`;
-    return `<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>🪜 Promotion pipeline</h3></div>
-      <div style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap">${box('Level 1',L1.length,ready1?ready1+' ready · '+soon1+' within 8 wks':soon1+' within 8 wks','#/analytics/students')}<div style="align-self:center;font-size:22px;color:var(--ink3)">→</div>${box('Level 2',L2.length,L2.length?l2.filter(x=>x.n>=3).length+' ready':'none yet','#/analytics/students')}<div style="align-self:center;font-size:22px;color:var(--ink3)">→</div>${box('Level 3',L3.length,'Ḥifẓ','#/analytics/students')}</div>
-      ${l1.length?`<div style="margin-top:12px;font-size:12.5px;font-weight:700">Level 1 closest to Level 2</div>${l1.slice(0,5).map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span style="font-size:12px;color:var(--ink2)">p.${x.pace.cur}/${GB_TOTAL} · ${GB_TOTAL-x.pace.cur} to go${x.pace.eta&&x.pace.cur<GB_TOTAL?' · ~'+x.pace.eta.weeks+' wk':''}</span></div>`).join('')}`:''}
-      ${l2.length?`<div style="margin-top:10px;font-size:12.5px;font-weight:700">Level 2 → 3 (3 Strong readings in a row)</div>${l2.map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span class="tag ${x.n>=3?'tag-green':'tag-dim'}">${x.n} of 3</span></div>`).join('')}`:''}</div>`;
+    const ready2=l2.filter(x=>x.n>=3);
+    const stage=(t,n,sub,col)=>`<div class="pl-stage" data-go="#/students"><div class="n" style="color:${col}">${n}</div><div style="font-size:13px;font-weight:700">${t}</div><div class="ai-sub">${sub}</div></div>`;
+    const arrow='<div style="align-self:center;font-size:20px;color:var(--ink3)">→</div>';
+    const rdy=(x,to)=>`<div class="pl-ready bg-ok"><span class="ux-dot" style="background:var(--ok)"></span><span style="flex:1;min-width:0"><b>${esc(x.s.name)}</b> <span class="ai-sub">${to==='Level 2'?'finished the Green Book (p.'+x.pace.cur+'/'+GB_TOTAL+')':'3 Strong readings in a row'}</span></span><button class="btn btn-p btn-sm no-print" data-promote="${x.s.id}" data-to="${to}">Promote to ${to.replace('Level ','L')} →</button></div>`;
+    const nReady=ready1.length+ready2.length;
+    return `<div class="widget wfull" style="margin-bottom:16px"><div class="whead"><h3>🪜 Promotion pipeline</h3><span class="tag ${nReady?'tag-green':'tag-dim'}">${nReady?nReady+' ready now':'nobody ready yet'}</span></div>
+      <div style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap">${stage('Level 1',L1.length,soon1.length||ready1.length?ready1.length+' ready · '+soon1.length+' within 8 wks':'Green Book','var(--info)')}${arrow}${stage('Level 2',L2.length,L2.length?ready2.length+' ready':'none yet','var(--gold)')}${arrow}${stage('Level 3',L3.length,'Ḥifẓ','var(--ok)')}</div>
+      ${ready1.map(x=>rdy(x,'Level 2')).join('')}${ready2.map(x=>rdy(x,'Level 3')).join('')}
+      ${soon1.length?`<div style="margin-top:12px;font-size:12.5px;font-weight:700">Next up from Level 1</div>${soon1.slice(0,5).map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span style="font-size:12px;color:var(--ink2)">p.${x.pace.cur}/${GB_TOTAL} · ${GB_TOTAL-x.pace.cur} to go · ~${x.pace.eta.weeks} wk</span></div>`).join('')}`:''}
+      ${l2.length&&!ready2.length?`<div style="margin-top:10px;font-size:12.5px;font-weight:700">Level 2 → 3 <span class="ai-sub">(3 Strong readings in a row)</span></div>${l2.map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span class="tag ${x.n>=3?'tag-green':'tag-dim'}">${x.n} of 3</span></div>`).join('')}`:''}</div>`;
   },
   /* ---------- 8. cohorts ---------- */
   cohortCard(R){
@@ -15388,7 +15511,7 @@ const AnaX = {
   attendanceTab(el,R){
     const d=DB.data, sess=Object.keys(d.attendance).filter(x=>inR(x,R.a,R.b)).sort();
     if(!sess.length){ el.innerHTML='<div class="empty"><div class="big">✅</div><h3>No attendance in this range</h3><p>Take attendance (Students → Attendance) and patterns appear here.</p></div>'; return; }
-    const info=sess.map(day=>{ const v=Object.values(d.attendance[day]), n=v.length, p=v.filter(x=>x==='P'||x==='L').length; return {day,n,p,rate:n?Math.round(p/n*100):0,dow:AI2.dow(day)}; });
+    const info=sess.map(day=>{ const v=Object.values(d.attendance[day]).filter(x=>x!=='E'), n=v.length, p=v.filter(x=>x==='P'||x==='L').length; return {day,n,p,rate:n?Math.round(p/n*100):0,dow:AI2.dow(day)}; });
     const avg=Math.round(info.reduce((a,x)=>a+x.rate,0)/info.length), dips=info.filter(x=>x.rate<avg-12);
     const W=720,H=190,pl=34,pb=34,pt=14, cw=(W-pl-8)/info.length, bw=Math.min(34,cw*0.7), y=v=>pt+(H-pt-pb)*(1-v/100);
     const bars=info.map((x,i)=>{ const cx=pl+cw*i+cw/2; return `<g><title>${esc(fmtDate(x.day))}: ${x.rate}% (${x.p} of ${x.n})</title><rect x="${cx-bw/2}" y="${y(x.rate)}" width="${bw}" height="${y(0)-y(x.rate)}" rx="3" style="fill:${x.rate<avg-12?'var(--bad)':'var(--ok)'}"/>
@@ -15429,7 +15552,7 @@ const AnaTabs = {
     // computed insights (each states its rule)
     const ins=[];
     if(att.rate!=null && attPrev.rate!=null && att.rate<attPrev.rate-5) ins.push({i:'📉',t:`Attendance slipped to ${att.rate}% (was ${attPrev.rate}% the prior period)`, go:'#/analytics/students', r:'rule: drop >5pts vs prior'});
-    if(behind.length) ins.push({i:'🎓',t:`${behind.length} student${behind.length>1?'s':''} flagged behind — tap to see who and why`, drill:'behind', go:'#/analytics/students', r:'rules: attendance <70% · no L3 entry 14d · ½+ entries need review'});
+    if(behind.length) ins.push({i:'🎓',t:`${behind.length} student${behind.length>1?'s':''} flagged behind — tap to see who and why`, drill:'behind', go:'#/analytics/students', r:'rules: attendance <70% · no L3 entry 14d · half or more entries need review'});
     if(qN && qP && qN<qP*0.7) ins.push({i:'📖',t:`Memorization entries down: ${qN} this period vs ${qP} prior`, go:'#/analytics/students', r:'rule: drop >30%'});
     const dueF=fams.filter(fm=>{const fin=famFinance(fm.key); return fin.plan.monthly>0&&fin.monthStatus!=='Paid';});
     if(dueF.length) ins.push({i:'💵',t:`${dueF.length} famil${dueF.length>1?'ies':'y'} not fully paid this month · $${outst} total outstanding`, go:'#/tuition/owe', r:'rule: month status ≠ Paid'});
@@ -15445,10 +15568,12 @@ const AnaTabs = {
        ['💵',pays?'$'+pays:'—','Collected','#/analytics/admin',deltaMini(pays,paysPrev)],
        ['📚',curAvg+'%','Curriculum avg','#/analytics/curriculum','']]
       .map(([i,val,lab,go,dm])=>`<button class="kpi-card" ${lab.startsWith('Attendance')?'data-drill="attlow"':lab==='Qur’an entries'?'data-drill="noentries"':`data-go="${go}"`}><span class="ki">${i}</span><b style="font-size:18px">${val}${dm}</b><span>${lab}</span></button>`).join('')}</div>
+     <div class="no-print" style="margin:-4px 0 6px"><button class="btn btn-o btn-sm" id="wrBtn">🖼 Week in review (shareable card)</button></div>
+     <p class="ux-foot" style="margin:0 0 14px">Attendance = present or late ÷ (present + late + absent). Excused days aren't counted.</p>
      <div class="grid g2" style="margin-bottom:16px">${AnaX.qualityCard(R)}${AnaX.trendsCard(R)}${AnaX.goalsCard(R)}</div>
      <div class="grid g2">
-      <div class="widget wfull"><div class="whead"><h3>🧠 Computed insights</h3><span style="font-size:10.5px;color:var(--ink3)">every insight shows its rule — no black box</span></div>
-       ${ins.length?`<div class="wlist">${ins.map(x=>`<div class="wrow frow" ${x.drill?`data-drill="${x.drill}"`:`data-go="${x.go}"`}><span>${x.i}</span><span class="t">${esc(x.t)}<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">${esc(x.r)}</span></span></div>`).join('')}</div>`
+      <div class="widget wfull"><div class="whead"><h3>🧠 Computed insights</h3><span style="font-size:10.5px;color:var(--ink3)">hover ⓘ to see each rule — no black box</span></div>
+       ${ins.length?`<div class="wlist">${ins.map(x=>`<div class="wrow frow" ${x.drill?`data-drill="${x.drill}"`:`data-go="${x.go}"`}><span>${x.i}</span><span class="t">${esc(x.t)}</span>${x.r?UX.info(x.r.replace(/^rule:\s*/,'Rule: ')):''}</div>`).join('')}</div>`
        :'<p style="font-family:var(--f-body);color:var(--ok)">No warning rules firing in this period, al-ḥamdu lillāh.</p>'}
        <button class="chip" style="margin-top:10px" id="aiBrief">✨ Generate AI executive briefing from these numbers</button></div>
       <div class="widget"><div class="whead"><h3>Levels right now</h3></div>
@@ -15464,50 +15589,60 @@ const AnaTabs = {
   },
   students(el,R){
     const flags=stuFlags(R.a,R.b);
-    const lvl=Ana._lvl||'All';
-    let rows=flags.filter(x=>lvl==='All'||x.s.level===lvl);
+    const lvl=Ana._lvl||'All', onlyFlag=!!Ana._flagged;
     const d=DB.data;
-    rows.forEach(x=>x.h=AnaX.health(x.s,R));
+    flags.forEach(x=>x.h=AnaX.health(x.s,R));
+    let rows=flags.filter(x=>lvl==='All'||x.s.level===lvl);
+    const nFlag=rows.filter(x=>x.flags.length).length;
+    if(onlyFlag) rows=rows.filter(x=>x.flags.length);
     const so=AnaX.sort, sk={name:x=>x.s.name.toLowerCase(),lvl:x=>x.s.level,att:x=>x.attP==null?-1:x.attP,ent:x=>x.q,prog:x=>x.prog,health:x=>x.h.score==null?-1:x.h.score}[so.k]||(x=>x.s.name);
     rows=[...rows].sort((a,b)=>{ const A=sk(a),B=sk(b); return (A>B?1:A<B?-1:0)*so.dir; });
     const th=(k,l)=>`<th data-sort="${k}" style="cursor:pointer;white-space:nowrap">${l}${so.k===k?(so.dir>0?' ▲':' ▼'):''}</th>`;
-    // per-week entry trend within range (up to 8 buckets)
+    // weekly memorization entries (real chart)
     const weeks=Math.min(8, Math.max(2, Math.ceil(R.len/7)));
-    const wk=[...Array(weeks)].map((_,i)=>{ const end=new Date(new Date(R.b)-i*7*864e5), st=new Date(end-7*864e5);
-      return d.quran.filter(q=>{const t=new Date(q.date); return t>st&&t<=end;}).length; }).reverse();
-    // L1 promotion pipeline
+    const wkInfo=[...Array(weeks)].map((_,i)=>{ const end=new Date(new Date(R.b)-i*7*864e5), st=new Date(end-7*864e5);
+      return {n:d.quran.filter(q=>{const t=new Date(q.date); return t>st&&t<=end;}).length, lab:(end.getMonth()+1)+'/'+end.getDate()}; }).reverse();
+    const wk=wkInfo.map(x=>x.n);
+    let take='';
+    if(d.quran.length){ const last=wk[wk.length-1], prev=wk.slice(0,-1), avg=prev.length?Math.round(prev.reduce((a,b)=>a+b,0)/prev.length*10)/10:0;
+      take = last===0? 'No memorization entries logged in the latest week.' : last>avg*1.15? `Latest week: ${last} ${last===1?'entry':'entries'} — up from a ${avg}/week average.` : last<avg*0.85? `Latest week: ${last} ${last===1?'entry':'entries'} — below the ${avg}/week average.` : `Steady: ${last} entries this week, about the usual ${avg}/week.`; }
     const L1=flags.filter(x=>x.s.level==='Level 1').sort((a,b)=>b.prog-a.prog);
+    const L2=flags.filter(x=>x.s.level==='Level 2');
     const L3=flags.filter(x=>x.s.level==='Level 3');
     const paths={standard:0, reverse:0}; L3.forEach(x=>paths[hifzStats(x.s).pid]++);
     const totPages=L3.reduce((a,x)=>a+hifzStats(x.s).pages,0);
+    const attCell=p=>{ const t=UX.tone(p); return p==null?'<span class="ai-sub">—</span>':`<span class="st-cell bg-${t==='dim'?'ok':t} c-${t}">${p}%</span>`; };
     el.innerHTML = `
      <div class="filters no-print"><select id="anaLvl">${['All','Level 1','Level 2','Level 3'].map(L=>`<option ${L===lvl?'selected':''}>${L}</option>`).join('')}</select>
-      <span style="font-size:12px;color:var(--ink3)">${rows.length} students · flags computed for ${R.a} → ${R.b}</span>${QJ.buttonsHTML()}</div>
+      <input id="anaQ" type="search" placeholder="Search a student…" style="min-width:160px" aria-label="Search students">
+      <label style="font-size:12.5px;display:flex;gap:5px;align-items:center;cursor:pointer;white-space:nowrap"><input type="checkbox" id="anaFlagOnly" ${onlyFlag?'checked':''}> Flagged only (${nFlag})</label>
+      <span style="font-size:12px;color:var(--ink3)">${rows.length} shown · ${R.a} → ${R.b}</span>${QJ.buttonsHTML()}</div>
+     ${AnaX.pipelineCard(R)}
      <div class="grid g3" style="margin-bottom:16px">
       <div class="widget"><div class="whead"><h3>Level 1 · Green Book</h3>${L1.length?'<button class="btn btn-o btn-sm no-print" data-qjourney="l1">🗺 Journey</button>':''}</div>
-        ${L1.length?`<div class="kpi">${Math.round(L1.reduce((a,x)=>a+((x.s.gb&&x.s.gb.page)||0),0)/L1.length)}<small>avg page of ${GB_TOTAL}</small></div>
-        <p style="font-size:12px;color:var(--ink2);margin-top:8px">Closest to promotion: ${L1.slice(0,2).map(x=>esc(x.s.name)+' (p.'+((x.s.gb&&x.s.gb.page)||0)+')').join(' · ')||'—'}</p>`
-        :'<p style="font-size:12.5px;color:var(--ink3)">No L1 students in view.</p>'}</div>
+        ${L1.length?`<div class="kpi">${Math.round(L1.reduce((a,x)=>a+((x.s.gb&&x.s.gb.page)||0),0)/L1.length)}<small>avg page of ${GB_TOTAL}</small></div>`:'<p class="ux-note">No Level 1 students.</p>'}</div>
       <div class="widget"><div class="whead"><h3>Level 2 · Muṣḥaf</h3></div>
-        ${flags.some(x=>x.s.level==='Level 2')?`<div class="kpi">${flags.filter(x=>x.s.level==='Level 2').length}<small>readers</small></div>`
-        :'<p style="font-size:12.5px;color:var(--ink2)">Empty by design today — readiness analytics activate with the first promotion from Level 1.</p>'}</div>
+        ${L2.length?`<div class="kpi">${L2.length}<small>readers</small></div>`:'<p class="ux-note">No readers yet — this fills with the first Level 1 promotion.</p>'}</div>
       <div class="widget"><div class="whead"><h3>Level 3 · Ḥifẓ</h3></div>
-        ${L3.length?`<div class="kpi">${totPages.toFixed(0)}<small>pages memorized class-wide</small></div>
-        <p style="font-size:12px;color:var(--ink2);margin-top:8px">Paths: ${paths.standard} standard · ${paths.reverse} reverse — both computed per-student.</p>`:'—'}</div></div>
-     ${AnaX.pipelineCard(R)}${AnaX.paceCard(rows)}${AnaX.cohortCard(R)}
-     ${d.quran.length?`<div class="widget" style="margin-bottom:16px"><div class="whead"><h3>Memorization activity</h3></div>${spark(wk,'entries / week in range')}</div>`:''}
-     <div class="card scrollx" style="padding:4px 12px"><table class="tbl"><thead><tr>${th('name','Student')}${th('lvl','Lvl')}${th('health','Health')}${th('att','Attend.')}${th('ent','Entries')}${th('prog','Progress')}<th>Flags</th></tr></thead><tbody>
-      ${rows.map(x=>`<tr data-go="#/students/${x.s.id}" style="cursor:pointer"><td><b>${esc(x.s.name)}</b></td>
-        <td>${x.s.level.replace('Level ','L')}</td>
-        <td>${x.h.score==null?'<span class="ai-sub">—</span>':`<button class="tag" data-health="${x.s.id}" title="Why this score?" style="cursor:pointer;border:0;color:${AnaX.band(x.h.score).c};font-weight:800">● ${x.h.score}</button>`}</td>
-        <td style="font-family:var(--f-mono)">${x.attP!=null?x.attP+'%':'—'}</td>
-        <td style="font-family:var(--f-mono)" title="${x.s.level==='Level 3'?'Qur’ān entries logged in this range':'Entries are only logged for Level 3 — L1/L2 progress is the Progress column'}">${x.q||(x.s.level==='Level 3'?'0':'<span class="ai-sub">n/a</span>')}${x.needsRev?' <span class="tag tag-gold">'+x.needsRev+' rev</span>':''}</td>
+        ${L3.length?`<div class="kpi">${totPages.toFixed(0)}<small>pages memorized</small></div><p class="ux-note">${paths.standard} standard path · ${paths.reverse} reverse path</p>`:'<p class="ux-note">No Level 3 students.</p>'}</div></div>
+     ${d.quran.length?`<div class="widget" style="margin-bottom:16px"><div class="whead"><h3>Memorization activity</h3><span class="ai-sub">entries per week</span></div><p class="ux-take">${esc(take)}</p>${UX.bars(wk,wkInfo.map(x=>x.lab),{label:'Memorization entries per week',unit:' entries'})}</div>`:''}
+     ${AnaX.paceCard(flags.filter(x=>lvl==='All'||x.s.level===lvl))}
+     <div class="card scrollx" style="padding:4px 12px;margin-bottom:16px"><table class="tbl st-tbl" id="stTbl"><thead><tr>${th('name','Student')}${th('health','Health')}${th('att','Attendance')}${th('ent','Entries')}${th('prog','Progress')}<th>Needs a look</th></tr></thead><tbody>
+      ${rows.map(x=>{ const hb=AnaX.band(x.h.score); const fn=(x.s.name||'').split(' ')[0];
+        return `<tr data-go="#/students/${x.s.id}" data-nm="${esc((x.s.name||'').toLowerCase())}" style="cursor:pointer"><td class="st-name"><span class="ux-dot" style="background:${AnaX.lvColor(x.s.level)};margin-right:6px" title="${esc(x.s.level)}"></span><b>${esc(fn)}</b><small>${esc(x.s.name)}</small></td>
+        <td>${x.h.score==null?'<span class="ai-sub">—</span>':`<button class="chip" data-health="${x.s.id}" title="Why this score?" style="cursor:pointer;border:0;background:none;padding:0;color:var(--ink2);font-weight:600"><span class="ux-dot" style="background:${hb.c}"></span> ${x.h.score}</button>`}</td>
+        <td>${attCell(x.attP)}</td>
+        <td style="color:var(--ink2)" title="${x.s.level==='Level 3'?'Qur’ān entries logged in this range':'Entries are only logged for Level 3'}">${x.q||(x.s.level==='Level 3'?'0':'<span class="ai-sub">n/a</span>')}${x.needsRev?' <span class="st-flag bg-warn c-warn">'+x.needsRev+' to review</span>':''}</td>
         <td>${x.s.level==='Level 2'? 'p.'+x.prog : `<div style="min-width:90px"><div class="bar"><i style="width:${x.prog}%"></i></div></div>`}</td>
-        <td>${x.flags.map(f=>`<span class="tag ${f[0]==='behind'?'tag-red':'tag-green'}" title="${esc(f[1])}">${f[0]==='behind'?'▼ ':'▲ '}${esc(f[1])}</span>`).join(' ')||'<span class="tag tag-dim">on track</span>'}</td></tr>`).join('')}
-     </tbody></table></div>`;
+        <td>${x.flags.map(f=>`<span class="st-flag ${f[0]==='behind'?'bg-bad c-bad':'bg-ok c-ok'}">${f[0]==='behind'?'▼ ':'▲ '}${esc(f[1])}</span>`).join('')||'<span class="ai-sub">—</span>'}</td></tr>`; }).join('')||'<tr><td colspan="6" class="ai-sub" style="text-align:center;padding:18px">Nobody matches — everyone is on track.</td></tr>'}
+     </tbody></table><p class="ux-foot">Attendance = present or late ÷ (present + late + absent); excused days aren't counted. Blank flag = on track.</p></div>
+     ${AnaX.cohortCard(R)}`;
     wireCommon(el); AnaX.wire(el,R);
+    $$('[data-promote]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const st=d.students.find(x=>x.id===b.dataset.promote); if(st) Students.promote(st,b.dataset.to); });
     $$('th[data-sort]',el).forEach(h=>h.onclick=()=>{ const k=h.dataset.sort; AnaX.sort=AnaX.sort.k===k?{k,dir:-AnaX.sort.dir}:{k,dir:k==='name'||k==='lvl'?1:-1}; Router.render(); });
     $('#anaLvl',el).onchange=e=>{ Ana._lvl=e.target.value; Router.render(); };
+    $('#anaFlagOnly',el).onchange=e=>{ Ana._flagged=e.target.checked; Router.render(); };
+    $('#anaQ',el).oninput=e=>{ const q=e.target.value.trim().toLowerCase(); $$('#stTbl tbody tr[data-nm]',el).forEach(tr=>tr.style.display=!q||tr.dataset.nm.includes(q)?'':'none'); };
   },
   curriculum(el,R){
     const d=DB.data;
@@ -16045,7 +16180,7 @@ const AI2 = {
   digits(p){ return (p||'').replace(/[^0-9+]/g,''); },
   act(){ return DB.data.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>today())); },
   sessions(){ const a=DB.data.attendance; return Object.keys(a).filter(k=>Object.keys(a[k]).length).sort(); },
-  attRate(s,from){ let p=0,n=0; AI2.sessions().filter(day=>!from||day>=from).forEach(day=>{ const v=DB.data.attendance[day][s.id]; if(v){ n++; if(v==='P'||v==='L') p++; } }); return n? Math.round(p/n*100) : null; },
+  attRate(s,from){ let p=0,n=0; AI2.sessions().filter(day=>!from||day>=from).forEach(day=>{ const v=DB.data.attendance[day][s.id]; if(v&&v!=='E'){ n++; if(v==='P'||v==='L') p++; } }); return n? Math.round(p/n*100) : null; },
   missed(s,from){ return AI2.sessions().filter(day=>(!from||day>=from) && ['A','E'].includes(DB.data.attendance[day][s.id])); },
   lastSession(s){ const ss=AI2.sessions(); for(let i=ss.length-1;i>=0;i--){ const v=DB.data.attendance[ss[i]][s.id]; if(v) return {day:ss[i], v}; } return null; },
   famRows(){
