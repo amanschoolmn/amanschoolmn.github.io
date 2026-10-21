@@ -1070,6 +1070,21 @@ body.lay-editing .lay-navrow a svg{display:none}
 .wr-card h2{margin:0;font-size:26px;letter-spacing:.2px}.wr-card .sub{font-size:13px;color:#6b5a30;margin-bottom:16px}
 .wr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.wr-tile{background:rgba(255,255,255,.65);border-radius:14px;padding:12px 14px}.wr-tile b{display:block;font-size:26px;line-height:1.1}.wr-tile span{font-size:12px;color:#6b5a30}
 .wr-shout{background:rgba(255,255,255,.65);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5}.wr-foot{margin-top:14px;font-size:11.5px;color:#6b5a30;text-align:center}
+
+/* v59: never letter-space / uppercase names (breaks Arabic joining) */
+bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transform:none!important}
+.td-st bdi{font:600 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink)}
+.pp-dir{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line)}
+.pp-dir .pp-lbl{font-size:12.5px;color:var(--ink2);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pp-dir .pp-lbl bdi{font:600 13px var(--f-body);color:var(--ink)}
+.pp-prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 2px}.pp-prog i{display:block;height:100%;background:var(--ok);border-radius:99px}
+
+/* v59 assistant briefing cards */
+.ai-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}.ai-chips::-webkit-scrollbar{display:none}.ai-chips .chip{flex-shrink:0;white-space:nowrap}.ai-chips #aiMoreBox{display:none}
+.ai-bl{border-left:4px solid var(--tn,var(--line));background:color-mix(in srgb,var(--tn,var(--line)) 8%,var(--surface));border-radius:12px;padding:11px 13px;margin:9px 0}
+.ai-bl.t-ok{--tn:var(--ok)}.ai-bl.t-warn{--tn:var(--gold)}.ai-bl.t-or{--tn:var(--orange)}.ai-bl.t-bad{--tn:var(--bad)}.ai-bl.t-info{--tn:var(--info)}.ai-bl.t-dim{--tn:var(--ink3)}
+.ai-bb .hd{font-weight:700;font-size:14.5px}.ai-bb .ln{font-size:13px;color:var(--ink2);margin-top:3px;line-height:1.45}.ai-bb .chs{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.ai-greet{font-size:15px;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -1097,7 +1112,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 58 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 59 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -6150,35 +6165,45 @@ const Teacher = {
     const nc = nextClassDate();
     const upLessons = d.lessons.filter(L=>!L.taught && L.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
     const mats = upLessons.flatMap(L=>(L.materials||[]));
-    const roster = d.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));
-    const lastQ={}; d.quran.forEach(q=>{ if(!lastQ[q.sid]||q.date>lastQ[q.sid]) lastQ[q.sid]=q.date; });
-    const cutoff=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
-    const behindNow = d.students.filter(s=>s.active!==false&&s.level==='Level 3'&&(!lastQ[s.id]||lastQ[s.id]<cutoff));
-    const allergies = d.students.filter(s=>s.active!==false && s.application && isAllergyPositive(s.application.allergy));
+    const roster = d.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>tdy)).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
     const crestImg = (document.querySelector('.crest img')||{}).src || '';
+    const ph = s => { const g=(s.guardians||[]).find(x=>x.phone); const e=(s.emergencyContacts||[]).find(x=>x.phone); return {g:g?{n:g.name||'Guardian',p:g.phone}:null, e:e?{n:e.name||'Emergency',p:e.phone}:null}; };
+    const famP = s => { try{ const k=famKey(s); return k? famContactPhone(k):''; }catch(e){ return ''; } };
+    const health = s => { const a=s.application||{}; const out=[]; if(isAllergyPositive(a.allergy)) out.push('Allergy: '+(a.allergyDetail||a.allergy)); if(a.healthConditions && !/^(no|none|nil|n\/?a|na)\b/i.test(String(a.healthConditions).trim())) out.push('Health: '+a.healthConditions); if(a.meds && !/^(no|none|nil|n\/?a|na)\b/i.test(String(a.meds).trim())) out.push('Medication: '+a.meds); return out; };
+    const noContact = roster.filter(s=>{ const p=ph(s); return !p.g && !p.e && !famP(s); });
+    const flagged = roster.filter(s=>health(s).length);
+    const dflt = {'Qur’an / Ḥifẓ':'Level 3: peer hearing in pairs (use the Peer pairs sheet). Level 1: each child reads their next Green Book page aloud. Level 2: Muṣḥaf reading.', 'Arabic':'Review the last lesson with each level; practise reading and writing letters/words.', 'Islamic Studies':'Read-aloud and short discussion (Tawhid / Names & Attributes).', 'Closing':'Duʿāʾ, tidy up, then dismiss — only to the authorized pickup person.'};
+    const lvls=['Level 1','Level 2','Level 3'].map(L=>({L,list:roster.filter(s=>s.level===L)})).filter(x=>x.list.length);
+    const lvNote={'Level 1':'Green Book — listen to each child read; note the page where they stop.','Level 2':'Muṣḥaf reading — fluency check, note any who stumble.','Level 3':'Ḥifẓ — peer hearing in pairs, spot-check a few.'};
+    const nm = s => `<bdi dir="auto">${esc(s.preferredName||s.name)}</bdi>`;
+    const pickup = s => esc((s.application&&s.application.pickup)||'');
     printWindow('AMAN — Substitute Coverage Plan',
-      `*{box-sizing:border-box}body{font-family:'Crimson Pro',Georgia,serif;max-width:760px;margin:30px auto;padding:0 22px;color:#20261f;line-height:1.55}
-       .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a4a35;padding-bottom:14px;margin-bottom:16px}
-       .head img{width:56px;height:56px}
-       h1{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#123626;margin:0}
-       .meta{font-size:12.5px;color:#5c665a}
-       h2{font-size:14px;color:#1a4a35;margin:22px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px}
-       table{width:100%;border-collapse:collapse;font-size:12.5px}
-       td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left}
-       .rphoto{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px}
-       .warn{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:10px 14px;font-size:13px;margin:10px 0}
-       ul{padding-left:18px;font-size:13.5px}
+      `*{box-sizing:border-box}body{font-family:'Crimson Pro',Georgia,serif;max-width:800px;margin:26px auto;padding:0 22px;color:#20261f;line-height:1.5}
+       .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a4a35;padding-bottom:12px;margin-bottom:14px}.head img{width:54px;height:54px}
+       h1{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#123626;margin:0}.meta{font-size:12.5px;color:#5c665a}
+       h2{font-size:14px;color:#1a4a35;margin:20px 0 6px;border-bottom:1px solid #ddd;padding-bottom:4px;break-after:avoid}
+       table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left;vertical-align:middle}th{font-size:11px;color:#6b756a;text-transform:none}
+       .rphoto{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-inline-end:6px}
+       .warn{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:9px 13px;font-size:13px;margin:8px 0}.bad{background:#fbe3df;border-color:#e3a79f}
+       .sug{color:#7b857a}.lv{background:#eef4ef;border-radius:8px;padding:6px 10px;margin:14px 0 4px;font-weight:700;color:#1a4a35;break-after:avoid;font-size:13.5px}.lv small{font-weight:400;color:#5c665a;display:block}
+       .ph{font-size:11.5px;color:#444}.no{color:#a13a2e;font-weight:700}.box{white-space:nowrap}tr{break-inside:avoid}
+       .foot{margin-top:18px;font-size:11px;color:#7b857a;border-top:1px solid #ddd;padding-top:8px}
        @media print{@page{margin:0.4in}}`,
-      `<div class="head">${crestImg?`<img src="${crestImg}" alt="">`:''}<div><h1>Substitute / Emergency Coverage Plan</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared ${fmtDate(tdy)}${nc?' · next class '+fmtDate(nc):''}</div></div></div>
-       <p style="font-size:13.5px">If you're covering a class for Ustāth Nur, jazākumullāhu khayran — everything you need is below. For anything urgent, reach Br. Abdallah bin Abdirahman at (612) 444-2609.</p>
-       <h2>${prepDay}'s plan</h2>
-       <table>${slots.map((s,i)=>{ const t=d.planner['pl_'+prepDay+'_'+i]||''; return `<tr><td style="width:120px;font-weight:700">${esc(s)}</td><td>${esc(t)||'<span style="color:#999">— not planned —</span>'}</td></tr>`; }).join('')}</table>
-       ${upLessons.length?`<h2>Upcoming lesson plans</h2><ul>${upLessons.map(L=>`<li><b>${esc(L.title)}</b> — ${esc(L.subject)}${L.objective?' · '+esc(L.objective):''}</li>`).join('')}</ul>`:''}
-       ${mats.length?`<h2>Materials checklist</h2><ul>${[...new Set(mats)].map(m=>`<li>☐ ${esc(m)}</li>`).join('')}</ul>`:''}
-       ${allergies.length?`<div class="warn">⚠ Allergy on file — ${allergies.map(s=>esc(s.name)+' ('+esc(s.application.allergy)+')').join('; ')}</div>`:''}
-       ${behindNow.length?`<div class="warn">📖 No memorization entry in 14+ days — ${behindNow.map(s=>esc(s.name)).join(', ')}</div>`:''}
-       <h2>Roster — ${roster.length} active students</h2>
-       <table>${roster.map(s=>`<tr><td>${s.photo?`<img class="rphoto" src="${esc(s.photo)}">`:''}${esc(s.preferredName||s.name)}</td><td>${esc(s.level)}</td><td style="width:70px">☐ P &nbsp;☐ A</td></tr>`).join('')}</table>`);
+      `<div class="head">${crestImg?`<img src="${crestImg}" alt="">`:''}<div><h1>Substitute / Emergency Coverage Plan</h1><div class="meta">Al-Madrasatu An-Nuriyyah · prepared ${fmtDate(tdy)}${nc?' · next class '+fmtDate(nc):''} · ${roster.length} students</div></div></div>
+       <p style="font-size:13.5px;margin:0">If you're covering a class for Ustāth Nur, jazākumullāhu khayran. For anything urgent, reach <b>Br. Abdallah bin Abdirahman at (612) 444-2609</b>. In an emergency, call 911 first.</p>
+       <h2>${prepDay}'s run of the day</h2>
+       <table>${slots.map((s,i)=>{ const t=d.planner['pl_'+prepDay+'_'+i]||''; return `<tr><td style="width:125px;font-weight:700">${esc(s)}</td><td>${t?esc(t):`<span class="sug">${esc(dflt[s]||'')}</span>`}</td></tr>`; }).join('')}</table>
+       ${!slots.some((s,i)=>d.planner['pl_'+prepDay+'_'+i])?'<div class="sug" style="font-size:11px">Grey text is the standard plan — nothing specific was planned for this day.</div>':''}
+       ${upLessons.length?`<h2>Upcoming lesson plans</h2><ul style="padding-left:18px;font-size:13px">${upLessons.map(L=>`<li><b>${esc(L.title)}</b> — ${esc(L.subject)}${L.objective?' · '+esc(L.objective):''}</li>`).join('')}</ul>`:''}
+       ${mats.length?`<h2>Materials checklist</h2><ul style="padding-left:18px;font-size:13px">${[...new Set(mats)].map(m=>`<li>☐ ${esc(m)}</li>`).join('')}</ul>`:''}
+       ${flagged.length?`<h2>Health &amp; allergies</h2>${flagged.map(s=>`<div class="warn">⚠ <b>${nm(s)}</b> — ${health(s).map(esc).join(' · ')}${(()=>{ const p=ph(s); const c=p.g||p.e; return c?` <span class="ph">· call ${esc(c.n)} ${esc(c.p)}</span>`:''; })()}<br><span class="ph">If a reaction is suspected: call 911, then the family.</span></div>`).join('')}`:''}
+       ${noContact.length?`<div class="warn bad"><b>⚠ ${noContact.length} student${noContact.length>1?'s have':' has'} no phone number on file.</b> If one of these children needs a parent, call Br. Abdallah: ${noContact.map(nm).join(', ')}.</div>`:''}
+       <h2>Roster by level</h2>
+       ${lvls.map(({L,list})=>`<div class="lv">${esc(L)} · ${list.length}<small>${esc(lvNote[L])}</small></div>
+         <table><tr><th>Student</th><th class="box">Present · Late · Absent</th><th>Parent / guardian</th><th>Emergency</th><th>Pickup</th></tr>${list.map(s=>{ const p=ph(s), fp=famP(s); const warn=health(s).length;
+           return `<tr><td>${s.photo?`<img class="rphoto" src="${esc(s.photo)}">`:''}<b>${nm(s)}</b>${warn?' <span title="health note">⚠</span>':''}</td><td class="box">☐ P &nbsp;☐ L &nbsp;☐ A</td>
+           <td class="ph">${p.g?esc(p.g.n)+'<br>'+esc(p.g.p):fp?esc(fp):'<span class="no">no number</span>'}</td><td class="ph">${p.e?esc(p.e.n)+'<br>'+esc(p.e.p):'—'}</td><td class="ph">${pickup(s)||'—'}</td></tr>`; }).join('')}</table>`).join('')}
+       <div class="foot">This sheet contains private family contact details. Please return it to Ustāth Nur after class — do not photograph or share it.</div>`);
     DB.log('Substitute coverage plan printed');
   },
   startTimer(min){
@@ -12040,6 +12065,7 @@ const CR={
   present(s){ const a=CR.attSt(s); return a!=='A'&&a!=='E'; },
   active(){ const t=today(); return DB.data.students.filter(s=>s.active!==false&&(!s.startDate||s.startDate<=t)); },
   lvl(s){ return s.level==='Level 3'?3:s.level==='Level 2'?2:1; },
+  he(s){ return s.gender==='Sister'?'she':'he'; },
   nm(s){ return s.preferredName||s.name; },
   ds(d){ return d?Math.max(0,Math.round((new Date(today())-new Date(d))/864e5)):null; },
   lastHeard(s){ let b=null; const up=d=>{ if(d&&(!b||d>b)) b=d; };
@@ -12108,7 +12134,9 @@ const TD = {
       <div class="no-print" style="margin:0 0 12px"><button class="btn btn-p btn-sm" id="tdCm">▶ Class mode</button> <span class="td-hint">One student at a time, big buttons — for hearing in class.</span></div>
       <div class="card td-att no-print"><div class="td-atthead"><b>① Attendance</b><span class="tag tag-green">${nP} here</span>${nA?`<span class="tag tag-red">${nA} absent</span>`:''}${nU?`<span class="tag tag-dim">${nU} not marked</span>`:''}<span style="margin-left:auto;display:flex;gap:6px"><button class="btn btn-o btn-sm" id="tdAllP" ${nU?'':'disabled'}>Mark the rest present</button><button class="btn btn-ghost btn-sm" id="tdAttT">${TD.attOpen?'Hide ▴':'Edit ▾'}</button></span></div>
         ${TD.attOpen?`<p class="td-hint">Tap a name to cycle: not marked → present → late → absent → excused absence. Absent students move out of the list and get a follow-up message button.</p><div class="td-acs">${act.slice().sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).map(TD.attChip).join('')}</div>`:''}</div>
-      <div class="rp-kpis no-print">${kpi(nHear,'Juzʼ to hear (L3)','var(--gold)')}${kpi(nPoem,'Poem bayts due','var(--info)')}${kpi(nPos,'L1/L2 not updated yet','var(--bad)')}${kpi(nNeed+'/'+present.length,'Still need you','var(--ok)')}</div>
+      ${(()=>{ const nh=all.filter(r=>r.L===3&&!ML.lastNew(r.s)&&!r.absent&&!r.s.hw).length; return nh>=2?`<div class="notice warn no-print" style="margin:0 0 12px">🧭 <div><b>${nh} Level 3 students need a starting point.</b> Set where each one is once — then every card shows the right next portion. <button class="btn btn-p btn-sm" data-hwsetup>🧭 Set up students</button></div></div>`:''; })()}
+      ${present.length?(()=>{ const hd=present.filter(r=>CR.ds(CR.lastHeard(r.s))===0).length; return `<div class="no-print" style="max-width:460px;margin:0 0 10px"><div class="pp-prog"><i style="width:${Math.round(hd/present.length*100)}%"></i></div><div class="ai-sub">${hd} of ${present.length} present students heard today</div></div>`; })():''}
+      <div class="rp-kpis no-print">${nHear?kpi(nHear,'Juzʼ to hear (L3)','var(--gold)'):''}${nPoem?kpi(nPoem,'Poem bayts due','var(--info)'):''}${nPos?kpi(nPos,'L1/L2 not updated yet','var(--orange)'):''}${kpi(nNeed+' of '+present.length,'still need you','var(--ok)')}</div>
       <div class="filters no-print"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<button class="chip ${TD.lv===k?'on':''}" data-tdlv="${k}">${l} (${cnt(k)})</button>`).join('')}</span><span style="display:flex;gap:4px"><button class="chip ${TD.f==='need'?'on':''}" data-tdf="need">Needs me</button><button class="chip ${TD.f==='all'?'on':''}" data-tdf="all">Everyone</button></span></div>
       ${show.length?`<div class="td-grid">${show.map(TD.card).join('')}</div>`:`<div class="empty"><div class="big">🌟</div><h3>${present.length?'Everyone is all clear':'Nobody here yet'}</h3><p>${present.length?'Switch to “Everyone” to log anyway.':'Mark attendance above to start.'}</p></div>`}
       ${absent.length?`<div class="card td-abs"><div class="whead"><h3>Absent today (${absent.length})</h3></div>${absent.map(r=>`<div class="td-it">${avatarHTML(r.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(r.s))}</b><small>${r.a==='E'?'Excused absence':'Absent (unexcused)'} · ${r.s.missSent===t?'✓ follow-up sent':'no follow-up yet'}${r.s.hw?' · 📌 '+esc(HW.label(r.s.hw))+' stays due':''}</small></div><button class="btn btn-o btn-sm" data-tdmiss="${r.s.id}">✉ Follow up</button><button class="btn btn-ghost btn-sm" data-tdhere="${r.s.id}">Actually here</button></div>`).join('')}</div>`:''}</div>`;
@@ -12222,7 +12250,9 @@ const PP={
     const sel=PP._sel;
     const modeBtn=(m,l,t)=>`<button class="${st.mode===m?'on':''}" data-ppmode="${m}" title="${t}">${l}</button>`;
     const cardMember=(s,absent)=>`<span class="${absent?'abs':''}">${avatarHTML(s,'width:34px;height:34px;border-radius:50%;font-size:12px')}<b dir="auto">${esc(CR.nm(s))}</b><small>${absent?'absent today':(CR.ds(CR.lastHeard(s))==null?'never heard':CR.ds(CR.lastHeard(s))+'d since heard')}</small></span>`;
-    const dirRow=(s,peer)=>{ const f=PP.focus(s); return `<div class="td-sec"><div class="td-st">🤝 ${esc(CR.nm(peer))} hears ${esc(CR.nm(s))}</div>${f.length?f.map(j=>`<div class="td-it"><div class="td-lab"><b>Juzʼ ${j.n}</b><small>${j.k==='due'?(j.overdue?j.overdue+'d overdue':'due'):'finished at home'}</small></div>${TD.rate3('data-pprate="'+s.id+'|'+j.n+'|'+peer.id)}</div>`).join(''):`<div class="td-it"><div class="td-lab"><small>Any Juzʼ they choose</small></div><button class="btn btn-o btn-sm" data-ppmark="${s.id}|${peer.id}">Mark heard</button></div>`}</div>`; };
+    const dirRow=(s,peer)=>{ const f=PP.focus(s), lbl=`<bdi dir="auto">${esc(CR.nm(peer))}</bdi><br><span class="ai-sub">hears</span> <bdi dir="auto">${esc(CR.nm(s))}</bdi>`;
+      if(!f.length) return `<div class="pp-dir"><span class="pp-lbl">🤝 ${lbl}<br><small class="ai-sub">any Juzʼ they choose</small></span><button class="btn btn-o btn-sm" style="white-space:nowrap" data-ppmark="${s.id}|${peer.id}">Mark heard</button></div>`;
+      return `<div class="td-sec"><div class="td-st">🤝 ${lbl}</div>${f.map(j=>`<div class="td-it"><div class="td-lab"><b>Juzʼ ${j.n}</b><small>${j.k==='due'?(j.overdue?j.overdue+'d overdue':'due'):'finished at home'}</small></div>${TD.rate3('data-pprate="'+s.id+'|'+j.n+'|'+peer.id)}</div>`).join('')}</div>`; };
     const card=p=>{ const ss=p.map(byId).filter(Boolean), k=PP.pkey(p), locked=st.locked.includes(k), absent=p.some(id=>!elIds.has(id)), w=PP.warn(p);
       return `<div class="card pp-card ${absent?'absent':''}"><div class="pp-tools no-print"><button class="pp-lock ${locked?'on':''}" data-pplock="${k}" title="${locked?'Locked — stays when you re-shuffle':'Lock this pair'}" aria-pressed="${locked}">${locked?'🔒':'🔓'}</button><button class="pp-x" data-ppun="${k}" title="Unpair" aria-label="Unpair">✕</button></div>
       <div class="pp-names">${ss.map(s=>cardMember(s,!elIds.has(s.id))).join('<i>⇄</i>')}</div>
@@ -12235,6 +12265,7 @@ const PP={
       <div class="filters no-print pp-bar"><div class="pp-seg" role="radiogroup" aria-label="Pairing mode">${modeBtn('auto','Automatic','Auto-pairs everyone')}${modeBtn('mixed','Mixed','You pair some, auto fills the rest')}${modeBtn('manual','Manual','You pair everyone')}</div>
         ${st.mode!=='manual'?'<button class="btn btn-o btn-sm" id="ppShuffle">🔀 Re-shuffle</button>':''}${st.mode==='mixed'&&tray.length>1?'<button class="btn btn-o btn-sm" id="ppFill">✨ Auto-fill the rest</button>':''}
         <button class="btn btn-o btn-sm" id="ppReset" title="Throw away custom pairs and let the app pair everyone">↺ Reset to automatic</button><button class="btn btn-o btn-sm" id="ppHist">🕘 Pair history</button><button class="btn btn-o btn-sm" id="ppPrint">🖨 Print pairs</button></div>
+      ${(()=>{ const hd=el.filter(x=>CR.ds(CR.lastHeard(x))===0).length; return el.length?`<div class="no-print" style="max-width:420px"><div class="pp-prog"><i style="width:${Math.round(hd/el.length*100)}%"></i></div><div class="ai-sub">${hd} of ${el.length} heard today</div></div>`:''; })()}
       <div class="td-hint" style="margin:6px 0">${el.length} students here · week of ${esc(fmtDate(ws))} · ${st.mode==='auto'?'Pairs you lock 🔒 stay when you re-shuffle.':st.mode==='mixed'?'Pairs you make or lock stay; auto fills the rest.':'Tap one student, then another, to pair them.'}</div>
       ${absentPairs.length&&st.mode!=='manual'?`<div class="notice warn no-print" style="margin-bottom:12px">⚠️ <div>${absentPairs.length} pair${absentPairs.length>1?'s have':' has'} a student who is absent today. <button class="chip" id="ppFixAbs">Re-pair for today</button></div></div>`:''}
       ${tray.length?`<div class="card pp-tray no-print"><div class="whead"><h3>Not paired yet (${tray.length})</h3></div><p class="td-hint">${tray.length%2&&st.mode==='auto'?'Odd number today — one student is left out. ':''}Tap a student, then tap a partner. A pair of two can also take a third as a trio.</p><div class="pp-chips">${tray.map(s=>`<button class="pp-chip ${sel===s.id?'on':''}" data-pptray="${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px')}<span dir="auto">${esc(CR.nm(s))}</span></button>`).join('')}</div>${cands.length?`<div style="margin-top:8px"><select id="ppExtra" class="pp-extra"><option value="">+ Include another student…</option>${cands.map(s=>`<option value="${s.id}">${esc(CR.nm(s))} (${esc(s.level||'')})</option>`).join('')}</select></div>`:''}</div>`:(cands.length?`<div class="no-print" style="margin:8px 0"><select id="ppExtra" class="pp-extra"><option value="">+ Include another student…</option>${cands.map(s=>`<option value="${s.id}">${esc(CR.nm(s))} (${esc(s.level||'')})</option>`).join('')}</select></div>`:'')}
@@ -12554,13 +12585,13 @@ const HW={
   line(s,withName){ const h=s.hw, t=HW.target(s), lab=h?HW.label(h):HW.label(t);
     if(h){ const ms=HW.missed(s), wk=HW.weak(s,h.n,h.b), nx=(h.tries||0)>=3;
       return `<div class="td-lab">${withName?`<b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(CR.nm(s))}</b>`:''}<b dir="auto">📌 ${esc(lab)}</b><small>given ${esc(fmtDate(h.given))} · ${h.tries?'next is attempt '+(h.tries+1):'not heard yet'}${ms?' · missed '+ms+' class'+(ms>1?'es':''):''}${h.ns?' · not reached ×'+h.ns:''}${nx?' · ⚠ stuck':''}</small>${wk.length?`<small style="color:var(--bad)">weak spots: āyah ${esc(HW.weakTxt(wk))}</small>`:''}</div>`; }
-    return `<div class="td-lab">${withName?`<b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(CR.nm(s))}</b>`:''}<b dir="auto">Next: ${esc(lab)}</b><small>${ML.lastNew(s)?'no homework assigned yet — a button below assigns this and records the result':'no starting point yet — tap a result to set where he is'}</small></div>`; },
+    return `<div class="td-lab">${withName?`<b dir="auto" style="cursor:pointer" data-go="#/memlog/${s.id}">${esc(CR.nm(s))}</b>`:''}<b dir="auto">Next: ${esc(lab)}</b><small>${ML.lastNew(s)?'no homework assigned yet — a button below assigns this and records the result':'no starting point yet — tap a result to set where '+CR.he(s)+' is'}</small></div>`; },
   btns(s){ return `<span class="td-r hw-r">${[['E','✓','Excellent','strong','Passed — excellent'],['G','~','Good','shaky','Passed — good'],['F','✗','Failed','forgot','Failed — counts as an attempt; the same portion stays due'],['N','⏸','Not yet','ny','Absent or not reached — no attempt counted; stays due']].map(([c,i,l,k,t])=>`<button class="td-b ${k}" data-hw="${s.id}|${c}" title="${t}">${i}<small>${l}</small></button>`).join('')}</span>`; },
   cardBody(s,last){ return `<div class="td-it">${HW.line(s)}${HW.btns(s)}</div><div class="td-it" style="margin-bottom:4px"><small style="color:var(--ink3);flex:1 1 140px">${last?'Last logged: '+esc(last.what)+' · '+(CR.ds(last.date)===0?'today':CR.ds(last.date)+'d ago')+' · '+esc(last.grade):'No entries yet'}</small><button class="btn btn-ghost btn-sm" data-hwset="${s.id}">✎ Homework</button><button class="btn btn-ghost btn-sm" data-tdlog="${s.id}">＋ Log</button></div>`; },
   row(s){ return `<div class="td-it hw-row">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}${HW.line(s,true)}${HW.btns(s)}<button class="btn btn-ghost btn-sm" data-hwset="${s.id}" aria-label="Change homework" title="Change">✎</button></div>`; },
   pageCard(){ const L=ML.stu(), has=L.filter(s=>s.hw), none=L.filter(s=>!s.hw), noHist=none.filter(s=>!ML.lastNew(s)), ready=none.filter(s=>ML.lastNew(s)), auto=!!HW.st().hwAuto, stuck=has.filter(s=>(s.hw.tries||0)>=3).length;
     return `<details class="card no-print" style="margin-bottom:14px" ${has.length||noHist.length?'open':''}><summary style="cursor:pointer"><b>📌 Homework</b> <span class="tag ${has.length?'tag-gold':'tag-dim'}">${has.length} due</span>${stuck?` <span class="tag tag-red">${stuck} stuck</span>`:''}${noHist.length?` <span class="tag tag-blue">${noHist.length} need a starting point</span>`:''}</summary>
-      ${noHist.length?`<div class="notice warn" style="margin:8px 0">🧭 <div><b>${noHist.length} student${noHist.length===1?'':'s'} need a starting point.</b> Tell the app which sūrah each is on and how far he has passed from āyah 1; it then suggests the right next portion. <button class="btn btn-p btn-sm" data-hwsetup>🧭 Set up students</button></div></div>`:''}
+      ${noHist.length?`<div class="notice warn" style="margin:8px 0">🧭 <div><b>${noHist.length} student${noHist.length===1?'':'s'} need a starting point.</b> Tell the app which sūrah each is on and how far they have passed from āyah 1; it then suggests the right next portion. <button class="btn btn-p btn-sm" data-hwsetup>🧭 Set up students</button></div></div>`:''}
       <p class="td-hint">One portion is due per student. After you hear it: <b>✓ / ~</b> passed (with a grade) · <b>✗ Failed</b> counts as an attempt and the same portion stays due · <b>⏸ Not yet</b> is for a student who was absent or whom you didn’t get to — nothing is counted.</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px"><button class="btn btn-p btn-sm" id="hwCm">▶ Class mode</button><button class="btn btn-o btn-sm" data-hwq>✉ Homework messages</button><button class="btn btn-o btn-sm" data-hwprint>🖨 Homework sheets</button><button class="btn btn-ghost btn-sm" data-hwsetup>🧭 Setup</button></div>
       ${has.map(HW.row).join('')||'<p style="margin:6px 0;color:var(--ink3)">Nobody has homework yet.</p>'}
@@ -12646,7 +12677,7 @@ Object.assign(HW,{
     const pool=()=>base.filter(s=>list||showAll||!s.hw);
     const rowHTML=s=>{ const cur=(s.hifz||{}).cur||114, l=ML.lastNew(s), n=l?ML.nOf(l):cur, c=SURAH_AYAHS[n], th=l?HW.thru(s,n):0, z=HW.size(s)||10;
       return `<div class="mb-row sp-row" data-sid="${s.id}">${avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0')}<b class="mb-n" dir="auto">${esc(CR.nm(s))}</b><select class="mb-s sp-s" aria-label="Sūrah">${surOpts(n)}</select><span class="ml-ra" title="How far he has passed from āyah 1 in this sūrah (0 = not started it)"><small>passed to</small><input type="number" class="sp-t" min="0" max="${c}" value="${th}" inputmode="numeric" aria-label="Passed to āyah"><small class="sp-c">/ ${c}</small></span><span class="ml-ra"><small>portion</small><input type="number" class="sp-z" min="1" max="${c}" value="${z}" inputmode="numeric" aria-label="Portion size in āyāt"><small>āyāt</small></span>${s.hw?'<span class="tag tag-gold">has homework</span>':(l?'':'<span class="tag tag-dim">new</span>')}</div>`; };
-    const ov=overlay(`<div class="modal" style="max-width:780px"><h3>🧭 Set up where each student is</h3><p class="td-hint">For each student: the sūrah he is on, <b>how far he has passed from āyah 1</b> (0 = hasn’t started it), and his usual portion size. I’ll record that starting point and assign the right next portion. You only do this once.</p>
+    const ov=overlay(`<div class="modal" style="max-width:780px"><h3>🧭 Set up where each student is</h3><p class="td-hint">For each student: the sūrah they are on, <b>how far they have passed from āyah 1</b> (0 = hasn’t started it), and their usual portion size. I’ll record that starting point and assign the right next portion. You only do this once.</p>
       ${list?'':`<label class="td-hint" style="display:flex;gap:6px;align-items:center;margin:0 0 6px"><input type="checkbox" id="sp-all"> Show everyone, even those who already have homework (their homework is replaced)</label>`}
       <div class="mb-list" id="sp-l"></div><div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="ok">Save & assign homework</button></div></div>`,true);
     const draw=()=>{ const p=pool(); $('#sp-l',ov).innerHTML=p.length?p.map(rowHTML).join(''):'<p class="td-hint">Everyone already has homework. Tick “Show everyone” to re-place someone.</p>'; };
@@ -13047,6 +13078,31 @@ const Admin = {
     $('[data-x=c]',o).onclick=()=>o.remove(); $('#rgF',o).onclick=()=>{ o.remove(); FU.finder(cb); }; $$('[data-rg]',o).forEach(b=>b.onclick=()=>{ o.remove(); Router.go('#/students/'+b.dataset.rg); }); },
   /* ---------- FAMILIES & TUITION ---------- */
   /* ---------- ENROLLMENT ---------- */
+  applyFam(members,g){
+    const snap=members.map(s=>JSON.stringify([s.id,s.guardians||[],s.emergencyContacts||[]]));
+    members.forEach(s=>{
+      if(g.gn||g.gp){ if(!s.guardians||!s.guardians.length) s.guardians=[{id:uid(),name:g.gn||'',relation:'',phone:g.gp||''}]; else { const x=s.guardians[0]; if(!x.name&&g.gn) x.name=g.gn; if(!x.phone&&g.gp) x.phone=g.gp; } }
+      if(g.en||g.ep){ if(!s.emergencyContacts||!s.emergencyContacts.length) s.emergencyContacts=[{id:uid(),name:g.en||'',relation:'',phone:g.ep||''}]; else { const x=s.emergencyContacts[0]; if(!x.name&&g.en) x.name=g.en; if(!x.phone&&g.ep) x.phone=g.ep; } }
+    });
+    DB.log('Contact info filled for '+members.map(s=>s.name).join(', ')); DB.save();
+    return ()=>{ snap.forEach(j=>{ const [id,g2,e2]=JSON.parse(j); const s=DB.data.students.find(x=>x.id===id); if(s){ s.guardians=g2; s.emergencyContacts=e2; } }); DB.save(); };
+  },
+  pasteImport(el){
+    const o=overlay(`<div class="modal" style="max-width:640px"><h3>📋 Paste contacts from your sheet</h3>
+      <p class="td-hint">One family per line, columns separated by a tab or comma:<br><b>family or student name · guardian name · guardian phone · emergency name · emergency phone</b><br>Only blanks are filled — nothing already on file is overwritten.</p>
+      <textarea id="piT" rows="8" style="width:100%;font-family:var(--f-body)" placeholder="Jamal, Fatima Jamal, 612-555-0101, Ali Jamal, 612-555-0102"></textarea>
+      <div id="piR" class="ai-sub" style="margin-top:6px"></div>
+      <div class="mfoot"><button class="btn btn-o" id="piC">Cancel</button><button class="btn btn-p" id="piGo">Fill records</button></div></div>`,true);
+    $('#piC',o).onclick=()=>o.remove();
+    const norm=x=>String(x||'').toLowerCase().replace(/\s+/g,' ').trim();
+    const fams=FU.fams();
+    const parse=()=>String($('#piT',o).value).split(/\n+/).map(l=>l.split(/\t|,/).map(x=>x.trim())).filter(c=>c[0]).map(c=>{ const k=norm(c[0]);
+      const f=fams.find(f=>norm(f.label)===k) || fams.find(f=>f.members.some(s=>norm(s.name)===k||norm(s.preferredName)===k)) || fams.find(f=>norm(f.label).includes(k)||k.includes(norm(f.label)));
+      return {f,g:{gn:c[1]||'',gp:c[2]||'',en:c[3]||'',ep:c[4]||''},name:c[0]}; });
+    $('#piT',o).oninput=()=>{ const r=parse(); $('#piR',o).textContent=r.length?`${r.filter(x=>x.f).length} of ${r.length} lines match a family`+(r.some(x=>!x.f)?' · no match: '+r.filter(x=>!x.f).map(x=>x.name).join(', '):''):''; };
+    $('#piGo',o).onclick=()=>{ const r=parse().filter(x=>x.f); if(!r.length){ toast('No lines matched a family'); return; }
+      const undos=r.map(x=>Admin.applyFam(x.f.members,x.g)); o.remove(); toast('Filled '+r.length+' families',()=>{ undos.forEach(u=>u()); Router.render(); }); Router.render(); };
+  },
   enroll(el){
     const d=DB.data, tdy=today();
     const act=d.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>tdy));
@@ -13068,6 +13124,10 @@ const Admin = {
       const needsContact = g.rows.some(x=>x.miss.includes('phone')||x.miss.includes('guardian'));
       return `<div class="card" style="margin-bottom:10px;padding:12px 14px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="font-size:14.5px"><bdi>${esc(g.label)}</bdi> family</b><span class="ai-sub">${g.rows.length} record${g.rows.length>1?'s':''} to finish</span>${needsContact&&g.fam?`<button class="btn btn-o btn-sm no-print" style="margin-left:auto" data-addcontact="${g.fam.members[0].id}">＋ Add contact</button>`:''}</div>
+        ${needsContact&&g.fam?`<details class="no-print" style="margin:4px 0 8px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--info)">⚡ Quick fill for the whole family</summary>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px" data-qf="${g.fam.members[0].id}">
+           <input placeholder="Guardian name" data-qf-gn><input placeholder="Guardian phone" type="tel" data-qf-gp><input placeholder="Emergency contact name" data-qf-en><input placeholder="Emergency phone" type="tel" data-qf-ep></div>
+          <button class="btn btn-p btn-sm" style="margin-top:8px" data-qfsave="${g.fam.members[0].id}">Save for ${g.fam.members.length} child${g.fam.members.length>1?'ren':''}</button></details>`:''}
         ${Object.values(bySet).map(o=>`<div class="wrow-wrap frow" data-go="#/students/${o.list[0].id}" style="cursor:pointer"><span class="ux-grp">${o.list.map(av).join('')}</span><span class="t">${o.list.map(s=>esc(ptFirst(s))).join(', ')}</span><div class="rowtags">${o.miss.map(m=>`<span class="tag bg-warn c-warn">${esc(m)}</span>`).join('')}</div></div>`).join('')}</div>`;
     };
     const chip = (k,label,n) => `<button class="chip ${(flt||'')===k?'on':''}" data-enfilter="${esc(k)}" style="${(flt||'')===k?'background:var(--ink);color:var(--surface)':''}">${esc(label)} · ${n}</button>`;
@@ -13076,7 +13136,7 @@ const Admin = {
        <div style="flex:1;min-width:200px"><div style="font-size:17px;font-weight:700">${done.length===act.length?'Every record is complete':done.length+' of '+act.length+' records complete'}</div>
         <p class="ux-note">${incomplete.length? incomplete.length+' student'+(incomplete.length>1?'s':'')+' across '+new Set(incomplete.map(x=>{ const f=famOf(x.s); return f?f.key:x.s.id; })).size+' families still need something.' : 'DOB, guardian, phone, emergency contact and photo are all on file, mā shāʾ Allāh.'}</p>
         <p class="ux-note">${act.length} enrolled${incoming.length?' · '+incoming.length+' starting soon':''}${gone.length?' · '+gone.length+' withdrawn':''}</p></div>
-       ${incomplete.length&&fams.length?`<button class="btn btn-p no-print" id="enFind">🔎 Find contacts</button>`:''}</div>
+       ${incomplete.length&&fams.length?`<span class="no-print" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p" id="enFind">🔎 Find contacts</button><button class="btn btn-o" id="enPaste">📋 Paste from sheet</button></span>`:''}</div>
      ${incoming.length?`<div class="sect">🌱 Incoming students<span class="rule"></span></div><div class="wlist" style="margin-bottom:14px">${incoming.map(s=>{ const m=regComplete(s); return `<div class="wrow-wrap ${m.length?'frow':''}" data-go="#/students/${s.id}"><span>🌱</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span><div class="rowtags">${m.length?m.map(x=>`<span class="tag bg-warn c-warn">${esc(x)}</span>`).join(''):'<span class="tag tag-green">record complete ✓</span>'}</div></div>`; }).join('')}</div>`:''}
      ${incomplete.length? `<div class="sect">📋 Still to finish<span class="rule"></span></div>
        <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${chip('','All',incomplete.length)}${Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,n])=>chip(k,k,n)).join('')}</div>
@@ -13086,6 +13146,11 @@ const Admin = {
     wireCommon(el);
     $$('[data-enfilter]',el).forEach(b=>b.onclick=()=>{ Admin._enFilter=b.dataset.enfilter||null; Admin.enroll(el); });
     const ef=$('#enFind',el); if(ef) ef.onclick=()=>FU.finder(()=>Admin.enroll(el));
+    const ep=$('#enPaste',el); if(ep) ep.onclick=()=>Admin.pasteImport(el);
+    $$('[data-qfsave]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const box=$('[data-qf="'+b.dataset.qfsave+'"]',el), f=fams.find(x=>x.members.some(m=>m.id===b.dataset.qfsave)); if(!f||!box) return;
+      const g={gn:$('[data-qf-gn]',box).value.trim(),gp:$('[data-qf-gp]',box).value.trim(),en:$('[data-qf-en]',box).value.trim(),ep:$('[data-qf-ep]',box).value.trim()};
+      if(!g.gn&&!g.gp&&!g.en&&!g.ep){ toast('Type at least one field first'); return; }
+      const u=Admin.applyFam(f.members,g); toast('Saved for the '+f.label+' family',()=>{ u(); Admin.enroll(el); }); Admin.enroll(el); });
     $$('[data-addcontact]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const f=fams.find(x=>x.members.some(m=>m.id===b.dataset.addcontact)); if(f) FU.addContact(f); });
   },
   /* ---------- EVENTS & TRIPS (checklists, permissions, post-notes) ---------- */
@@ -16565,6 +16630,7 @@ const AI2 = {
   },
   wire(el){
     $$('[data-aiq]',el).forEach(b=>b.onclick=()=>AIx.send&&AIx.send(b.dataset.aiq));
+    $$('[data-aipromote]',el).forEach(b=>b.onclick=()=>{ const st=DB.data.students.find(x=>x.id===b.dataset.aipromote); if(st) Students.promote(st,LEVELS[LEVELS.indexOf(st.level)+1]); });
     $$('[data-aiact]',el).forEach(b=>b.onclick=()=>AI2.run(b));
     $$('[data-aiopenfam]',el).forEach(b=>b.onclick=()=>{ Tuition._openFam=b.dataset.aiopenfam; Router.go('#/tuition/families'); });
     $$('[data-aidone]',el).forEach(b=>b.onclick=()=>{ const st=DB.data.settings; if(!st.aiDone||st.aiDone.date!==today()) st.aiDone={date:today(),keys:[]}; st.aiDone.keys.push(b.dataset.aidone); DB.save(); Router.render(); });
@@ -16616,6 +16682,7 @@ const AIx = {
     return hits.length? `Nothing rule-based matches that yet — closest from your Knowledge Base:<br>${hits.map(r=>`<button class="rlink" data-r="${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title)}</button>`).join('')}` : `No rule covers that yet, and nothing close in the Knowledge Base either. This assistant answers from computed data — try a shortcut above, or ask about students, tuition, tasks, or curriculum directly.`;
   },
   /* ---- proactive briefing: actionable, dismissible per day ---- */
+  bd(h){ return String(h).replace(/(<[^>]*>)|([֐-ࣿ][֐-ࣿ\s,،‌]*[֐-ࣿ]|[֐-ࣿ])/g,(m,t,a)=>t?t:'<bdi>'+a+'</bdi>'); },
   briefing(){
     const d=DB.data, tdy=today();
     const done=(d.settings.aiDone&&d.settings.aiDone.date===tdy)? d.settings.aiDone.keys : [];
@@ -16626,26 +16693,33 @@ const AIx = {
     const gaps=d.resources.filter(r=>r.status==='Planned');
     const revDue=AI2.act().filter(s=>s.level==='Level 3' && Rev.summary(s).c.due>0);
     const df=AI2.diff();
-    const items=[]; let hidden=0;
-    const add=(k,ico,html,acts)=>{ if(done.includes(k)){ hidden++; return; } items.push(`<div class="ai-bl"><span class="ai-bi">${ico}</span><div class="ai-bb">${html}<div class="ai-bacts no-print">${acts||''}<button class="chip ai-ok" data-aidone="${k}" title="Hide until tomorrow">✓ Handled</button></div></div></div>`); };
+    const items=[]; let hidden=0; const bd=AIx.bd;
+    const TN={changed:'info',event:'info',promo:'ok',behind:'warn',broken:'bad',tuition:'or',rev:'info',tasks:'bad',gaps:'dim'};
+    const add=(k,ico,html,acts)=>{ if(done.includes(k)){ hidden++; return; } items.push(`<div class="ai-bl t-${TN[k.split(':')[0]]||'dim'}"><span class="ai-bi">${ico}</span><div class="ai-bb">${html}<div class="ai-bacts no-print">${acts||''}<button class="chip ai-ok" data-aidone="${k}" title="Hide until tomorrow">✓ Handled</button></div></div></div>`); };
     const chip=(l,q,hot)=>AI2.btn(l,`data-aiq="${esc(q)}"`,hot?'chip-hot':'');
-    if(df.lines.length) add('changed','🆕',`<b>${df.lines.length} thing${df.lines.length>1?'s':''} changed since your last visit</b> — ${df.lines.slice(0,3).map(l=>l.html.replace(/<\/?b>/g,'')).join(' · ')}`, chip('See all changes','What changed since my last visit?',true));
-    if(nextEv){ const n=AI2.daysTo(tdy,nextEv.date); add('event:'+nextEv.id,'🗓️',`Next: <b>${esc(nextEv.title)}</b> · ${fmtDate(nextEv.date)} <span class="ai-sub">(${n===0?'today':'in '+n+' day'+(n===1?'':'s')})</span>`,''); }
-    if(promo.length) add('promo','🎉',`<b>Ready for promotion:</b> ${promo.map(p=>`<button class="rlink" data-s="${p.s.id}" style="display:inline-flex">🎓 ${esc(p.s.name)}</button> <span class="ai-sub">(${esc(p.why)})</span>`).join(' ')}`,'');
-    if(behind.length) add('behind','📖',`<b>${behind.length} student${behind.length>1?'s':''} behind</b> — ${behind.slice(0,3).map(x=>`<button class="rlink" data-s="${x.s.id}" style="display:inline-flex">${esc(x.s.name)}</button> <span class="ai-sub">(${esc(x.flags.map(f=>f[1]).join('; '))})</span>`).join(' ')}${behind.length>3?` <span class="ai-sub">+${behind.length-3} more</span>`:''}`,
-      chip('Show all & why','Who needs memorization review, and why?',true)+AI2.btn('✉️ Message parents',`data-aiact="stumsgq" ${AI2.jattr({ids:behind.map(x=>x.s.id),kind:'progress'})}`));
-    if(broken.length) add('broken','⚠️',`<b>${broken.length} missed payment promise${broken.length>1?'s':''}</b> — ${broken.slice(0,3).map(r=>`${AI2.fBtn(r.key,'$'+r.pr.pr.amount+' · '+r.pr.days+'d late')}`).join(' ')}`,AI2.btn('🔔 Remind them',`data-aiact="remindq" ${AI2.jattr({keys:broken.map(r=>r.key)})}`,'chip-hot'));
+    const sc=s=>`<button class="rlink" data-s="${s.id}" style="display:inline-flex"><bdi dir="auto">${esc(s.name)}</bdi></button>`;
+    if(df.lines.length) add('changed','🆕',`<div class="hd">${df.lines.length} thing${df.lines.length>1?'s':''} changed since your last visit</div>${df.lines.slice(0,4).map(l=>`<div class="ln">${l.ico||'•'} ${bd(l.html)}</div>`).join('')}${df.lines.length>4?`<div class="ln ai-sub">+${df.lines.length-4} more</div>`:''}`, chip('See all changes','What changed since my last visit?',true));
+    if(nextEv){ const n=AI2.daysTo(tdy,nextEv.date); add('event:'+nextEv.id,'🗓️',`<div class="hd">Next: ${esc(nextEv.title)}</div><div class="ln">${fmtDate(nextEv.date)} · ${n===0?'today':'in '+n+' day'+(n===1?'':'s')}</div>`,''); }
+    if(promo.length) add('promo','🎉',`<div class="hd">${promo.length} ready for promotion</div>${promo.map(p=>`<div class="ln" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${sc(p.s)} <span class="ai-sub">${esc(p.why)}</span> <button class="btn btn-p btn-sm no-print" data-aipromote="${p.s.id}">Promote to ${esc((LEVELS[LEVELS.indexOf(p.s.level)+1]||'').replace('Level ','L'))} →</button></div>`).join('')}`,'');
+    if(behind.length){ const reasons=[...new Set(behind.flatMap(x=>x.flags.map(f=>f[1])))]; const same=reasons.length===1;
+      const L3n=AI2.act().filter(s=>s.level==='Level 3').length; const noEnt=behind.filter(x=>x.flags.some(f=>/no entry/.test(f[1]))).length;
+      const gap = L3n && noEnt/L3n>=0.5;
+      add('behind','📖',`<div class="hd">${behind.length} student${behind.length>1?'s':''} flagged${same?' — '+esc(reasons[0]):''}</div>
+        ${gap?`<div class="ln"><b>Heads-up:</b> ${noEnt} of ${L3n} Level 3 students have no memorization entry in 14+ days. That usually means entries weren't logged, not that they stopped learning — a quick catch-up in <b>Today</b> clears most of this.</div>`:''}
+        <div class="chs">${behind.slice(0,4).map(x=>sc(x.s)+(same?'':` <span class="ai-sub">${esc(x.flags.map(f=>f[1]).join('; '))}</span>`)).join('')}${behind.length>4?`<span class="ai-sub" style="align-self:center">+${behind.length-4} more</span>`:''}</div>`,
+        (gap?AI2.btn('Open Today →','data-go="#/today"','chip-hot'):'')+chip('Show all & why','Who needs memorization review, and why?',!gap)+AI2.btn('✉️ Message parents',`data-aiact="stumsgq" ${AI2.jattr({ids:behind.map(x=>x.s.id),kind:'progress'})}`)); }
+    if(broken.length) add('broken','⚠️',`<div class="hd">${broken.length} missed payment promise${broken.length>1?'s':''}</div><div class="chs">${broken.slice(0,3).map(r=>`${AI2.fBtn(r.key,'$'+r.pr.pr.amount+' · '+r.pr.days+'d late')}`).join(' ')}</div>`,AI2.btn('🔔 Remind them',`data-aiact="remindq" ${AI2.jattr({keys:broken.map(r=>r.key)})}`,'chip-hot'));
     if(due.length){ const todo=due.filter(x=>{ const r=(famRec(x.f.key).reminders||[])[0]; return !r||AI2.daysTo(r.date,tdy)>6; }).map(x=>x.f.key);
-      add('tuition','💵',`<b>${due.length} famil${due.length>1?'ies':'y'}</b> not fully paid this month <span class="ai-sub">· ${todo.length} not reminded in the last week</span>`,
+      add('tuition','💵',`<div class="hd">${due.length} famil${due.length>1?'ies':'y'} not fully paid this month</div><div class="ln">${todo.length?todo.length+' not reminded in the last week':'all reminded this week'}</div>`,
         (todo.length?AI2.btn('🔔 Remind ('+todo.length+')',`data-aiact="remindq" ${AI2.jattr({keys:todo})}`,'chip-hot'):'')+AI2.btn('Open Tuition →','data-go="#/tuition"')); }
-    if(revDue.length) add('rev','🔁',`<b>${revDue.length} student${revDue.length>1?'s':''}</b> have Juzʼ due for revision`,chip('Who & which Juzʼ','Who is due for revision?',true));
-    if(overT.length) add('tasks','⏰',`<b>${overT.length} overdue task${overT.length>1?'s':''}</b> — oldest: ${esc(overT[0].text)}`,AI2.btn('Open tasks →','data-go="#/admin/tasks"'));
-    if(gaps.length) add('gaps','🧩',`Curriculum gaps: ${gaps.map(g=>esc(g.title.split('—')[0].trim())).join(' · ')}`,'');
-    if(!items.length) items.push(`<div class="ai-bl"><span class="ai-bi">✅</span><div class="ai-bb">${hidden?'Everything is handled for today, al-ḥamdu lillāh.':'Nothing urgent, al-ḥamdu lillāh.'}</div></div>`);
-    let h=`As-salāmu ʿalaykum, Ustāth. Here's the state of the school before you ask:<br>`+items.join('');
+    if(revDue.length) add('rev','🔁',`<div class="hd">${revDue.length} student${revDue.length>1?'s':''} have Juzʼ due for revision</div>`,chip('Who & which Juzʼ','Who is due for revision?',true));
+    if(overT.length) add('tasks','⏰',`<div class="hd">${overT.length} overdue task${overT.length>1?'s':''}</div><div class="ln">Oldest: ${esc(overT[0].text)}</div>`,AI2.btn('Open tasks →','data-go="#/admin/tasks"'));
+    if(gaps.length) add('gaps','🧩',`<div class="hd">${gaps.length} curriculum gap${gaps.length>1?'s':''}</div><div class="ln">${gaps.map(g=>esc(g.title.split('—')[0].trim())).join(' · ')}</div>`,'');
+    if(!items.length) items.push(`<div class="ai-bl t-ok"><span class="ai-bi">✅</span><div class="ai-bb"><div class="hd">${hidden?'Everything is handled for today, al-ḥamdu lillāh.':'Nothing urgent, al-ḥamdu lillāh.'}</div></div></div>`);
+    let h=`<div class="ai-greet">As-salāmu ʿalaykum, Ustāth. Here's the state of the school:</div>`+items.join('');
     if(hidden) h+=`<div class="ai-sub" style="margin-top:6px">${hidden} handled today · <button class="rlink" data-aiundone="1" style="display:inline;padding:0;border:0;text-decoration:underline">undo</button></div>`;
     h+=`<div class="ai-acts no-print">${chip('📅 Plan my class day','Plan my class day')}${chip('📰 Weekly digest','Weekly digest')}${chip('🧠 Coach me','Coach me')}${chip('✉️ Parent messages','Message studio')}</div>`;
-    h+=`<span class="ai-sub">Every item shows the rule behind it — ask “why”, or tap ✓ Handled to hide it until tomorrow.</span>`;
+    h+=`<span class="ai-sub">Ask “why” on anything to see the rule behind it, or tap ✓ Handled to hide it until tomorrow.</span>`;
     return h;
   },
 };
