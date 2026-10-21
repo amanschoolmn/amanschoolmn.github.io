@@ -1057,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 49 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 51 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -4219,7 +4219,7 @@ const Registry = {
    poem). Old routes (#/revplan, #/poem, #/students/progress,
    #/students/gradebook) still work — they now draw inside a shared tab bar. */
 const HUBS={
-  hifz:{name:'Classroom',ico:'📖',tabs:[['today','🎯 Today','#/today'],['hearing','⏱ Hearing plan','#/hearing'],['peers','🤝 Peer pairs','#/peers'],['family','✉️ Families','#/family'],['goals','📈 Goals & alerts','#/goals'],['progress','📊 Class week','#/students/progress'],['log','📝 Memorization log','#/memlog'],['revplan','🔁 Revision plans','#/revplan'],['hear','🎧 Hearing queue','#/revplan/hear'],['how','ℹ️ How it works','#/revplan/how']],
+  hifz:{name:'Classroom',ico:'📖',tabs:[['today','🎯 Today','#/today'],['hearing','⏱ Hearing plan','#/hearing'],['peers','🤝 Peer pairs','#/peers'],['family','✉️ Families','#/family'],['absences','📨 Absences','#/absences'],['goals','📈 Goals & alerts','#/goals'],['progress','📊 Class week','#/students/progress'],['log','📝 Memorization log','#/memlog'],['revplan','🔁 Revision plans','#/revplan'],['hear','🎧 Hearing queue','#/revplan/hear'],['how','ℹ️ How it works','#/revplan/how']],
     extra:'<button class="btn btn-p btn-sm" data-vlog="1">🎙 Voice log</button><button class="btn btn-o btn-sm" data-qjourney="all">🗺 Qur’an journey</button>'},
   islamic:{name:'Islamic Studies',ico:'🕌',tabs:[['gradebook','📗 Gradebook','#/students/gradebook'],['poem','📜 Tawḥīd Poem','#/poem']],
     extra:'<button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">Lesson plans ↗</button><button class="btn btn-ghost btn-sm" data-go="#/teacher/curriculum">Curriculum ↗</button>'}
@@ -9109,7 +9109,7 @@ function ptStory(s, satDate, sunDate, satClosed, sunClosed, monthKeys){
   else { tone='warn'; head=work.length===1?'🌱 One thing to work on':'🌱 A few things to work on'; }
   return {tone, head, text:t, home: work.length?'This week at home: '+join(work)+'.':''};
 }
-function ptFirst(s){ return String(s.preferredName||s.name).trim().split(/\s+/)[0]; }
+function ptFirst(s){ const t=String(s.preferredName||s.name).trim().split(/\s+/); return (t.length>1&&(t[0]==='\u0639\u0628\u062f'||t[1]==='\u0627\u0644\u062f\u064a\u0646'))?t[0]+' '+t[1]:t[0]; }
 function ptCardEdits(sat){ const st=DB.data.settings; if(!st.wkCardEdits||st.wkCardEdits.sat!==sat) st.wkCardEdits={sat,fams:{}}; return st.wkCardEdits.fams; }
 function ptFamilyCardsHTML(year, month, satDate, sunDate, students, onePerPage, opts){
   opts=opts||{}; const EDS=opts.edits||{}; const monthKeys=ptMonthKeys(year,month), satClosed=closureFor(satDate), sunClosed=closureFor(sunDate), map={};
@@ -9176,7 +9176,7 @@ function ptViewer(title, htmlIn, kind, ctx){
   host.innerHTML='<div class="pv-bar"><button type="button" class="pv-x">← Back</button><span class="pv-t"></span><button type="button" class="pv-edit" style="display:none">\u270f\ufe0f Edit</button><button type="button" class="pv-img">🖼️ Save as images</button><button type="button" class="pv-go">🖨️ Print / PDF</button></div><div class="pv-body"></div>';
   host.querySelector('.pv-t').textContent=title; document.body.appendChild(host);
   const root=host.querySelector('.pv-body').attachShadow({mode:'open'}); let editing=false;
-  const paint=()=>{ html=getHtml(); const parts=ptSplitDoc(html); root.innerHTML=`${parts.links}<style>${parts.css}\n.pv-doc{margin:0;background:#fff}</style><div class="pv-doc${editing?' editing':''}">${parts.body}</div>`; if(kind==='cards') wireCards(); };
+  const paint=()=>{ html=getHtml(); const parts=ptSplitDoc(html); root.innerHTML=`${parts.links}<style>${parts.css}\n.pv-doc{margin:0;background:#fff}</style><div class="pv-doc${editing?' editing':''}">${parts.body}</div>`; if(kind==='cards') wireCards(); else if(kind==='notice') wireNotice(); };
   const wireCards=()=>{ const sat=ctx&&ctx.sat; if(!sat) return; const EDS=ptCardEdits(sat), docEl=root.querySelector('.pv-doc');
     const sv=()=>{ DB.save(); };
     const setEdit=on=>{ editing=on; docEl.classList.toggle('editing',on); root.querySelectorAll('[data-e]').forEach(e=>{ if(on) e.setAttribute('contenteditable','plaintext-only'); else e.removeAttribute('contenteditable'); if(on&&e.contentEditable!=='plaintext-only') e.contentEditable='true'; }); const b=host.querySelector('.pv-edit'); b.classList.toggle('on',on); b.textContent=on?'\u2713 Done editing':'\u270f\ufe0f Edit'; };
@@ -9188,6 +9188,10 @@ function ptViewer(title, htmlIn, kind, ctx){
     root.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>{ const w=b.closest('.famwrap'); confirmBox('Reset this card back to the automatic version? Your edits to it will be lost.',()=>{ delete EDS[w.dataset.label]; DB.save(); const y=host.querySelector('.pv-body').scrollTop; paint(); host.querySelector('.pv-body').scrollTop=y; }); }));
     const eb=host.querySelector('.pv-edit'); eb.style.display=''; eb.onclick=()=>setEdit(!editing); if(editing) setEdit(true);
   };
+  const wireNotice=()=>{ const ed=ctx.edits, docEl=root.querySelector('.pv-doc');
+    const setEdit=on=>{ editing=on; docEl.classList.toggle('editing',on); root.querySelectorAll('[data-e]').forEach(e=>{ if(on) e.setAttribute('contenteditable','plaintext-only'); else e.removeAttribute('contenteditable'); if(on&&e.contentEditable!=='plaintext-only') e.contentEditable='true'; }); const b=host.querySelector('.pv-edit'); b.classList.toggle('on',on); b.textContent=on?'\u2713 Done editing':'\u270f\ufe0f Edit'; };
+    root.querySelectorAll('[data-e]').forEach(e=>e.addEventListener('input',()=>{ ed[e.dataset.e]=e.innerText.replace(/\u200b/g,'').trim(); }));
+    const eb=host.querySelector('.pv-edit'); eb.style.display=''; eb.onclick=()=>setEdit(!editing); if(editing) setEdit(true); };
   paint();
   const close=()=>{ host.remove(); pg.remove(); document.removeEventListener('keydown',esc_); }; const esc_=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esc_);
   host.querySelector('.pv-x').onclick=close;
@@ -9198,6 +9202,12 @@ function ptViewer(title, htmlIn, kind, ctx){
       const lvs=[...d.querySelectorAll('.lv')]; for(let i=0;i<lvs.length;i++){ blobs.push(await ptShotEl(d,[head,lvs[i],foot],820,'par')); names.push('AMAN-Weekend-Progress-'+(lvs[i].querySelector('.lvh')?lvs[i].querySelector('.lvh').firstChild.textContent.trim().replace(/\s+/g,'-'):'Level-'+(i+1))); } await ptDeliverImages(blobs,names,'Weekend Progress'); })); }
   else if(kind==='cards'){ imgBtn.textContent='🖼️ Save all cards as images'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const cards=[...d.querySelectorAll('.famwrap')], blobs=[], names=[]; for(const c of cards){ blobs.push(await ptShotEl(d,c.querySelector('.fam'),720)); names.push('AMAN-Family-'+c.dataset.label); } await ptDeliverImages(blobs,names,'Family progress'); }));
     root.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const c=d.querySelectorAll('.famwrap')[+b.dataset.share]; const blob=await ptShotEl(d,c.querySelector('.fam'),720); await ptDeliverImages([blob],['AMAN-Family-'+c.dataset.label],'Weekend progress'); }))); }
+  else if(kind==='notice'){ imgBtn.textContent='\ud83d\uddbc\ufe0f Save as image'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const b=await ptShotEl(d,d.querySelector('.nsheet'),760); await ptDeliverImages([b],['AMAN-Absence-Notice'],'Absence notice'); ctx.onSend&&ctx.onSend('image'); }));
+    const go=host.querySelector('.pv-go'); go.onclick=()=>{ window.print(); ctx.onSend&&ctx.onSend('print'); };
+    const bar=host.querySelector('.pv-bar'), mk=(t,fn,cls)=>{ const b=document.createElement('button'); b.type='button'; b.className=cls||'pv-img'; b.textContent=t; b.onclick=fn; bar.insertBefore(b,imgBtn); };
+    mk('\ud83d\udccb Copy text',()=>{ const t=ctx.text(); if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>{ ctx.onSend('copied text'); },()=>toast('Could not copy')); });
+    if(ctx.phone) mk('\ud83d\udcac Text',()=>{ ctx.onSend('text'); location.href='sms:'+String(ctx.phone).replace(/\D/g,'')+'?&body='+encodeURIComponent(ctx.text()); });
+    mk('\u2713 Mark sent',()=>ctx.onSend('manual')); }
   else imgBtn.remove();
   return host;
 }
@@ -9224,6 +9234,134 @@ function ptFamilyCardsModal(year, month, satDate, sunDate, students){
   $('#fcGo',o).onclick=()=>{ const ch=$$('.fcF',o).filter(c=>c.checked).map(c=>fams[+c.dataset.i]); if(!ch.length){ toast('Pick at least one family'); return; }
     const op=ptWkOptsRead(o,sunDate), one=$('#fcOne',o).checked; o.remove(); ptViewer('Family cards',()=>ptFamilyCardsHTML(year,month,satDate,sunDate,ch.flatMap(f=>f.members),one,Object.assign({},op,{edits:ptCardEdits(satDate)})).html,'cards',{sat:satDate}); };
 }
+
+/* ================= ABSENCE NOTICES ================= */
+const AN={
+  pol(){ const s=DB.data.settings; const p=s.absPolicy=s.absPolicy||{}; const d=new Date(), y=d.getMonth()>=7?d.getFullYear():d.getFullYear()-1;
+    if(!p.since) p.since=y+'-08-01'; if(p.will==null) p.will=false; if(!p.sender) p.sender='Br. Abdallah bin Abdirahman'; if(!p.role) p.role='Enrollment Advisor & Accounting Manager'; if(!p.phone) p.phone='(612) 444-2609'; return p; },
+  adj(sid){ const s=DB.data.students.find(x=>x.id===sid); return s&&s.absAdj&&s.absAdj.asOf?s.absAdj:null; },
+  dates(sid){ const since=AN.pol().since, a=DB.data.attendance, ad=AN.adj(sid), from=ad&&ad.asOf>since?ad.asOf:since; return Object.keys(a).filter(k=>(ad?k>from:k>=from)&&a[k][sid]==='A'&&!closureFor(k)).sort(); },
+  kid(s,f){ const ad=AN.adj(s.id), d=AN.dates(s.id), base=ad?(+ad.base||0):0; return {s,dates:d,base,asOf:ad?ad.asOf:'',n:base+d.length,sent:AN.sentLevel(f,s.id)}; },
+  fams(){ const map={}; DB.data.students.filter(s=>s.active!==false).forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (map[k]=map[k]||{key:k,label:famKey(s)||ptFirst(s),members:[]}).members.push(s); });
+    return Object.values(map).map(f=>{ f.members.sort((a,b)=>LEVELS.indexOf(b.level)-LEVELS.indexOf(a.level)||String(a.name).localeCompare(String(b.name),'ar'));
+      const pick=fn=>{ for(const s of f.members){ const x=fn(s); if(x) return x; } return ''; };
+      f.parent=pick(AI2.stuParent); f.phone=pick(AI2.stuPhone)||(famKey(f.members[0])?famContactPhone(f.key):''); f.email=pick(AI2.stuEmail); return f; }); },
+  sentLevel(f,sid){ const ad=AN.adj(sid); let m=ad&&ad.level?+ad.level:0; ((DB.data.families[f.key]||{}).absNotices||[]).forEach(n=>(n.kids||[]).forEach(k=>{ if(k.sid===sid&&k.level>m) m=k.level; })); return m; },
+  queue(){ return AN.fams().map(f=>{ f.kids=f.members.map(s=>AN.kid(s,f)); return f; })
+      .filter(f=>f.kids.some(k=>k.n>=1&&Math.min(k.n,3)>k.sent)).sort((a,b)=>Math.max(...b.kids.map(k=>k.n))-Math.max(...a.kids.map(k=>k.n))); },
+  long(d){ const M=['January','February','March','April','May','June','July','August','September','October','November','December']; const p=d.split('-'), n=+p[2], v=n%100, o=['th','st','nd','rd']; return M[+p[1]-1]+' '+n+(o[(v-20)%10]||o[v]||o[0])+', '+p[0]; },
+  PAL:{0:{strong:'#2f7d56',on:'#ffffff',tint:'#e3f1e8',hot:'#1f5a36',kicker:'Attendance Check-in',title:'We Missed You',stage:'Absence on record'},
+       1:{strong:'#f1a81e',on:'#1a1207',tint:'#fdeecb',hot:'#b8540a',kicker:'Attendance Notice',title:'First Notice',stage:'1st Unexcused Absence'},
+       2:{strong:'#ea7317',on:'#ffffff',tint:'#fde0c4',hot:'#a8340a',kicker:'Attendance Notice — Escalated',title:'Second Notice',stage:'2nd Unexcused Absence'},
+       3:{strong:'#d61f1f',on:'#ffe9a8',tint:'#fbdcd6',hot:'#a10d0d',kicker:'Final Warning',title:'Final Notice',stage:'3rd Unexcused Absence'}},
+  css:`.nsheet{width:7.4in;max-width:100%;margin:0 auto;background:#fdfaf3;position:relative;font-family:'Crimson Pro',Georgia,serif;color:#1a1207;line-height:1.55;font-size:16px;overflow:hidden;border:1px solid rgba(0,0,0,.08);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .nsheet *{box-sizing:border-box}.nsheet .accent{height:8px;background:var(--cs)}
+  .nsheet .nhead{text-align:center;padding:20px 30px 12px;margin:0 30px;border-bottom:1px solid rgba(184,135,42,.25)}.nsheet .seal{width:92px;height:92px;border-radius:50%;margin:0 auto 8px;padding:9px;background:radial-gradient(circle at 30% 28%,#e6bd62,#b8872a);border:3px solid #d9b25c;box-shadow:0 3px 10px rgba(0,0,0,.18)}.nsheet .seal img{width:100%;height:100%;display:block;border-radius:50%}
+  .nsheet .brand{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:19px;color:#1a4a35}.nsheet .bl{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#7a5518;font-weight:700;margin-top:3px}
+  .nsheet .dl{display:flex;justify-content:space-between;gap:10px;padding:10px 38px 0;font-size:15px;color:#5a4a30}.nsheet .dl b{color:#1a4a35}
+  .nsheet .nblock{margin:14px 30px 0;border-radius:14px;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
+  .nsheet .nb{background:var(--cs);color:var(--co);padding:20px 24px 16px;text-align:center}.nsheet .kick{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;opacity:.92;margin-bottom:6px}
+  .nsheet .ttl{font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:44px;line-height:1}.nsheet .stg{font-weight:600;font-size:17px;margin-top:8px}
+  .nsheet .ctr{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:14px}.nsheet .cg{text-align:center}.nsheet .dots{display:flex;gap:8px;justify-content:center}
+  .nsheet .dot{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--co);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700}.nsheet .dot.f{background:var(--co);color:var(--cs)}.nsheet .dot.e{opacity:.5}
+  .nsheet .cap{font-size:12px;margin-top:5px;font-weight:600}
+  .nsheet .nm{background:var(--ct);padding:20px 28px 22px;text-align:center}.nsheet .gr{font-weight:700;font-size:17px;margin-bottom:10px}.nsheet .lead{font-size:18px;line-height:1.6}
+  .nsheet .hot{color:var(--ch);font-weight:700}.nsheet .abs{margin:14px auto 0;text-align:left;max-width:92%;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:10px 16px;font-size:15.5px}
+  .nsheet .abs .r{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px dashed rgba(0,0,0,.15)}.nsheet .abs .r:last-child{border-bottom:0}.nsheet .abs .ph{width:30px;height:30px;border-radius:50%;overflow:hidden;background:#e7cf9b;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}.nsheet .abs .ph img{width:100%;height:100%;object-fit:cover}
+  .nsheet .warn{margin:16px auto 0;max-width:92%;background:#fff;border:2px solid var(--cs);border-radius:10px;padding:11px 16px;display:flex;gap:12px;align-items:center;justify-content:center;font-weight:700;font-size:17px;line-height:1.3}
+  .nsheet .nf{padding:20px 38px 14px;text-align:center}.nsheet .bar{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:18px;color:#1a4a35}.nsheet .sig{font-weight:700;font-size:18px;margin-top:6px}.nsheet .role{font-style:italic;font-size:15px;color:#5a4a30}
+  .nsheet .org{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:15px;color:#1a4a35;margin-top:14px;border-top:1px solid rgba(184,135,42,.4);padding-top:10px}.nsheet .mot{font-style:italic;font-size:12px;color:#8a7350;margin-top:3px}
+  .nsheet .cl{margin-top:12px;font-size:15.5px;font-weight:600}
+  .editing [data-e]{outline:1.5px dashed #b8872a;outline-offset:2px;border-radius:3px;cursor:text}
+  @media(max-width:560px){.nsheet .ttl{font-size:32px}.nsheet .lead{font-size:16px}}
+  @media print{.editing [data-e]{outline:none!important}}`,
+  html(f,kids,date,type,ed){ ed=ed||{}; const p=AN.pol();
+    const maxN=Math.max(0,...kids.map(k=>k.n)); const L=type==='auto'?(maxN?Math.min(3,maxN):0):+type; const P=AN.PAL[L];
+    const names=kids.map(k=>ptFirst(k.s)); const join=a=>a.length<=1?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+    const w=join(names.map(n=>'<strong>'+esc(n)+'</strong>')), wp=join(names.map(esc));
+    const dl=a=>a.map(d=>AN.long(d).replace(/, \d{4}$/,'')).join(', ');
+    const policy=p.will?'will':'may';
+    const E=(k,def)=>ed[k]!=null?esc(ed[k]).replace(/\n/g,'<br>'):def;
+    const multi=kids.length>1;
+    let lead;
+    if(L===0) lead='We missed '+w+' in class on <strong>'+esc(AN.long(date).replace(/, \d{4}$/,''))+'</strong>. We hope everything is well, in shā’ Allāh. Please let us know the reason for the absence so we can record it correctly and help '+(multi?'them':'')+(multi?'':'<strong>'+esc(names[0])+'</strong>')+' catch up.';
+    else if(L===1) lead='This message is to notify you that '+w+' now '+(multi?'have':'has')+' <strong>one (1) unexcused absence</strong> on record, without prior notice. Our policy is that <span class="hot">three (3) unexcused absences '+policy+' result in removal from the program</span>. We don’t want it to reach that point — we are ready to work with you so '+(multi?'they stay':'<strong>'+esc(names[0])+'</strong> stays')+' enrolled and benefit fully. If there was a reason, please tell us so we can update the record.';
+    else if(L===2) lead='This message is to notify you that '+w+' now '+(multi?'have':'has')+' <strong>two (2) unexcused absences</strong> on record. <span class="hot">One more '+policy+' mean removal from the program.</span> We truly want to avoid that and are ready to work with you. If any of these absences had a reason, please tell us so we can update the record.';
+    else lead='This is a <span class="hot">FINAL NOTICE</span> that '+w+' '+(multi?'have':'has')+' reached <strong>three (3) unexcused absences</strong>. Under AMAN policy this '+policy+' result in removal from the program. Please contact us right away — especially if you believe any absence was recorded in error.';
+    const warn=L===0?'If there was a reason for the absence, please let us know so it is recorded as excused.':(L===3?'Per AMAN policy, three (3) unexcused absences '+policy+' result in removal from the program.':'Three (3) unexcused absences '+policy+' result in removal from the program.');
+    const ctr=L===0?'':`<div class="ctr">${kids.map(k=>`<div class="cg"><div class="dots">${[1,2,3].map(i=>`<div class="dot ${i<=Math.min(k.n,3)?'f':'e'}">${i}</div>`).join('')}</div>${multi?`<div class="cap">${esc(ptFirst(k.s))}</div>`:''}</div>`).join('')}</div>`;
+    const rows=kids.map((k,i)=>{ const ds=L===0?(k.dates.length?[k.dates[k.dates.length-1]]:[date]):k.dates; const pre=(L>0&&k.base)?k.base+' earlier absence'+(k.base>1?'s':'')+(k.asOf?' (through '+AN.long(k.asOf).replace(/, \d{4}$/,'')+')':'')+(ds.length?', ':''):''; const lab=L===0?'Absent':(k.n===1?'1st':k.n===2?'2nd':k.n===3?'3rd':k.n+'th')+' unexcused absence'; return `<div class="r"><div class="ph">${k.s.photo?`<img src="${k.s.photo}" alt="">`:esc(initials(k.s.name))}</div><div><b data-e="r${i}n" dir="auto">${E('r'+i+'n',esc(ptFirst(k.s)))}</b> — <span data-e="r${i}t">${E('r'+i+'t',esc(lab+': '+pre+dl(ds)))}</span></div></div>`; }).join('');
+    const greet=f.parentOv!=null?f.parentOv:(f.parent?'Dear '+f.parent+',':'Dear Parent/Guardian,');
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"><style>${AN.css}body{margin:0;background:#fff;padding:12px}</style></head><body>
+    <div class="nsheet" style="--cs:${P.strong};--co:${P.on};--ct:${P.tint};--ch:${P.hot}"><div class="accent"></div>
+    <div class="nhead"><div class="seal"><img src="${PR_SEAL}" alt=""></div><div class="brand">Al-Madrasatu An-Nuriyyah</div><div class="bl">Islamic Weekend School • AMAN</div></div>
+    <div class="dl"><b data-e="salam">${E('salam','As-Salaamu ‘Alaykum Wa Rahmatullah')}</b><span data-e="date">${E('date',esc(AN.long(date)))}</span></div>
+    <div class="nblock"><div class="nb"><div class="kick" data-e="kick">${E('kick',P.kicker)}</div><div class="ttl" data-e="ttl">${E('ttl',P.title)}</div><div class="stg" data-e="stg">${E('stg',L===0?'Absence on record':P.stage)}</div>${ctr}</div>
+    <div class="nm"><div class="gr" data-e="gr">${E('gr',esc(greet))}</div><div class="lead" data-e="lead">${E('lead',lead)}</div><div class="abs">${rows}</div><div class="warn"><span>${L===0?'💛':'⚠️'}</span><span data-e="warn">${E('warn',warn)}</span></div></div></div>
+    <div class="nf"><div class="cl" data-e="cl">${E('cl','Questions or a reason for the absence? Contact us at '+esc(p.phone)+'.')}</div><div class="bar" style="margin-top:12px" data-e="bar">${E('bar','Barakallahu feekum,')}</div><div class="sig" data-e="sig">${E('sig',esc(p.sender))}</div><div class="role" data-e="role">${E('role',esc(p.role))}</div><div class="org">Al-Madrasatu An-Nuriyyah (AMAN)</div><div class="mot">Youth Educated… Family Cultivated… World Illuminated</div></div></div></body></html>`; },
+  text(f,kids,date,type){ const p=AN.pol(), maxN=Math.max(0,...kids.map(k=>k.n)), L=type==='auto'?(maxN?Math.min(3,maxN):0):+type, names=kids.map(k=>ptFirst(k.s)).join(' and '), pol=p.will?'will':'may';
+    const hi='As-salāmu ʿalaykum'+(f.parent?' '+f.parent:'')+', ', ds=kids.map(k=>ptFirst(k.s)+': '+(k.base?k.base+' earlier'+(k.dates.length?', ':''):'')+k.dates.map(d=>AN.long(d).replace(/, \d{4}$/,'')).join(', ')).join('; ');
+    const tail='\n\nQuestions or a reason for the absence? Contact '+p.sender+' at '+p.phone+'.\nBarakallahu feekum — Al-Madrasatu An-Nuriyyah';
+    if(L===0) return hi+'we missed '+names+' in class on '+AN.long(date).replace(/, \d{4}$/,'')+'. We hope everything is well. Please let us know the reason so we can record it correctly.'+tail;
+    if(L===1) return hi+'this is a notice that '+names+' now has 1 unexcused absence on record ('+ds+'). Three unexcused absences '+pol+' result in removal from the program. We are ready to work with you — if there was a reason, please tell us so we can update the record.'+tail;
+    if(L===2) return hi+'this is a second notice: '+names+' now has 2 unexcused absences ('+ds+'). One more '+pol+' mean removal from the program. Please contact us so we can work together on this; if any absence had a reason, tell us so we can update the record.'+tail;
+    return hi+'FINAL NOTICE: '+names+' has reached 3 unexcused absences ('+ds+'). Under AMAN policy this '+pol+' result in removal from the program. Please contact us right away, especially if any absence was recorded in error.'+tail; },
+  openFor(f,preSids){ const kids=f.members.map(s=>AN.kid(s,f));
+    const last=Object.keys(DB.data.attendance).sort().filter(k=>!closureFor(k)).pop()||today();
+    const pre=new Set(preSids&&preSids.length?preSids:kids.filter(k=>k.n>=1&&Math.min(k.n,3)>k.sent).map(k=>k.s.id)); if(!pre.size&&kids.length) pre.add(kids[0].s.id);
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3>📨 Absence notice · <bdi>${esc(f.label)}</bdi> family</h3>
+      <div class="field"><label>Who is this notice for?</label>${kids.map(k=>`<label class="pr-item" style="margin-bottom:6px"><input type="checkbox" class="anK" value="${k.s.id}" ${pre.has(k.s.id)?'checked':''}><span dir="auto">${esc(CR.nm(k.s))}</span><b style="font-family:var(--f-body)">${k.n} unexcused${k.sent?` · notice ${k.sent} sent`:''}</b></label>`).join('')}</div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>Notice type</label><select id="anT"><option value="auto">Automatic (from the record)</option><option value="0">Gentle check-in</option><option value="1">First notice</option><option value="2">Second notice</option><option value="3">Final notice</option></select></div><div class="field"><label>Date on notice</label><input type="date" id="anD" value="${today()}"></div></div>
+      <div class="field"><label>Parent / guardian</label><input id="anP" value="${esc(f.parent||'')}" placeholder="e.g. Br. Ahmed"></div>
+      <p class="td-hint" id="anHint" style="margin:0"></p><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" id="anGo">Create notice</button></div></div>`,true);
+    const sel=()=>kids.filter(k=>$$('.anK',o).some(c=>c.checked&&c.value===k.s.id)), hint=()=>{ const s=sel(), mx=Math.max(0,...s.map(k=>k.n)), t=$('#anT',o).value; $('#anHint',o).textContent=t==='auto'?(mx?('Will be a '+['','First','Second','Final'][Math.min(3,mx)]+' notice (highest count among the selected children: '+mx+').'):'No unexcused absences on record — will be a gentle check-in.'):''; };
+    $$('.anK',o).forEach(c=>c.onchange=hint); $('#anT',o).onchange=hint; hint();
+    $('#anGo',o).onclick=()=>{ const s=sel(); if(!s.length){ toast('Pick at least one child'); return; } const date=$('#anD',o).value||today(), type=$('#anT',o).value; f.parent=$('#anP',o).value.trim(); o.remove(); AN.view(f,s,date,type); };
+  },
+  view(f,kids,date,type){ const rec=DB.data.families[f.key]=DB.data.families[f.key]||{phone:'',note:'',log:[],sponsorName:'',sponsorPhone:'',sponsorFamilyKey:''}; const edits={}; let entry=null;
+    const maxN=Math.max(0,...kids.map(k=>k.n)), L=type==='auto'?(maxN?Math.min(3,maxN):0):+type;
+    const logIt=via=>{ rec.absNotices=rec.absNotices||[]; if(!entry){ entry={at:Date.now(),date,level:L,kids:kids.map(k=>({sid:k.s.id,name:ptFirst(k.s),n:k.n,level:L,dates:k.dates.slice()})),via:[]}; rec.absNotices.unshift(entry); } if(!entry.via.includes(via)) entry.via.push(via); DB.save(); toast('Logged on the '+f.label+' family — '+via,()=>{ rec.absNotices=rec.absNotices.filter(x=>x!==entry); entry=null; DB.save(); }); };
+    ptViewer('Absence notice',()=>AN.html(f,kids,date,type,edits),'notice',{edits,onSend:logIt,text:()=>AN.text(f,kids,date,type),phone:f.phone}); },
+  adjust(s,rr){ const ad=AN.adj(s.id), cur=AN.kid(s,{key:'x',members:[]}), rec=AN.dates(s.id).length;
+    const o=overlay(`<div class="modal" style="max-width:460px"><h3>Absence count \u00b7 <bdi>${esc(CR.nm(s))}</bdi></h3><p class="td-hint" style="margin:0 0 10px">Use this for absences and notices from <b>before</b> the app tracked them. Absences recorded after the date below are added on top automatically.</p>
+      <div class="field"><label>Total unexcused absences so far</label><input type="number" min="0" max="9" id="adN" value="${cur.n}"></div>
+      <div class="field"><label>\u2026counted as of</label><input type="date" id="adD" value="${esc(ad?ad.asOf:today())}"></div>
+      <div class="field"><label>Notices already sent for this child</label><select id="adL"><option value="0">None</option><option value="1">First notice</option><option value="2">Second notice</option><option value="3">Final notice</option></select></div>
+      <div class="field"><label>Note (optional)</label><input id="adNote" value="${esc(ad?ad.note||'':'')}" placeholder="e.g. first two notices sent by text in September"></div>
+      <div class="mfoot">${ad?'<button class="btn btn-o" id="adClr" style="margin-right:auto">Clear adjustment</button>':''}<button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" id="adSave">Save</button></div></div>`,true);
+    $('#adL',o).value=String(cur.sent||0);
+    $('#adSave',o).onclick=()=>{ const old=s.absAdj; s.absAdj={base:Math.max(0,+$('#adN',o).value||0),asOf:$('#adD',o).value||today(),level:+$('#adL',o).value||0,note:$('#adNote',o).value.trim()}; DB.save(); o.remove(); toast('Count saved \u2014 '+CR.nm(s),()=>{ if(old) s.absAdj=old; else delete s.absAdj; DB.save(); rr(); }); rr(); };
+    const c=$('#adClr',o); if(c) c.onclick=()=>{ const old=s.absAdj; delete s.absAdj; DB.save(); o.remove(); toast('Adjustment cleared',()=>{ s.absAdj=old; DB.save(); rr(); }); rr(); }; },
+  excuse(sid,date,rr){ const a=DB.data.attendance; const old=a[date][sid]; a[date][sid]='E'; DB.save(); toast('Marked excused',()=>{ a[date][sid]=old; DB.save(); rr(); }); rr(); },
+  render(v){ const Q=AN.queue(), p=AN.pol(), rr=()=>AN.render(v), last=Object.keys(DB.data.attendance).sort().filter(k=>!closureFor(k)).pop();
+    const lastAbs=last?DB.data.students.filter(s=>s.active!==false&&DB.data.attendance[last][s.id]==='A'):[];
+    const hist=AN.fams().flatMap(f=>((DB.data.families[f.key]||{}).absNotices||[]).map(n=>({f,n}))).sort((a,b)=>b.n.at-a.n.at).slice(0,30);
+    const pill=n=>['','1st','2nd','3rd'][Math.min(3,n)]||n+'th';
+    v.innerHTML=`<div class="page-wm"><div class="eyebrow">Class day · attendance</div><h2 class="page-title">Absence notices</h2>
+      <p class="page-sub">Counts come straight from attendance. Only <b>Absent</b> counts — <b>Excused</b> never does. Create a notice in two taps, edit anything, then print, text or save it as an image.</p>
+      <details class="card" style="padding:10px 14px;margin:10px 0"><summary style="cursor:pointer;font-weight:700">⚙️ Policy &amp; sender</summary><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px">
+        <div class="field"><label>Count absences since</label><input type="date" id="anSince" value="${esc(p.since)}"></div>
+        <div class="field"><label>Removal wording</label><select id="anWill"><option value="may" ${p.will?'':'selected'}>“may result in removal”</option><option value="will" ${p.will?'selected':''}>“will result in removal”</option></select></div>
+        <div class="field"><label>Sender</label><input id="anSender" value="${esc(p.sender)}"></div><div class="field"><label>Sender role</label><input id="anRole" value="${esc(p.role)}"></div><div class="field"><label>Contact phone</label><input id="anPhone" value="${esc(p.phone)}"></div></div></details>
+      <div class="card"><div class="whead"><h3>📨 Needs a notice (${Q.length})</h3></div>${Q.length?`<div class="fu-grid" style="margin-top:6px">${Q.map(f=>`<div class="card fu-card"><div class="fu-top"><div class="fu-ph">${f.members.slice(0,3).map(s=>avatarHTML(s,'width:38px;height:38px;border-radius:50%;font-size:12px;border:2px solid var(--surface)')).join('')}</div><div class="fu-id"><b class="fu-fam"><bdi>${esc(f.label)}</bdi> family</b><div class="fu-par">${esc(f.parent||'No parent name')}</div></div></div>
+        ${f.kids.filter(k=>k.n>0).map(k=>`<div style="font-size:13px"><b dir="auto">${esc(CR.nm(k.s))}</b> <span class="fu-pill ${k.n>=3?'bad':''}">${k.n} unexcused${k.sent?' · notice '+k.sent+' sent':''}</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:6px">${k.dates.map(d=>`<span class="chip" style="cursor:default">${esc(fmtDate(d))} <button class="chip on" style="margin-left:4px" data-anex="${k.s.id}|${d}" title="Mark this absence as excused">Excuse</button></span>`).join('')}</div></div>`).join('')}
+        <div class="fu-act"><button class="btn btn-p btn-sm" data-anopen="${esc(f.key)}">📨 Create notice</button></div></div>`).join('')}</div>`:'<p class="td-hint" style="padding:8px 0">Nothing waiting — every unexcused absence already has a notice, or there are none. ✓</p>'}</div>
+      ${lastAbs.length?`<div class="card" style="margin-top:12px"><div class="whead"><h3>Absent at the last class (${esc(fmtDate(last))})</h3></div>${lastAbs.map(s=>`<div class="td-it">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(s))}</b><small>${AN.dates(s.id).length} unexcused so far${(DB.data.attendanceReasons[last]||{})[s.id]?' · reason: '+esc(DB.data.attendanceReasons[last][s.id]):''}</small></div><button class="btn btn-o btn-sm" data-anopen="${esc(famKey(s)||'__solo_'+s.id)}" data-sid="${s.id}">📨 Notice</button><button class="btn btn-o btn-sm" data-anex="${s.id}|${last}">Excuse</button></div>`).join('')}</div>`:''}
+      <div class="card" style="margin-top:12px"><div class="whead"><h3>📊 Everyone's count</h3></div><p class="td-hint">Already sent notices before this app tracked them? Tap <b>Set count</b> on the child and enter their total and the notice level sent.</p>
+        <div class="filters no-print"><input id="anQ" placeholder="Search a student…" value="${esc(AN._q||'')}" style="max-width:220px"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All'],['1','1+'],['2','2+'],['3','3+']].map(([k,l])=>`<button class="chip ${(AN._f||'all')===k?'on':''}" data-anf="${k}">${l}</button>`).join('')}</span></div>
+        ${AN.fams().flatMap(f=>f.members.map(s=>AN.kid(s,f))).filter(k=>((AN._f||'all')==='all'||k.n>=+AN._f)&&(!AN._q||(k.s.name+' '+(k.s.preferredName||'')).toLowerCase().includes(AN._q.toLowerCase()))).sort((a,b)=>b.n-a.n||String(a.s.name).localeCompare(String(b.s.name),'ar')).map(k=>`<div class="td-it">${avatarHTML(k.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(k.s))}</b><small>${k.base?k.base+' earlier'+(k.asOf?' (through '+esc(fmtDate(k.asOf))+')':'')+(k.dates.length?' + ':''):''}${k.dates.length?k.dates.map(d=>esc(fmtDate(d))).join(', '):(k.base?'':'no unexcused absences')}${k.sent?' · notice '+k.sent+' sent':''}</small></div><span class="fu-pill ${k.n>=3?'bad':k.n>0?'':'ok'}">${k.n} unexcused</span><button class="btn btn-o btn-sm" data-anadj="${k.s.id}">Set count</button></div>`).join('')}</div>
+      <div class="card" style="margin-top:12px"><div class="whead"><h3>🕘 Notices sent</h3></div>${hist.length?hist.map(({f,n})=>`<div class="td-it"><div class="td-lab"><b><bdi>${esc(f.label)}</bdi> family · ${esc(['Check-in','First notice','Second notice','Final notice'][n.level])}</b><small>${esc(n.kids.map(k=>k.name).join(', '))} · ${esc(fmtDate(n.date))} · ${esc((n.via||[]).join(', '))}</small></div></div>`).join(''):'<p class="td-hint">No notices yet.</p>'}</div></div>`;
+    wireCommon(v);
+    const sv=()=>{ p.since=$('#anSince',v).value||p.since; p.will=$('#anWill',v).value==='will'; p.sender=$('#anSender',v).value.trim()||p.sender; p.role=$('#anRole',v).value.trim()||p.role; p.phone=$('#anPhone',v).value.trim()||p.phone; DB.save(); };
+    ['anSince','anWill','anSender','anRole','anPhone'].forEach(id=>$('#'+id,v).onchange=()=>{ sv(); if(id==='anSince') rr(); });
+    $$('[data-anopen]',v).forEach(b=>b.onclick=()=>{ const f=AN.fams().find(x=>x.key===b.dataset.anopen); if(f) AN.openFor(f,b.dataset.sid?[b.dataset.sid]:null); });
+    $$('[data-anadj]',v).forEach(b=>b.onclick=()=>{ const s=DB.data.students.find(x=>x.id===b.dataset.anadj); if(s) AN.adjust(s,rr); });
+    $$('[data-anf]',v).forEach(b=>b.onclick=()=>{ AN._f=b.dataset.anf; rr(); });
+    const aq=$('#anQ',v); if(aq) aq.oninput=e=>{ AN._q=e.target.value; const pos=e.target.selectionStart; rr(); const i=$('#anQ',v); i.focus(); i.setSelectionRange(pos,pos); };
+    $$('[data-anex]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,d]=b.dataset.anex.split('|'); AN.excuse(sid,d,rr); });
+  }
+};
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-annotice]'); if(!b) return; e.stopPropagation(); const s=DB.data.students.find(x=>x.id===b.dataset.annotice); if(!s) return; const f=AN.fams().find(x=>x.key===(famKey(s)||'__solo_'+s.id)); if(f) AN.openFor(f,[s.id]); },true);
 
 /* ================= STUDENT OF THE MONTH HUB =================
    Engine behind both Student of the Month panels plus: lock/finalize a month (settings.sotmLocks),
@@ -9468,7 +9606,7 @@ const Progress = {
         ${cell('📝 Homework',`<button class="pill-cyc ${sat?(e.hw||''):''}" data-cyc="${s.id}_hw" ${sat?'':'disabled'} title="Homework — tap to change">${sat?(e.hw?ptRes(e.hw):'Not marked'):'Saturday only'}</button>`)}
         ${cell('✏️ Classwork',`<button class="pill-cyc ${e.cw||''}" data-cyc="${s.id}_cw" title="Classwork — tap to change">${e.cw?ptRes(e.cw):'Not marked'}</button>`)}
       </div>
-      <div class="pt-status ${ps.k}"><span>${{ok:'✅',warn:'⚠️',bad:'🚨',info:'📋',part:'⏳',none:'○'}[ps.k]} ${ps.t}</span>${canGood?`<button class="btn btn-ghost btn-sm pt-good no-print" data-ptgood="${s.id}" title="Present, Qur’an passed, homework done, classwork done — fills only the blanks">✓ Mark all good</button>`:''}</div>
+      <div class="pt-status ${ps.k}"><span>${{ok:'✅',warn:'⚠️',bad:'🚨',info:'📋',part:'⏳',none:'○'}[ps.k]} ${ps.t}</span>${e.att==='A'?`<button class="btn btn-ghost btn-sm no-print" data-annotice="${s.id}" title="Create an absence notice">📨 Notice</button>`:''}${canGood?`<button class="btn btn-ghost btn-sm pt-good no-print" data-ptgood="${s.id}" title="Present, Qur’an passed, homework done, classwork done — fills only the blanks">✓ Mark all good</button>`:''}</div>
       <div class="pt-meta">
         ${work?`<span class="pt-work">${work}</span>`:''}
         ${recent.length>1?`<span class="pt-dots" title="Last ${recent.length} recorded sessions, oldest to newest">${recent.map(r=>{const q=ptState(r.e); return `<i class="${q.k}" title="${fmtDate(r.k)} — ${esc(q.t)}"></i>`;}).join('')}<span style="margin-left:3px">last ${recent.length} sessions</span></span>`:''}
@@ -12309,6 +12447,7 @@ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closes
 Registry.register({ id:'today', name:'Today', icon:'spark', group:null, nav:'hifz', render(v){ TD.render(hubShell(v,'hifz','today')); }});
 Registry.register({ id:'hearing', name:'Hearing plan', icon:'spark', group:null, nav:'hifz', render(v){ HP.render(hubShell(v,'hifz','hearing')); }});
 Registry.register({ id:'peers', name:'Peer pairs', icon:'spark', group:null, nav:'hifz', render(v){ PP.render(hubShell(v,'hifz','peers')); }});
+Registry.register({ id:'absences', name:'Absence notices', icon:'spark', group:null, nav:'hifz', render(v){ AN.render(hubShell(v,'hifz','absences')); }});
 Registry.register({ id:'family', name:'Family updates', icon:'spark', group:null, nav:'hifz', render(v){ FU.render(hubShell(v,'hifz','family')); }});
 Registry.register({ id:'goals', name:'Goals & alerts', icon:'spark', group:null, nav:'hifz', render(v){ GA.render(hubShell(v,'hifz','goals')); }});
 
