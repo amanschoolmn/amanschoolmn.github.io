@@ -319,6 +319,11 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .fu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-top:12px}.fu-card{padding:14px 16px;display:flex;flex-direction:column;gap:8px}.fu-card.sent{opacity:.8}.fu-card.needs{border-style:dashed}
 .fu-top{display:flex;gap:12px;align-items:center}.fu-ph{display:flex;flex:none}.fu-ph>*{margin-left:-10px}.fu-ph>*:first-child{margin-left:0}.fu-id{flex:1;min-width:0}.fu-fam{font-size:16px}.fu-par{font-size:12.5px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fu-tel{color:var(--green,#1f4d3a);font-weight:600;text-decoration:none}
 .fu-pill{font-size:11px;padding:3px 9px;border-radius:99px;background:var(--surface2);color:var(--ink2);white-space:nowrap;flex:none;border:1px solid var(--line2)}.fu-pill.ok{background:#e3f1e6;color:#1f5a2e;border-color:#b9d9c0}.fu-pill.bad{background:#fbe4e1;color:#8b2418;border-color:#efbdb6}
+.ov-bar{display:block;height:6px;border-radius:99px;background:rgba(0,0,0,.12);margin-top:6px;overflow:hidden;width:100%}.ov-bar u{display:block;height:100%;background:#2f7d56;border-radius:99px}
+.fu-vd{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}.fu-klist{margin:6px 0}.fu-kid{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line2)}.fu-kid:first-child{border-top:0}.fu-kid .nm{font-size:14px}.fu-kid .ki{font-size:15px;width:20px;text-align:center}
+.fu-dots{display:inline-flex;gap:5px}.fu-dots i{width:15px;height:15px;border-radius:50%;display:inline-block;background:transparent;border:2px solid #cfc6b0;box-sizing:border-box}.fu-dots .wk-P{background:#2f7d56;border-color:#2f7d56}.fu-dots .wk-L{background:#d99a14;border-color:#d99a14}.fu-dots .wk-A{background:#d61f1f;border-color:#d61f1f}.fu-dots .wk-E{background:#3b6fb6;border-color:#3b6fb6}
+.fu-msgbox{max-height:4.6em}.fu-chip bdi{font-weight:700}
+.fu-grid{align-items:start}
 .ga-bar{height:8px;border-radius:99px;background:rgba(0,0,0,.12);overflow:hidden}.ga-bar i{display:block;height:100%;background:var(--c);border-radius:99px}.ga-sec{margin-top:12px}.ga-sec>summary{cursor:pointer;list-style:none;padding:2px 0}
 .fu-att{border-left:6px solid var(--c)}.fu-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.fu-chip{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--t);color:#1a1207;border:1px solid rgba(0,0,0,.08);border-left:4px solid var(--c)}
 .fu-wk{display:flex;flex-wrap:wrap;gap:6px 16px;margin:8px 0;font-size:12.5px}.fu-wk>div{display:flex;align-items:center;gap:5px}.fu-wk i{font-style:normal;font-size:10px;font-weight:700;padding:2px 7px;border-radius:7px;color:#fff;background:#999}.fu-wk .wk-P{background:#2f7d56}.fu-wk .wk-L{background:#d99a14}.fu-wk .wk-A{background:#d61f1f}.fu-wk .wk-E{background:#3b6fb6}
@@ -1066,7 +1071,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 56 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 57 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -12239,6 +12244,19 @@ const FU={
   nextFam(skipped){ const L=FU.fams().filter(f=>!FU.famSent(f)&&(f.phone||f.email)&&!(FU._skip||[]).includes(f.key)).sort(FU.cmp); return L[0]; },
   cmp(a,b){ return (b.score-a.score)||String(a.label).localeCompare(b.label); },
   startNext(){ const f=FU.nextFam(); if(!f){ FU._skip=[]; toast('That’s every family with a contact on file ✓'); return; } FU.review(f,sk=>{ if(sk===true) (FU._skip=FU._skip||[]).push(f.key); FU.startNext(); }); },
+  classDates(){ const from=FU.from(), t=today(), a=DB.data.attendance; return Object.keys(a).filter(k=>k>from&&k<=t&&!closureFor(k)&&Object.keys(a[k]||{}).length).sort(); },
+  kidInfo(s){ const from=FU.from(), t=today(), d=DB.data, a=d.attendance, cd=FU.classDates();
+    const sts=cd.map(k=>({k,st:a[k][s.id]||'',day:new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short'})}));
+    let ps=0,hwf=0; Object.keys(d.progress||{}).filter(k=>k>from&&k<=t).forEach(k=>{ const p=d.progress[k][s.id]; if(!p) return; if(p.quran==='PASS') ps++; if(p.hw==='INC'||p.quran==='FAIL') hwf++; });
+    return {s,sts,ps,hwf,ab:sts.filter(x=>x.st==='A').length,ex:sts.filter(x=>x.st==='E').length,perfect:sts.length>0&&sts.every(x=>x.st==='P'),sur:(s.hwDone||[]).filter(x=>x.date>from)}; },
+  kidIcon(i){ return i.ab?'❌':i.ex?'🟦':i.hwf?'📒':i.perfect?'🌟':'✅'; },
+  verdict(f){ const ks=f.members.map(FU.kidInfo), A=ks.filter(k=>k.ab), E=ks.filter(k=>k.ex&&!k.ab), H=ks.filter(k=>k.hwf), W=ks.filter(k=>k.perfect), nm=a=>a.map(k=>'<bdi>'+esc(ptFirst(k.s))+'</bdi>').join(', '), ch=[];
+    if(A.length) ch.push({P:AN.PAL[3],h:'❌ Absent: '+nm(A),prob:1}); if(E.length) ch.push({P:AN.BLUE,h:'🟦 Excused: '+nm(E),prob:1}); if(H.length) ch.push({P:AN.PAL[1],h:'📒 Homework to follow up: '+nm(H),prob:1});
+    const wins=[]; if(W.length) wins.push('🌟 '+(W.length===ks.length&&ks.length>1?'All perfect attendance':W.length+' perfect attendance')); const tp=ks.reduce((a,k)=>a+k.ps,0); if(tp) wins.push('✅ '+tp+' Qur’an passed'); ks.forEach(k=>k.sur.forEach(x=>wins.push('🎉 <bdi>'+esc(ptFirst(k.s))+'</bdi> completed Sūrat '+esc((QS[x.n]||{}).name||x.n))));
+    if(wins.length) ch.push({P:AN.PAL[0],h:wins.join(' · ')});
+    return {ks,ch,P:A.length?AN.PAL[3]:H.length?AN.PAL[1]:E.length?AN.BLUE:AN.PAL[0],label:A.length?'Needs a call':H.length?'Follow up':E.length?'Excused':'All good'}; },
+  dotsHTML(i){ if(!i.sts.length) return '<span class="td-hint">no class yet</span>'; const lab={P:'present',L:'late',A:'absent',E:'excused','':'not marked'}; return '<span class="fu-dots">'+i.sts.map(x=>'<i class="wk-'+(x.st||'N')+'" title="'+esc(x.day+' · '+lab[x.st])+'"></i>').join('')+'</span>'; },
+  prevHTML(f){ const L=FU.famText(f).split(FU.sign)[0].split('\n'), i=L.indexOf(''), body=(i>=0?L.slice(i+1):L); return body.map(l=>l.trim()?'<div dir="auto">'+esc(l)+'</div>':'<div style="height:5px"></div>').join(''); },
   recentNotice(f){ const a=(DB.data.families[f.key]||{}).absNotices||[]; return a.find(n=>Date.now()-n.at<6*864e5)||null; },
   wkStat(s){ const from=FU.from(), t=today(), a=DB.data.attendance, rs=DB.data.attendanceReasons||{}; return Object.keys(a).filter(k=>k>from&&k<=t&&a[k][s.id]).sort().map(k=>({k,st:a[k][s.id],day:new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short'}),why:(rs[k]||{})[s.id]||''})); },
   chips(f){ const from=FU.from(), t=today(), d=DB.data, out=[];
@@ -12263,8 +12281,8 @@ const FU={
     return out; },
   applyContact(f,n,p,e){ const snap=f.members.map(s=>JSON.stringify(s.guardians||null)); f.members.forEach(s=>{ s.guardians=s.guardians||[]; let g=s.guardians[0]; if(!g){ g={id:uid(),name:'',relation:'Guardian',phone:'',email:''}; s.guardians.push(g); } if(n&&!g.name) g.name=n; if(p&&!g.phone) g.phone=p; if(e&&!g.email) g.email=e; }); DB.save();
     return ()=>{ f.members.forEach((s,i)=>{ const o=JSON.parse(snap[i]); if(o===null) delete s.guardians; else s.guardians=o; }); DB.save(); }; },
-  finder(){ const o=overlay('<div class="modal" style="max-width:560px"><h3>🔎 Find missing contacts</h3><div id="fcBody"></div><div class="mfoot"><button class="btn btn-o" data-x="c">Done</button></div></div>',true);
-    $('[data-x=c]',o).onclick=()=>{ o.remove(); if(FU._v) FU.render(FU._v); };
+  finder(cb){ const o=overlay('<div class="modal" style="max-width:560px"><h3>🔎 Find missing contacts</h3><div id="fcBody"></div><div class="mfoot"><button class="btn btn-o" data-x="c">Done</button></div></div>',true);
+    $('[data-x=c]',o).onclick=()=>{ o.remove(); if(cb) cb(); else if(FU._v) FU.render(FU._v); };
     const draw=()=>{ const need=FU.fams().filter(f=>!f.phone&&!f.email); $('#fcBody',o).innerHTML=need.length?'<p class="td-hint" style="margin:0 0 8px">Numbers already in the student records. Tap one to use it for the whole family.</p>'+need.map((f,i)=>{ const c=FU.cands(f); return `<div class="an-row" style="${AN.vars(c.length?AN.PAL[1]:AN.PAL[3])}"><div class="an-who"><b><bdi>${esc(f.label)}</bdi> family</b><small>${esc(f.members.map(s=>ptFirst(s)).join(', '))}</small></div><div style="display:flex;gap:6px;flex-wrap:wrap;flex:1 1 100%">${c.length?c.map((x,j)=>`<button class="btn btn-o btn-sm" data-fcuse="${i}|${j}">${esc((x.name||x.rel||'Use')+' · '+x.phone)} <small>(${esc(x.src)})</small></button>`).join(''):'<span class="td-hint">Nothing on file for this family.</span>'}<button class="btn btn-o btn-sm" data-fcadd="${i}">+ Enter manually</button></div></div>`; }).join(''):'<p style="color:var(--ok)">✓ Every family has a contact on file.</p>';
       const L=()=>FU.fams().filter(f=>!f.phone&&!f.email);
       $$('[data-fcuse]',o).forEach(b=>b.onclick=()=>{ const [i,j]=b.dataset.fcuse.split('|'), f=L()[+i]; if(!f) return; const c=FU.cands(f)[+j]; const u=FU.applyContact(f,c.name,c.phone,c.email); toast('Contact saved — '+f.label,()=>{ u(); draw(); }); draw(); });
@@ -12278,20 +12296,24 @@ const FU={
     if(['1','2','3'].includes(FU.f)) L=L.filter(f=>f.members.some(s=>String(CR.lvl(s))===FU.f)); if(FU.f==='todo') L=L.filter(f=>!FU.famSent(f)); if(FU.f==='sent') L=L.filter(f=>FU.famSent(f)); if(FU.f==='needs') L=L.filter(f=>!f.phone&&!f.email); if(FU.f==='att') L=L.filter(f=>f.notes.some(n=>n.w>=3));
     L.sort((a,b)=>(!!FU.famSent(a)-!!FU.famSent(b))||FU.cmp(a,b));
     const pct=all.length?Math.round(nSent/all.length*100):0;
-    const card=f=>{ const sent=FU.famSent(f), no=!f.phone&&!f.email, w=FU.way(f), ph=f.phone?AI2.digits(f.phone):'', rn=FU.recentNotice(f), chips=FU.chips(f);
-      const att=f.notes.some(n=>n.w>=3)?AN.PAL[3]:f.notes.some(n=>n.w===2)?AN.PAL[1]:AN.PAL[0];
-      const body=FU.famText(f).split(FU.sign)[0];
-      return `<div class="card fu-card fu-att ${sent?'sent':''} ${no?'needs':''}" style="${AN.vars(sent?AN.BLUE:no?GA.GREY:att)}"><div class="fu-top"><div class="fu-ph">${f.members.slice(0,3).map(s=>avatarHTML(s,'width:38px;height:38px;border-radius:50%;font-size:12px;border:2px solid var(--surface)')).join('')}</div><div class="fu-id"><b class="fu-fam"><bdi>${esc(f.label)}</bdi> family</b><div class="fu-par">${esc(f.parent||'No parent name')}${ph?` · <a href="tel:${esc(ph)}" class="fu-tel">📞 ${esc(f.phone)}</a>`:''}</div></div><span class="fu-pill ${sent?'ok':no?'bad':''}">${sent?'✓ Sent '+esc(fmtDate(new Date(sent.at).toISOString().slice(0,10)))+(sent.reply?' · replied':''):no?'Needs contact':'Not sent'}</span></div>
-        <div class="fu-kids">${f.members.map(s=>`<span dir="auto">${esc(ptFirst(s))} ${CR.lvTag(s)}</span>`).join('')}</div>
-        ${FU.wkHTML(f)}
-        ${(chips.length||rn)?`<div class="fu-chips">${chips.map(c=>`<span class="fu-chip" style="${AN.vars(c.P)}">${esc(c.t)}</span>`).join('')}${rn?`<span class="fu-chip" style="${AN.vars(AN.BLUE)}">📨 Absence notice sent ${esc(fmtDate(AN.ds(rn.at)))}</span>`:''}</div>`:''}
-        ${no?'':`<div class="fu-msgbox" data-fumsg title="Tap to read the whole message">${body.split('\n').map(l=>l.trim()?`<div dir="auto">${esc(l)}</div>`:'<div style="height:6px"></div>').join('')}</div>`}
-        <div class="fu-act no-print">${no?`<button class="btn btn-p btn-sm" data-fuadd="${esc(f.key)}">+ Add phone / parent</button>`:sent?`<button class="btn btn-o btn-sm" data-fuun="${esc(f.key)}">↩ Unsend</button><button class="btn ${sent.reply?'btn-p':'btn-o'} btn-sm" data-furep="${esc(f.key)}">${sent.reply?'✓ Replied':'Mark replied'}</button><button class="btn btn-o btn-sm" data-furev="${esc(f.key)}">Review</button>`:`${w==='email'?`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|email">✉️ Email</button>`:`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|text">💬 Text</button>`}${f.phone?`<button class="btn btn-o btn-sm" data-fusend="${esc(f.key)}|wa">🟢 WhatsApp</button>`:''}<button class="btn btn-o btn-sm" data-fusend="${esc(f.key)}|copy">📋 Copy</button><button class="btn btn-o btn-sm" data-furev="${esc(f.key)}">Review</button>`}</div></div>`; };
+    const mode=(DB.data.settings&&DB.data.settings.fuMode)||'cards';
+    const card=f=>{ const sent=FU.famSent(f), no=!f.phone&&!f.email, w=FU.way(f), ph=f.phone?AI2.digits(f.phone):'', rn=FU.recentNotice(f), V=FU.verdict(f);
+      return `<div class="card fu-card fu-att ${sent?'sent':''} ${no?'needs':''}" style="${AN.vars(sent?AN.BLUE:no?GA.GREY:V.P)}"><div class="fu-top"><div class="fu-ph">${f.members.slice(0,3).map(s=>avatarHTML(s,'width:38px;height:38px;border-radius:50%;font-size:12px;border:2px solid var(--surface)')).join('')}</div><div class="fu-id"><b class="fu-fam"><bdi>${esc(f.label)}</bdi> family</b><div class="fu-par">${esc(f.parent||'No parent name')}${ph?` · <a href="tel:${esc(ph)}" class="fu-tel">📞 ${esc(f.phone)}</a>`:''}</div></div><span class="fu-pill ${sent?'ok':no?'bad':''}">${sent?'✓ Sent '+esc(fmtDate(new Date(sent.at).toISOString().slice(0,10)))+(sent.reply?' · replied':''):no?'Needs contact':'Not sent'}</span></div>
+        ${no?`<div class="fu-kids">${f.members.map(s=>`<span dir="auto">${esc(ptFirst(s))} ${CR.lvTag(s)}</span>`).join('')}</div>`
+        :`<div class="fu-vd"><span class="an-badge" style="${AN.vars(V.P)}">${V.label}</span>${rn?`<span class="an-badge" style="${AN.vars(AN.BLUE)}">📨 Absence notice ${esc(fmtDate(AN.ds(rn.at)))}</span>`:''}</div>
+        <div class="fu-klist">${V.ks.map(i=>`<div class="fu-kid">${avatarHTML(i.s,'width:26px;height:26px;border-radius:50%;font-size:10px;flex-shrink:0')}<b class="nm" dir="auto">${esc(ptFirst(i.s))}</b>${CR.lvTag(i.s)}<span style="flex:1"></span>${FU.dotsHTML(i)}<span class="ki" title="${esc(FU.kidIcon(i))}">${FU.kidIcon(i)}</span></div>`).join('')}</div>
+        ${V.ch.length?`<div class="fu-chips">${V.ch.map(c=>`<span class="fu-chip" style="${AN.vars(c.P)}">${c.h}</span>`).join('')}</div>`:''}
+        <div class="fu-msgbox" data-fumsg title="Tap to read the whole message">${FU.prevHTML(f)}</div>`}
+        <div class="fu-act no-print">${no?`<button class="btn btn-p btn-sm" data-fufind="1">🔎 Find contact</button><button class="btn btn-o btn-sm" data-fuadd="${esc(f.key)}">+ Add phone / parent</button>`:sent?`<button class="btn btn-o btn-sm" data-fuun="${esc(f.key)}">↩ Unsend</button><button class="btn ${sent.reply?'btn-p':'btn-o'} btn-sm" data-furep="${esc(f.key)}">${sent.reply?'✓ Replied':'Mark replied'}</button><button class="btn btn-o btn-sm" data-furev="${esc(f.key)}">Review</button>`:`${w==='email'?`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|email">✉️ Email</button>`:`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|text">💬 Text</button>`}${f.phone?`<button class="btn btn-o btn-sm" data-fusend="${esc(f.key)}|wa">🟢 WhatsApp</button>`:''}<button class="btn btn-o btn-sm" data-fusend="${esc(f.key)}|copy">📋 Copy</button><button class="btn btn-o btn-sm" data-furev="${esc(f.key)}">Review</button>`}</div></div>`; };
+    const lrow=f=>{ const sent=FU.famSent(f), no=!f.phone&&!f.email, w=FU.way(f), V=FU.verdict(f), P=sent?AN.BLUE:no?GA.GREY:V.P;
+      return `<div class="an-row" style="${AN.vars(P)}"><div class="fu-ph">${f.members.slice(0,2).map(s=>avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;border:2px solid #fff')).join('')}</div><div class="an-who"><b><bdi>${esc(f.label)}</bdi> family</b><small>${esc(f.members.map(s=>ptFirst(s)).join(', '))}</small></div><span class="an-badge" style="${AN.vars(P)}">${sent?'✓ Sent'+(sent.reply?' · replied':''):no?'No contact':V.label}</span>
+        ${no?`<button class="btn btn-p btn-sm" data-fufind="1">🔎 Find</button><button class="btn btn-o btn-sm" data-fuadd="${esc(f.key)}">+ Add</button>`:sent?`<button class="btn btn-o btn-sm" data-fuun="${esc(f.key)}">↩</button><button class="btn ${sent.reply?'btn-p':'btn-o'} btn-sm" data-furep="${esc(f.key)}">${sent.reply?'✓ Replied':'Replied?'}</button>`:`${w==='email'?`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|email">✉️</button>`:`<button class="btn btn-p btn-sm" data-fusend="${esc(f.key)}|text">💬 Text</button>`}${f.phone?`<button class="btn btn-o btn-sm" data-fusend="${esc(f.key)}|wa">🟢</button>`:''}`}<button class="btn btn-o btn-sm" data-furev="${esc(f.key)}">Review</button>
+        ${(!no&&!sent)?`<div class="an-sub">${V.ch.filter(c=>c.prob).map(c=>c.h).join(' · ')||'Nothing to flag this week 🌟'}</div>`:''}</div>`; };
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">Class day · families</div><h2 class="page-title">Family updates</h2>
       <p class="page-sub">One weekly message per family — written from the real record and covering all siblings. Review it, tap Text, done.</p>
       <div class="card fu-prog no-print"><div class="fu-progtop"><b>${nSent} of ${all.length} families sent</b><button class="btn btn-p btn-sm" id="fuNext" ${left?'':'disabled'}>▶ Start: next family (${left} left)</button></div><div class="fu-bar"><i style="width:${pct}%"></i></div>${needs.length?`<small>${needs.length} ${needs.length>1?'families have':'family has'} no contact on file. <button class="btn btn-p btn-sm" id="fuFind" style="margin-left:6px">🔎 Find contacts</button></small>`:''}</div>
-      <div class="filters no-print"><input id="fuQ" placeholder="Search a family or student…" value="${esc(FU.q)}" style="max-width:220px"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All'],['att','⚑ Needs attention'],['todo','Not sent'],['sent','Sent'],['needs','Needs contact ('+needs.length+')'],['3','L3'],['2','L2'],['1','L1']].map(([k,l])=>`<button class="chip ${FU.f===k?'on':''}" data-fuf="${k}">${l}</button>`).join('')}</span></div>
-      <div class="fu-grid">${L.map(card).join('')||'<p style="color:var(--ink3);padding:12px">No families match.</p>'}</div></div>`;
+      <div class="filters no-print"><input id="fuQ" placeholder="Search a family or student…" value="${esc(FU.q)}" style="max-width:220px"><button class="chip ${mode==='list'?'on':''}" id="fuMode">${mode==='list'?'▦ Cards':'☰ List'}</button><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All'],['att','⚑ Needs attention'],['todo','Not sent'],['sent','Sent'],['needs','Needs contact ('+needs.length+')'],['3','L3'],['2','L2'],['1','L1']].map(([k,l])=>`<button class="chip ${FU.f===k?'on':''}" data-fuf="${k}">${l}</button>`).join('')}</span></div>
+      ${mode==='list'?`<div>${L.map(lrow).join('')||'<p style="color:var(--ink3);padding:12px">No families match.</p>'}</div>`:`<div class="fu-grid">${L.map(card).join('')||'<p style="color:var(--ink3);padding:12px">No families match.</p>'}</div>`}</div>`;
     wireCommon(v);
     const byKey=k=>all.find(f=>f.key===k);
     $$('[data-furev]',v).forEach(b=>b.onclick=()=>FU.review(byKey(b.dataset.furev)));
@@ -12301,6 +12323,8 @@ const FU={
     $('#fuQ',v).oninput=e=>{ FU.q=e.target.value; const pos=e.target.selectionStart; FU.render(v); const i=$('#fuQ',v); i.focus(); i.setSelectionRange(pos,pos); };
     $('#fuNext',v).onclick=()=>{ FU._skip=[]; FU.startNext(); };
     const ff=$('#fuFind',v); if(ff) ff.onclick=()=>FU.finder();
+    $$('[data-fufind]',v).forEach(b=>b.onclick=()=>FU.finder());
+    $('#fuMode',v).onclick=()=>{ DB.data.settings.fuMode=mode==='list'?'cards':'list'; DB.save(); FU.render(v); };
     $$('[data-fumsg]',v).forEach(b=>b.onclick=()=>b.classList.toggle('open'));
     $$('[data-fuun]',v).forEach(b=>b.onclick=()=>FU.unsend(byKey(b.dataset.fuun)));
     $$('[data-furep]',v).forEach(b=>b.onclick=()=>FU.replied(byKey(b.dataset.furep)));
@@ -12865,49 +12889,54 @@ const Admin = {
     const openT=d.tasks.filter(t=>!t.done);
     const overT=openT.filter(t=>t.due&&t.due<tdy);
     const nextEv=d.events.filter(e=>e.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
-    // needs-attention (admin automation) — grouped so the list stays scannable as it grows
-    const items=[];
-    overT.forEach(t=>items.push({i:'⏰',t:'Overdue: '+t.text, go:'#/admin/tasks', tag:'overdue', why:'due date ('+fmtDate(t.due)+') has passed', grp:'today'}));
-    overdueFams.slice(0,4).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowM, grp:'financial'}));
-    regUnpaid.slice(0,3).forEach(f=>items.push({i:'🧾',t:'Family '+f.key+' — registration fee unpaid', go:'#/tuition/families', tag:'reg fee', why:'registration fee set but not marked paid', grp:'financial'}));
-    incompl.slice(0,4).forEach(s=>items.push({i:'📋',t:s.name+' — missing '+regComplete(s).join(', '), go:'#/students/'+s.id, tag:'registration', why:'required field(s) empty: '+regComplete(s).join(', '), grp:'compliance'}));
-    incoming.forEach(s=>items.push({i:'🌱',t:s.name+' starts '+fmtDate(s.startDate), go:'#/students/'+s.id, tag:'incoming', why:'start date on file is in the future', grp:'week'}));
-    const GROUPS=[['today','Today'],['week','This Week'],['financial','Financial'],['compliance','Compliance']];
-    const groupedHtml = GROUPS.map(([gid,glabel])=>{
-      const gi=items.filter(x=>x.grp===gid); if(!gi.length) return '';
-      return `<div style="margin-bottom:12px"><div style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">${glabel} · ${gi.length}</div>
-        <div class="wlist">${gi.slice(0,6).map(x=>`<div class="wrow frow" data-go="${x.go}"><span>${x.i}</span><span class="t">${esc(x.t)}${x.why?`<br><span style="font-size:10.5px;color:var(--ink3);font-family:var(--f-mono)">rule: ${esc(x.why)}</span>`:''}</span><span class="tag tag-dim">${esc(x.tag)}</span></div>`).join('')}</div></div>`;
-    }).join('');
+    // ---- v57: action-first overview
+    const dupPay=[]; { const m={}; d.finance.payments.forEach(p=>{ if(!(+p.amount>0)) return; const k=[p.fam,p.amount,p.date,p.kind].join('|'); (m[k]=m[k]||[]).push(p); }); Object.values(m).forEach(a=>{ if(a.length>1) dupPay.push(a); }); }
+    const anAll=AN.fams().flatMap(f=>f.members.map(s=>AN.kid(s,f))), anNeed=anAll.filter(AN.need), anQ=AN.queue();
+    let noReply=0; AN.fams().forEach(f=>((d.families[f.key]||{}).absNotices||[]).forEach(n=>{ if(AN.waiting(n)&&AN.age(n)>=7) noReply++; }));
+    const fuF=FU.fams(), fuUnsent=fuF.filter(f=>!FU.famSent(f)&&(f.phone||f.email)).length, fuNo=fuF.filter(f=>!f.phone&&!f.email).length;
+    let nextClass=null; for(let i=0;i<14&&!nextClass;i++){ const x=RP.addDays(tdy,i), g=new Date(x+'T12:00').getDay(); if((g===6||g===0)&&!closureFor(x)) nextClass=x; }
+    const ncLab=nextClass?(nextClass===tdy?'Today':new Date(nextClass+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})):'—';
+    const pctPaid=(collected+outstanding)>0?Math.round(collected/(collected+outstanding)*100):0;
+    const maxL=anNeed.length?Math.min(3,Math.max(...anNeed.map(k=>k.n))):0;
+    const A=[]; const add=(P,i,t,sub,btn,go,fix,av)=>A.push({P,i,t,sub,btn,go,fix,av});
+    overT.slice(0,3).forEach(t=>add(AN.PAL[3],'⏰','Overdue task: '+t.text,'Due '+fmtDate(t.due),'Open','#/admin/tasks'));
+    dupPay.forEach(a=>add(AN.PAL[3],'⚠️','Possible duplicate payment — Family '+a[0].fam+' · $'+a[0].amount+' ×'+a.length+' on '+fmtDate(a[0].date),'If it was recorded twice by mistake, delete one in Tuition.','Check','#/tuition/overview'));
+    if(anNeed.length) add(AN.PAL[maxL],'📨',anNeed.length+' child'+(anNeed.length>1?'ren':'')+' need an absence notice · '+anQ.length+' famil'+(anQ.length>1?'ies':'y'),'Next: '+AN.NAME[maxL],'Open','#/absences',null,anNeed.slice(0,5).map(k=>k.s));
+    if(noReply) add(AN.BLUE,'🔔',noReply+' notice'+(noReply>1?'s':'')+' with no reply for 7+ days','Send a gentle follow-up.','Follow up','#/absences');
+    if(fuUnsent) add(AN.PAL[1],'💬',fuUnsent+' family update'+(fuUnsent>1?'s':'')+' not sent this week','One tap per family.','Start','#/family');
+    if(fuNo) add(AN.PAL[2],'📞',fuNo+' famil'+(fuNo>1?'ies have':'y has')+' no contact on file','Numbers already in student records can be reused.','🔎 Find contacts',null,'finder');
+    if(incompl.length) add(AN.PAL[2],'📋',incompl.length+' student'+(incompl.length>1?'s':'')+' missing registration info','Guardian, phone or emergency contact.','Review',null,'reg',incompl.slice(0,5));
+    if(overdueFams.length) add(AN.PAL[1],'💵',overdueFams.length+' famil'+(overdueFams.length>1?'ies':'y')+' not paid for '+nowM,'$'+outstanding+' outstanding in total.','Open','#/tuition/owe');
+    if(regUnpaid.length) add(AN.PAL[1],'🧾',regUnpaid.length+' registration fee'+(regUnpaid.length>1?'s':'')+' unpaid','','Open','#/tuition/families');
+    if(incoming.length) add(AN.PAL[0],'🌱',incoming.length+' student'+(incoming.length>1?'s':'')+' starting soon',incoming.slice(0,3).map(s=>ptFirst(s)+' · '+fmtDate(s.startDate)).join(' · '),'Open','#/students');
+    const todayHtml=A.length?A.map(x=>`<div class="an-row" style="${AN.vars(x.P)}"><span style="font-size:22px">${x.i}</span><div class="an-who"><b style="font-size:14px">${esc(x.t)}</b>${x.sub?`<small>${esc(x.sub)}</small>`:''}</div>${x.av?`<div class="fu-ph">${x.av.map(s=>avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:10px;border:2px solid #fff')).join('')}</div>`:''}<button class="btn btn-p btn-sm" ${x.go?`data-go="${x.go}"`:`data-fix="${x.fix}"`}>${x.btn}</button></div>`).join(''):'<p style="font-family:var(--f-body);color:var(--ok);margin:4px 0">The office is in order, al-ḥamdu lillāh. ✓</p>';
+    const kpi=(i,val,lab,go,sub,bar)=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:17px">${val}</b><span>${lab}</span>${bar!=null?`<i class="ov-bar"><u style="width:${bar}%"></u></i>`:''}${sub?`<small style="font-size:10.5px;color:var(--ink3)">${sub}</small>`:''}</button>`;
+    const acts=[]; d.activity.filter(a=>/task|event|staff|payment|tuition|family|meeting|enroll|promot|student|flyer|notice/i.test(a.text)).forEach(a=>{ const L=acts[acts.length-1]; if(L&&L.text===a.text&&Math.abs(new Date(L.t)-new Date(a.t))<36e5) L.n++; else acts.push({text:a.text,t:a.t,n:1}); });
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">
-       ${[['🎓',act.length,'Active students','#/students'],
-          ['👪',fams.filter(f=>!f.solo).length+(fams.some(f=>f.solo)?'+':''),'Families','#/tuition/families'],
-          ['💵',(collected?'$'+collected:'—'),'Collected · '+nowM,'#/tuition/overview'],
-          ['🧾',(outstanding?'$'+outstanding:'$0'),'Outstanding','#/tuition/overview'],
-          ['☑️',openT.length,'Open tasks','#/admin/tasks'],
-          ['🗓️',nextEv.length? fmtDate(nextEv[0].date):'—','Next event','#/admin/calendar']]
-         .map(([i,val,lab,go])=>`<button class="kpi-card" data-go="${go}"><span class="ki">${i}</span><b style="font-size:17px">${val}</b><span>${lab}</span></button>`).join('')}</div>
-     <div class="grid g2">
-      <div class="widget wfull" style="border-top:3px solid ${items.length?'var(--gold)':'var(--ok)'}"><div class="whead"><h3>⚡ Administrative attention</h3><span class="tag ${items.length?'tag-gold':'tag-green'}">${items.length||'all clear'}</span></div>
-        ${items.length? groupedHtml
-        :'<p style="font-family:var(--f-body);color:var(--ok)">The office is in order, al-ḥamdu lillāh.</p>'}</div>
+       ${kpi('🎓',act.length,'Active students','#/students')}${kpi('👪',fams.filter(f=>!f.solo).length+(fams.some(f=>f.solo)?'+':''),'Families','#/tuition/families')}${kpi('💵',(collected?'$'+collected:'—'),'Tuition · '+nowM,'#/tuition/overview',outstanding?'$'+outstanding+' outstanding':'',pctPaid)}${kpi('📨',anNeed.length,'Notices to send','#/absences')}${kpi('💬',fuUnsent,'Updates unsent','#/family')}${kpi('🗓️',ncLab,'Next class','#/admin/calendar',nextEv.length?esc(nextEv[0].title):'')}</div>
+     <div class="widget wfull" style="border-top:3px solid ${A.length?'var(--gold)':'var(--ok)'};margin-bottom:14px"><div class="whead"><h3>✅ Today — what needs you</h3><span class="tag ${A.length?'tag-gold':'tag-green'}">${A.length||'all clear'}</span></div>${todayHtml}</div>
+     <div class="grid g2" style="align-items:start">
       <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>🗓️ Upcoming</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/calendar">Calendar →</button></div>
-        <div class="wlist">${nextEv.map(e=>`<div class="wrow" data-go="#/admin/calendar"><span class="m">${fmtDate(e.date)}</span><span class="t">${esc(e.title)}</span>${e.kind==='trip'?'<span class="tag tag-blue">trip</span>':''}</div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Nothing scheduled</div>'}</div></div>
-      <div class="widget" style="border-top:3px solid var(--gold)"><div class="whead"><h3>✨ AI office assistant</h3></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">${[
+        <div class="wlist">${nextClass?`<div class="wrow" style="cursor:default"><span class="m">${esc(fmtDate(nextClass))}</span><span class="t">Class day · ${act.length} students expected</span><span class="tag tag-green">class</span></div>`:''}${nextEv.map(e=>`<div class="wrow" data-go="#/admin/calendar"><span class="m">${fmtDate(e.date)}</span><span class="t">${esc(e.title)}</span>${e.kind==='trip'?'<span class="tag tag-blue">trip</span>':''}</div>`).join('')}</div></div>
+      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>🕓 Recent admin activity</h3></div>
+        <div class="wlist">${acts.slice(0,6).map(a=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400">${esc(a.text)}${a.n>1?` <b>×${a.n}</b>`:''}${(a.n>1&&/^Payment recorded/i.test(a.text))?' <span class="tag tag-red">check</span>':''}</span><span class="m">${rel(a.t)}</span></div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Quiet so far</div>'}</div></div>
+     </div>
+     <details class="widget" style="border-top:3px solid var(--gold);margin-top:14px"><summary style="cursor:pointer;font-weight:700">✨ AI office assistant</summary>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${[
           'Draft a school announcement for parents',
           'Draft a tuition reminder message (warm, respectful)',
           'Generate a permission slip for a field trip',
           'Write an administrative status report for this month',
           'Suggest how to improve our admin workflow']
           .map(c=>`<button class="chip" data-ai="${esc(c)}">${esc(c)}</button>`).join('')}</div>
-        <p style="font-size:12px;color:var(--ink3);margin-top:9px">Drafts open in the AI workspace with full school context.</p></div>
-      <div class="widget" style="border-top:3px solid var(--green)"><div class="whead"><h3>🕓 Recent admin activity</h3></div>
-        <div class="wlist">${d.activity.filter(a=>/task|event|staff|payment|tuition|family|meeting|enroll|promot|student/i.test(a.text)).slice(0,6).map(a=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400">${esc(a.text)}</span><span class="m">${rel(a.t)}</span></div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Quiet so far</div>'}</div></div>
-     </div>`;
+        <p style="font-size:12px;color:var(--ink3);margin-top:9px">Drafts open in the AI workspace with full school context.</p></details>`;
     wireCommon(el);
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
+    $$('[data-fix]',el).forEach(b=>b.onclick=()=>{ if(b.dataset.fix==='finder') FU.finder(()=>Admin.overview(el)); else Admin.regModal(incompl,()=>Admin.overview(el)); });
   },
+  regModal(list,cb){ const o=overlay(`<div class="modal" style="max-width:520px"><h3>📋 Missing registration info</h3><div style="max-height:55vh;overflow:auto">${list.map(s=>`<div class="an-row" style="${AN.vars(AN.PAL[2])}">${avatarHTML(s,'width:32px;height:32px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="an-who"><b dir="auto">${esc(ptFirst(s))}</b><small>missing: ${esc(regComplete(s).join(', '))}</small></div><button class="btn btn-p btn-sm" data-rg="${s.id}">Open →</button></div>`).join('')}</div><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" id="rgF">🔎 Find contacts from family records</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove(); $('#rgF',o).onclick=()=>{ o.remove(); FU.finder(cb); }; $$('[data-rg]',o).forEach(b=>b.onclick=()=>{ o.remove(); Router.go('#/students/'+b.dataset.rg); }); },
   /* ---------- FAMILIES & TUITION ---------- */
   /* ---------- ENROLLMENT ---------- */
   enroll(el){
