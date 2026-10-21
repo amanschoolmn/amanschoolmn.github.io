@@ -1057,7 +1057,7 @@ body.lay-editing .lay-navrow a svg{display:none}
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 48b · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 49 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -9027,8 +9027,14 @@ function ptWkCss(){ return `
   table.fg .ch{font-size:12.5px;padding:4px 10px}
   .nx{display:flex;gap:10px;align-items:center;padding:12px 20px;background:#eef6f0;border-top:1px solid #cfe0d4;font-size:13.5px;color:#1a4a35}.nx .nt{color:#5b4300;font-style:italic}
   .ff{padding:12px 20px;background:#fbf7ec;border-top:1px solid #ece3cc;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:#4b5246}
+  .ch-none:empty{display:inline-block;min-width:70px;height:22px;padding:0;border:0}
+  .home:empty{display:none}.nx:not(.has){display:none}.kx{display:none}.kid>div{position:relative}
+  .editing [data-e]{outline:1.5px dashed #b8872a;outline-offset:2px;border-radius:4px;cursor:text}.editing [data-chip]{cursor:pointer;outline:1.5px dashed #b8872a;outline-offset:1px}
+  .editing .home:empty{display:block;min-height:22px;margin-top:6px}.editing [data-e]:empty::before{content:attr(data-ph);color:#9a9488;font-style:italic}.editing .nx{display:flex}
+  .editing .kx{display:block;position:absolute;right:0;top:-4px;border:1px solid #c1574a;background:#fff;color:#c1574a;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer}
+  .shbtn.rs{background:#eee;color:#123626;margin-right:8px}
   @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.hd .t1{font-size:17px}.sheet{padding:14px}.kid{grid-template-columns:56px 1fr;padding:14px}.kid .ph{width:56px;height:56px}.fh .fn{font-size:19px}}
-  @media print{.sheet{padding:0}table.wk thead{display:table-header-group}.fam{break-inside:avoid}.famwrap{break-inside:avoid;margin:0}.shbar,.no-print{display:none!important}@page{margin:.4in}}`; }
+  @media print{.editing [data-e],.editing [data-chip]{outline:none!important}.editing .kx{display:none!important}.sheet{padding:0}table.wk thead{display:table-header-group}.fam{break-inside:avoid}.famwrap{break-inside:avoid;margin:0}.shbar,.no-print{display:none!important}@page{margin:.4in}}`; }
 function ptPhotoHTML(s){ return `<div class="ph">${s.photo?`<img src="${s.photo}" alt="">`:esc(initials(s.name))}</div>`; }
 function ptWkMonthLine(s, monthKeys, showPct){
   const st=ptStats(s.id, monthKeys), parts=[];
@@ -9048,7 +9054,7 @@ function ptWkRow(s, satDate, sunDate, satClosed, sunClosed, monthKeys, showPct, 
     const hw=(par&&!sat)?'':`<td>${ptWkChip('hw',e.hw,par||!sat&&!e.hw)}</td>`;
     return `<td class="sep">${ptWkChip('att',e.att,par)}</td><td>${ptWkChip('quran',e.quran,par)}</td>${hw}<td>${ptWkChip('cw',e.cw,par)}</td>`; };
   const fu=par?'':ptFollow(eS,eU);
-  return `<tr><td><div class="who">${ptPhotoHTML(s)}<div class="nm">${esc(s.name)}${age!=null?`<span class="age">${age}y</span>`:''}</div></div></td>${day(eS,satClosed,true)}${day(eU,sunClosed,false)}${par?'':`<td class="sep"><div class="mo">${ptWkMonthLine(s,monthKeys,showPct)}</div></td><td class="sep"><div class="fu">${fu.length?'⚑ '+fu.map(esc).join('<br>'):''}</div></td>`}</tr>`;
+  return `<tr><td><div class="who">${ptPhotoHTML(s)}<div class="nm">${esc(par?ptFirst(s):s.name)}${(!par&&age!=null)?`<span class="age">${age}y</span>`:''}</div></div></td>${day(eS,satClosed,true)}${day(eU,sunClosed,false)}${par?'':`<td class="sep"><div class="mo">${ptWkMonthLine(s,monthKeys,showPct)}</div></td><td class="sep"><div class="fu">${fu.length?'⚑ '+fu.map(esc).join('<br>'):''}</div></td>`}</tr>`;
 }
 function ptWeekendPrintHTML(year, month, satDate, sunDate, levelGroups, pctHidden, pctRevealed, opts){
   opts=opts||{}; const par=!!opts.parent;
@@ -9103,21 +9109,29 @@ function ptStory(s, satDate, sunDate, satClosed, sunClosed, monthKeys){
   else { tone='warn'; head=work.length===1?'🌱 One thing to work on':'🌱 A few things to work on'; }
   return {tone, head, text:t, home: work.length?'This week at home: '+join(work)+'.':''};
 }
+function ptFirst(s){ return String(s.preferredName||s.name).trim().split(/\s+/)[0]; }
+function ptCardEdits(sat){ const st=DB.data.settings; if(!st.wkCardEdits||st.wkCardEdits.sat!==sat) st.wkCardEdits={sat,fams:{}}; return st.wkCardEdits.fams; }
 function ptFamilyCardsHTML(year, month, satDate, sunDate, students, onePerPage, opts){
-  opts=opts||{}; const monthKeys=ptMonthKeys(year,month), satClosed=closureFor(satDate), sunClosed=closureFor(sunDate), map={};
-  students.forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (map[k]=map[k]||{key:k,label:famKey(s)||String(s.preferredName||s.name).split(/\s+/)[0],members:[]}).members.push(s); });
+  opts=opts||{}; const EDS=opts.edits||{}; const monthKeys=ptMonthKeys(year,month), satClosed=closureFor(satDate), sunClosed=closureFor(sunDate), map={};
+  students.forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (map[k]=map[k]||{key:k,label:famKey(s)||ptFirst(s),members:[]}).members.push(s); });
   const fams=Object.values(map).sort((a,b)=>String(a.label).localeCompare(String(b.label),'ar'));
   const dr=ptDayShort(satDate)+' – '+ptDayShort(sunDate)+', '+year;
+  const CHIP={att:['', 'P','L','A','E'], q:['','PASS','FAIL','EXC'], hw:['','DONE','INC','EXC'], cw:['','DONE','INC','EXC']};
   const card=(f,i)=>{ f.members.sort((a,b)=>LEVELS.indexOf(b.level)-LEVELS.indexOf(a.level)||String(a.name).localeCompare(String(b.name),'ar'));
-    const kids=f.members.map(s=>{ const lc=PT_LV_COLOR[s.level]||{c:'#1a4a35',bg:'#eee'}, e1=ptEntry(satDate,s.id), e2=ptEntry(sunDate,s.id), st=ptStory(s,satDate,sunDate,satClosed,sunClosed,monthKeys);
-      const row=(lab,e,closed,sat)=>{ if(closed) return `<tr><td class="d">${lab}</td><td colspan="4" class="closed">Closed</td></tr>`; const m=ptMerged(e); if(m) return `<tr><td class="d">${lab}</td><td colspan="4"><span class="ch ch-${m.c}" style="display:block">${m.t}</span></td></tr>`;
-        return `<tr><td class="d">${lab}</td><td>${ptWkChip('att',e.att,true)}</td><td>${ptWkChip('quran',e.quran,true)}</td><td>${sat?ptWkChip('hw',e.hw,true):''}</td><td>${ptWkChip('cw',e.cw,true)}</td></tr>`; };
-      return `<div class="kid" style="--lc:${lc.c}">${ptPhotoHTML(s)}<div><div class="kn"><bdi>${esc(s.name)}</bdi><span class="lp" style="background:${lc.bg};color:${lc.c}">${esc(s.level)} · ${esc(LEVEL_SUB[s.level]||'')}</span></div>
-        <div class="story ${st.tone}"><div class="hl">${esc(st.head)}</div><div class="tx">${esc(st.text)}</div>${st.home?`<div class="home">${esc(st.home)}</div>`:''}</div>
+    const E=EDS[f.label]||{}, ed=(k,def)=>`data-e="${k}"${E[k]!=null?'':''}`, tx=(k,def)=>esc(E[k]!=null?E[k]:def);
+    const chip=(key,kind,val,blankOK)=>{ const o=E[key]; if(o) return o.t?`<span class="ch ch-${o.c}" data-chip="${key}" data-kind="${kind}">${esc(o.t)}</span>`:`<span class="ch ch-none" data-chip="${key}" data-kind="${kind}"></span>`;
+      const c=ptWkChip(kind==='q'?'quran':kind,val,true); return c? c.replace('<span class="ch',`<span data-chip="${key}" data-kind="${kind}" class="ch`) : `<span class="ch ch-none" data-chip="${key}" data-kind="${kind}"></span>`; };
+    const kids=f.members.map((s,j)=>{ if(E['k'+j+'.hide']) return ''; const lc=PT_LV_COLOR[s.level]||{c:'#1a4a35',bg:'#eee'}, e1=ptEntry(satDate,s.id), e2=ptEntry(sunDate,s.id), st=ptStory(s,satDate,sunDate,satClosed,sunClosed,monthKeys), K='k'+j+'.';
+      const row=(lab,e,closed,sat)=>{ const D=sat?'s':'u'; if(closed) return `<tr><td class="d">${lab}</td><td colspan="4" class="closed">Closed</td></tr>`; const m=ptMerged(e); if(m) return `<tr><td class="d">${lab}</td><td colspan="4"><span class="ch ch-${m.c}" style="display:block" data-e="${K}${D}.m">${tx(K+D+'.m',m.t)}</span></td></tr>`;
+        return `<tr><td class="d">${lab}</td><td>${chip(K+D+'.att','att',e.att)}</td><td>${chip(K+D+'.q','q',e.quran)}</td><td>${sat?chip(K+D+'.hw','hw',e.hw):''}</td><td>${chip(K+D+'.cw','cw',e.cw)}</td></tr>`; };
+      const homeT=E[K+'home']!=null?E[K+'home']:st.home;
+      return `<div class="kid" style="--lc:${lc.c}">${ptPhotoHTML(s)}<div><button class="kx no-print" data-hide="${K}hide" type="button" title="Hide this child on the card">✕</button><div class="kn"><span data-e="${K}name" dir="auto">${tx(K+'name',ptFirst(s))}</span><span class="lp" data-e="${K}lp" style="background:${lc.bg};color:${lc.c}">${tx(K+'lp',s.level+' · '+(LEVEL_SUB[s.level]||''))}</span></div>
+        <div class="story ${st.tone}"><div class="hl" data-e="${K}hl">${tx(K+'hl',st.head)}</div><div class="tx" data-e="${K}tx">${tx(K+'tx',st.text)}</div><div class="home" data-e="${K}home" data-ph="Add a line for home…">${esc(homeT||'')}</div></div>
         <table class="fg"><thead><tr><th></th><th>✅ Attendance</th><th>📖 Qur’an</th><th>✍️ Homework</th><th>📝 Class work</th></tr></thead><tbody>${row('Sat',e1,satClosed,true)}${row('Sun',e2,sunClosed,false)}</tbody></table></div></div>`; }).join('');
-    return `<div class="famwrap" data-fam="${i}"><div class="shbar no-print"><button class="shbtn" data-share="${i}" type="button">📤 Share this card</button></div><div class="fam ${onePerPage?'pg':''}"><div class="fh"><img src="${PR_SEAL}" alt=""><div><div class="fn"><bdi>${esc(f.label)}</bdi> family</div><div class="fd">Weekend progress · ${esc(dr)}</div></div><div class="r">Al-Madrasatu<br>An-Nuriyyah</div></div>${kids}
-      ${opts.next||opts.note?`<div class="nx">📅 <div>${opts.next?`<b>Next class:</b> ${esc(opts.next)}`:''}${opts.note?`<div class="nt">${esc(opts.note)}</div>`:''}</div></div>`:''}
-      <div class="ff"><div>${PT_CONTACT}</div><div class="ar" dir="rtl">${PT_DUA}</div></div></div></div>`; };
+    const nxNext=E['nx.next']!=null?E['nx.next']:(opts.next||''), nxNote=E['nx.note']!=null?E['nx.note']:(opts.note||'');
+    return `<div class="famwrap" data-fam="${i}" data-label="${esc(f.label)}"><div class="shbar no-print"><button class="shbtn rs" data-reset="${i}" type="button">↺ Reset card</button><button class="shbtn" data-share="${i}" type="button">📤 Share this card</button></div><div class="fam ${onePerPage?'pg':''}"><div class="fh"><img src="${PR_SEAL}" alt=""><div><div class="fn" data-e="fn">${E.fn!=null?esc(E.fn):'<bdi>'+esc(f.label)+'</bdi> family'}</div><div class="fd" data-e="fd">${tx('fd','Weekend progress · '+dr)}</div></div><div class="r">Al-Madrasatu<br>An-Nuriyyah</div></div>${kids}
+      <div class="nx ${nxNext||nxNote?'has':''}">📅 <div><div><b>Next class:</b> <span data-e="nx.next" data-ph="Date / time">${esc(nxNext)}</span></div><div class="nt" data-e="nx.note" data-ph="Add a note…">${esc(nxNote)}</div></div></div>
+      <div class="ff"><div data-e="ff.c">${tx('ff.c',PT_CONTACT)}</div><div class="ar" dir="rtl">${PT_DUA}</div></div></div></div>`; };
   return {names:fams.map(f=>f.label), html:`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Family cards — ${fmtDate(satDate)}</title><style>${ptWkCss()}body{margin:0}</style></head><body><div class="sheet" id="sheetRoot">${fams.map(card).join('')||'<p>No families selected.</p>'}</div></body></html>`};
 }
 /* ---- in-app viewer with Back / Print / image export (works on iPad home-screen app) ---- */
@@ -9151,26 +9165,39 @@ async function ptWithCaptureDoc(html, fn){
   const fr=document.createElement('iframe'); fr.style.cssText='position:fixed;left:-20000px;top:0;width:900px;height:1200px;border:0;visibility:hidden'; document.body.appendChild(fr);
   try{ await new Promise(r=>{ fr.onload=r; fr.srcdoc=html; }); await new Promise(r=>setTimeout(r,250)); return await fn(fr.contentDocument); } finally{ fr.remove(); }
 }
-function ptViewer(title, html, kind){
+function ptViewer(title, htmlIn, kind, ctx){
+  const getHtml=typeof htmlIn==='function'?htmlIn:()=>htmlIn; let html=getHtml();
   let host=document.getElementById('pv-root'); if(host) host.remove(); const oldPg=document.getElementById('pv-page-style'); if(oldPg) oldPg.remove();
   host=document.createElement('div'); host.id='pv-root';
   if(!document.getElementById('pv-root-style')){ const st=document.createElement('style'); st.id='pv-root-style';
-    st.textContent='#pv-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pv-root .pv-bar{display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pv-root .pv-t{flex:1;min-width:80px;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pv-root button{padding:10px 16px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pv-root .pv-go{background:#b8872a;color:#20261f}#pv-root .pv-img{background:#f4ead6;color:#123626}#pv-root .pv-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pv-root .pv-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff}@media print{html,body{height:auto!important;overflow:visible!important}body>*:not(#pv-root){display:none!important}#pv-root{position:static!important;display:block!important;background:#fff!important}#pv-root .pv-bar{display:none!important}#pv-root .pv-body{overflow:visible!important}}';
+    st.textContent='#pv-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pv-root .pv-bar{display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pv-root .pv-t{flex:1;min-width:80px;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pv-root button{padding:10px 16px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pv-root .pv-go{background:#b8872a;color:#20261f}#pv-root .pv-img{background:#f4ead6;color:#123626}#pv-root .pv-edit{background:#fff;color:#123626}#pv-root .pv-edit.on{background:#b8872a;color:#20261f}#pv-root .pv-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pv-root .pv-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff}@media print{html,body{height:auto!important;overflow:visible!important}body>*:not(#pv-root){display:none!important}#pv-root{position:static!important;display:block!important;background:#fff!important}#pv-root .pv-bar{display:none!important}#pv-root .pv-body{overflow:visible!important}}';
     document.head.appendChild(st); }
   const pg=document.createElement('style'); pg.id='pv-page-style'; pg.textContent='@page{margin:.4in}'; document.head.appendChild(pg);
-  host.innerHTML='<div class="pv-bar"><button type="button" class="pv-x">← Back</button><span class="pv-t"></span><button type="button" class="pv-img">🖼️ Save as images</button><button type="button" class="pv-go">🖨️ Print / PDF</button></div><div class="pv-body"></div>';
+  host.innerHTML='<div class="pv-bar"><button type="button" class="pv-x">← Back</button><span class="pv-t"></span><button type="button" class="pv-edit" style="display:none">\u270f\ufe0f Edit</button><button type="button" class="pv-img">🖼️ Save as images</button><button type="button" class="pv-go">🖨️ Print / PDF</button></div><div class="pv-body"></div>';
   host.querySelector('.pv-t').textContent=title; document.body.appendChild(host);
-  const parts=ptSplitDoc(html), root=host.querySelector('.pv-body').attachShadow({mode:'open'});
-  root.innerHTML=`${parts.links}<style>${parts.css}\n.pv-doc{margin:0;background:#fff}</style><div class="pv-doc">${parts.body}</div>`;
+  const root=host.querySelector('.pv-body').attachShadow({mode:'open'}); let editing=false;
+  const paint=()=>{ html=getHtml(); const parts=ptSplitDoc(html); root.innerHTML=`${parts.links}<style>${parts.css}\n.pv-doc{margin:0;background:#fff}</style><div class="pv-doc${editing?' editing':''}">${parts.body}</div>`; if(kind==='cards') wireCards(); };
+  const wireCards=()=>{ const sat=ctx&&ctx.sat; if(!sat) return; const EDS=ptCardEdits(sat), docEl=root.querySelector('.pv-doc');
+    const sv=()=>{ DB.save(); };
+    const setEdit=on=>{ editing=on; docEl.classList.toggle('editing',on); root.querySelectorAll('[data-e]').forEach(e=>{ if(on) e.setAttribute('contenteditable','plaintext-only'); else e.removeAttribute('contenteditable'); if(on&&e.contentEditable!=='plaintext-only') e.contentEditable='true'; }); const b=host.querySelector('.pv-edit'); b.classList.toggle('on',on); b.textContent=on?'\u2713 Done editing':'\u270f\ufe0f Edit'; };
+    root.querySelectorAll('[data-e]').forEach(e=>{ e.addEventListener('input',()=>{ const w=e.closest('.famwrap'); if(!w) return; const L=w.dataset.label; (EDS[L]=EDS[L]||{})[e.dataset.e]=e.innerText.replace(/\u200b/g,'').trim(); sv(); }); });
+    const CY={att:[['',''],['Present','ok'],['Late','late'],['Absent','bad'],['Excused','info']],q:[['',''],['Passed','ok'],['Failed','bad'],['Excused','info']],hw:[['',''],['Done','ok'],['Incomplete','bad'],['Excused','info']],cw:[['',''],['Done','ok'],['Incomplete','bad'],['Excused','info']]};
+    root.querySelectorAll('[data-chip]').forEach(ch=>ch.addEventListener('click',()=>{ if(!editing) return; const w=ch.closest('.famwrap'), L=w.dataset.label, list=CY[ch.dataset.kind], cur=ch.textContent.trim(); let i=list.findIndex(x=>x[0]===cur); i=(i+1)%list.length; const [t,c]=list[i];
+      ch.textContent=t; ch.className='ch ch-'+(t?c:'none'); (EDS[L]=EDS[L]||{})[ch.dataset.chip]={t,c:t?c:'none'}; sv(); }));
+    root.querySelectorAll('[data-hide]').forEach(b=>b.addEventListener('click',()=>{ const w=b.closest('.famwrap'), L=w.dataset.label; (EDS[L]=EDS[L]||{})[b.dataset.hide]=true; sv(); b.closest('.kid').style.display='none'; }));
+    root.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>{ const w=b.closest('.famwrap'); confirmBox('Reset this card back to the automatic version? Your edits to it will be lost.',()=>{ delete EDS[w.dataset.label]; DB.save(); const y=host.querySelector('.pv-body').scrollTop; paint(); host.querySelector('.pv-body').scrollTop=y; }); }));
+    const eb=host.querySelector('.pv-edit'); eb.style.display=''; eb.onclick=()=>setEdit(!editing); if(editing) setEdit(true);
+  };
+  paint();
   const close=()=>{ host.remove(); pg.remove(); document.removeEventListener('keydown',esc_); }; const esc_=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esc_);
   host.querySelector('.pv-x').onclick=close;
   host.querySelector('.pv-go').onclick=()=>window.print();
   const run=async(fn)=>{ try{ toast('Making images…'); await ptLoadH2C(); await fn(); }catch(e){ console.error(e); toast('Could not make images — this needs an internet connection. Print / PDF still works.'); } };
   const imgBtn=host.querySelector('.pv-img');
-  if(kind==='parent'){ imgBtn.textContent='🖼️ Save as images (per level)'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(html,async d=>{ const head=d.getElementById('shotHead'), foot=d.getElementById('shotFoot'), blobs=[], names=[];
+  if(kind==='parent'){ imgBtn.textContent='🖼️ Save as images (per level)'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const head=d.getElementById('shotHead'), foot=d.getElementById('shotFoot'), blobs=[], names=[];
       const lvs=[...d.querySelectorAll('.lv')]; for(let i=0;i<lvs.length;i++){ blobs.push(await ptShotEl(d,[head,lvs[i],foot],820,'par')); names.push('AMAN-Weekend-Progress-'+(lvs[i].querySelector('.lvh')?lvs[i].querySelector('.lvh').firstChild.textContent.trim().replace(/\s+/g,'-'):'Level-'+(i+1))); } await ptDeliverImages(blobs,names,'Weekend Progress'); })); }
-  else if(kind==='cards'){ imgBtn.textContent='🖼️ Save all cards as images'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(html,async d=>{ const cards=[...d.querySelectorAll('.famwrap')], blobs=[], names=[]; for(const c of cards){ blobs.push(await ptShotEl(d,c.querySelector('.fam'),720)); names.push('AMAN-Family-'+(c.querySelector('.fn bdi')||{}).textContent); } await ptDeliverImages(blobs,names,'Family progress'); }));
-    root.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>run(()=>ptWithCaptureDoc(html,async d=>{ const c=d.querySelectorAll('.famwrap')[+b.dataset.share]; const blob=await ptShotEl(d,c.querySelector('.fam'),720); await ptDeliverImages([blob],['AMAN-Family-'+(c.querySelector('.fn bdi')||{}).textContent],'Weekend progress'); }))); }
+  else if(kind==='cards'){ imgBtn.textContent='🖼️ Save all cards as images'; imgBtn.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const cards=[...d.querySelectorAll('.famwrap')], blobs=[], names=[]; for(const c of cards){ blobs.push(await ptShotEl(d,c.querySelector('.fam'),720)); names.push('AMAN-Family-'+c.dataset.label); } await ptDeliverImages(blobs,names,'Family progress'); }));
+    root.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>run(()=>ptWithCaptureDoc(getHtml(),async d=>{ const c=d.querySelectorAll('.famwrap')[+b.dataset.share]; const blob=await ptShotEl(d,c.querySelector('.fam'),720); await ptDeliverImages([blob],['AMAN-Family-'+c.dataset.label],'Weekend progress'); }))); }
   else imgBtn.remove();
   return host;
 }
@@ -9195,7 +9222,7 @@ function ptFamilyCardsModal(year, month, satDate, sunDate, students){
     <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" id="fcGo">Open cards</button></div></div>`, true);
   $('#fcAll',o).onchange=e=>$$('.fcF',o).forEach(c=>c.checked=e.target.checked);
   $('#fcGo',o).onclick=()=>{ const ch=$$('.fcF',o).filter(c=>c.checked).map(c=>fams[+c.dataset.i]); if(!ch.length){ toast('Pick at least one family'); return; }
-    const op=ptWkOptsRead(o,sunDate), one=$('#fcOne',o).checked; o.remove(); ptViewer('Family cards',ptFamilyCardsHTML(year,month,satDate,sunDate,ch.flatMap(f=>f.members),one,op).html,'cards'); };
+    const op=ptWkOptsRead(o,sunDate), one=$('#fcOne',o).checked; o.remove(); ptViewer('Family cards',()=>ptFamilyCardsHTML(year,month,satDate,sunDate,ch.flatMap(f=>f.members),one,Object.assign({},op,{edits:ptCardEdits(satDate)})).html,'cards',{sat:satDate}); };
 }
 
 /* ================= STUDENT OF THE MONTH HUB =================
