@@ -1085,6 +1085,11 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
 .ai-bl.t-ok{--tn:var(--ok)}.ai-bl.t-warn{--tn:var(--gold)}.ai-bl.t-or{--tn:var(--orange)}.ai-bl.t-bad{--tn:var(--bad)}.ai-bl.t-info{--tn:var(--info)}.ai-bl.t-dim{--tn:var(--ink3)}
 .ai-bb .hd{font-weight:700;font-size:14.5px}.ai-bb .ln{font-size:13px;color:var(--ink2);margin-top:3px;line-height:1.45}.ai-bb .chs{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .ai-greet{font-size:15px;margin-bottom:4px}
+
+.rc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.rc-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:16px;border:2px solid var(--line);background:var(--surface);cursor:pointer;font:inherit;color:inherit;min-height:150px}
+.rc-tile b{font-size:15px;text-align:center;line-height:1.25;overflow-wrap:anywhere}.rc-tile.on{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
+.rc-ck{position:absolute;top:8px;right:10px;font-size:20px;font-weight:700;color:var(--ok)}.rc-tile .tag{font-size:11px;white-space:normal;text-align:center}
 </style>
 </head>
 <body>
@@ -1112,7 +1117,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 60 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 61 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -11176,87 +11181,157 @@ const FieldTrips = {
     students.forEach(r=>{ const ph=[FieldTrips.dg(r['Phone']),FieldTrips.dg(r['Emergency Contact Phone'])].filter(x=>x.length>=7); const f=list.find(f=>ph.some(p=>f.phones.has(p))); if(f) f.slips++; else unmatched++; });
     return {list,unmatched,noPhone:list.filter(f=>f.noPhone)};
   },
+  nm(r){ return [r['Student First Name'],r['Student Middle Name'],r['Student Last Name']].filter(Boolean).join(' '); },
+  idOf(r){ return r['Row ID']||FieldTrips.nm(r); },
+  hasMed(r){ return r['Allergies']==='Has allergies'||!!(r['Medications']&&!/^(no|none|nil|n\/?a|na)\b/i.test(String(r['Medications']).trim())); },
+  signed(r){ return r['Signature Captured']==='Yes'; },
+  tel(p){ const d=String(p||'').replace(/[^\d+]/g,''); return p&&d.length>=7? `<a href="tel:${esc(d)}" style="color:var(--info);font-weight:600;white-space:nowrap">📞 ${esc(p)}</a>` : `<span class="ai-sub">${esc(p||'—')}</span>`; },
+  matchMap(){ const st=DB.data.settings; return (st.tripMatch=st.tripMatch||{}); },
+  log(){ const st=DB.data.settings; st.tripLog=st.tripLog||{}; return (st.tripLog[FieldTrips._tripKey]=st.tripLog[FieldTrips._tripKey]||{notes:[]}); },
+  famOfSlip(r,cov){ const ph=[FieldTrips.dg(r['Phone']),FieldTrips.dg(r['Emergency Contact Phone'])].filter(x=>x.length>=7); return cov.list.find(f=>ph.some(p=>f.phones.has(p))); },
+  stuOf(r,cov){ const mm=FieldTrips.matchMap(), id=mm[FieldTrips.idOf(r)]; if(id){ const s0=DB.data.students.find(x=>x.id===id); if(s0) return s0; }
+    const f=FieldTrips.famOfSlip(r,cov); if(f&&f.kids.length===1){ return f.kids[0]; } return null; },
+  items(){ const slips=FieldTrips.rows().filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey), cov=FieldTrips.coverage(slips), c=FieldTrips.chk();
+    return {slips,cov,items:slips.map(r=>({r,id:FieldTrips.idOf(r),stu:FieldTrips.stuOf(r,cov),fam:FieldTrips.famOfSlip(r,cov),st:c[FieldTrips.idOf(r)]||{},med:FieldTrips.hasMed(r),signed:FieldTrips.signed(r)}))}; },
+  label(it){ return it.stu? stuShort(it.stu) : [it.r['Student First Name'],(it.r['Student Last Name']||'').slice(0,1)&&((it.r['Student Last Name']||'').slice(0,1)+'.')].filter(Boolean).join(' '); },
+  tile(it,mode){ const on=!!it.st[mode], lbl=FieldTrips.label(it);
+    const av=it.stu? avatarHTML(it.stu,'width:64px;height:64px;border-radius:50%;font-size:22px') : `<div style="width:64px;height:64px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--ink2)">${esc((it.r['Student First Name']||'?').slice(0,1))}</div>`;
+    return `<button class="rc-tile ${on?'on':''}" data-rc="${esc(it.id)}">${av}<b dir="auto">${esc(lbl)}</b>${it.med?`<span class="tag tag-red">⚠ ${esc(it.r['Allergy Details']||it.r['Medications']||'medical')}</span>`:''}<span class="rc-ck">${on?'✓':''}</span></button>`; },
+  rollCall(){
+    const mode0=FieldTrips._rcMode||'here';
+    const o=document.createElement('div'); o.id='ftRoll'; o.style.cssText='position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
+    const paint=()=>{ const {items}=FieldTrips.items(), mode=FieldTrips._rcMode||'here', only=!!FieldTrips._rcOnly;
+      const pool=mode==='back'? items.filter(i=>i.st.here) : items;
+      const n=pool.filter(i=>i.st[mode]).length, shown=only? pool.filter(i=>!i.st[mode]) : pool;
+      o.innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+        <button class="btn btn-o" id="rcX">← Done</button>
+        <div style="display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden"><button class="btn ${mode==='here'?'btn-p':'btn-ghost'}" id="rcHere" style="border-radius:0">Boarding</button><button class="btn ${mode==='back'?'btn-p':'btn-ghost'}" id="rcBack" style="border-radius:0">Returning</button></div>
+        <div style="margin-left:auto;text-align:right"><div style="font-size:34px;font-weight:700;line-height:1">${n}<span style="font-size:18px;color:var(--ink3)"> of ${pool.length}</span></div><div class="ai-sub">${mode==='here'?'on board':'back safely'}</div></div></div>
+        <div style="padding:8px 16px;display:flex;gap:8px;align-items:center"><label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="rcOnly" ${only?'checked':''} style="width:20px;height:20px"> Only show who's not ${mode==='here'?'here':'back'} yet</label>${n===pool.length&&pool.length?'<b class="c-ok" style="margin-left:auto">✓ Everyone accounted for</b>':''}</div>
+        <div style="flex:1;overflow:auto;padding:8px 16px 24px"><div class="rc-grid">${shown.map(i=>FieldTrips.tile(i,mode)).join('')||'<p class="ux-note">Nobody to show.</p>'}</div></div>`;
+      $('#rcX',o).onclick=()=>{ o.remove(); Router.render(); };
+      $('#rcHere',o).onclick=()=>{ FieldTrips._rcMode='here'; paint(); }; $('#rcBack',o).onclick=()=>{ FieldTrips._rcMode='back'; paint(); };
+      $('#rcOnly',o).onchange=e=>{ FieldTrips._rcOnly=e.target.checked; paint(); };
+      $$('[data-rc]',o).forEach(b=>b.onclick=()=>{ const c=FieldTrips.chk(), id=b.dataset.rc, m=FieldTrips._rcMode||'here'; const x=(c[id]=c[id]||{}); x[m]=!x[m]; if(m==='here'&&!x.here) x.back=false; DB.save(); const y=$('.rc-grid',o).parentNode.scrollTop; paint(); $('.rc-grid',o).parentNode.scrollTop=y; });
+    };
+    document.body.appendChild(o); paint();
+  },
+  matchModal(){
+    const {items,cov}=FieldTrips.items(); const mm=FieldTrips.matchMap();
+    const un=items.filter(i=>!mm[i.id]);
+    if(!items.length){ toast('No slips to match'); return; }
+    const o=overlay(`<div class="modal" style="max-width:640px"><h3>🔗 Match slips to students</h3><p class="td-hint">Choose the roster child for each slip once — it's remembered. Matched students get photos in Roll call and exact "not signed" answers.</p>
+      <div style="max-height:55vh;overflow:auto">${items.map(i=>{ const kids=i.fam?i.fam.kids:[]; const all=DB.data.students.filter(s=>s.active!==false).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+        const cur=mm[i.id]||(i.stu?i.stu.id:'');
+        return `<div class="wrow" style="cursor:default;gap:10px;flex-wrap:wrap"><span class="t"><b>${esc(FieldTrips.nm(i.r))}</b><br><span class="ai-sub">${esc(i.r['Level']||'')}${i.fam?' · family '+esc(i.fam.label):' · no family match'}</span></span>
+          <select data-mt="${esc(i.id)}" style="min-width:200px"><option value="">— not matched —</option>${kids.length?`<optgroup label="Suggested (same family)">${kids.map(k=>`<option value="${k.id}" ${cur===k.id?'selected':''}>${esc(stuShort(k))}</option>`).join('')}</optgroup>`:''}<optgroup label="All students">${all.filter(s=>!kids.includes(s)).map(k=>`<option value="${k.id}" ${cur===k.id?'selected':''}>${esc(k.name)}</option>`).join('')}</optgroup></select></div>`; }).join('')}</div>
+      <div class="mfoot"><button class="btn btn-o" id="mtC">Cancel</button><button class="btn btn-p" id="mtS">Save matches</button></div></div>`,true);
+    $('#mtC',o).onclick=()=>o.remove();
+    $('#mtS',o).onclick=()=>{ $$('[data-mt]',o).forEach(sel=>{ if(sel.value) mm[sel.dataset.mt]=sel.value; else delete mm[sel.dataset.mt]; }); DB.save(); o.remove(); toast('Matches saved'); Router.render(); };
+  },
+  remind(f,tripName,tripDate){
+    const s0=f.kids[0]; const kids=f.kids.map(k=>ptFirst(k)).join(', ');
+    const text=`As-salāmu ʿalaykum,\n\nA gentle reminder that we haven't received the permission slip for the ${tripName}${tripDate?' on '+fmtDate(tripDate):''} for ${kids}. Please submit it when you can, in shāʾ Allāh.\n\nQuestions? Br. Abdallah bin Abdirahman: (612) 444-2609.\n\nJazākum Allāhu khayran,\nAl-Madrasatu An-Nuriyyah`;
+    FU.compose(s0,text,{title:'Permission slip reminder',onSent:()=>{ const st=DB.data.settings; st.tripRemind=st.tripRemind||{}; (st.tripRemind[FieldTrips._tripKey]=st.tripRemind[FieldTrips._tripKey]||{})[f.key]=today(); DB.save(); }});
+  },
+  printSheet(){
+    const {items}=FieldTrips.items(), nameT=FieldTrips._tripKey.split('|')[0], d=FieldTrips.iso(FieldTrips._tripKey.split('|')[1]);
+    const rows=items.slice().sort((a,b)=>(b.med-a.med)||FieldTrips.nm(a.r).localeCompare(FieldTrips.nm(b.r)));
+    const med=rows.filter(i=>i.med), c=(p)=>esc(p||'—');
+    printWindow('Trip day sheet — '+nameT,`*{box-sizing:border-box}body{font-family:Georgia,serif;max-width:860px;margin:24px auto;padding:0 20px;color:#20261f;line-height:1.45}h1{font-size:21px;color:#123626;margin:0}.m{font-size:12.5px;color:#5c665a;margin-bottom:12px}h2{font-size:14px;color:#1a4a35;border-bottom:1px solid #ddd;padding-bottom:3px;margin:16px 0 6px}table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}th{font-size:11px;color:#6b756a}.w{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:13px}@media print{@page{margin:.4in}}`,
+      `<h1>${esc(nameT)} — trip day sheet</h1><div class="m">${d?esc(fmtDate(d))+' · ':''}${rows.length} students · Br. Abdallah bin Abdirahman (612) 444-2609 · In an emergency call 911 first</div>
+       ${med.length?`<h2>Medical alerts</h2>${med.map(i=>`<div class="w">⚠ <b>${esc(FieldTrips.nm(i.r))}</b> — ${esc([i.r['Allergies']==='Has allergies'?(i.r['Allergy Details']||'Allergies'):'',i.r['Medications']?('Meds: '+i.r['Medications']):''].filter(Boolean).join(' · '))} · ${c(i.r['Phone']||i.r['Emergency Contact Phone'])}</div>`).join('')}`:''}
+       <h2>Roster</h2><table><tr><th>Here</th><th>Back</th><th>Student</th><th>Level</th><th>Allergies / meds</th><th>Guardian</th><th>Emergency</th><th>Slip</th></tr>${rows.map(i=>`<tr><td>☐</td><td>☐</td><td><b>${esc(FieldTrips.nm(i.r))}</b></td><td>${c(i.r['Level'])}</td><td>${i.med?esc([i.r['Allergy Details']||'',i.r['Medications']||''].filter(Boolean).join(' · ')||'see slip'):'—'}</td><td>${esc([i.r['Guardian First Name'],i.r['Guardian Last Name']].filter(Boolean).join(' '))}<br>${c(i.r['Phone'])}</td><td>${esc(i.r['Emergency Contact Name']||'')}<br>${c(i.r['Emergency Contact Phone'])}</td><td>${i.signed?'✓':'missing'}</td></tr>`).join('')}</table>
+       <p style="font-size:11px;color:#7b857a;margin-top:14px">Private family information — return after the trip; do not photograph or share.</p>`);
+  },
   render(v){
-    const rows = FieldTrips._rows;
+    FieldTrips._v=v; const rows = FieldTrips._rows;
     const trips = FieldTrips.trips(); if(trips.length && !trips.some(t=>t[0]===FieldTrips._tripKey)) FieldTrips._tripKey=trips[0][0];
     const tdy=today();
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div style="margin-top:12px">${moduleHeroHTML('Field Trips', 'Trip Day Checklist', 'A live headcount pulled straight from permission slip submissions — names, allergies, medications, and who has signed.', '🎒')}</div>
-     <div class="filters no-print">
-       ${trips.length ? `<select id="ftPick" style="min-width:260px">${trips.map(([k,t,d])=>`<option value="${esc(k)}" ${k===FieldTrips._tripKey?'selected':''}>${esc(k.split('|')[0])} — ${d?esc(fmtDate(d)):esc(k.split('|')[1]||'')}${d&&d<tdy?' (past)':''}</option>`).join('')}</select>` : ''}
+     <div style="margin-top:12px">${moduleHeroHTML('Field Trips', 'Trip Day Checklist', 'Headcount, medical alerts and permission slips — built for the day of the trip.', '🎒')}</div>
+     <div class="filters no-print" style="flex-wrap:wrap;gap:8px;align-items:center">
+       ${trips.length ? `<select id="ftPick" style="min-width:240px;max-width:100%">${trips.map(([k,t,d])=>`<option value="${esc(k)}" ${k===FieldTrips._tripKey?'selected':''}>${esc(k.split('|')[0])} — ${d?esc(fmtDate(d)):esc(k.split('|')[1]||'')}${d&&d<tdy?' (past)':''}</option>`).join('')}</select>` : ''}
+       ${trips.length?'<button class="btn btn-p btn-sm" id="ftRoll">▶ Roll call</button><button class="btn btn-o btn-sm" id="ftPrint">🖨️ Trip sheet</button>':''}
        <button class="btn btn-o btn-sm" id="ftRefresh" ${FieldTrips._loading?'disabled':''}>${FieldTrips._loading?'Loading…':'🔄 Refresh'}</button>
-       <button class="btn btn-o btn-sm" id="ftPrint">🖨️ Print</button>
-       <label style="font-size:12.5px;display:flex;gap:5px;align-items:center;cursor:pointer;white-space:nowrap"><input type="checkbox" id="ftTest" ${FieldTrips.hideTest()?'checked':''}> Hide test entries</label>
-       <button class="btn btn-ghost btn-sm" id="ftCfg">⚙ Source</button>
+       <button class="btn btn-ghost btn-sm" id="ftMore" aria-label="More">⋯</button>
        <span style="margin-left:auto;font-size:11.5px;color:var(--ink3)">${FieldTrips._lastFetch? 'Loaded '+rel(FieldTrips._lastFetch) : ''}</span>
      </div>
      <div id="ftBody">${FieldTrips.bodyHTML()}</div>`;
     wireCommon(v);
     $('#ftRefresh',v).onclick=()=>FieldTrips.load();
-    $('#ftPrint',v).onclick=()=>window.print();
-    $('#ftCfg',v).onclick=()=>FieldTrips.settingsForm();
-    $('#ftTest',v).onchange=e=>{ DB.data.settings.ftHideTest=e.target.checked; DB.save(); Router.render(); };
+    const pr=$('#ftPrint',v); if(pr) pr.onclick=()=>FieldTrips.printSheet();
+    const rc=$('#ftRoll',v); if(rc) rc.onclick=()=>FieldTrips.rollCall();
+    $('#ftMore',v).onclick=()=>{ const o=overlay(`<div class="modal" style="max-width:360px"><h3>Trip page options</h3>
+       <label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="mTest" ${FieldTrips.hideTest()?'checked':''} style="width:20px;height:20px"> Hide test entries</label>
+       <div style="display:flex;flex-direction:column;gap:8px"><button class="btn btn-o" id="mMatch">🔗 Match slips to students</button><button class="btn btn-o" id="mSrc">⚙ Slip source URL</button></div><div class="mfoot"><button class="btn btn-p" id="mX">Close</button></div></div>`,true);
+      $('#mX',o).onclick=()=>o.remove(); $('#mTest',o).onchange=e=>{ DB.data.settings.ftHideTest=e.target.checked; DB.save(); o.remove(); Router.render(); };
+      $('#mMatch',o).onclick=()=>{ o.remove(); FieldTrips.matchModal(); }; $('#mSrc',o).onclick=()=>{ o.remove(); FieldTrips.settingsForm(); }; };
     const pick = $('#ftPick',v);
     if(pick) pick.onchange=()=>{ FieldTrips._tripKey = pick.value; Router.render(); };
     $$('[data-ft]',v).forEach(cb=>cb.onchange=()=>{ const [id,k]=cb.dataset.ft.split('|'); const c=FieldTrips.chk(); (c[id]=c[id]||{})[k]=cb.checked; if(k==='here'&&!cb.checked&&c[id].back) c[id].back=false; DB.save(); FieldTrips.render(v); });
-    $$('[data-ftall]',v).forEach(b=>b.onclick=()=>{ const c=FieldTrips.chk(); FieldTrips.rows().filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey).forEach(r=>{ const id=r['Row ID']||[r['Student First Name'],r['Student Middle Name'],r['Student Last Name']].filter(Boolean).join(' '); (c[id]=c[id]||{})[b.dataset.ftall]=true; }); DB.save(); FieldTrips.render(v); });
+    $$('[data-ftall]',v).forEach(b=>b.onclick=()=>{ const c=FieldTrips.chk(); FieldTrips.items().items.forEach(i=>{ (c[i.id]=c[i.id]||{})[b.dataset.ftall]=true; }); DB.save(); FieldTrips.render(v); });
+    $$('[data-ftmatch]',v).forEach(b=>b.onclick=()=>FieldTrips.matchModal());
+    $$('[data-ftremind]',v).forEach(b=>b.onclick=()=>{ const {cov}=FieldTrips.items(); const f=cov.list.find(x=>x.key===b.dataset.ftremind); if(f) FieldTrips.remind(f,FieldTrips._tripKey.split('|')[0],FieldTrips.iso(FieldTrips._tripKey.split('|')[1])); });
+    $$('[data-ftlog]',v).forEach(b=>b.onclick=()=>{ const lg=FieldTrips.log(), {items}=FieldTrips.items(); const k=b.dataset.ftlog; const nowT=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+      if(k==='left'){ lg.left={t:nowT,n:items.filter(i=>i.st.here).length,of:items.length}; } else if(k==='back'){ lg.back={t:nowT,n:items.filter(i=>i.st.back).length,of:items.filter(i=>i.st.here).length}; }
+      DB.save(); toast(k==='left'?'Departure logged':'Return logged'); FieldTrips.render(v); });
+    const ch=$('#ftChap',v); if(ch) ch.onchange=()=>{ FieldTrips.log().chap=Math.max(0,+ch.value||0); DB.save(); FieldTrips.render(v); };
+    const nt=$('#ftNoteAdd',v); if(nt) nt.onclick=()=>{ const t=($('#ftNote',v).value||'').trim(); if(!t) return; FieldTrips.log().notes.push({t:new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),x:t}); DB.save(); FieldTrips.render(v); };
+    const sh=$('#ftShare',v); if(sh) sh.onclick=()=>{ const {items}=FieldTrips.items(), h=items.filter(i=>i.st.here).length, b=items.filter(i=>i.st.back).length, lg=FieldTrips.log(); const txt=`${FieldTrips._tripKey.split('|')[0]}: ${h} of ${items.length} students with us${lg.left?' (left '+lg.left.t+')':''}${b?'; '+b+' back safely':''}.`;
+      const o=overlay(`<div class="modal" style="max-width:480px"><h3>Send headcount update</h3><textarea id="shT" rows="4" style="width:100%">${esc(txt)}</textarea><div class="mfoot"><button class="btn btn-o" id="shC">Close</button><button class="btn btn-o" id="shCp">📋 Copy</button><a class="btn btn-p" id="shS" href="#">💬 Text Br. Abdallah</a></div></div>`,true);
+      $('#shC',o).onclick=()=>o.remove(); $('#shCp',o).onclick=()=>{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText($('#shT',o).value).then(()=>toast('Copied')); }; $('#shS',o).onclick=()=>{ $('#shS',o).href='sms:6124442609?&body='+encodeURIComponent($('#shT',o).value); }; };
     if(rows===null && !FieldTrips._loading) FieldTrips.load();
   },
 
   bodyHTML(){
     if(FieldTrips._rows===null) return `<p style="padding:24px;color:var(--ink2)">${FieldTrips._loading?'Loading submissions…':'Tap Refresh to load submissions.'}</p>`;
-    if(!FieldTrips.rows().length) return `<p style="padding:24px;color:var(--ink2)">No permission slip submissions found yet.</p>`;
-    const students = FieldTrips.rows().filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey);
-    if(!students.length) return `<p style="padding:24px;color:var(--ink2)">No submissions for this trip yet.</p>`;
-    const tripD=FieldTrips.iso(FieldTrips._tripKey.split('|')[1]), tdy=today(), isPast=tripD&&tripD<tdy;
-    const nm=s=>[s['Student First Name'],s['Student Middle Name'],s['Student Last Name']].filter(Boolean).join(' ');
-    const idOf=s=>s['Row ID']||nm(s), c=FieldTrips.chk();
-    const hasMed=s=>s['Allergies']==='Has allergies'||!!(s['Medications']&&!/^(no|none|nil|n\/?a|na)\b/i.test(String(s['Medications']).trim()));
-    const signed=s=>s['Signature Captured']==='Yes';
-    const sorted=students.slice().sort((a,b)=>(hasMed(b)-hasMed(a))||((signed(a)?1:0)-(signed(b)?1:0))||nm(a).localeCompare(nm(b)));
-    const here=students.filter(s=>(c[idOf(s)]||{}).here).length, back=students.filter(s=>(c[idOf(s)]||{}).back).length;
-    const meds=students.filter(hasMed), unsigned=students.filter(s=>!signed(s));
-    const cov=FieldTrips.coverage(students);
-    const missingFam=cov.list.filter(f=>!f.slips && !f.noPhone), cantCheck=cov.noPhone;
-    const covered=cov.list.filter(f=>f.slips).length;
-    const tel=(p)=>{ const d=String(p||'').replace(/[^\d+]/g,''); return p&&d.length>=7? `<a href="tel:${esc(d)}" style="color:var(--info);font-weight:600;white-space:nowrap">📞 ${esc(p)}</a>` : `<span class="ai-sub">${esc(p||'—')}</span>`; };
+    if(!FieldTrips.rows().length) return `<div class="card" style="text-align:center;padding:28px"><div style="font-size:34px">🎒</div><h3 style="margin:6px 0">No trips yet</h3><p class="ux-note">When a family submits the permission slip for the next trip it appears here, with headcount, medical alerts and a roll call mode.</p></div>`;
+    const {items,cov}=FieldTrips.items();
+    if(!items.length) return `<p style="padding:24px;color:var(--ink2)">No submissions for this trip yet.</p>`;
+    const tripName=FieldTrips._tripKey.split('|')[0], tripD=FieldTrips.iso(FieldTrips._tripKey.split('|')[1]), tdy=today(), isPast=tripD&&tripD<tdy;
+    const hasUpcoming=FieldTrips.trips().some(t=>t[2]&&t[2]>=tdy);
+    const here=items.filter(i=>i.st.here).length, back=items.filter(i=>i.st.back).length, lg=FieldTrips.log();
+    const meds=items.filter(i=>i.med), unsigned=items.filter(i=>!i.signed);
+    const mm=FieldTrips.matchMap(), nMatched=items.filter(i=>i.stu).length, anyMatch=nMatched>0;
+    const sorted=items.slice().sort((a,b)=>(b.med-a.med)||((a.signed?1:0)-(b.signed?1:0))||FieldTrips.nm(a.r).localeCompare(FieldTrips.nm(b.r)));
+    const tel=FieldTrips.tel;
+    // permission check — child level once matched, otherwise family level
+    const missingFam=cov.list.filter(f=>!f.slips && !f.noPhone), cantCheck=cov.noPhone, covered=cov.list.filter(f=>f.slips).length;
+    const roster=DB.data.students.filter(s=>s.active!==false&&!(s.startDate&&s.startDate>tdy));
+    const slipStu=new Set(items.filter(i=>i.stu).map(i=>i.stu.id)), signedStu=new Set(items.filter(i=>i.stu&&i.signed).map(i=>i.stu.id));
+    const unsignedKids=anyMatch? roster.filter(s=>!signedStu.has(s.id)) : [];
+    const reminded=((DB.data.settings.tripRemind||{})[FieldTrips._tripKey])||{};
+    const famMissing=anyMatch? cov.list.filter(f=>f.kids.some(k=>!signedStu.has(k.id)) && !f.kids.every(k=>slipStu.has(k.id)&&signedStu.has(k.id))) : missingFam;
     const famPhone=f=>{ try{ return famContactPhone(f.key)||[...f.phones][0]||''; }catch(e){ return [...f.phones][0]||''; } };
+    const ratio=lg.chap? '1 adult : '+Math.max(1,Math.round(items.length/lg.chap))+' students':'';
     return `
-      ${isPast?`<div class="notice warn no-print" style="margin-bottom:12px"><span>🕘</span><span>This trip was on <b>${esc(fmtDate(tripD))}</b> — it's in the past. Pick a different trip above if you're planning the next one.</span></div>`:''}
-      <div class="card" style="margin-bottom:14px;display:flex;gap:22px;flex-wrap:wrap;align-items:center">
-        <div><div style="font-size:30px;font-weight:700;line-height:1">${here}<span style="font-size:16px;color:var(--ink3)"> of ${students.length}</span></div><div class="ai-sub">here</div></div>
-        <div><div style="font-size:30px;font-weight:700;line-height:1">${back}<span style="font-size:16px;color:var(--ink3)"> of ${here}</span></div><div class="ai-sub">back safely</div></div>
-        <div style="flex:1;min-width:160px"><div class="pp-prog"><i style="width:${students.length?Math.round(here/students.length*100):0}%"></i></div><div class="ai-sub">${meds.length?`<b class="c-bad">${meds.length}</b> with allergies / medication · `:''}${unsigned.length?`<b class="c-warn">${unsigned.length}</b> missing signature`:'all signatures captured'}</div></div>
-        <span class="no-print" style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-ftall="here">Everyone here</button>${here?'<button class="btn btn-o btn-sm" data-ftall="back">Everyone back</button>':''}</span>
-      </div>
-      ${meds.length?`<div class="warn-box" style="background:color-mix(in srgb,var(--bad) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line));border-radius:12px;padding:10px 14px;margin-bottom:14px"><b class="c-bad">⚠ Medical alerts</b>${meds.map(s=>`<div style="margin-top:4px;font-size:13.5px"><b>${esc(nm(s))}</b> — ${esc([s['Allergies']==='Has allergies'?(s['Allergy Details']||'Allergies'):'',s['Medications']?('Meds: '+s['Medications']):''].filter(Boolean).join(' · '))} · ${tel(s['Phone']||s['Emergency Contact Phone'])}</div>`).join('')}</div>`:''}
-      <details class="card no-print" style="margin-bottom:14px" ${missingFam.length?'open':''}><summary style="cursor:pointer;font-weight:700">📋 Permission check <span class="ai-sub" style="font-weight:400">${covered} of ${cov.list.length} families have a slip${missingFam.length?' · '+missingFam.length+' haven’t':''}</span></summary>
-        <p class="ux-note">Slips are matched to families by phone number (slips use English names, your roster is Arabic). A family counts as covered if any slip has one of their numbers.${cov.unmatched?' '+cov.unmatched+' slip'+(cov.unmatched>1?'s':'')+' didn’t match any family number.':''}</p>
-        ${missingFam.length?`<div style="margin-top:6px">${missingFam.map(f=>`<div class="wrow" style="cursor:default;gap:10px"><span class="t"><b dir="auto">${esc(f.label)}</b> family <span class="ai-sub">· ${f.kids.map(k=>esc(stuShort(k))).join(', ')}</span></span>${tel(famPhone(f))}</div>`).join('')}</div>`:'<p class="ux-note c-ok">Every family with a phone number on file has submitted a slip.</p>'}
-        ${cantCheck.length?`<p class="ux-note">${cantCheck.length} famil${cantCheck.length>1?'ies have':'y has'} no phone on file, so they can’t be checked: ${cantCheck.map(f=>esc(f.label)).join(', ')}.</p>`:''}</details>
-      <div class="card" style="padding:0;overflow:auto">
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:var(--surface2);text-align:left">${['Here','Back','Student','Level','Allergies / Meds','Guardian','Emergency','Signed'].map(h=>`<th style="padding:9px 12px;font-size:11.5px;color:var(--ink3);font-weight:700" ${h==='Here'||h==='Back'?'class="no-print"':''}>${h}</th>`).join('')}</tr></thead>
-          <tbody>
-            ${sorted.map(s=>{
-              const name=nm(s), rowId=idOf(s), st=c[rowId]||{};
-              const allergy = s['Allergies']==='Has allergies' ? `<span class="tag tag-red">⚠ ${esc(s['Allergy Details']||'Allergies')}</span>` : '<span style="color:var(--ink3)">—</span>';
-              const m2 = s['Medications'] ? `<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Medications'])}</div>` : '';
-              const sig = signed(s) ? (s['Signature File']? `<a href="${esc(s['Signature File'])}" target="_blank" rel="noopener" class="tag tag-green">✓ view</a>` : '<span class="tag tag-green">✓</span>') : '<span class="tag tag-gold">missing</span>';
-              return `<tr style="border-top:1px solid var(--line);${st.back?'opacity:.55':''}">
-                <td style="padding:9px 12px" class="no-print"><input type="checkbox" data-ft="${esc(rowId)}|here" ${st.here?'checked':''} style="width:22px;height:22px"></td>
-                <td style="padding:9px 12px" class="no-print"><input type="checkbox" data-ft="${esc(rowId)}|back" ${st.back?'checked':''} ${st.here?'':'disabled'} style="width:22px;height:22px"></td>
-                <td style="padding:9px 12px"><b>${esc(name)}</b>${s['Student Notes']?`<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Student Notes'])}</div>`:''}</td>
-                <td style="padding:9px 12px;font-size:13px">${esc(s['Level']||'—')}</td>
-                <td style="padding:9px 12px">${allergy}${m2}</td>
-                <td style="padding:9px 12px;font-size:13px">${esc([s['Guardian First Name'],s['Guardian Last Name']].filter(Boolean).join(' ')||'—')}<div style="font-size:12px">${tel(s['Phone'])}</div></td>
-                <td style="padding:9px 12px;font-size:13px">${esc(s['Emergency Contact Name']||'—')}<div style="font-size:12px">${tel(s['Emergency Contact Phone'])}</div></td>
-                <td style="padding:9px 12px">${sig}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`;
+      ${!hasUpcoming?`<div class="notice warn no-print" style="margin-bottom:12px"><span>🗓️</span><span><b>No upcoming trip.</b> ${isPast?`You're looking at <b>${esc(tripName)}</b> from ${esc(fmtDate(tripD))}.`:''} When families submit the next permission slip it will appear in the trip menu and open here automatically.</span></div>`:(isPast?`<div class="notice warn no-print" style="margin-bottom:12px"><span>🕘</span><span>This trip was on <b>${esc(fmtDate(tripD))}</b> — it's in the past.</span></div>`:'')}
+      <div class="card" style="margin-bottom:14px"><div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+        ${UX.ring(here,items.length,104,here===items.length&&items.length?'var(--ok)':'var(--gold)')}
+        <div><div style="font-size:26px;font-weight:700;line-height:1">${back}${here?`<span style="font-size:15px;color:var(--ink3)"> of ${here}</span>`:''}</div><div class="ai-sub">back safely</div></div>
+        <div style="flex:1;min-width:180px"><div style="font-weight:700">${esc(tripName)}${tripD?' · '+esc(fmtDate(tripD)):''}</div><div class="ai-sub" style="margin-top:3px">${items.length} student${items.length===1?'':'s'}${meds.length?` · <b class="c-bad">${meds.length}</b> medical`:''}${unsigned.length?` · <b class="c-warn">${unsigned.length}</b> unsigned`:' · all signed'}</div>
+          <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-o btn-sm" data-ftall="here">Everyone here</button>${here?'<button class="btn btn-o btn-sm" data-ftall="back">Everyone back</button>':''}</div></div></div>
+        <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <button class="btn ${lg.left?'btn-ghost':'btn-o'} btn-sm" data-ftlog="left">${lg.left?'🚌 Left '+esc(lg.left.t)+' · '+lg.left.n+' of '+lg.left.of:'🚌 Log departure'}</button>
+          <button class="btn ${lg.back?'btn-ghost':'btn-o'} btn-sm" data-ftlog="back">${lg.back?'🏠 Back '+esc(lg.back.t)+' · '+lg.back.n+' of '+lg.back.of:'🏠 Log return'}</button>
+          <label style="font-size:12.5px;display:flex;gap:6px;align-items:center">Adults <input id="ftChap" type="number" min="0" value="${lg.chap||''}" style="width:64px"></label>${ratio?`<span class="ai-sub">${esc(ratio)}</span>`:''}
+          <button class="btn btn-o btn-sm" id="ftShare" style="margin-left:auto">💬 Send headcount update</button></div></div>
+      ${meds.length?`<div style="background:color-mix(in srgb,var(--bad) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line));border-radius:12px;padding:10px 14px;margin-bottom:14px"><b class="c-bad">⚠ Medical alerts</b>${meds.map(i=>`<div style="margin-top:5px;font-size:13.5px"><b>${esc(FieldTrips.label(i))}</b> — ${esc([i.r['Allergies']==='Has allergies'?(i.r['Allergy Details']||'Allergies'):'',i.r['Medications']?('Meds: '+i.r['Medications']):''].filter(Boolean).join(' · '))} · ${tel(i.r['Phone']||i.r['Emergency Contact Phone'])}</div>`).join('')}</div>`:''}
+      <div class="grid g2" style="margin-bottom:14px;gap:10px">${sorted.map(i=>{ const r=i.r;
+        return `<div class="card" style="padding:12px 14px;${i.st.back?'opacity:.55':''}"><div style="display:flex;gap:12px;align-items:center">
+          ${i.stu?avatarHTML(i.stu,'width:48px;height:48px;border-radius:50%;font-size:16px;flex-shrink:0'):`<div style="width:48px;height:48px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${esc((r['Student First Name']||'?').slice(0,1))}</div>`}
+          <div style="flex:1;min-width:0"><b style="font-size:15px">${esc(FieldTrips.nm(r))}</b>${i.stu?` <span class="ai-sub" dir="auto">· ${esc(stuShort(i.stu))}</span>`:''}<div class="ai-sub">${esc(r['Level']||'')}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${i.med?`<span class="tag tag-red">⚠ ${esc(r['Allergy Details']||r['Medications']||'medical')}</span>`:''}${i.signed?(r['Signature File']?`<a href="${esc(r['Signature File'])}" target="_blank" rel="noopener" class="tag tag-green">✓ signed</a>`:'<span class="tag tag-green">✓ signed</span>'):'<span class="tag tag-gold">unsigned</span>'}</div></div>
+          <div class="no-print" style="display:flex;flex-direction:column;gap:6px"><label style="display:flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" data-ft="${esc(i.id)}|here" ${i.st.here?'checked':''} style="width:24px;height:24px"> Here</label><label style="display:flex;gap:6px;align-items:center;font-size:12.5px;${i.st.here?'':'opacity:.4'}"><input type="checkbox" data-ft="${esc(i.id)}|back" ${i.st.back?'checked':''} ${i.st.here?'':'disabled'} style="width:24px;height:24px"> Back</label></div></div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12.5px"><span><span class="ai-sub">Guardian</span> ${esc([r['Guardian First Name'],r['Guardian Last Name']].filter(Boolean).join(' ')||'')} ${tel(r['Phone'])}</span><span><span class="ai-sub">Emergency</span> ${esc(r['Emergency Contact Name']||'')} ${tel(r['Emergency Contact Phone'])}</span></div></div>`; }).join('')}</div>
+      <details class="card no-print" style="margin-bottom:14px" ${(famMissing.length&&!isPast)?'open':''}><summary style="cursor:pointer;font-weight:700">📋 Permission check <span class="ai-sub" style="font-weight:400">${anyMatch? (roster.length-unsignedKids.length)+' of '+roster.length+' students signed' : covered+' of '+cov.list.length+' families have a slip'}${famMissing.length?' · '+famMissing.length+' famil'+(famMissing.length>1?'ies':'y')+' to chase':''}${cantCheck.length?' · '+cantCheck.length+' can’t be checked':''}</span></summary>
+        ${anyMatch?`<p class="ux-note">${nMatched} of ${items.length} slips are matched to students. ${items.length-nMatched?`<button class="btn btn-o btn-sm" data-ftmatch="1">Match the other ${items.length-nMatched}</button>`:''}</p>`:`<p class="ux-note">Right now this only knows which <b>families</b> sent a slip (matched by phone), not which child. <button class="btn btn-p btn-sm" data-ftmatch="1">🔗 Match slips to students</button> to unlock exact names and photos.</p>`}
+        ${famMissing.length?`<div style="margin-top:6px">${famMissing.map(f=>{ const kids=anyMatch? f.kids.filter(k=>!signedStu.has(k.id)) : f.kids; return `<div class="wrow" style="cursor:default;gap:10px;flex-wrap:wrap"><span class="t"><b dir="auto">${esc(f.label)}</b> family <span class="ai-sub">· ${kids.map(k=>esc(ptFirst(k))).join(', ')}</span></span>${reminded[f.key]?`<span class="tag tag-dim">reminded ${esc(fmtDate(reminded[f.key]))}</span>`:''}${tel(famPhone(f))}<button class="btn btn-o btn-sm" data-ftremind="${esc(f.key)}">💬 Remind</button></div>`; }).join('')}</div>`:'<p class="ux-note c-ok">Every family we can check has submitted a slip.</p>'}
+        ${cantCheck.length?`<p class="ux-note">${cantCheck.length} famil${cantCheck.length>1?'ies have':'y has'} no phone on file, so they can't be checked: ${cantCheck.map(f=>esc(f.label)).join(', ')}.</p>`:''}</details>
+      <details class="card no-print" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">📝 Incident &amp; trip notes <span class="ai-sub" style="font-weight:400">${(lg.notes||[]).length} note${(lg.notes||[]).length===1?'':'s'}</span></summary>
+        <div style="display:flex;gap:8px;margin-top:8px"><input id="ftNote" placeholder="e.g. 11:20 — Ali scraped his knee, first aid given" style="flex:1"><button class="btn btn-o btn-sm" id="ftNoteAdd">Add</button></div>
+        ${(lg.notes||[]).map(n=>`<div class="wrow" style="cursor:default"><span class="ai-sub" style="min-width:64px">${esc(n.t)}</span><span class="t">${esc(n.x)}</span></div>`).join('')}</details>`;
   },
 
   settingsForm(){
@@ -13142,7 +13217,7 @@ const Admin = {
     const famCard = g => {
       const bySet={}; g.rows.forEach(x=>{ const k=x.miss.join('|'); (bySet[k]=bySet[k]||{miss:x.miss,list:[]}).list.push(x.s); });
       const needsContact = g.rows.some(x=>x.miss.includes('phone')||x.miss.includes('guardian'));
-      return `<div class="card" style="margin-bottom:10px;padding:12px 14px">
+      return `<div class="card" data-nm="${esc((g.label+' '+g.rows.map(x=>x.s.name).join(' ')).toLowerCase())}" style="margin-bottom:10px;padding:12px 14px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="font-size:14.5px"><bdi>${esc(g.label)}</bdi> family</b><span class="ai-sub">${g.rows.length} record${g.rows.length>1?'s':''} to finish</span>${needsContact&&g.fam?`<button class="btn btn-o btn-sm no-print" style="margin-left:auto" data-addcontact="${g.fam.members[0].id}">＋ Add contact</button>`:''}</div>
         ${needsContact&&g.fam?`<details class="no-print" style="margin:4px 0 8px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--info)">⚡ Quick fill for the whole family</summary>
           <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px" data-qf="${g.fam.members[0].id}">
@@ -13157,16 +13232,35 @@ const Admin = {
         <p class="ux-note">${incomplete.length? incomplete.length+' student'+(incomplete.length>1?'s':'')+' across '+new Set(incomplete.map(x=>{ const f=famOf(x.s); return f?f.key:x.s.id; })).size+' families still need something.' : 'DOB, guardian, phone, emergency contact and photo are all on file, mā shāʾ Allāh.'}</p>
         <p class="ux-note">${act.length} enrolled${incoming.length?' · '+incoming.length+' starting soon':''}${gone.length?' · '+gone.length+' withdrawn':''}</p></div>
        ${incomplete.length&&fams.length?`<span class="no-print" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p" id="enFind">🔎 Find contacts</button><button class="btn btn-o" id="enPaste">📋 Paste from sheet</button></span>`:''}</div>
+     <div class="no-print" style="margin:-4px 0 14px"><input id="enQ" type="search" placeholder="Search a student or family…" style="width:100%;max-width:420px" aria-label="Search enrollment"></div>
      ${incoming.length?`<div class="sect">🌱 Incoming students<span class="rule"></span></div><div class="wlist" style="margin-bottom:14px">${incoming.map(s=>{ const m=regComplete(s); return `<div class="wrow-wrap ${m.length?'frow':''}" data-go="#/students/${s.id}"><span>🌱</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span><div class="rowtags">${m.length?m.map(x=>`<span class="tag bg-warn c-warn">${esc(x)}</span>`).join(''):'<span class="tag tag-green">record complete ✓</span>'}</div></div>`; }).join('')}</div>`:''}
      ${incomplete.length? `<div class="sect">📋 Still to finish<span class="rule"></span></div>
        <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${chip('','All',incomplete.length)}${Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,n])=>chip(k,k,n)).join('')}</div>
        ${Object.values(groups).sort((a,b)=>b.rows.length-a.rows.length||a.label.localeCompare(b.label)).map(famCard).join('')}` : ''}
-     ${done.length? `<details class="no-print" style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">✓ Complete · ${done.length}</summary><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${done.map(x=>`<span class="chip" data-go="#/students/${x.s.id}" style="display:inline-flex;gap:6px;align-items:center;cursor:pointer">${av(x.s)}${esc(ptFirst(x.s))}</span>`).join('')}</div></details>`:''}
-     ${gone.length?`<details class="no-print" style="margin-top:10px"><summary style="cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">🚪 Withdrawn · ${gone.length}</summary><div class="wlist" style="margin-top:8px">${gone.map(s=>`<div class="wrow" data-go="#/students/${s.id}"><span>🚪</span><span class="t">${esc(s.name)} · ${esc(s.level)}</span><span class="m">records kept</span></div>`).join('')}</div></details>`:''}`;
+     ${(()=>{
+       const grp=list=>{ const m={}; list.forEach(s0=>{ const f=famOf(s0), k=f?f.key:'__'+s0.id; (m[k]=m[k]||{label:f?f.label:ptFirst(s0),kids:[]}).kids.push(s0); }); return Object.values(m).sort((a,b)=>b.kids.length-a.kids.length||String(a.label).localeCompare(String(b.label),'ar')); };
+       const tel=p=>{ const d=String(p||'').replace(/[^\d+]/g,''); return p&&d.length>=7?`<a href="tel:${esc(d)}" style="color:var(--info);font-weight:600;white-space:nowrap">📞 ${esc(p)}</a>`:'<span class="ai-sub">no number</span>'; };
+       const nmAttr=(g)=>esc((g.label+' '+g.kids.map(k=>k.name+' '+(k.preferredName||'')).join(' ')).toLowerCase());
+       const doneG=grp(done.map(x=>x.s)), goneG=grp(gone);
+       const compl=doneG.length?`<details class="card no-print" id="enDone" style="margin-top:12px;padding:12px 14px"><summary style="cursor:pointer;font-weight:700">✓ Complete <span class="ai-sub" style="font-weight:400">${done.length} students · ${doneG.length} families</span></summary>
+         <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">${doneG.map(g=>`<details class="en-fam" data-nm="${nmAttr(g)}" style="border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--surface)"><summary style="cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none"><span class="ux-grp">${g.kids.map(av).join('')}</span><span style="flex:1;min-width:0"><b dir="auto">${esc(g.label)}</b> family <span class="ai-sub">· ${g.kids.map(k=>esc(ptFirst(k))).join(', ')}</span></span><span class="tag tag-green">✓ ${g.kids.length}</span></summary>
+           <div style="margin-top:8px">${g.kids.map(k=>{ const gu=(k.guardians||[]).find(x=>x.phone)||(k.guardians||[])[0]||{}, em=(k.emergencyContacts||[]).find(x=>x.phone)||(k.emergencyContacts||[])[0]||{};
+             return `<div class="wrow" data-go="#/students/${k.id}" style="gap:10px;cursor:pointer">${av(k)}<span class="t"><b dir="auto">${esc(ptFirst(k))}</b> <span class="ai-sub">${esc(k.level||'')}</span></span><span style="font-size:12px;text-align:right">${esc(gu.name||'Guardian')} ${tel(gu.phone)}<br><span class="ai-sub">${esc(em.name||'Emergency')}</span> ${tel(em.phone)}</span></div>`; }).join('')}</div></details>`).join('')}</div></details>`:'';
+       const wd=goneG.length?`<details class="card no-print" id="enGone" style="margin-top:12px;padding:12px 14px"><summary style="cursor:pointer;font-weight:700">Withdrawn <span class="ai-sub" style="font-weight:400">${gone.length} students</span></summary>
+         <p class="ux-note">Records are kept. Restore anyone who comes back and they return to the roster with their history.</p>
+         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${goneG.map(g=>{ const sib=act.filter(x=>famOf(x)&&g.kids.length&&famOf(g.kids[0])&&famOf(x).key===famOf(g.kids[0]).key);
+           return `<div class="en-fam" data-nm="${nmAttr(g)}" style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)"><div style="display:flex;gap:12px;flex-wrap:wrap">${g.kids.map(k=>`<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:230px">${avatarHTML(k,'width:48px;height:48px;border-radius:50%;font-size:16px;flex-shrink:0;filter:grayscale(.35)')}<div style="flex:1;min-width:0"><b dir="auto" style="cursor:pointer" data-go="#/students/${k.id}">${esc(k.name)}</b><div class="ai-sub">${esc(k.level||'')}</div></div><button class="btn btn-o btn-sm no-print" data-restore="${k.id}">↩ Restore</button></div>`).join('')}</div>
+           ${sib.length?`<div class="ux-foot">Still enrolled in this family: ${sib.map(x=>esc(ptFirst(x))).join(', ')}</div>`:''}</div>`; }).join('')}</div></details>`:'';
+       return compl+wd; })()}`;
     wireCommon(el);
     $$('[data-enfilter]',el).forEach(b=>b.onclick=()=>{ Admin._enFilter=b.dataset.enfilter||null; Admin.enroll(el); });
     const ef=$('#enFind',el); if(ef) ef.onclick=()=>FU.finder(()=>Admin.enroll(el));
     const ep=$('#enPaste',el); if(ep) ep.onclick=()=>Admin.pasteImport(el);
+    $$('[data-restore]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const st=d.students.find(x=>x.id===b.dataset.restore); if(!st) return; st.active=true; DB.log('Restored student: '+st.name); DB.save(); toast(ptFirst(st)+' restored to the roster',()=>{ st.active=false; DB.save(); Admin.enroll(el); }); Admin.enroll(el); });
+    const q=$('#enQ',el); if(q) q.oninput=()=>{ const t=q.value.trim().toLowerCase();
+      $$('.en-fam',el).forEach(f=>{ const hit=!t||f.dataset.nm.includes(t); f.style.display=hit?'':'none'; if(t&&hit&&f.tagName==='DETAILS') f.open=true; });
+      ['enDone','enGone'].forEach(id=>{ const dd=$('#'+id,el); if(dd&&t){ const any=$$('.en-fam',dd).some(f=>f.style.display!=='none'); dd.open=any; dd.style.display=any?'':'none'; } else if(dd){ dd.style.display=''; } });
+      $$('.card[data-nm]',el).forEach(c=>{ c.style.display=!t||c.dataset.nm.includes(t)?'':'none'; }); };
     $$('[data-qfsave]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const box=$('[data-qf="'+b.dataset.qfsave+'"]',el), f=fams.find(x=>x.members.some(m=>m.id===b.dataset.qfsave)); if(!f||!box) return;
       const g={gn:$('[data-qf-gn]',box).value.trim(),gp:$('[data-qf-gp]',box).value.trim(),en:$('[data-qf-en]',box).value.trim(),ep:$('[data-qf-ep]',box).value.trim()};
       if(!g.gn&&!g.gp&&!g.en&&!g.ep){ toast('Type at least one field first'); return; }
