@@ -1117,7 +1117,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 61 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 63 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -4504,24 +4504,29 @@ const Rewards = {
     (s.rewards||[]).forEach(r=>{ if(ids.includes(r.id)){ r.celebrated=true; r.celebratedOn=today(); if(skip) r.skipped=true; } });
     DB.save(); toast(skip?'Dismissed':'🍩 Enjoy the celebration!'); Router.render(); },
   allergyNote(level){
-    const fl=DB.data.students.filter(s=>s.active!==false&&s.level===level&&s.application&&isAllergyPositive(s.application.allergy));
-    return fl.length?`<p style="font-size:11.5px;margin:6px 0 0">⚠ Allergy on file for: ${fl.map(s=>esc(s.name)).join(', ')} — bring an alternative.</p>`:''; },
+    return allergyChipsHTML(level); },
   stats(){ let don=0,par=0; DB.data.students.forEach(s=>(s.rewards||[]).forEach(r=>{ if(r.celebrated&&!r.base&&!r.skipped&&r.via!=='goal'){ if(r.type==='juz') don++; else par++; } })); return {don,par}; },
   rowHTML(g){
     const donut=g.type==='juz';
     return `<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap">${avatarHTML(g.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}
       <span class="t" style="flex:1;min-width:150px"><b>${esc(g.s.name)}</b> ${esc(Rewards.label(g))}<br><span style="font-size:10.5px;color:var(--ink3)">${fmtDate(g.date)}${donut?'':' · ready for Level 2?'}</span></span>
-      ${donut?'':`<button class="btn btn-o btn-sm no-print" data-go="#/students/${g.s.id}">Promote →</button>`}
+      ${donut?'':`<button class="btn btn-o btn-sm no-print" data-rwpromo="${g.s.id}">Promote → Level 2</button>`}
       <button class="btn btn-p btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}">${donut?'🍩 Delivered':'🎉 Party held'}</button>
       <button class="btn btn-ghost btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}|skip" title="Not right? Dismiss without celebrating" style="padding:2px 6px">✕</button></div>`; },
   cardHTML(){
     const gs=Rewards.groups(), dn=gs.filter(g=>g.type==='juz'), pt=gs.filter(g=>g.type==='greenbook'), st=Rewards.stats();
     return `<div class="card" style="margin-bottom:16px"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎉 Milestone rewards</h3>
-      <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn btn-o btn-sm no-print" data-rwboard="1">🍩 Donut board</button><span class="tag tag-gold">${st.don} 🍩 delivered</span><span class="tag tag-gold">${st.par} 🎉 parties held</span></span></div>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn btn-o btn-sm no-print" data-rwboard="1">🍩 Donut board</button>${st.don?`<span class="tag tag-gold">${st.don} 🍩 delivered</span>`:''}${st.par?`<span class="tag tag-gold">${st.par} 🎉 parties held</span>`:''}</span></div>
       <p style="font-size:12.5px;color:var(--ink2);margin:6px 0 8px">Every Juzʼ a Level 3 student completes earns donuts. Every Level 1 student who finishes the Green Book earns a class party. Detected automatically from progress, on top of Class Treat Goals.</p>
-      ${gs.length?`${dn.length?`<div class="notice info" style="margin:0 0 8px">🍩 <div style="flex:1"><b>${dn.length} Juzʼ milestone${dn.length>1?'s':''} — treat Level 3!</b>${Rewards.allergyNote('Level 3')}<div class="wlist" style="margin-top:8px">${dn.map(Rewards.rowHTML).join('')}</div></div></div>`:''}
-      ${pt.length?`<div class="notice info" style="margin:0">🎉 <div style="flex:1"><b>${pt.length} Green Book graduate${pt.length>1?'s':''} — party time for Level 1!</b>${Rewards.allergyNote('Level 1')}<div class="wlist" style="margin-top:8px">${pt.map(Rewards.rowHTML).join('')}</div></div></div>`:''}`
-      :'<p style="font-size:12.5px;color:var(--ok);margin:0">Nothing waiting — the next milestone will show up here on its own.</p>'}</div>`; },
+      ${gs.length?`${dn.length?`<div class="notice info" style="margin:0 0 8px">🍩 <div style="flex:1"><b>${dn.length} Juzʼ milestone${dn.length>1?'s':''} — treat Level 3!</b>${dn.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-rwall="${dn.map(g=>g.s.id+'|'+g.ids.join(',')).join(';')}">🍩 Delivered to all ${dn.length}</button>`:''}${Rewards.allergyNote('Level 3')}<div class="wlist" style="margin-top:8px">${dn.map(Rewards.rowHTML).join('')}</div></div></div>`:''}
+      ${pt.length?`<div class="notice info" style="margin:0">🎉 <div style="flex:1"><b>${pt.length} Green Book graduate${pt.length>1?'s':''} — party time for Level 1!</b>${pt.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-rwall="${pt.map(g=>g.s.id+'|'+g.ids.join(',')).join(';')}">🎉 Party held for all ${pt.length}</button>`:''}${Rewards.allergyNote('Level 1')}<div class="wlist" style="margin-top:8px">${pt.map(Rewards.rowHTML).join('')}</div></div></div>`:''}`
+      :'<p style="font-size:12.5px;color:var(--ok);margin:0">Nothing waiting — the next milestone will show up here on its own.</p>'}${Rewards.ledgerHTML()}</div>`; },
+  ledgerHTML(){
+    const L=[]; DB.data.students.forEach(s=>{ (s.rewards||[]).forEach(r=>{ if(r.celebrated&&!r.base&&!r.skipped) L.push({s,r,d:r.celebratedOn||r.date}); }); });
+    (DB.data.students||[]).forEach(s=>(s.hifzGoalHistory||[]).forEach(h=>{ if(h.status==='met'&&h.celebrated) L.push({s,r:{type:'goal',juz:h.juz},d:h.resolvedDate||h.deadline||''}); }));
+    if(!L.length) return '';
+    L.sort((a,b)=>String(b.d).localeCompare(String(a.d)));
+    return `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">📒 Delivery history (${L.length})</summary><div class="wlist" style="margin-top:6px">${L.slice(0,30).map(x=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400"><bdi dir="auto">${esc(x.s.name)}</bdi> — ${x.r.type==='greenbook'?'🎉 Green Book party':x.r.type==='goal'?'🍩 goal met · Juzʼ '+x.r.juz:'🍩 Juzʼ '+x.r.juz}</span><span class="m">${x.d?esc(fmtDate(x.d)):''}</span></div>`).join('')}</div></details>`; },
   profileHTML(s){
     const rs=(s.rewards||[]).filter(r=>!r.base); const gs=Rewards.groups().filter(g=>g.s.id===s.id);
     if(!gs.length&&!rs.length) return '';
@@ -4552,7 +4557,10 @@ const Rewards = {
     $('[data-x=c]',o).onclick=()=>o.remove();
     $$('.db-row',o).forEach((el,i)=>{ el.style.cursor='pointer'; el.onclick=()=>{ o.remove(); Router.go('#/students/'+rows[i].s.id); }; });
   },
-  wire(){ document.addEventListener('click',e=>{ const bd=e.target.closest&&e.target.closest('[data-rwboard]'); if(bd){ e.stopPropagation(); e.preventDefault(); Rewards.board(); return; } const b=e.target.closest&&e.target.closest('[data-rw]'); if(!b) return;
+  wire(){ document.addEventListener('click',e=>{
+      const pr=e.target.closest&&e.target.closest('[data-rwpromo]'); if(pr){ e.stopPropagation(); e.preventDefault(); const s=DB.data.students.find(x=>x.id===pr.dataset.rwpromo); if(s) Students.promote(s,'Level 2'); return; }
+      const ra=e.target.closest&&e.target.closest('[data-rwall]'); if(ra){ e.stopPropagation(); e.preventDefault(); let n=0; ra.dataset.rwall.split(';').forEach(p=>{ const [sid,ids]=p.split('|'); const s=DB.data.students.find(x=>x.id===sid); if(!s) return; (s.rewards||[]).forEach(r=>{ if(ids.split(',').includes(r.id)){ r.celebrated=true; r.celebratedOn=today(); n++; } }); }); DB.save(); toast('🎉 Marked '+n+' as celebrated'); Router.render(); return; }
+      const bd=e.target.closest&&e.target.closest('[data-rwboard]'); if(bd){ e.stopPropagation(); e.preventDefault(); Rewards.board(); return; } const b=e.target.closest&&e.target.closest('[data-rw]'); if(!b) return;
       e.stopPropagation(); e.preventDefault(); const [sid,ids,skip]=b.dataset.rw.split('|'); Rewards.done(sid,ids.split(','),!!skip); },true); }
 };
 Rewards.wire();
@@ -4787,10 +4795,13 @@ function rCard(r){
       <div><h4 role="button" tabindex="0" aria-label="Open ${esc(r.title)}">${r.pinned?'📌 ':''}${esc(r.title)}</h4>
       ${r.ar?`<div style="font-family:var(--f-ar);font-size:13px;color:var(--gold-text)">${esc(r.ar)}</div>`:''}</div></div>
     <p class="rdesc">${esc(r.desc)}</p>
-    <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span><span class="tag tag-dim">${esc(r.subject)}</span>${stTag}${pTag}
+    <div class="rfoot"><span class="tag tag-dim">${esc(r.category)}</span>${kbSameTopic(r.category,r.subject)?'':`<span class="tag tag-dim">${esc(r.subject)}</span>`}${stTag}${pTag}
       <span style="margin-left:auto;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)">${rel(r.modified)}</span></div>
   </article>`;
 }
+// Category and subject often name the same thing in different words ("Administrative"/"Administration", "Brand Assets"/"Brand & Marketing") — show one tag, not both
+const KB_SAME=[['administrative','administration','admin'],['brand assets','brand & marketing','brand and marketing','website & marketing','marketing'],['curriculum','curricula'],['parent communication','communication']];
+function kbSameTopic(a,b){ a=String(a||'').toLowerCase().trim(); b=String(b||'').toLowerCase().trim(); if(!a||!b) return false; if(a===b) return true; return KB_SAME.some(g=>g.includes(a)&&g.includes(b)); }
 function wireCards(root){
   $$('[data-open]',root).forEach(el=>{
     el.addEventListener('click', e=>{ if(e.target.closest('[data-fav]')) return; Router.go('#/resource/'+el.dataset.open); });
@@ -5097,12 +5108,18 @@ render(v){
      <p style="font-size:10.5px;color:var(--ink3);margin-top:6px">Position = % of their own Ḥifẓ path memorized so far — the bar fill and the Juzʼ ruler below both track that same %. Amber ring/label = no entry logged in 14+ days. Juzʼ milestones on the ruler follow the standard order; a student on the reverse order (Al-Baqarah → An-Nās) still lands at the right %, but their own real current Juzʼ is the number on the right of their row, not the ruler.</p>`;
   };
   W.atttrend = ()=>{
-    if(sessDates.length<2) return `<div class="whead"><h3>Attendance trend</h3></div><p style="font-size:13.5px;color:var(--ink2)">Take attendance across two or more sessions and the trend chart appears here.</p>`;
-    const pts = sessDates.slice(-8).map(day=>{ const rec=d.attendance[day]; const vals=Object.values(rec);
-      const p=vals.filter(x=>x==='P').length; return vals.length?Math.round(p/vals.length*100):0; });
-    return `<div class="whead"><h3>Attendance trend</h3><button class="btn-sm btn btn-ghost" data-go="#/students/attendance">Take →</button></div>
-     ${spark(pts,'% present · last '+pts.length+' sessions', 100)}
-     <div style="display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3);margin-top:4px"><span>${sessDates.slice(-8)[0].slice(5)}</span><span>${sessDates.slice(-1)[0].slice(5)}</span></div>`;
+    // Only sessions that were actually taken (someone present) — an empty or in-progress day used to draw a flat 0% bar
+    const real = sessDates.filter(day=>Object.values(d.attendance[day]||{}).some(x=>x==='P'||x==='L'));
+    if(real.length<2) return `<div class="whead"><h3>Attendance</h3></div><p style="font-size:13.5px;color:var(--ink2)">Take attendance across two or more sessions and the trend appears here.</p>`;
+    const rate=day=>{ const v=Object.values(d.attendance[day]).filter(x=>x!=='E'); const p=v.filter(x=>x==='P'||x==='L').length; return v.length?Math.round(p/v.length*100):0; };
+    const last=real.slice(-8), pts=last.map(rate), avg=Math.round(pts.reduce((a,b)=>a+b,0)/pts.length), cur=pts[pts.length-1], prev=pts.length>1?pts[pts.length-2]:cur, dlt=cur-prev;
+    const col=p=>p>=90?'var(--ok)':p>=75?'var(--gold)':'var(--bad)';
+    const heat=real.map(day=>{ const p=rate(day); return `<i data-go="#/students/attendance" title="${esc(fmtDate(day))} — ${p}% present" style="width:12px;height:12px;border-radius:3px;background:${col(p)};display:inline-block;cursor:pointer"></i>`; }).join('');
+    return `<div class="whead"><h3>📈 Attendance</h3><button class="btn-sm btn btn-ghost" data-go="#/students/attendance">Take →</button></div>
+     <div style="display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px"><div><span style="font-size:28px;font-weight:700">${cur}%</span> <span class="ai-sub">latest · ${esc(fmtDate(last[last.length-1]))}</span></div><div class="ai-sub">avg ${avg}% over ${pts.length} sessions · <b style="color:${dlt<0?'var(--bad)':'var(--ok)'}">${dlt>0?'▲ +':dlt<0?'▼ ':'• '}${dlt}</b> vs previous</div></div>
+     <div style="display:flex;align-items:flex-end;gap:8px;height:84px">${pts.map((p,ix)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%" title="${esc(fmtDate(last[ix]))}"><span style="font-family:var(--f-mono);font-size:10px;color:var(--ink3)">${p}</span><div style="width:100%;height:${Math.max(4,p*0.62)}px;background:${col(p)};border-radius:4px 4px 0 0"></div></div>`).join('')}</div>
+     <div style="display:flex;gap:8px;margin-top:3px">${last.map(x=>`<span style="flex:1;text-align:center;font-family:var(--f-mono);font-size:9.5px;color:var(--ink3)">${esc(x.slice(5))}</span>`).join('')}</div>
+     <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:3px;align-items:center">${heat}<span class="ai-sub" style="margin-left:8px;font-size:10.5px">all ${real.length} sessions · green 90%+ · gold 75%+ · red below</span></div>`;
   };
   // — ATTENDANCE HEATMAP: every session as one small square, colored by
   // that day's present rate — a GitHub-style view across the whole
@@ -5110,6 +5127,7 @@ render(v){
   // dip or a single rough stretch is visible as a pattern of squares
   // rather than buried in a scrolled-off trend line.
   W.attheat = ()=>{
+    if(on.includes('atttrend')) return '';
     if(!sessDates.length) return `<div class="whead"><h3>🗓 Attendance heatmap</h3></div><p style="font-size:13.5px;color:var(--ink2)">Take attendance and a session-by-session heatmap builds itself here.</p>`;
     const cells = sessDates.map(day=>{ const rec=d.attendance[day]; const vals=Object.values(rec); const tot=vals.length;
       const p=vals.filter(x=>x==='P').length; const rate = tot? p/tot*100 : 0;
@@ -5131,6 +5149,7 @@ render(v){
     (d.planner.notes_teach||[]).forEach(n=>teachDays.add((n.d||'').slice(0,10)));
     (d.planner.notes_reflect||[]).forEach(n=>teachDays.add((n.d||'').slice(0,10)));
     let teachStreak=0; for(let i=sessDates.length-1;i>=0;i--){ if(teachDays.has(sessDates[i])) teachStreak++; else break; }
+    if(!attStreaks.length && !teachStreak) return '';
     return `<div class="whead"><h3>🔥 Streaks</h3></div>
      ${attStreaks.length?`<div style="margin-bottom:10px"><b style="font-size:11px;letter-spacing:.06em;color:var(--gold-text)">PERFECT ATTENDANCE</b>
       <div class="wlist">${attStreaks.map(x=>`<div class="wrow" data-go="#/students/${x.s.id}"><span class="t">${esc(x.s.name)}</span><span class="m">${x.n} session${x.n>1?'s':''} straight</span></div>`).join('')}</div></div>`
@@ -5146,6 +5165,7 @@ render(v){
   // no single data field to check it against.
   W.termgoals = ()=>{
     const goals = d.settings.termGoals||[];
+    if(!goals.length) return '';
     const lvl3 = stu.filter(s=>s.level==='Level 3');
     const calc = g=> g.type==='juz' ? (lvl3.length? lvl3.filter(s=>isJuzComplete(s,g.juz)).length/lvl3.length*100 : 0) : (g.pct||0);
     const row = g=>{ const pct=calc(g); const target=g.targetPct||100; const overdue = g.due && today()>g.due && pct<target;
@@ -5173,7 +5193,7 @@ render(v){
     const gaps = res.filter(r=>r.status==='Planned');
     const nextLesson = d.lessons.filter(L=>L.date>=tdy).sort((a,b)=>a.date.localeCompare(b.date))[0];
     return `<div class="whead"><h3>Curriculum</h3><button class="btn-sm btn btn-ghost" data-go="#/teacher/curriculum">Update →</button></div>
-    <div style="display:flex;flex-direction:column;gap:9px">${rows.map(([t,p,go])=>`<div class="crow" data-go="${go}"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:3px"><span>${t}</span><span style="font-family:var(--f-mono)">${p}%</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`).join('')}</div>
+    <div style="display:flex;flex-direction:column;gap:9px">${rows.map(([t,p,go])=>`<div class="crow" data-go="${go}"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:3px"><span>${t}</span><span style="font-family:var(--f-mono)">${p?p+'%':'Not started'}</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`).join('')}</div>
     ${nextLesson?`<div class="wrow" data-go="#/teacher/lessons" style="margin-top:9px"><span>➡️</span><span class="t">Next lesson: ${esc(nextLesson.title)}</span><span class="m">${fmtDate(nextLesson.date)}</span></div>`:''}
     ${gaps.length?`<div style="margin-top:7px;font-size:12px;color:var(--ink2)">${gaps.length} gap${gaps.length>1?'s':''}: ${gaps.map(g=>`<button class="chip" data-go="#/resource/${g.id}">${esc(g.title.split('—')[0].slice(0,24))}</button>`).join(' ')}</div>`:''}`;
   };
@@ -5190,7 +5210,7 @@ render(v){
   W.activity = ()=> `<div class="whead"><h3>Recent activity</h3></div><div class="wlist">${
      d.activity.slice(0,6).map(a=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400">${esc(a.text)}</span><span class="m">${rel(a.t)}</span></div>`).join('')||'<div class="wrow" style="cursor:default;color:var(--ink3)">Quiet so far</div>'}</div>`;
   W.recognitions = ()=> {
-    const sotm = d.achievements.filter(a=>a.type==='sotm').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+    const seenR=new Set(); const sotm = d.achievements.filter(a=>a.type==='sotm').sort((a,b)=>b.date.localeCompare(a.date)).filter(a=>{ const k=a.sid+'|'+a.text; if(seenR.has(k)) return false; seenR.add(k); return true; }).slice(0,6);
     return `<div class="whead"><h3>🌟 Recent Recognitions</h3></div><div class="wlist">${
       sotm.length? sotm.map(a=>{
         const s = stu.find(x=>x.id===a.sid) || d.students.find(x=>x.id===a.sid);
@@ -5203,7 +5223,9 @@ render(v){
   W.tuition = ()=> `<div class="whead"><h3>Tuition note</h3></div>
      <textarea id="tuitionNote" placeholder="Fee status, reminders, notes for Br. Abdallah… saved automatically.">${esc(d.settings.tuitionNote||'')}</textarea>`;
 
-  for(const wid of on){ if(W[wid]) h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'||wid==='qmap'||wid==='gbmap'||wid==='attheat'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${W[wid]()}</div>`; }
+  const hiddenEmpty=[];
+  for(const wid of on){ if(!W[wid]) continue; const inner=W[wid](); if(!inner){ if(wid==='streaks'||wid==='termgoals') hiddenEmpty.push(wid); continue; } h += `<div class="widget ${wid==='focus'||wid==='kpis'||wid==='momentum'||wid==='qmap'||wid==='gbmap'||wid==='attheat'||wid==='atttrend'?'wfull':''} ${wid==='kpis'?'wbare':''}" draggable="true" data-w="${wid}" style="${WIDGET_ACCENT[wid]?'border-top:3px solid '+WIDGET_ACCENT[wid]:''}">${inner}</div>`; }
+  if(hiddenEmpty.length) h += `<div class="widget wfull no-print" style="padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><span class="ai-sub">Nothing to show yet: ${hiddenEmpty.map(x=>x==='streaks'?'🔥 Streaks (need 3+ perfect sessions)':'🎯 Term goals').join(' · ')}</span>${hiddenEmpty.includes('termgoals')?'<button class="btn btn-o btn-sm" id="tgAdd" style="margin-left:auto">＋ Add term goal</button>':''}</div>`;
   h += `</div>`;
   v.innerHTML = h;
   wireCommon(v);
@@ -5477,6 +5499,9 @@ render(v, param){
   const frequent=[...d.resources].filter(r=>r.opens>0&&r.status==='Active').sort((a,b)=>b.opens-a.opens).slice(0,5);
   const cols = ['All', ...d.collections];
   const colCount = c=> c==='All'? d.resources.length : d.resources.filter(r=>r.category===c).length;
+  const attnAll = d.resources.filter(r=>r.status==='Missing — Re-upload'||r.status==='Planned');
+  const attnList = attnAll.slice().sort((a,b)=>(/high priority/i.test(b.desc||'')?1:0)-(/high priority/i.test(a.desc||'')?1:0)||(a.status==='Missing — Re-upload'?0:1)-(b.status==='Missing — Re-upload'?0:1)).slice(0,3);
+  const activeF=[state.sub!=='All Subjects',state.type!=='Any type',state.grade!=='Any grade',state.status!=='Any status'].filter(Boolean).length;
   const missingN = d.resources.filter(r=>r.status==='Missing — Re-upload'||r.status==='Planned'||(r.loc.kind==='device'&&!r.loc.href)).length;
   // ---- render ----
   const modeToggle = `<div class="no-print" style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--line);border-radius:10px;padding:3px;width:fit-content">
@@ -5488,23 +5513,27 @@ render(v, param){
     <div><h2 class="page-title">Knowledge Base</h2>
     <p class="page-sub">${d.resources.length} resources · ${d.collections.length} collections · everything interlinked.</p></div>
     <div style="display:flex;gap:8px" class="no-print">
-      <button class="btn btn-o btn-sm" id="kbReport">⚠ Missing report${missingN?' ('+missingN+')':''}</button>
+      <button class="btn btn-o btn-sm" id="kbReport">⚠ Planned &amp; missing${missingN?' ('+missingN+')':''}</button>
       <button class="btn btn-p btn-sm" id="ladd">＋ Add resource</button></div></div>
    ${dupes.length?`<div class="notice warn no-print" style="margin-bottom:14px">🔁 <div><b>${dupes.length} possible duplicate title${dupes.length>1?'s':''}:</b> ${dupes.map(g=>esc(g[0].title)).join(' · ')} — review and consolidate rather than adding copies. <button class="btn btn-o btn-sm" data-go="#/analytics">Review in Analytics</button></div></div>`:''}
    ${modeToggle}
+   ${(!state.browse&&state.smart==='all'&&!state.q&&attnList.length)?`<details class="no-print card" style="margin-bottom:14px;border-left:3px solid var(--bad)" open><summary style="cursor:pointer;font-weight:700">⚠ Needs attention — start with these <span class="tag tag-dim" style="margin-left:6px">${attnList.length} of ${missingN}</span></summary><div class="wlist" style="margin-top:8px">${attnList.map(r=>`<div class="wrow" data-go="#/resource/${r.id}"><span>${TYPE_ICON[r.type]||'📄'}</span><span class="t"><b>${esc(r.title)}</b><br><span class="ai-sub">${esc(String(r.desc||'').slice(0,110))}</span></span><span class="tag ${/high priority/i.test(r.desc||'')?'tag-red':'tag-dim'}">${/high priority/i.test(r.desc||'')?'high priority':esc(r.status)}</span></div>`).join('')}</div><button class="btn btn-o btn-sm" id="kbAllMissing" style="margin-top:8px">See all ${missingN} →</button></details>`:''}
    ${state.browse? kbCurriculumTree() : `
-   ${frequent.length&&state.smart==='all'&&!state.q?`<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="eyebrow" style="margin-right:2px">Fast access</span>${frequent.map(r=>`<button class="chip" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.slice(0,26))} <span style="opacity:.6">${r.opens}×</span></button>`).join('')}</div>`:''}
+   ${frequent.length&&state.smart==='all'&&!state.q?`<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span class="eyebrow" style="margin-right:2px">Fast access</span>${frequent.map(r=>`<button class="chip" data-go="#/resource/${r.id}">${TYPE_ICON[r.type]||'📄'} ${esc(r.title.replace(/\s*\([^)]*\)\s*$/,''))} <span style="opacity:.6" title="opened ${r.opens} time${r.opens===1?'':'s'}">opened ${r.opens}×</span></button>`).join('')}</div>`:''}
    <div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">${SMART.map(([id,name])=>`<button class="chip ${state.smart===id?'on':''}" data-smart="${id}">${name}</button>`).join('')}</div>
-   <div class="filters no-print">
-     <input type="search" id="lq" placeholder="Filter by any field…" value="${esc(state.q)}">
+   <div class="filters no-print" style="align-items:center">
+     <input type="search" id="lq" placeholder="Search everything — title, tag, author…" value="${esc(state.q)}" style="flex:1;min-width:220px">
+     <button class="btn btn-o btn-sm" id="kbFilt">⚙ Filters${activeF?' ('+activeF+')':''}</button>
+     <select id="lsort" aria-label="Sort by">${Object.keys(sorts).map(s=>`<option ${s===state.sort?'selected':''}>${s}</option>`).join('')}</select>
+     <div class="vswitch" role="group" aria-label="View">${[['cards','▦'],['list','☰'],['compact','≡']].map(([k,i])=>`<button class="${state.view===k?'on':''}" data-view="${k}" title="${k}">${i}</button>`).join('')}</div>
+   </div>
+   <div class="filters no-print" id="kbFiltBox" style="display:${(state._filtOpen||activeF)?'flex':'none'}">
      <select id="lsub" aria-label="Filter by subject">${['All Subjects',...SUBJECTS].map(s=>`<option ${s===state.sub?'selected':''}>${s}</option>`).join('')}</select>
      <select id="ltype" aria-label="Filter by type">${['Any type',...Object.keys(TYPE_ICON)].map(s=>`<option ${s===state.type?'selected':''}>${s}</option>`).join('')}</select>
      <select id="lgrade" aria-label="Filter by grade">${['Any grade',...GRADES].map(s=>`<option ${s===state.grade?'selected':''}>${s}</option>`).join('')}</select>
      <select id="lstat" aria-label="Filter by status">${['Any status',...STATUSES].map(s=>`<option ${s===state.status?'selected':''}>${s}</option>`).join('')}</select>
-     <select id="lsort" aria-label="Sort by">${Object.keys(sorts).map(s=>`<option ${s===state.sort?'selected':''}>${s}</option>`).join('')}</select>
-     <div class="vswitch" role="group" aria-label="View">${[['cards','▦'],['list','☰'],['compact','≡']].map(([k,i])=>`<button class="${state.view===k?'on':''}" data-view="${k}" title="${k}">${i}</button>`).join('')}</div>
    </div>
-   <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px" class="no-print">${cols.map(c=>`<button class="chip ${c===state.col?'on':''}" data-col="${esc(c)}">${esc(c)} <span style="opacity:.6;font-family:var(--f-mono);font-size:10px">${colCount(c)}</span></button>`).join('')}</div>
+   <details class="no-print" style="margin-bottom:16px" ${state.col!=='All'?'open':''}><summary style="cursor:pointer;font-size:12.5px;color:var(--ink2)">📁 Collections${state.col!=='All'?': <b>'+esc(state.col)+'</b>':' ('+d.collections.length+')'}</summary><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">${cols.map(c=>`<button class="chip ${c===state.col?'on':''}" data-col="${esc(c)}">${esc(c)} <span style="opacity:.6;font-family:var(--f-mono);font-size:10px">${colCount(c)}</span></button>`).join('')}</div></details>
    ${list.length? kbBody(list, state.view)
      : `<div class="empty"><div class="big">🕮</div><h3>Nothing matches</h3><p>Clear a filter, switch smart view, or add the resource this spot is waiting for.</p><button class="btn btn-p" id="lempty-add">Add resource</button></div>`}`}`;
   // ---- wiring ----
@@ -5537,6 +5566,8 @@ render(v, param){
   $('#ladd',v).onclick=()=>ResourceForm.open();
   const ea=$('#lempty-add',v); if(ea) ea.onclick=()=>ResourceForm.open();
   $('#kbReport',v).onclick=()=>kbMissingReport();
+  const kf=$('#kbFilt',v); if(kf) kf.onclick=()=>{ const b=$('#kbFiltBox',v); const open=b.style.display==='none'; b.style.display=open?'flex':'none'; state._filtOpen=open; };
+  const kam=$('#kbAllMissing',v); if(kam) kam.onclick=()=>kbMissingReport();
 }});
 const Library = { state:{col:'All', sub:'All Subjects', status:'Any status', type:'Any type', grade:'Any grade', sort:'Recently modified', smart:'all', view:'cards', q:'', browse:false, openSubj:null, openBook:null} };
 /* ---------- Browse Curriculum: Subject → Book/Series folders, cover-card contents ----------
@@ -6105,6 +6136,18 @@ const Teacher = {
     wireCommon(el);
     const tgP=$('#tgRosterPrint',el); if(tgP) tgP.onclick=()=>Teacher.printTreatGoalsRoster();
     $$('[data-treatfilter]',el).forEach(b=>b.onclick=()=>{ TreatUI.filter=b.dataset.treatfilter; Router.render(); });
+    $$('[data-hzedit]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const ed=el.querySelector('[data-hzed="'+b.dataset.hzedit+'"]'); if(ed) ed.style.display=ed.style.display==='none'?'flex':'none'; });
+    const ca=$('[data-celebrateall]',el); if(ca) ca.onclick=()=>{ let n=0; d.students.forEach(s=>{ const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated); if(g){ g.celebrated=true; n++; } }); DB.save(); toast('🍩 Celebrated '+n+' goals'); Router.render(); };
+    $$('[data-newgoal]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,j]=b.dataset.newgoal.split('|'); const s=d.students.find(x=>x.id===sid); if(!s) return;
+      const dl=new Date(Date.now()+28*864e5).toISOString().slice(0,10);
+      const pid0=HIFZ_PATHS[(s.hifz||{}).path]?s.hifz.path:'standard', seq0=pid0==='standard'?[...Array(30)].map((_,i)=>30-i):[...Array(30)].map((_,i)=>i+1);
+      let jj=+j; if(isJuzComplete(s,jj)){ const nx=seq0.find(x=>!isJuzComplete(s,x)); if(nx) jj=nx; }
+      const o=overlay(`<div class="modal" style="max-width:420px"><h3>New goal — <bdi dir="auto">${esc(s.name)}</bdi></h3><p class="td-hint">Suggested: ${jj==+j?'try Juzʼ '+esc(j)+' again':'Juzʼ '+jj+' (Juzʼ '+esc(j)+' is already complete)'} with a 4-week deadline. Adjust if needed.</p>
+        <div class="field"><label>Finish Juzʼ</label><select id="ngJ">${[...Array(30)].map((_,i)=>`<option value="${i+1}" ${(i+1)==jj?'selected':''}>Juzʼ ${i+1}</option>`).join('')}</select></div>
+        <div class="field"><label>Deadline</label><input type="date" id="ngD" value="${dl}"></div>
+        <div class="mfoot"><button class="btn btn-o" id="ngC">Cancel</button><button class="btn btn-p" id="ngS">Set goal</button></div></div>`,true);
+      $('#ngC',o).onclick=()=>o.remove();
+      $('#ngS',o).onclick=()=>{ const juz=+$('#ngJ',o).value, deadline=$('#ngD',o).value; if(!deadline){ toast('Pick a deadline'); return; } s.hifzGoal={juz,deadline,setDate:today()}; DB.log(s.name+' — new Ḥifẓ goal: Juzʼ '+juz+' by '+fmtDate(deadline)); DB.save(); o.remove(); toast('Goal set',()=>{ s.hifzGoal=null; DB.save(); Router.render(); }); Router.render(); }; });
     $$('[data-celebrate]',el).forEach(b=>b.onclick=()=>{
       const s=d.students.find(x=>x.id===b.dataset.celebrate); if(!s) return;
       const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated);
@@ -6759,7 +6802,7 @@ const Teacher = {
     // data-go row, so both controls stopPropagation on click — otherwise
     // just opening the dropdown would navigate to the profile first.
     const hzQuickEdit = s=>{ const st=hifzStats(s);
-      return `<div style="display:flex;align-items:center;gap:6px;margin-left:34px;flex-wrap:wrap" class="no-print">
+      return `<div data-hzed="${s.id}" style="display:none;align-items:center;gap:6px;margin-left:34px;flex-wrap:wrap" class="no-print">
         <span style="font-size:10.5px;color:var(--ink3)">On:</span>
         <select data-hzsur="${s.id}" style="font-size:11.5px;padding:3px 6px;max-width:168px">${st.order.map(n=>`<option value="${n}" ${n===st.cur?'selected':''}>${esc(QS[n].name)}</option>`).join('')}</select>
         <input type="number" data-hzpage="${s.id}" min="${QS[st.cur].p}" max="604" value="${s.hifz&&s.hifz.curPage?s.hifz.curPage:''}" placeholder="p.${QS[st.cur].p}" title="Current page within this sūrah (optional)" style="width:58px;font-size:11.5px;padding:3px 4px">
@@ -6773,8 +6816,10 @@ const Teacher = {
           <span class="t">${esc(s.name)}</span>
           <span class="m">Juzʼ ${g.juz} · ${jp.done}/${jp.tot}p</span>
           <span class="tag ${tagCls}" style="flex-shrink:0">${tagTxt}</span>
+          <button class="btn btn-ghost btn-sm no-print" data-hzedit="${s.id}" title="Update position" style="padding:2px 7px">✎</button>
         </div>
         <div class="bar" style="height:5px;margin-left:34px"><i style="width:${jp.pct}%"></i></div>
+        ${(()=>{ const rem=Math.max(0,jp.tot-jp.done); if(!rem) return '<div class="ai-sub" style="margin-left:34px;font-size:11px">All pages done ✓</div>'; if(daysLeft==null) return ''; const need=daysLeft>0?rem/(daysLeft/7):rem; return `<div class="ai-sub" style="margin-left:34px;font-size:11px">${rem} page${rem===1?'':'s'} to go · needs about ${need<1?'<1':Math.ceil(need)} page${Math.ceil(need)===1?'':'s'}/week</div>`; })()}
         ${hzQuickEdit(s)}
       </div>`;
     };
@@ -6783,12 +6828,12 @@ const Teacher = {
       <div class="wlist">${list.map(rowHTML).join('')}</div>
     </div>` : '';
     const listHTML = filt==='all'
-      ? section('Due this week',dueWeek,'tag-gold') + section('On track',onTrack,'tag-dim')
+      ? section('Due this week',dueWeek,'tag-gold') + (onTrack.length?`<details style="margin-top:12px"><summary style="cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink3)">On track · ${onTrack.length} (tap to show)</summary><div class="wlist" style="margin-top:6px">${onTrack.map(rowHTML).join('')}</div></details>`:'')
       : `<div class="wlist" style="margin-top:10px">${(filt==='week'?dueWeek:onTrack).map(rowHTML).join('')}</div>`;
     return `<div class="card" style="margin-bottom:16px;border-top:3px solid #b8872a">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div><b style="font-family:var(--f-display);font-size:17px">🍩 Class Treat Goals</b>
-        <p style="font-size:12px;color:var(--ink2);margin-top:2px">${withGoal.length+justMet.length} of ${stu.length} active Level 3 students have a goal set${metAllTime?` · ${metAllTime} met all-time`:''}</p></div>
+        <p style="font-size:12px;color:var(--ink2);margin-top:2px">${stu.length} Level 3 students · ${withGoal.length+justMet.length} with a goal · ${onTrack.length} on track · ${dueWeek.length} due this week · ${recentMissed.length} missed · ${metAllTime} met all-time</p></div>
         ${rows.length?`<button class="btn btn-o btn-sm no-print" id="tgRosterPrint">🖨 Print</button>`:''}
       </div>
       ${nc && dueByNextClass?`<p style="font-size:12px;color:var(--ink2);margin-top:6px">🕌 <b>${dueByNextClass} goal${dueByNextClass>1?'s':''}</b> due by your next class (${fmtDate(nc)})</p>`:''}
@@ -6797,11 +6842,11 @@ const Teacher = {
         <span class="tag tag-dim">${onTrack.length} on track</span>
         ${recentMissed.length?`<span class="tag tag-red">${recentMissed.length} recently missed</span>`:''}
       </div>`:''}
-      ${justMet.length?`<div class="notice info" style="margin:10px 0 0">🍩 <div><b>${justMet.length} student${justMet.length>1?'s':''} just met their goal — time to treat Level 3!</b>
+      ${justMet.length?`<div class="notice info" style="margin:10px 0 0">🍩 <div><b>${justMet.length} student${justMet.length>1?'s':''} just met their goal — time to treat Level 3!</b>${justMet.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-celebrateall="1">✅ Celebrate all ${justMet.length}</button>`:''}<div class="ai-sub" style="margin-top:2px">Bring ${justMet.length} donut${justMet.length>1?'s':''} — one per student who met their goal.</div>
         ${allergyReminderHTML()}
         <div class="wlist" style="margin-top:8px">${justMet.map(s=>`<div class="wrow" style="cursor:default;gap:8px">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><button class="btn btn-p btn-sm no-print" data-celebrate="${s.id}">✅ Mark celebrated</button></div>`).join('')}</div></div></div>`:''}
-      ${recentMissed.length?`<div class="notice" style="margin:10px 0 0;border-left:3px solid var(--bad)">🔁 <div><b>${recentMissed.length} goal${recentMissed.length>1?'s':''} recently missed.</b> Recorded honestly — set a new target from each student's own profile when ready.
-        <div class="wlist" style="margin-top:8px">${recentMissed.map(({s,h})=>`<div class="wrow" data-go="#/students/${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><span class="m">Juzʼ ${h.juz} · missed ${fmtDate(h.resolvedDate)}</span></div>`).join('')}</div></div></div>`:''}
+      ${recentMissed.length?`<div class="notice" style="margin:10px 0 0;border-left:3px solid var(--bad)">🔁 <div><b>${recentMissed.length} goal${recentMissed.length>1?'s':''} recently missed.</b> Recorded honestly — set a fresh target right here when ready.
+        <div class="wlist" style="margin-top:8px">${recentMissed.map(({s,h})=>`<div class="wrow" data-go="#/students/${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><span class="m">Juzʼ ${h.juz} · missed ${fmtDate(h.resolvedDate)}</span><button class="btn btn-o btn-sm no-print" data-newgoal="${s.id}|${h.juz}">Set new goal</button></div>`).join('')}</div></div></div>`:''}
       ${rows.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px" class="no-print">
         <button class="chip ${filt==='all'?'on':''}" data-treatfilter="all">All ${rows.length}</button>
         ${dueWeek.length?`<button class="chip ${filt==='week'?'on':''}" data-treatfilter="week">This week ${dueWeek.length}</button>`:''}
@@ -7029,12 +7074,13 @@ function resolveAllHifzGoals(d){
 // card as a reminder to bring an alternative, and matching the exact
 // "has a real value, not n/a/none/no" test already used for the same
 // field's health-flag display elsewhere in this app.
-function allergyReminderHTML(){
-  const flagged = DB.data.students.filter(s=>s.active!==false && s.level==='Level 3'
-    && s.application && isAllergyPositive(s.application.allergy));
+function addSotmAch(sid,text){ const A=DB.data.achievements; if(!A.some(a=>a.sid===sid&&a.text===text&&a.type==='sotm')) A.push({sid,text,date:today(),type:'sotm'}); }
+function allergyChipsHTML(level){
+  const flagged = DB.data.students.filter(s=>s.active!==false && s.level===level && s.application && isAllergyPositive(s.application.allergy));
   if(!flagged.length) return '';
-  return `<p style="font-size:11.5px;margin-top:6px">⚠ Allergy on file for: ${flagged.map(s=>esc(s.name)).join(', ')} — bring an alternative.</p>`;
+  return `<div style="margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--bad) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line))"><b class="c-bad" style="font-size:12.5px">⚠ Allergy alert — bring a safe alternative</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${flagged.map(s=>`<span class="tag tag-red" style="font-size:12px"><bdi dir="auto">${esc(ptFirst(s)||s.name)}</bdi>${s.application.allergyDetail?' — '+esc(s.application.allergyDetail):''}</span>`).join('')}</div></div>`;
 }
+function allergyReminderHTML(){ return allergyChipsHTML('Level 3'); }
 /* ================= ḤIFẒ REVISION (MURĀJAʿAH) TRACKER =================
    The app already tracked NEW memorization; this tracks how fresh each
    already-memorized Juzʼ is. Per student: s.revision = {<juz>:{date,rating}}
@@ -7514,6 +7560,30 @@ render(v,param){
   Students.list(v);
 }});
 const Students = {
+  // Per-student signals for the roster cards: status colour, pace, last update, attendance strip, siblings, milestones.
+  // Everything is derived from data already in the app; where there is no data the card says nothing rather than guessing.
+  sig(s){
+    const d=DB.data, tdy=today(), day=ms=>new Date(ms).toISOString().slice(0,10);
+    if(!Students._sessCache||Students._sessCache.t!==tdy+'|'+Object.keys(d.attendance).length){
+      const ds=Object.keys(d.attendance).filter(k=>Object.values(d.attendance[k]||{}).some(x=>x==='P'||x==='L')).sort();
+      Students._sessCache={t:tdy+'|'+Object.keys(d.attendance).length,ds};
+    }
+    const sess=Students._sessCache.ds.slice(-6);
+    const strip=sess.map(k=>d.attendance[k][s.id]||'');
+    const last4=strip.slice(-4), abs=last4.filter(x=>x==='A').length;
+    const log=(s.level==='Level 1'?(s.gbLog||[]).map(x=>({date:x.date,v:+x.page||0})):s.level==='Level 2'?(s.musLog||[]).map(x=>({date:x.date,v:+x.page||0})):(s.hifzLog||[]).map(x=>({date:x.date,v:+x.pages||0}))).filter(x=>x.date).sort((a,b)=>a.date.localeCompare(b.date));
+    let stale=null, pace=null;
+    if(log.length){ const L=log[log.length-1]; stale=Math.round((Date.parse(tdy)-Date.parse(L.date))/864e5);
+      const cut=day(Date.parse(L.date)-28*864e5); const base=[...log].reverse().find(x=>x.date<=cut)||log[0];
+      const wk=Math.max(1,(Date.parse(L.date)-Date.parse(base.date))/6048e5); if(base!==L) pace=(L.v-base.v)/wk; }
+    const allergy=!!(s.application&&isAllergyPositive(s.application.allergy));
+    const sibs=d.students.filter(x=>x.id!==s.id&&x.active!==false&&famKey(x)&&famKey(x)===famKey(s));
+    const ready=s.level==='Level 1'&&s.gb&&(+s.gb.page||0)>=GB_TOTAL;
+    const sotm=new Set(d.achievements.filter(a=>a.sid===s.id&&a.type==='sotm').map(a=>a.text)).size;
+    let k='none';
+    if(strip.some(x=>x)||log.length){ k='ok'; if(abs>=2||(stale!=null&&stale>=35)) k='bad'; else if(abs>=1||(stale!=null&&stale>=14)||(pace!=null&&pace<=0&&!ready)) k='warn'; }
+    return {strip,abs,stale,pace,allergy,sibs,ready,sotm,k};
+  },
   /* ---------- LIST: progress at a glance ---------- */
   list(v){
     const d=DB.data; const find=(Students._find||'').toLowerCase();
@@ -7529,6 +7599,7 @@ const Students = {
     if(levelFilter) match = match.filter(s=>s.level===levelFilter);
     if(favOnly) match = match.filter(s=>s.favorite);
     if(Students._attnOnly){ const _a=(d.attendance[today()]||{}); match = match.filter(s=>_a[s.id]==='A' || (s.hw&&(s.hw.tries||0)>=3)); }
+    if(Students._sigF){ const F=Students._sigF; match = match.filter(s=>{ if(s.active===false) return false; const g=Students.sig(s); return F==='bad'?g.k==='bad':F==='warn'?(g.k==='warn'||g.k==='bad'):F==='allergy'?g.allergy:F==='ready'?g.ready:F==='sibs'?g.sibs.length>0:F==='stale'?(g.stale!=null&&g.stale>=14):true; }); }
     if(Students._bdayOnly){ match = match.filter(s=>{ const b=daysToBirthday(s.dob); return b!=null&&b>=0&&b<=14; }); }
     const stu = statusFilter==='inactive'? match.filter(s=>s.active===false) : statusFilter==='all'? match : match.filter(s=>s.active!==false);
     const inact = statusFilter==='all'? match.filter(s=>s.active===false) : [];
@@ -7548,15 +7619,16 @@ const Students = {
       if(s.trialEnds&&s.trialEnds>=today()) f.push({t:'Trial until '+fmtDate(s.trialEnds), k:'info'});
       return f; };
     const needsAttn = s => s.active!==false && (attToday[s.id]==='A' || (s.hw&&(s.hw.tries||0)>=3));
-    const card = s => { const age=ageFromDob(s.dob);
+    const card = s => { const age=ageFromDob(s.dob); const sg=s.active===false?null:Students.sig(s);
       const lvlAccent = s.level==='Level 1'?'var(--ok)':s.level==='Level 2'?'var(--info)':'#7B4FA0';
       const fl = s.active===false ? [] : flagsOf(s);
       return `<div class="card st-card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="border-left-color:${lvlAccent}">
         ${selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none;margin-top:12px">`:''}
-        ${avatarHTML(s)}
+        <div style="position:relative;flex-shrink:0">${avatarHTML(s)}${sg&&sg.k!=='none'?`<i title="${sg.k==='ok'?'On track':sg.k==='warn'?'Worth a look':'Needs attention'}" style="position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;border:2px solid var(--surface);background:${sg.k==='ok'?'var(--ok)':sg.k==='warn'?'var(--gold)':'var(--bad)'}"></i>`:''}</div>
         <div style="min-width:0;flex:1"><b class="nm" dir="auto">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
-        <div class="mt">AMAN-${String(s.studentNo||0).padStart(3,'0')}${age!=null?' · '+age+'y':''}${s.gender?' · '+esc(s.gender):''}</div>
+        <div class="mt" title="AMAN-${String(s.studentNo||0).padStart(3,'0')}">${age!=null?(age<5||age>19?`<span style="color:var(--bad)" title="Check this date of birth">⚠ ${age}y?</span>`:age+'y'):'age —'}${sg&&sg.strip.length?` · <span title="Last ${sg.strip.length} sessions" style="letter-spacing:2px">${sg.strip.map(x=>x==='P'?'<span style="color:var(--ok)">●</span>':x==='L'?'<span style="color:var(--gold)">●</span>':x==='A'?'<span style="color:var(--bad)">●</span>':x==='E'?'<span style="color:var(--info)">○</span>':'<span style="color:var(--ink3)">·</span>').join('')}</span>`:''}</div>
         ${s.active===false?'<span class="tag tag-dim">left AMAN</span>':s.startDate&&s.startDate>today()?`<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`:prog(s)}
+        ${sg&&s.active!==false?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">${sg.allergy?'<span class="st-flag bad">⚠ allergy</span>':''}${sg.ready?'<span class="st-flag ok">🎓 ready for Level 2</span>':''}${sg.pace!=null?`<span class="st-flag ${sg.pace>0?'ok':'gold'}">${sg.pace>0?'▲ '+(sg.pace>=10?Math.round(sg.pace):sg.pace.toFixed(1))+' p/wk':'• no movement'}</span>`:''}${sg.stale!=null&&sg.stale>=14?`<span class="st-flag ${sg.stale>=35?'bad':'gold'}">last update ${sg.stale}d ago</span>`:''}${sg.sibs.length?`<span class="st-flag info" title="${esc(sg.sibs.map(x=>x.preferredName||x.name).join(', '))}">👥 ${sg.sibs.length} sibling${sg.sibs.length>1?'s':''}</span>`:''}${sg.sotm?`<span class="st-flag gold">🌟 SOTM ×${sg.sotm}</span>`:''}${sg.k==='none'?'<span class="st-flag info" style="opacity:.7">no recent data</span>':''}</div>`:''}
         ${fl.length?`<div class="st-flags">${fl.map(x=>`<span class="st-flag ${x.k}">${esc(x.t)}</span>`).join('')}</div>`:''}</div></div>`; };
 
     const sortFns = { level:(a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level)||a.name.localeCompare(b.name),
@@ -7618,6 +7690,10 @@ const Students = {
        <button class="btn btn-o btn-sm" data-go="#/students/gradebook">📗 Gradebook</button>
        <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
      </div>
+     ${(()=>{ const act=d.students.filter(s=>s.active!==false), sgs=act.map(s=>({s,g:Students.sig(s)}));
+       const c={bad:sgs.filter(x=>x.g.k==='bad').length,warn:sgs.filter(x=>x.g.k==='warn').length,ready:sgs.filter(x=>x.g.ready).length,allergy:sgs.filter(x=>x.g.allergy).length,stale:sgs.filter(x=>x.g.stale!=null&&x.g.stale>=14).length,sibs:sgs.filter(x=>x.g.sibs.length).length};
+       const ch=(k,t,n,cls)=>n||Students._sigF===k?`<button class="chip ${Students._sigF===k?'on':''}" data-sigf="${k}" ${cls?'':''}>${t} <b>${n}</b></button>`:'';
+       return `<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 0 10px"><span class="ai-sub">Quick view:</span>${ch('bad','🔴 At risk',c.bad)}${ch('warn','🟠 Worth a look',c.warn+c.bad)}${ch('stale','🕒 No update 2+ wks',c.stale)}${ch('ready','🎓 Ready to promote',c.ready)}${ch('allergy','⚠ Allergies',c.allergy)}${ch('sibs','👥 Has siblings',c.sibs)}${Students._sigF?'<button class="chip" data-sigf="">✕ Clear</button>':''}</div>`; })()}
      <div class="st-bar no-print">
        ${d.students.length?`<input type="search" id="stFind" placeholder="Find a student…" value="${esc(Students._find||'')}">`:''}
        <span style="display:inline-flex;gap:6px;flex-wrap:wrap">${[['','All'],...LEVELS.map(L=>[L,L])].map(([L,t])=>`<button class="chip ${levelFilter===L?'on':''}" data-stl="${L}">${t}</button>`).join('')}</span>
@@ -7652,6 +7728,7 @@ const Students = {
      ${statusFilter==='all'&&inact.length?`<div class="sect">Inactive — no longer enrolled<span class="rule"></span></div>
       <div class="grid g3">${inact.map(card).join('')}</div>`:''}`;
     wireCommon(v);
+    $$('[data-sigf]',v).forEach(b=>b.onclick=()=>{ Students._sigF=(Students._sigF===b.dataset.sigf)?'':b.dataset.sigf; Router.render(); });
     const add=()=>this.form(); const imp=()=>this.importCSV();
     $('#stAdd',v)&&($('#stAdd',v).onclick=add); $('#stAdd2',v)&&($('#stAdd2',v).onclick=add);
     $('#stImport',v)&&($('#stImport',v).onclick=imp); $('#stImport2',v)&&($('#stImport2',v).onclick=imp);
@@ -7889,7 +7966,7 @@ const Students = {
       const monthDisplay = sotmFormatMonths(monIdx, monEndVal===''?null:+monEndVal, year);
       const selected = stu.filter(s=>picks.has(s.id));
       const html = renderSOTMShareCard(selected, monthDisplay);
-      selected.forEach(s=>{ DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'}); });
+      selected.forEach(s=>{ addSotmAch(s.id,'🌟 Student of the Month — '+monthDisplay); });
       DB.log('Student of the Month share card generated for '+selected.length+' student(s) — '+monthDisplay);
       DB.save();
       o.remove();
@@ -8574,7 +8651,7 @@ const Students = {
       const isRange = monEndVal!=='' && +monEndVal!==monIdx;
       const monthDisplay = sotmFormatMonths(monIdx, monEndVal===''?null:+monEndVal, year);
       const html = renderSOTMCertificate({ name, monthDisplay, year, isRange, customBody: customBody||null });
-      DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'});
+      addSotmAch(s.id,'🌟 Student of the Month — '+monthDisplay);
       DB.log('Student of the Month — '+s.name+': '+monthDisplay);
       DB.save();
       o.remove();
@@ -9323,7 +9400,7 @@ function ptViewer(title, htmlIn, kind, ctx){
   if(!document.getElementById('pv-root-style')){ const st=document.createElement('style'); st.id='pv-root-style';
     st.textContent='#pv-root{position:fixed;inset:0;z-index:100001;display:flex;flex-direction:column;background:#f4ead6}#pv-root .pv-bar{display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}#pv-root .pv-t{flex:1;min-width:80px;color:#f4ead6;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pv-root button{padding:10px 16px;border-radius:8px;border:0;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#pv-root .pv-go{background:#b8872a;color:#20261f}#pv-root .pv-img{background:#f4ead6;color:#123626}#pv-root .pv-edit{background:#fff;color:#123626}#pv-root .pv-edit.on{background:#b8872a;color:#20261f}#pv-root .pv-x{background:rgba(244,234,214,.14);color:#f4ead6;border:1px solid rgba(244,234,214,.4)}#pv-root .pv-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff}@media print{html,body{height:auto!important;overflow:visible!important}body>*:not(#pv-root){display:none!important}#pv-root{position:static!important;display:block!important;background:#fff!important}#pv-root .pv-bar{display:none!important}#pv-root .pv-body{overflow:visible!important}}';
     document.head.appendChild(st); }
-  const pg=document.createElement('style'); pg.id='pv-page-style'; pg.textContent='@page{margin:.4in}'; document.head.appendChild(pg);
+  const pg=document.createElement('style'); pg.id='pv-page-style'; pg.textContent=/@page\s*\{[^}]*size:\s*landscape/.test(html)?'@page{size:landscape;margin:.4in}':'@page{margin:.4in}'; document.head.appendChild(pg);
   host.innerHTML='<div class="pv-bar"><button type="button" class="pv-x">← Back</button><span class="pv-t"></span><button type="button" class="pv-edit" style="display:none">\u270f\ufe0f Edit</button><button type="button" class="pv-img">🖼️ Save as images</button><button type="button" class="pv-go">🖨️ Print / PDF</button></div><div class="pv-body"></div>';
   host.querySelector('.pv-t').textContent=title; document.body.appendChild(host);
   const root=host.querySelector('.pv-body').attachShadow({mode:'open'}); let editing=false;
@@ -9724,8 +9801,8 @@ const Sotm = {
     const chips=(arr,fmt)=>arr.length?arr.map(x=>`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">${Sotm.av(x.s,28)}<span style="min-width:0;flex:1;font-size:12.5px;overflow-wrap:anywhere" dir="auto">${esc(x.s.name)}</span><span class="m" style="font-size:11px;color:var(--ink3);white-space:nowrap">${fmt(x)}</span></div>`).join(''):'';
     const box=(t,hint,body,cat)=>`<div class="card" style="padding:10px 12px;flex:1;min-width:210px"><div style="font-weight:700;font-size:13px">${t}</div><div style="font-size:11px;color:var(--ink3);margin-bottom:4px">${hint}</div>${body||'<div style="font-size:12px;color:var(--ink3)">Nobody yet this month.</div>'}</div>`;
     const imp=LEVELS.map(L=>{ const l=A.improved.filter(x=>x.L===L); return l.length?`<div style="font-size:10.5px;font-weight:700;color:var(--ink3);margin-top:4px">${L}</div>`+chips(l,x=>`+${x.delta.toFixed(1)} (${x.before.toFixed(0)}→${x.now.toFixed(0)})`):''; }).join('');
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0;font-family:var(--f-display);font-size:17px">🌟 Student of the Month Hub — ${m} ${y}</h3>
-      ${lock?`<span class="tag tag-green">🔒 Finalized ${esc(fmtDate(lock.date))}</span>`:'<span class="tag tag-gold">Live — recalculates as you grade</span>'}</div>
+    return `<details id="sotmHubD" ${Progress._hubOpen?'open':''}><summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0;font-family:var(--f-display);font-size:17px"><span class="hubcar">${Progress._hubOpen?'▼':'▶'}</span> 🌟 Student of the Month Hub — ${m} ${y}</h3>
+      ${lock?`<span class="tag tag-green">🔒 Finalized ${esc(fmtDate(lock.date))}</span>`:'<span class="tag tag-gold">Live — recalculates as you grade</span>'}</summary>
       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">
         ${lock?'<button class="btn btn-o btn-sm" id="sotmUnlock">🔓 Unlock month</button>':'<button class="btn btn-p btn-sm" id="sotmLock">🔒 Finalize month</button>'}
         <button class="btn btn-o btn-sm" id="sotmCel">🎬 Celebrate</button><button class="btn btn-o btn-sm" id="sotmAnn">📣 Announce kit</button><button class="btn btn-o btn-sm" id="sotmHof">🏛 Hall of Fame</button></div>
@@ -9735,11 +9812,12 @@ const Sotm = {
         ${box('🏅 Most Improved','biggest score gain vs last month (not a winner)',imp)}
         ${box('🎯 Perfect Attendance','every held session present (3+ sessions)',chips(A.perfect,x=>x.held+' of '+x.held))}
         ${box('📖 Ḥifẓ Star','most pages memorized this month',chips(A.hifz,x=>'+'+x.pages+' pages'))}</div>
-      ${lock?'':'<p style="font-size:11.5px;color:var(--ink3);margin:8px 0 0">Finalize freezes these winners and records everyone in their history, so later grade edits can’t change a month you’ve already announced.</p>'}`;
+      ${lock?'':'<p style="font-size:11.5px;color:var(--ink3);margin:8px 0 0">Finalize freezes these winners and records everyone in their history, so later grade edits can’t change a month you’ve already announced.</p>'}</details>`;
   },
   wire(root,v){
     const P=Progress, y=P._year, m=P._month, all=()=>DB.data.students.filter(s=>s.active!==false), rp=()=>P._repaint(v||$('#view'));
     const b=id=>$(id,root); let e;
+    const hd=b('#sotmHubD'); if(hd) hd.ontoggle=()=>{ P._hubOpen=hd.open; const c=$('.hubcar',hd); if(c) c.textContent=hd.open?'▼':'▶'; };
     if(e=b('#sotmLock')) e.onclick=()=>confirmBox('Finalize '+m+' '+y+'? Winners and extra recognitions are frozen and added to each student’s history. You can unlock later.',()=>{ const n=Sotm.finalize(y,m); toast('Finalized — '+n+' recognitions recorded'); rp(); });
     if(e=b('#sotmUnlock')) e.onclick=()=>confirmBox('Unlock '+m+' '+y+'? Winners will recalculate from current grades. (Recognitions already recorded in student histories stay.)',()=>{ delete Sotm.locks()[Sotm.key(y,m)]; DB.save(); toast('Unlocked'); rp(); });
     if(e=b('#sotmMin')) e.onchange=()=>{ DB.data.settings.sotmMinAtt=Math.max(0,Math.min(100,+e.value||0)); DB.save(); rp(); };
@@ -9995,7 +10073,7 @@ const Progress = {
     const ss=ids.map(id=>DB.data.students.find(x=>x.id===id)).filter(Boolean); if(!ss.length) return;
     const monthDisplay = sotmFormatMonths(PT_MONTHS.indexOf(this._month), null, this._year);
     const html = renderSOTMShareCard(ss, monthDisplay);
-    ss.forEach(s=>DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'}));
+    ss.forEach(s=>addSotmAch(s.id,'🌟 Student of the Month — '+monthDisplay));
     DB.log('Student of the Month share card generated for '+ss.length+' students — '+monthDisplay);
     DB.save(); toast('Share card ready — added to '+ss.length+' students’ history'); openLetterPreview(html);
   },
@@ -10027,7 +10105,7 @@ const Progress = {
       if(!s) return;
       const monthDisplay = sotmFormatMonths(PT_MONTHS.indexOf(this._month), null, this._year);
       const html = renderSOTMShareCard([s], monthDisplay);
-      DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'});
+      addSotmAch(s.id,'🌟 Student of the Month — '+monthDisplay);
       DB.log('Student of the Month share card generated for '+s.name+' — '+monthDisplay);
       DB.save();
       toast('Share card ready — added to '+s.name+'\u2019s history');
@@ -10081,7 +10159,7 @@ const Progress = {
       if(!s) return;
       const monthDisplay = sotmFormatMonths(PT_MONTHS.indexOf(this._month), null, this._year);
       const html = renderSOTMShareCard([s], monthDisplay);
-      DB.data.achievements.push({sid:s.id, text:'🌟 Student of the Month — '+monthDisplay, date:today(), type:'sotm'});
+      addSotmAch(s.id,'🌟 Student of the Month — '+monthDisplay);
       DB.log('Student of the Month share card generated for '+s.name+' — '+monthDisplay);
       DB.save();
       toast('Share card ready — added to '+s.name+'\u2019s history');
@@ -10726,9 +10804,16 @@ function gbUngradedAssignments(type){
 // Qur'an performance against an Islamic Studies grade accumulated across
 // the entire year to date. Omit range for the Gradebook's own screens,
 // where an all-time running grade is exactly what's wanted.
+function gbStamp(a,sid){ (a.scoreDates=a.scoreDates||{})[sid]=today(); }
 function gbCategoryStats(unitId, sid, type, range){
   let list = gbAssignmentsFor(unitId).filter(a=>a.type===type && a.scores && a.scores[sid]!=null && a.scores[sid]!=='' && a.scores[sid]!=='EXC');
-  if(range) list = list.filter(a=>a.date>=range.from && a.date<=range.to);
+  // A score counts toward the month it was ENTERED (a.scoreDates), not the
+  // assignment's seed date — the 55 seeded assignments all carry one creation
+  // date, so grading in a later month used to fall outside that month's range
+  // and the Overall Student of the Month silently ignored real grades.
+  // Scores entered before dates were tracked count for the assignment's own
+  // month and for the current calendar month.
+  if(range){ const t=today(); list = list.filter(a=>{ const d=a.scoreDates&&a.scoreDates[sid]; const ins=x=>x>=range.from&&x<=range.to; return d ? ins(d) : (ins(a.date||'')||ins(t)); }); }
   if(!list.length) return null;
   let earned=0, possible=0;
   list.forEach(a=>{ const raw=a.scores[sid]; earned += raw==='MISS' ? 0 : (Number(raw)||0); possible+=Number(a.possible)||0; });
@@ -11234,15 +11319,61 @@ const FieldTrips = {
     const text=`As-salāmu ʿalaykum,\n\nA gentle reminder that we haven't received the permission slip for the ${tripName}${tripDate?' on '+fmtDate(tripDate):''} for ${kids}. Please submit it when you can, in shāʾ Allāh.\n\nQuestions? Br. Abdallah bin Abdirahman: (612) 444-2609.\n\nJazākum Allāhu khayran,\nAl-Madrasatu An-Nuriyyah`;
     FU.compose(s0,text,{title:'Permission slip reminder',onSent:()=>{ const st=DB.data.settings; st.tripRemind=st.tripRemind||{}; (st.tripRemind[FieldTrips._tripKey]=st.tripRemind[FieldTrips._tripKey]||{})[f.key]=today(); DB.save(); }});
   },
+  // Trip details (destination, times, meeting point, adults) live in tripLog so the printed sheet and the page share one record
+  detailsForm(){
+    const lg=FieldTrips.log(), d=lg.det=lg.det||{};
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3>✏️ Trip details</h3><p class="td-hint">Printed at the top of the trip sheet. Blank fields print as lines to fill in by hand.</p>
+      <div class="field"><label>Destination</label><input id="tdDest" value="${esc(d.dest||'')}" placeholder="e.g., Minnesota Zoo, Apple Valley"></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px"><div class="field"><label>Depart</label><input id="tdDep" value="${esc(d.depart||'')}" placeholder="9:00 AM"></div><div class="field"><label>Return</label><input id="tdRet" value="${esc(d.ret||'')}" placeholder="3:00 PM"></div></div>
+      <div class="field"><label>Meeting point / if a child is lost</label><input id="tdMeet" value="${esc(d.meet||'')}" placeholder="e.g., Main entrance fountain"></div>
+      <div class="field"><label>Transport</label><input id="tdBus" value="${esc(d.bus||'')}" placeholder="e.g., School bus #2 / parents' cars"></div>
+      <div class="field"><label>Adults (one per line: Name — phone)</label><textarea id="tdAd" rows="4" placeholder="Br. Abdallah — (612) 444-2609">${esc((d.adults||[]).join('\n'))}</textarea></div>
+      <div class="mfoot"><button class="btn btn-o" id="tdC">Cancel</button><button class="btn btn-p" id="tdS">Save</button></div></div>`,true);
+    $('#tdC',o).onclick=()=>o.remove();
+    $('#tdS',o).onclick=()=>{ const ad=$('#tdAd',o).value.split('\n').map(x=>x.trim()).filter(Boolean);
+      lg.det={dest:$('#tdDest',o).value.trim(),depart:$('#tdDep',o).value.trim(),ret:$('#tdRet',o).value.trim(),meet:$('#tdMeet',o).value.trim(),bus:$('#tdBus',o).value.trim(),adults:ad};
+      if(ad.length&&!lg.chap) lg.chap=ad.length; DB.save(); o.remove(); toast('Trip details saved'); Router.render(); };
+  },
+  // Splits the roster into chaperone groups: brothers and sisters kept apart, then by level, sized to the adults available (about 6 each by default)
+  groups(items){
+    const lg=FieldTrips.log(), n=items.length; if(!n) return [];
+    const k=Math.max(1,lg.chap||Math.ceil(n/6));
+    const gOf=i=>(i.stu&&i.stu.gender)||String(i.r['Gender']||'').replace(/^m.*/i,'Brother').replace(/^f.*/i,'Sister');
+    const lv=i=>(i.stu&&i.stu.level)||String(i.r['Level']||'');
+    const sorted=items.slice().sort((a,b)=>String(gOf(a)).localeCompare(String(gOf(b)))||lv(a).localeCompare(lv(b))||FieldTrips.nm(a.r).localeCompare(FieldTrips.nm(b.r)));
+    const out=Array.from({length:k},()=>[]); const per=Math.ceil(n/k);
+    sorted.forEach((it,ix)=>out[Math.min(k-1,Math.floor(ix/per))].push(it));
+    return out.filter(g=>g.length);
+  },
   printSheet(){
     const {items}=FieldTrips.items(), nameT=FieldTrips._tripKey.split('|')[0], d=FieldTrips.iso(FieldTrips._tripKey.split('|')[1]);
-    const rows=items.slice().sort((a,b)=>(b.med-a.med)||FieldTrips.nm(a.r).localeCompare(FieldTrips.nm(b.r)));
-    const med=rows.filter(i=>i.med), c=(p)=>esc(p||'—');
-    printWindow('Trip day sheet — '+nameT,`*{box-sizing:border-box}body{font-family:Georgia,serif;max-width:860px;margin:24px auto;padding:0 20px;color:#20261f;line-height:1.45}h1{font-size:21px;color:#123626;margin:0}.m{font-size:12.5px;color:#5c665a;margin-bottom:12px}h2{font-size:14px;color:#1a4a35;border-bottom:1px solid #ddd;padding-bottom:3px;margin:16px 0 6px}table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{padding:5px 6px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}th{font-size:11px;color:#6b756a}.w{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:13px}@media print{@page{margin:.4in}}`,
-      `<h1>${esc(nameT)} — trip day sheet</h1><div class="m">${d?esc(fmtDate(d))+' · ':''}${rows.length} students · Br. Abdallah bin Abdirahman (612) 444-2609 · In an emergency call 911 first</div>
-       ${med.length?`<h2>Medical alerts</h2>${med.map(i=>`<div class="w">⚠ <b>${esc(FieldTrips.nm(i.r))}</b> — ${esc([i.r['Allergies']==='Has allergies'?(i.r['Allergy Details']||'Allergies'):'',i.r['Medications']?('Meds: '+i.r['Medications']):''].filter(Boolean).join(' · '))} · ${c(i.r['Phone']||i.r['Emergency Contact Phone'])}</div>`).join('')}`:''}
-       <h2>Roster</h2><table><tr><th>Here</th><th>Back</th><th>Student</th><th>Level</th><th>Allergies / meds</th><th>Guardian</th><th>Emergency</th><th>Slip</th></tr>${rows.map(i=>`<tr><td>☐</td><td>☐</td><td><b>${esc(FieldTrips.nm(i.r))}</b></td><td>${c(i.r['Level'])}</td><td>${i.med?esc([i.r['Allergy Details']||'',i.r['Medications']||''].filter(Boolean).join(' · ')||'see slip'):'—'}</td><td>${esc([i.r['Guardian First Name'],i.r['Guardian Last Name']].filter(Boolean).join(' '))}<br>${c(i.r['Phone'])}</td><td>${esc(i.r['Emergency Contact Name']||'')}<br>${c(i.r['Emergency Contact Phone'])}</td><td>${i.signed?'✓':'missing'}</td></tr>`).join('')}</table>
-       <p style="font-size:11px;color:#7b857a;margin-top:14px">Private family information — return after the trip; do not photograph or share.</p>`);
+    const lg=FieldTrips.log(), det=lg.det||{}, ad=det.adults||[];
+    const rows=items.slice().sort((a,b)=>FieldTrips.nm(a.r).localeCompare(FieldTrips.nm(b.r)));
+    const groups=FieldTrips.groups(items), med=rows.filter(i=>i.med), c=p=>esc(p||'—');
+    const line=(v,w)=>v?`<b>${esc(v)}</b>`:`<span class="bl" style="min-width:${w||90}px"></span>`;
+    const confirmed=i=>!!(i.r['Allergies']||i.r['Medications']);
+    const medCell=i=>i.med?`<span class="rd">⚠ ${esc([i.r['Allergy Details']||'',i.r['Medications']?('Meds: '+i.r['Medications']):''].filter(Boolean).join(' · ')||'see slip')}</span>`:(confirmed(i)?'None on file':'<span class="rd">NOT CONFIRMED</span>');
+    const pick=i=>{ const g=[i.r['Guardian First Name'],i.r['Guardian Last Name']].filter(Boolean).join(' '), e=i.r['Emergency Contact Name']; return [g,e].filter(Boolean).map(esc).join(' / ')||'<span class="rd">ask office</span>'; };
+    const photo=i=>i.stu&&i.stu.photo?`<img class="ph" src="${i.stu.photo}">`:`<span class="ph in">${esc((i.r['Student First Name']||'?').slice(0,1))}</span>`;
+    const box=()=>'<td class="bx"><span></span></td>';
+    const heads=['Bus out','Arrived','Lunch','Leaving','Bus back'];
+    const grpHTML=groups.map((g,gi)=>{ const a=ad[gi]||'';
+      return `<section class="grp"><h2>Group ${gi+1} <span class="gs">${g.length} student${g.length===1?'':'s'}</span></h2>
+      <div class="adl">Adult: ${a?`<b>${esc(a)}</b>`:'<span class="bl" style="min-width:260px"></span>'}</div>
+      <table><thead><tr><th></th><th>Student</th>${heads.map(h=>`<th class="bh">${h}</th>`).join('')}<th>Medical</th><th>Guardian / Emergency</th><th>Pick-up by</th><th>Slip</th></tr></thead><tbody>
+      ${g.map(i=>`<tr class="${i.med?'mr':''}"><td>${photo(i)}</td><td><b>${esc(FieldTrips.nm(i.r))}</b><br><span class="sm">${c(i.r['Level'])}</span></td>${heads.map(box).join('')}<td>${medCell(i)}</td><td class="sm">${esc([i.r['Guardian First Name'],i.r['Guardian Last Name']].filter(Boolean).join(' '))} ${c(i.r['Phone'])}<br>${esc(i.r['Emergency Contact Name']||'')} ${c(i.r['Emergency Contact Phone'])}</td><td class="sm">${pick(i)}</td><td>${i.signed?'✓':'<span class="rd">UNSIGNED</span>'}</td></tr>`).join('')}
+      <tr class="cnt"><td></td><td><b>Headcount</b></td>${heads.map(()=>`<td class="bx"><span class="bl" style="min-width:34px"></span> / ${g.length}</td>`).join('')}<td colspan="4"></td></tr></tbody></table></section>`; }).join('');
+    const cards=groups.map((g,gi)=>`<div class="lan"><b>Group ${gi+1}</b> · ${esc(ad[gi]||'adult: ________')}<div class="sm" style="margin:3px 0 4px">${g.map(i=>esc(FieldTrips.nm(i.r).split(' ')[0])+(i.med?' ⚠':'')).join(' · ')}</div><div class="sm">Lost child → ${esc(det.meet||'meeting point: ________')} · Emergency: 911 first, then Br. Abdallah (612) 444-2609</div></div>`).join('');
+    const n=rows.length;
+    printWindow('Trip day sheet — '+nameT,`@page{size:landscape;margin:.4in}body{font-family:Georgia,serif;margin:0;padding:0 6px;color:#20261f;line-height:1.35}h1{font-size:24px;color:#123626;margin:0}h2{font-size:17px;color:#1a4a35;margin:0 0 4px}.gs{font-size:12px;color:#6b756a;font-weight:400;margin-left:8px}.hd{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 18px;margin:10px 0;font-size:13px;padding:10px 12px;border:1.5px solid #1a4a35;border-radius:8px}.hd div span.k{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#6b756a}.bl{display:inline-block;border-bottom:1px solid #444;height:15px;vertical-align:bottom}.emg{background:#fff4f4;border:2px solid #b23a3a;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:13px}.rd{color:#b23a3a;font-weight:700}.w{background:#fdeecb;border:1px solid #e8c171;border-radius:8px;padding:6px 10px;margin:4px 0;font-size:12.5px}.mbox{border:2px solid #b23a3a;border-radius:8px;padding:6px 10px;margin:8px 0}.mbox h3{color:#b23a3a;font-size:14px;margin:0 0 4px}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px 5px;border-bottom:1px solid #ddd;text-align:left;vertical-align:middle}th{font-size:10px;color:#6b756a;text-transform:uppercase}th.bh{text-align:center;width:64px}.bx{text-align:center}.bx span:not(.bl){display:inline-block;width:30px;height:30px;border:2px solid #333;border-radius:6px}.sm{font-size:11px;color:#5c665a}.ph{width:36px;height:36px;border-radius:50%;object-fit:cover;display:inline-flex;align-items:center;justify-content:center;background:#e7efe9;font-weight:700}tr.mr td{background:#fff7f7}tr.cnt td{border-top:2px solid #333;background:#f6f6f2;font-size:12px}.grp{page-break-before:always;break-before:page}.adl{font-size:13px;margin:0 0 6px}.lanw{page-break-before:always;break-before:page}.lan{border:1.5px dashed #555;border-radius:8px;padding:8px 12px;margin:0 0 10px;font-size:13px;break-inside:avoid}.ft{font-size:10.5px;color:#7b857a;margin-top:10px}`,
+      `<h1>${esc(nameT)} — trip day sheet</h1>
+       <div class="hd"><div><span class="k">Date</span>${d?`<b>${esc(fmtDate(d))}</b>`:line('')}</div><div><span class="k">Destination</span>${line(det.dest,150)}</div><div><span class="k">Depart / return</span>${line(det.depart,50)} → ${line(det.ret,50)}</div><div><span class="k">Students</span><b>${n}</b> in ${groups.length} group${groups.length===1?'':'s'}</div><div><span class="k">Transport</span>${line(det.bus,120)}</div><div><span class="k">Meeting point / lost child</span>${line(det.meet,150)}</div><div style="grid-column:span 2"><span class="k">Adults</span>${ad.length?esc(ad.join(' · ')):line('',320)}</div></div>
+       <div class="emg"><b>EMERGENCY:</b> call 911 first, then Br. Abdallah bin Abdirahman (612) 444-2609.</div>
+       ${med.length?`<div class="mbox"><h3>⚠ Medical alerts (${med.length})</h3>${med.map(i=>`<div style="font-size:12.5px;margin:2px 0"><b>${esc(FieldTrips.nm(i.r))}</b> — ${esc([i.r['Allergies']==='Has allergies'?(i.r['Allergy Details']||'Allergies'):'',i.r['Medications']?('Meds: '+i.r['Medications']):''].filter(Boolean).join(' · '))} · ${c(i.r['Phone']||i.r['Emergency Contact Phone'])}</div>`).join('')}</div>`:'<div class="w">No medical alerts on file. Check “NOT CONFIRMED” rows before leaving.</div>'}
+       ${grpHTML}
+       <section class="grp"><h2>Office master list</h2><table><thead><tr><th>Student</th><th>Level</th><th>Medical</th><th>Guardian</th><th>Emergency</th><th>Slip</th></tr></thead><tbody>${rows.map(i=>`<tr><td><b>${esc(FieldTrips.nm(i.r))}</b></td><td>${c(i.r['Level'])}</td><td>${medCell(i)}</td><td>${esc([i.r['Guardian First Name'],i.r['Guardian Last Name']].filter(Boolean).join(' '))}<br>${c(i.r['Phone'])}</td><td>${esc(i.r['Emergency Contact Name']||'')}<br>${c(i.r['Emergency Contact Phone'])}</td><td>${i.signed?'✓':'<span class="rd">UNSIGNED</span>'}</td></tr>`).join('')}</tbody></table></section>
+       <section class="lanw"><h2>Chaperone cut-out cards</h2>${cards}</section>
+       <p class="ft">Private family information — return after the trip; do not photograph or share.</p>`);
   },
   render(v){
     FieldTrips._v=v; const rows = FieldTrips._rows;
@@ -11252,7 +11383,7 @@ const FieldTrips = {
      <div style="margin-top:12px">${moduleHeroHTML('Field Trips', 'Trip Day Checklist', 'Headcount, medical alerts and permission slips — built for the day of the trip.', '🎒')}</div>
      <div class="filters no-print" style="flex-wrap:wrap;gap:8px;align-items:center">
        ${trips.length ? `<select id="ftPick" style="min-width:240px;max-width:100%">${trips.map(([k,t,d])=>`<option value="${esc(k)}" ${k===FieldTrips._tripKey?'selected':''}>${esc(k.split('|')[0])} — ${d?esc(fmtDate(d)):esc(k.split('|')[1]||'')}${d&&d<tdy?' (past)':''}</option>`).join('')}</select>` : ''}
-       ${trips.length?'<button class="btn btn-p btn-sm" id="ftRoll">▶ Roll call</button><button class="btn btn-o btn-sm" id="ftPrint">🖨️ Trip sheet</button>':''}
+       ${trips.length?'<button class="btn btn-p btn-sm" id="ftRoll">▶ Roll call</button><button class="btn btn-o btn-sm" id="ftPrint">🖨️ Trip sheet</button><button class="btn btn-o btn-sm" id="ftDet">✏️ Details</button>':''}
        <button class="btn btn-o btn-sm" id="ftRefresh" ${FieldTrips._loading?'disabled':''}>${FieldTrips._loading?'Loading…':'🔄 Refresh'}</button>
        <button class="btn btn-ghost btn-sm" id="ftMore" aria-label="More">⋯</button>
        <span style="margin-left:auto;font-size:11.5px;color:var(--ink3)">${FieldTrips._lastFetch? 'Loaded '+rel(FieldTrips._lastFetch) : ''}</span>
@@ -11260,13 +11391,13 @@ const FieldTrips = {
      <div id="ftBody">${FieldTrips.bodyHTML()}</div>`;
     wireCommon(v);
     $('#ftRefresh',v).onclick=()=>FieldTrips.load();
-    const pr=$('#ftPrint',v); if(pr) pr.onclick=()=>FieldTrips.printSheet();
+    const pr=$('#ftPrint',v); if(pr) pr.onclick=()=>FieldTrips.printSheet(); const dt=$('#ftDet',v); if(dt) dt.onclick=()=>FieldTrips.detailsForm();
     const rc=$('#ftRoll',v); if(rc) rc.onclick=()=>FieldTrips.rollCall();
     $('#ftMore',v).onclick=()=>{ const o=overlay(`<div class="modal" style="max-width:360px"><h3>Trip page options</h3>
        <label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="mTest" ${FieldTrips.hideTest()?'checked':''} style="width:20px;height:20px"> Hide test entries</label>
-       <div style="display:flex;flex-direction:column;gap:8px"><button class="btn btn-o" id="mMatch">🔗 Match slips to students</button><button class="btn btn-o" id="mSrc">⚙ Slip source URL</button></div><div class="mfoot"><button class="btn btn-p" id="mX">Close</button></div></div>`,true);
+       <div style="display:flex;flex-direction:column;gap:8px"><button class="btn btn-o" id="mDet">✏️ Trip details (times, adults, meeting point)</button><button class="btn btn-o" id="mMatch">🔗 Match slips to students</button><button class="btn btn-o" id="mSrc">⚙ Slip source URL</button></div><div class="mfoot"><button class="btn btn-p" id="mX">Close</button></div></div>`,true);
       $('#mX',o).onclick=()=>o.remove(); $('#mTest',o).onchange=e=>{ DB.data.settings.ftHideTest=e.target.checked; DB.save(); o.remove(); Router.render(); };
-      $('#mMatch',o).onclick=()=>{ o.remove(); FieldTrips.matchModal(); }; $('#mSrc',o).onclick=()=>{ o.remove(); FieldTrips.settingsForm(); }; };
+      $('#mDet',o).onclick=()=>{ o.remove(); FieldTrips.detailsForm(); }; $('#mMatch',o).onclick=()=>{ o.remove(); FieldTrips.matchModal(); }; $('#mSrc',o).onclick=()=>{ o.remove(); FieldTrips.settingsForm(); }; };
     const pick = $('#ftPick',v);
     if(pick) pick.onchange=()=>{ FieldTrips._tripKey = pick.value; Router.render(); };
     $$('[data-ft]',v).forEach(cb=>cb.onchange=()=>{ const [id,k]=cb.dataset.ft.split('|'); const c=FieldTrips.chk(); (c[id]=c[id]||{})[k]=cb.checked; if(k==='here'&&!cb.checked&&c[id].back) c[id].back=false; DB.save(); FieldTrips.render(v); });
@@ -11682,7 +11813,7 @@ const Gradebook = {
     };
     const snapshot = ()=>JSON.stringify(a.scores);
     const restore = snap=>()=>{ a.scores=JSON.parse(snap); DB.save(); Router.render(); };
-    $('#gbFill',v).onclick=()=>{ const snap=snapshot(); let n=0; students.forEach(s=>{ if(!has(s.id)){ a.scores[s.id]=a.possible; n++; } });
+    $('#gbFill',v).onclick=()=>{ const snap=snapshot(); let n=0; students.forEach(s=>{ if(!has(s.id)){ a.scores[s.id]=a.possible; gbStamp(a,s.id); n++; } });
       if(!n){ toast('Everyone already has a score'); return; } DB.save(); toast('Gave '+n+' student'+(n===1?'':'s')+' full marks',restore(snap)); Router.render(); };
     $('#gbClear',v).onclick=()=>{ if(!students.some(s=>has(s.id))){ toast('Nothing to clear'); return; }
       confirmBox('Clear every score for this assignment? You can undo right after.', ()=>{ const snap=snapshot(); students.forEach(s=>{ delete a.scores[s.id]; }); DB.save(); toast('Cleared all scores',restore(snap)); Router.render(); }); };
@@ -11695,7 +11826,7 @@ const Gradebook = {
     const commit = (sid,inp)=>{
       const raw=inp.value.trim();
       if(raw===''){ delete a.scores[sid]; }
-      else{ let n=Number(raw); if(isNaN(n)){ toast('Enter a number'); inp.value=''; return false; } a.scores[sid]=Math.max(0, Math.min(a.possible, n)); }
+      else{ let n=Number(raw); if(isNaN(n)){ toast('Enter a number'); inp.value=''; return false; } a.scores[sid]=Math.max(0, Math.min(a.possible, n)); gbStamp(a,sid); }
       DB.save(); return true;
     };
     const wireRow = sid=>{
@@ -11708,7 +11839,7 @@ const Gradebook = {
       const excBtn = v.querySelector('[data-gbexc="'+sid+'"]');
       if(excBtn) excBtn.onclick=()=>{ if(a.scores[sid]==='EXC') delete a.scores[sid]; else a.scores[sid]='EXC'; DB.save(); refreshRow(sid); };
       const missBtn = v.querySelector('[data-gbmiss="'+sid+'"]');
-      if(missBtn) missBtn.onclick=()=>{ if(a.scores[sid]==='MISS') delete a.scores[sid]; else a.scores[sid]='MISS'; DB.save(); refreshRow(sid); };
+      if(missBtn) missBtn.onclick=()=>{ if(a.scores[sid]==='MISS') delete a.scores[sid]; else { a.scores[sid]='MISS'; gbStamp(a,sid); } DB.save(); refreshRow(sid); };
     };
     const refreshRow = sid=>{
       const tr = v.querySelector('[data-gbrow="'+sid+'"]');
