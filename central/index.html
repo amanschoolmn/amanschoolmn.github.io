@@ -1112,7 +1112,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 59 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 60 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -10588,14 +10588,15 @@ function clnGroupNames(ids){ return ids.map(id=>{ const s=DB.data.students.find(
 // Photo + name chip for one student, used everywhere a duty group is shown
 // on screen (pair overview cards and the per-date schedule). Avatar sits
 // above the name so chips wrap cleanly in a row regardless of group size.
+function stuShort(s){ const f=ptFirst(s); const dup=DB.data.students.some(x=>x.active!==false&&x.id!==s.id&&ptFirst(x)===f); const k=(typeof famKey==='function'?famKey(s):''); return dup&&k? f+' '+k.split(/\s+/).slice(0,2).join(' ') : f; }
 function clnGroupChipsHTML(ids, size){
   size = size || 34;
   const students = ids.map(id=>DB.data.students.find(x=>x.id===id)).filter(Boolean);
   if(!students.length) return '<span style="font-size:12px;color:var(--ink3)">—</span>';
   return `<div style="display:flex;gap:10px;flex-wrap:wrap">
-    ${students.map(s=>`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;width:${size+18}px">
+    ${students.map(s=>`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:${size+14}px;max-width:${size+46}px">
       ${avatarHTML(s, `width:${size}px;height:${size}px;border-radius:50%;font-size:${Math.round(size*0.32)}px;flex-shrink:0`)}
-      <div style="font-size:10px;font-weight:600;text-align:center;line-height:1.2;max-width:${size+18}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" dir="rtl">${esc(s.name)}</div>
+      <div dir="auto" style="font-size:12px;font-weight:600;text-align:center;line-height:1.25;overflow-wrap:anywhere">${esc(stuShort(s))}</div>
     </div>`).join('')}
   </div>`;
 }
@@ -10833,107 +10834,92 @@ function comboSom(weights, subject, student, monthKeys, range){
 }
 
 const Cleaning = {
+  areas(){ const c=DB.data.cleaning=DB.data.cleaning||{pairsByMonth:{}}; if(!c.areas) c.areas=['Classroom floor & tables','Bathrooms','Trash & recycling','Entry & shoe area']; return c.areas; },
+  st(){ const c=DB.data.cleaning=DB.data.cleaning||{pairsByMonth:{}}; c.done=c.done||{}; c.swaps=c.swaps||{}; return c; },
+  groupsFor(list,days,i){ if(!list.length) return []; if(list.length>=days) return list.filter((_,j)=>j%days===i); return [list[i%list.length]]; },
+  rowsFor(year,month,entry){
+    const st=Cleaning.st(), dates=(ptWeekendDates(year)||{})[month]||[];
+    const open=dates.filter(md=>!closureFor(ptFullDate(year,md))).length; let oi=0;
+    return dates.map(md=>{ const dk=ptFullDate(year,md), c=closureFor(dk);
+      if(c) return {dk,md,closed:c,bGroups:[],sGroups:[],bGroup:[],sGroup:[]};
+      const idx=oi++, sw=st.swaps[dk]||[], map=id=>{ const x=sw.find(z=>z.from===id); return x?x.to:id; };
+      const bG=Cleaning.groupsFor(entry.brothers,open,idx).map(g=>g.map(map)), sG=Cleaning.groupsFor(entry.sisters,open,idx).map(g=>g.map(map));
+      return {dk,md,closed:null,idx,open,bGroups:bG,sGroups:sG,bGroup:[].concat(...bG),sGroup:[].concat(...sG)}; });
+  },
+  turns(){ const c=Cleaning.st(), t=today(), n={}; Object.keys(c.pairsByMonth||{}).forEach(k=>{ const i=k.indexOf('-'), y=+k.slice(0,i), m=k.slice(i+1); if(!(ptWeekendDates(y)||{})[m]) return;
+      Cleaning.rowsFor(y,m,c.pairsByMonth[k]).forEach(r=>{ if(r.closed) return; const dn=c.done[r.dk]||{}; if(r.dk<=t||dn.b||dn.s) [].concat(r.bGroup,r.sGroup).forEach(id=>{ n[id]=(n[id]||0)+1; }); }); }); return n; },
+  chips(groups,size){ return groups.length? `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">${groups.map(g=>clnGroupChipsHTML(g,size)).join('<span class="ai-sub" style="align-self:center">+</span>')}</div>` : '<span class="ai-sub">—</span>'; },
   render(v){
     if(!this._month){ const dm=ptDefaultMonthSession(); this._year=dm.year; this._month=dm.month; }
-    const year=this._year, month=this._month;
+    const year=this._year, month=this._month, tdy=today(), st=Cleaning.st(), areas=Cleaning.areas();
     const entry = clnEnsureMonth(year, month);
     const noGender = DB.data.students.filter(s=>s.active!==false && !s.gender);
-    // Closed dates are skipped from the rotation counter entirely (not just
-    // hidden), so the pair sequence stays fair across only the real class
-    // days rather than "wasting" a turn on a day nobody attended.
-    let openIdx = 0;
-    const rows = ptWeekendDates(year)[month].map(md=>{
-      const dk = ptFullDate(year, md);
-      const c = closureFor(dk);
-      if(c) return {dk, md, closed:c, bGroup:[], sGroup:[]};
-      const idx = openIdx++;
-      return {
-        dk, md, closed:null,
-        bGroup: entry.brothers.length ? entry.brothers[idx % entry.brothers.length] : [],
-        sGroup: entry.sisters.length ? entry.sisters[idx % entry.sisters.length] : [],
-      };
-    });
-
+    const rows = Cleaning.rowsFor(year,month,entry);
+    // "next class" hero always reflects the real current month, whichever month is being browsed
+    const nowY=new Date().getFullYear(), nowM=PT_MONTHS[new Date().getMonth()];
+    const nowEntry = clnEnsureMonth(nowY,nowM), nowRows=Cleaning.rowsFor(nowY,nowM,nowEntry);
+    const next = nowRows.find(r=>!r.closed && r.dk>=tdy);
+    const dayName=dk=>PT_isSat(dk)?'Saturday':'Sunday';
+    const dot=c=>`<i class="ux-dot" style="background:${c};margin-right:6px"></i>`;
+    const areaFor=(r,gi,off)=>areas.length? areas[((r.idx||0)+gi+off)%areas.length] : '';
+    const hero = next? (()=>{ const dn=st.done[next.dk]||{}, isToday=next.dk===tdy;
+      const col=(label,c,groups,key,off)=>`<div style="flex:1;min-width:240px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">${dot(c)}${label}</div>
+         ${groups.map((g,gi)=>`<div style="margin-bottom:8px">${clnGroupChipsHTML(g,40)}${areaFor(next,gi,off)?`<div style="margin-top:6px"><span class="tag tag-dim">🧽 ${esc(areaFor(next,gi,off))}</span></div>`:''}</div>`).join('')||'<span class="ai-sub">—</span>'}
+         <button class="btn ${dn[key]?'btn-p':'btn-o'} btn-sm no-print" data-clndone="${next.dk}|${key}">${dn[key]?'✓ Done':'Mark done'}</button></div>`;
+      return `<div class="card" style="border-top:3px solid var(--gold);margin-bottom:16px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><div><div class="eyebrow" style="margin:0">${isToday?'Today':'Next class'}</div><h3 style="font-family:var(--f-display);font-size:18px;margin:2px 0 0">${dayName(next.dk)}, ${esc(fmtDate(next.dk))}</h3></div><span style="margin-left:auto;display:flex;gap:6px" class="no-print"><button class="btn btn-o btn-sm" id="clnSwap">🔁 Someone absent? Swap</button></span></div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap">${col('Brothers','var(--info)',next.bGroups,'b',0)}${col('Sisters','#b5567a',next.sGroups,'s',1)}</div>
+        ${(st.swaps[next.dk]||[]).length?`<div class="ux-foot">Swapped today: ${(st.swaps[next.dk]).map(x=>{ const a=DB.data.students.find(z=>z.id===x.from), b=DB.data.students.find(z=>z.id===x.to); return esc(a?stuShort(a):'?')+' → '+esc(b?stuShort(b):'?'); }).join(' · ')}</div>`:''}</div>`; })()
+      : `<div class="card" style="margin-bottom:16px"><b>No more class days this month</b><p class="ux-note">Pick next month below to see who is on duty.</p></div>`;
+    const turns=Cleaning.turns(), act=DB.data.students.filter(s=>s.active!==false&&s.gender);
+    const tv=act.map(s=>turns[s.id]||0), tmin=tv.length?Math.min(...tv):0, tmax=tv.length?Math.max(...tv):0;
+    const fewest=act.filter(s=>(turns[s.id]||0)===tmin);
+    const doubled=(entry.brothers.length>(rows.filter(r=>!r.closed).length||1))||(entry.sisters.length>(rows.filter(r=>!r.closed).length||1));
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div style="margin-top:12px">${moduleHeroHTML('Student Duties', 'Cleaning Schedule', 'Brothers and sisters paired separately. New pairs each month; Saturday and Sunday each get a different pair.', '🧹')}</div>
-     <div class="filters no-print"><button class="btn btn-o btn-sm" id="clnClosures">📅 Manage closures</button></div>
-
-     ${noGender.length? `<div class="notice warn no-print" style="margin-bottom:14px"><span>\u26a0\ufe0f</span><span>${noGender.length} active student${noGender.length>1?'s':''} ${noGender.length>1?'have':'has'} no gender on file, so ${noGender.length>1?'they are':'they are'} left out of pairing: ${noGender.map(s=>esc(s.name)).join(', ')}. Set it on their profile to include ${noGender.length>1?'them':'them'}.</span></div>` : ''}
-
+     <div style="margin-top:12px">${moduleHeroHTML('Student Duties', 'Cleaning Schedule', 'Brothers and sisters paired separately. New pairs each month — every pair gets a turn.', '🧹')}</div>
+     <div class="filters no-print"><button class="btn btn-o btn-sm" id="clnClosures">📅 Manage closures</button><button class="btn btn-o btn-sm" id="clnAreas">🧽 Cleaning areas</button></div>
+     ${noGender.length? `<div class="notice warn no-print" style="margin-bottom:14px"><span>⚠️</span><span>${noGender.length} active student${noGender.length>1?'s':''} ${noGender.length>1?'have':'has'} no gender on file, so ${noGender.length>1?'they are':'they are'} left out of pairing: ${noGender.map(s=>esc(stuShort(s))).join(', ')}. Set it on their profile to include ${noGender.length>1?'them':'them'}.</span></div>` : ''}
+     ${hero}
      <div class="filters no-print" style="align-items:center;gap:10px">
-       <button class="btn btn-ghost btn-sm" id="clnYearPrev" aria-label="Previous year">←</button>
-       <b style="font-family:var(--f-mono);font-size:15px;min-width:52px;text-align:center">${year}</b>
-       <button class="btn btn-ghost btn-sm" id="clnYearNext" aria-label="Next year">→</button>
+       <button class="btn btn-ghost btn-sm" id="clnYearPrev" aria-label="Previous year">←</button><b style="font-size:15px;min-width:52px;text-align:center">${year}</b><button class="btn btn-ghost btn-sm" id="clnYearNext" aria-label="Next year">→</button>
      </div>
-     <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap">
-       ${PT_MONTHS.map(m=>`<button class="chip ${m===month?'on':''}" data-clnmonth="${m}">${m}</button>`).join('')}
-     </div>
-
-     <div class="grid g2" style="margin-bottom:16px">
-       <div class="card" style="border-top:3px solid var(--info)">
-         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-           <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc66 Brothers pairs \u2014 ${month} ${year}</h3>
-           <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.brothers.length} group${entry.brothers.length!==1?'s':''}</span>
-         </div>
-         <div style="display:flex;flex-direction:column;gap:8px">
-           ${entry.brothers.length? entry.brothers.map((g,i)=>clnPairCardHTML(g,i,36)).join('') : '<p style="font-size:13px;color:var(--ink2)">No active brothers on file.</p>'}
-         </div>
-       </div>
-       <div class="card" style="border-top:3px solid #B5567A">
-         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-           <h3 style="font-family:var(--f-display);font-size:16px">\ud83d\udc67 Sisters pairs \u2014 ${month} ${year}</h3>
-           <span style="font-size:11px;color:var(--ink3);font-family:var(--f-mono)">${entry.sisters.length} group${entry.sisters.length!==1?'s':''}</span>
-         </div>
-         <div style="display:flex;flex-direction:column;gap:8px">
-           ${entry.sisters.length? entry.sisters.map((g,i)=>clnPairCardHTML(g,i,36)).join('') : '<p style="font-size:13px;color:var(--ink2)">No active sisters on file.</p>'}
-         </div>
-       </div>
-     </div>
-
+     <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap">${PT_MONTHS.map(m=>`<button class="chip ${m===month?'on':''}" data-clnmonth="${m}">${m}</button>`).join('')}</div>
+     ${doubled?`<div class="notice no-print" style="margin-bottom:12px"><span>ℹ️</span><span>There are more pairs than class days this month, so some days have two pairs — that way nobody misses a turn.</span></div>`:''}
      <div class="card" style="margin-bottom:14px;padding:0;overflow:hidden">
-       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--green) 5%,var(--surface))">
-         <b style="font-family:var(--f-display);font-size:14.5px">🗓️ ${month} ${year} Schedule</b>
-         <span style="font-size:11px;color:var(--ink3)">Generated ${fmtDate(entry.generatedAt.slice(0,10))}</span>
-       </div>
-       <div style="display:flex;flex-direction:column;gap:10px;padding:16px">
-         ${rows.map(r=>r.closed ? `
-         <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:11px;opacity:.65">
-           <div style="min-width:76px;flex-shrink:0"><b style="font-family:var(--f-mono);font-size:12.5px">${fmtDate(r.dk)}</b><div style="font-size:10.5px;color:var(--ink3)">${PT_isSat(r.dk)?'Saturday':'Sunday'}</div></div>
-           <span style="font-size:12.5px">⛔ Closed — ${esc(r.closed.reason)}</span>
-         </div>` : `
-         <div style="padding:10px 12px 12px;background:var(--surface2);border:1px solid var(--line2);border-radius:11px">
-           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-             <b style="font-family:var(--f-mono);font-size:12.5px">${fmtDate(r.dk)}</b>
-             <span class="tag ${PT_isSat(r.dk)?'tag-green':'tag-blue'}">${PT_isSat(r.dk)?'Saturday':'Sunday'}</span>
-           </div>
-           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-             <div><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">\ud83d\udc66 Brothers</div>${clnGroupChipsHTML(r.bGroup,32)}</div>
-             <div><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">\ud83d\udc67 Sisters</div>${clnGroupChipsHTML(r.sGroup,32)}</div>
-           </div>
-         </div>`).join('')}
-       </div>
-     </div>
-
-     <div style="display:flex;gap:10px;flex-wrap:wrap" class="no-print">
-       <button class="btn btn-o" id="clnReshuffle">\ud83d\udd00 Reshuffle ${month}'s pairs</button>
-       <button class="btn btn-p" id="clnPrint">\ud83d\uddb6\ufe0f Print schedule</button>
-     </div>`;
-
+       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--green) 5%,var(--surface))"><b style="font-family:var(--f-display);font-size:14.5px">🗓️ ${month} ${year}</b><span class="ai-sub">Generated ${fmtDate(entry.generatedAt.slice(0,10))}</span></div>
+       <div style="display:flex;flex-direction:column;gap:10px;padding:14px">
+       ${rows.map(r=>{ if(r.closed) return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:11px;opacity:.65"><div style="min-width:90px"><b>${esc(fmtDate(r.dk))}</b><div class="ai-sub">${dayName(r.dk)}</div></div><span style="font-size:12.5px">⛔ Closed — ${esc(r.closed.reason)}</span></div>`;
+         const dn=st.done[r.dk]||{}, past=r.dk<tdy, isNext=next&&next.dk===r.dk&&year===nowY&&month===nowM;
+         return `<div style="padding:10px 12px;background:${isNext?'color-mix(in srgb,var(--gold) 12%,var(--surface))':'var(--surface2)'};border:1px solid ${isNext?'var(--gold)':'var(--line2)'};border-radius:11px;${past&&dn.b&&dn.s?'opacity:.6':''}">
+           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>${esc(fmtDate(r.dk))}</b><span class="tag ${PT_isSat(r.dk)?'tag-green':'tag-blue'}">${dayName(r.dk)}</span>${isNext?'<span class="tag tag-gold">next</span>':''}<span style="margin-left:auto;display:flex;gap:6px" class="no-print"><button class="chip ${dn.b?'on':''}" data-clndone="${r.dk}|b">${dn.b?'✓':'○'} Brothers</button><button class="chip ${dn.s?'on':''}" data-clndone="${r.dk}|s">${dn.s?'✓':'○'} Sisters</button></span></div>
+           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div><div class="ai-sub" style="margin-bottom:5px">${dot('var(--info)')}Brothers</div>${Cleaning.chips(r.bGroups,30)}</div><div><div class="ai-sub" style="margin-bottom:5px">${dot('#b5567a')}Sisters</div>${Cleaning.chips(r.sGroups,30)}</div></div></div>`; }).join('')}
+       </div></div>
+     <details class="card no-print" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">⚖️ Fairness — turns so far <span class="ai-sub" style="font-weight:400">${tmin===tmax?'everyone has had '+tmin:'range '+tmin+'–'+tmax}</span></summary>
+       <p class="ux-note">Counted from the months already generated in the app (past class days and ones marked done). ${tmin!==tmax?'Fewest turns: '+fewest.slice(0,8).map(s=>esc(stuShort(s))).join(', ')+(fewest.length>8?' …':'')+'.':''}</p>
+       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${act.slice().sort((a,b)=>(turns[a.id]||0)-(turns[b.id]||0)).map(s=>`<span class="chip">${esc(stuShort(s))} · ${turns[s.id]||0}</span>`).join('')}</div></details>
+     <details class="card no-print" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">All pairs this month <span class="ai-sub" style="font-weight:400">${entry.brothers.length} brothers · ${entry.sisters.length} sisters</span></summary>
+       <div class="grid g2" style="margin-top:10px"><div style="display:flex;flex-direction:column;gap:8px">${entry.brothers.map((g,i)=>clnPairCardHTML(g,i,34)).join('')||'<p class="ux-note">No active brothers on file.</p>'}</div><div style="display:flex;flex-direction:column;gap:8px">${entry.sisters.map((g,i)=>clnPairCardHTML(g,i,34)).join('')||'<p class="ux-note">No active sisters on file.</p>'}</div></div></details>
+     <div style="display:flex;gap:10px;flex-wrap:wrap" class="no-print"><button class="btn btn-o" id="clnReshuffle">🔀 Reshuffle ${month}'s pairs</button><button class="btn btn-p" id="clnPrint">🖶️ Print schedule</button></div>`;
     wireCommon(v);
-    // Month/year switch and reshuffle all repaint in place via this.render(v)
-    // directly — never Router.render(), for the same reason the Progress
-    // Tracker fix mattered: Router.render() always scrolls to the top,
-    // which is right for a real navigation but not for staying on this
-    // same page and just picking a different month or year.
     $('#clnYearPrev',v).onclick=()=>{ this._year--; this.render(v); };
     $('#clnYearNext',v).onclick=()=>{ this._year++; this.render(v); };
     $$('[data-clnmonth]',v).forEach(b=>b.onclick=()=>{ this._month=b.dataset.clnmonth; this.render(v); });
+    $$('[data-clndone]',v).forEach(b=>b.onclick=()=>{ const [dk,k]=b.dataset.clndone.split('|'); const d0=st.done[dk]=st.done[dk]||{}; d0[k]=!d0[k]; DB.save(); this.render(v); });
     $('#clnReshuffle',v).onclick=()=>confirmBox(`Reshuffle ${month} ${year}'s cleaning pairs? This replaces the current pairing for the month.`, ()=>{ clnReshuffleMonth(year,month); this.render(v); toast('Reshuffled'); });
     $('#clnPrint',v).onclick=()=>printHTMLDocument(clnScheduleHTML(year, month, rows));
-    // Closures are shared with the Progress Tracker — same modal, same
-    // underlying DB.data.closures list, so a closure added from either
-    // module is respected by both.
     $('#clnClosures',v).onclick=()=>Progress.closuresModal(v, ()=>this.render(v));
+    $('#clnAreas',v).onclick=()=>{ const o=overlay(`<div class="modal" style="max-width:420px"><h3>🧽 Cleaning areas</h3><p class="td-hint">One per line. Each pair on duty is given a different area, rotating each class day.</p><textarea id="clnAr" rows="6" style="width:100%">${esc(areas.join('\n'))}</textarea><div class="mfoot"><button class="btn btn-o" id="clnArC">Cancel</button><button class="btn btn-p" id="clnArS">Save</button></div></div>`,true);
+      $('#clnArC',o).onclick=()=>o.remove(); $('#clnArS',o).onclick=()=>{ st.areas=$('#clnAr',o).value.split('\n').map(x=>x.trim()).filter(Boolean); DB.save(); o.remove(); this.render(v); }; };
+    const sw=$('#clnSwap',v); if(sw&&next) sw.onclick=()=>{
+      const mk=(groups,g)=>[].concat(...groups).map(id=>DB.data.students.find(x=>x.id===id)).filter(Boolean).map(s=>({s,g}));
+      const members=mk(next.bGroups,'Brother').concat(mk(next.sGroups,'Sister'));
+      const o=overlay(`<div class="modal" style="max-width:420px"><h3>🔁 Swap an absent student</h3>
+        <div class="field"><label>Who can't make it?</label><select id="swA">${members.map(m=>`<option value="${m.s.id}" data-g="${m.g}">${esc(stuShort(m.s))}</option>`).join('')}</select></div>
+        <div class="field"><label>Replace with</label><select id="swB"></select></div><div class="mfoot"><button class="btn btn-o" id="swC">Cancel</button><button class="btn btn-p" id="swS">Swap</button></div></div>`,true);
+      const inToday=new Set(members.map(m=>m.s.id)); const absent=DB.data.attendance[next.dk]||{};
+      const fill=()=>{ const g=$('#swA',o).selectedOptions[0].dataset.g; const turns2=Cleaning.turns(); $('#swB',o).innerHTML=DB.data.students.filter(s=>s.active!==false&&s.gender===g&&!inToday.has(s.id)&&!['A','E'].includes(absent[s.id])).sort((a,b)=>(turns2[a.id]||0)-(turns2[b.id]||0)).map(s=>`<option value="${s.id}">${esc(stuShort(s))} (${turns2[s.id]||0} turns)</option>`).join(''); };
+      $('#swA',o).onchange=fill; fill();
+      $('#swC',o).onclick=()=>o.remove();
+      $('#swS',o).onclick=()=>{ const from=$('#swA',o).value, to=$('#swB',o).value; if(!to){ toast('No one available to swap in'); return; } (st.swaps[next.dk]=st.swaps[next.dk]||[]).push({from,to}); DB.save(); o.remove(); toast('Swapped',()=>{ st.swaps[next.dk]=st.swaps[next.dk].filter(x=>!(x.from===from&&x.to===to)); DB.save(); this.render(v); }); this.render(v); }; };
   },
 };
 
@@ -11165,72 +11151,106 @@ const FieldTrips = {
     FieldTrips._loading = false; Router.render();
   },
   tripKey(row){ return (row['Trip Name']||'(untitled trip)') + '|' + (row['Trip Date']||''); },
+  iso(str){ const m=String(str||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return m[3]+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0'); const d=String(str||'').match(/(\d{4})-(\d{2})-(\d{2})/); return d?d[0]:''; },
+  hideTest(){ return DB.data.settings.ftHideTest!==false; },
+  rows(){ const r=FieldTrips._rows||[]; return FieldTrips.hideTest()? r.filter(x=>!/^test\b/i.test(String(x['Student First Name']||'').trim())) : r; },
   trips(){
     const map = new Map();
-    (FieldTrips._rows||[]).forEach(r=>{
-      const k = FieldTrips.tripKey(r), t = r['Timestamp']||'';
-      if(!map.has(k) || t > map.get(k)) map.set(k, t);
-    });
-    return [...map.entries()].sort((a,b)=> (b[1]||'').localeCompare(a[1]||''));
+    FieldTrips.rows().forEach(r=>{ const k = FieldTrips.tripKey(r), t = r['Timestamp']||''; if(!map.has(k) || t > map.get(k)) map.set(k, t); });
+    const tdy=today(), arr=[...map.entries()].map(([k,t])=>({k,t,d:FieldTrips.iso(k.split('|')[1])}));
+    const up=arr.filter(x=>x.d&&x.d>=tdy).sort((a,b)=>a.d.localeCompare(b.d)), past=arr.filter(x=>!(x.d&&x.d>=tdy)).sort((a,b)=>(b.d||b.t).localeCompare(a.d||a.t));
+    return up.concat(past).map(x=>[x.k,x.t,x.d]);
   },
   defaultTripKey(){ const t = FieldTrips.trips(); return t.length ? t[0][0] : ''; },
-
+  chk(){ const st=DB.data.settings; st.tripChecks=st.tripChecks||{}; return (st.tripChecks[FieldTrips._tripKey]=st.tripChecks[FieldTrips._tripKey]||{}); },
+  dg(p){ return String(p||'').replace(/\D/g,'').slice(-10); },
+  // Match slips to families by phone number (slips use Latin names, the roster is Arabic, so phone is the only reliable link)
+  coverage(students){
+    const act=DB.data.students.filter(s=>s.active!==false && !(s.startDate&&s.startDate>today()));
+    const famOf=new Map(), fams={};
+    act.forEach(s=>{ const k=famKey(s)||'__solo_'+s.id; (fams[k]=fams[k]||{key:k,kids:[],phones:new Set(),label:famKey(s)||ptFirst(s)}).kids.push(s);
+      (s.guardians||[]).concat(s.emergencyContacts||[]).forEach(g=>{ const d=FieldTrips.dg(g.phone); if(d.length>=7) fams[k].phones.add(d); });
+      try{ const p=FieldTrips.dg(famContactPhone(famKey(s))); if(p.length>=7) fams[k].phones.add(p); }catch(e){} });
+    const list=Object.values(fams); list.forEach(f=>{ f.slips=0; f.noPhone=!f.phones.size; });
+    let unmatched=0;
+    students.forEach(r=>{ const ph=[FieldTrips.dg(r['Phone']),FieldTrips.dg(r['Emergency Contact Phone'])].filter(x=>x.length>=7); const f=list.find(f=>ph.some(p=>f.phones.has(p))); if(f) f.slips++; else unmatched++; });
+    return {list,unmatched,noPhone:list.filter(f=>f.noPhone)};
+  },
   render(v){
     const rows = FieldTrips._rows;
-    const trips = FieldTrips.trips();
+    const trips = FieldTrips.trips(); if(trips.length && !trips.some(t=>t[0]===FieldTrips._tripKey)) FieldTrips._tripKey=trips[0][0];
+    const tdy=today();
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
      <div style="margin-top:12px">${moduleHeroHTML('Field Trips', 'Trip Day Checklist', 'A live headcount pulled straight from permission slip submissions — names, allergies, medications, and who has signed.', '🎒')}</div>
      <div class="filters no-print">
-       ${trips.length ? `<select id="ftPick" style="min-width:240px">${trips.map(([k])=>`<option value="${esc(k)}" ${k===FieldTrips._tripKey?'selected':''}>${esc(k.split('|')[0])} — ${esc(k.split('|')[1]||'')}</option>`).join('')}</select>` : ''}
+       ${trips.length ? `<select id="ftPick" style="min-width:260px">${trips.map(([k,t,d])=>`<option value="${esc(k)}" ${k===FieldTrips._tripKey?'selected':''}>${esc(k.split('|')[0])} — ${d?esc(fmtDate(d)):esc(k.split('|')[1]||'')}${d&&d<tdy?' (past)':''}</option>`).join('')}</select>` : ''}
        <button class="btn btn-o btn-sm" id="ftRefresh" ${FieldTrips._loading?'disabled':''}>${FieldTrips._loading?'Loading…':'🔄 Refresh'}</button>
        <button class="btn btn-o btn-sm" id="ftPrint">🖨️ Print</button>
+       <label style="font-size:12.5px;display:flex;gap:5px;align-items:center;cursor:pointer;white-space:nowrap"><input type="checkbox" id="ftTest" ${FieldTrips.hideTest()?'checked':''}> Hide test entries</label>
        <button class="btn btn-ghost btn-sm" id="ftCfg">⚙ Source</button>
-       <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${FieldTrips._lastFetch? 'Loaded '+rel(FieldTrips._lastFetch) : ''}</span>
+       <span style="margin-left:auto;font-size:11.5px;color:var(--ink3)">${FieldTrips._lastFetch? 'Loaded '+rel(FieldTrips._lastFetch) : ''}</span>
      </div>
      <div id="ftBody">${FieldTrips.bodyHTML()}</div>`;
     wireCommon(v);
     $('#ftRefresh',v).onclick=()=>FieldTrips.load();
     $('#ftPrint',v).onclick=()=>window.print();
     $('#ftCfg',v).onclick=()=>FieldTrips.settingsForm();
+    $('#ftTest',v).onchange=e=>{ DB.data.settings.ftHideTest=e.target.checked; DB.save(); Router.render(); };
     const pick = $('#ftPick',v);
     if(pick) pick.onchange=()=>{ FieldTrips._tripKey = pick.value; Router.render(); };
-    $$('[data-ft-check]',v).forEach(cb=>cb.onchange=()=>{ FieldTrips._checked[cb.dataset.ftCheck] = cb.checked; });
+    $$('[data-ft]',v).forEach(cb=>cb.onchange=()=>{ const [id,k]=cb.dataset.ft.split('|'); const c=FieldTrips.chk(); (c[id]=c[id]||{})[k]=cb.checked; if(k==='here'&&!cb.checked&&c[id].back) c[id].back=false; DB.save(); FieldTrips.render(v); });
+    $$('[data-ftall]',v).forEach(b=>b.onclick=()=>{ const c=FieldTrips.chk(); FieldTrips.rows().filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey).forEach(r=>{ const id=r['Row ID']||[r['Student First Name'],r['Student Middle Name'],r['Student Last Name']].filter(Boolean).join(' '); (c[id]=c[id]||{})[b.dataset.ftall]=true; }); DB.save(); FieldTrips.render(v); });
     if(rows===null && !FieldTrips._loading) FieldTrips.load();
   },
 
   bodyHTML(){
     if(FieldTrips._rows===null) return `<p style="padding:24px;color:var(--ink2)">${FieldTrips._loading?'Loading submissions…':'Tap Refresh to load submissions.'}</p>`;
-    if(!FieldTrips._rows.length) return `<p style="padding:24px;color:var(--ink2)">No permission slip submissions found yet.</p>`;
-    const students = FieldTrips._rows.filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey);
+    if(!FieldTrips.rows().length) return `<p style="padding:24px;color:var(--ink2)">No permission slip submissions found yet.</p>`;
+    const students = FieldTrips.rows().filter(r=>FieldTrips.tripKey(r)===FieldTrips._tripKey);
     if(!students.length) return `<p style="padding:24px;color:var(--ink2)">No submissions for this trip yet.</p>`;
-    const allergyCount = students.filter(s=>s['Allergies']==='Has allergies').length;
-    const unsigned = students.filter(s=>s['Signature Captured']!=='Yes').length;
-    const cols = ['Here','Student','Level','Allergies / Meds','Guardian','Emergency Contact','Signed'];
+    const tripD=FieldTrips.iso(FieldTrips._tripKey.split('|')[1]), tdy=today(), isPast=tripD&&tripD<tdy;
+    const nm=s=>[s['Student First Name'],s['Student Middle Name'],s['Student Last Name']].filter(Boolean).join(' ');
+    const idOf=s=>s['Row ID']||nm(s), c=FieldTrips.chk();
+    const hasMed=s=>s['Allergies']==='Has allergies'||!!(s['Medications']&&!/^(no|none|nil|n\/?a|na)\b/i.test(String(s['Medications']).trim()));
+    const signed=s=>s['Signature Captured']==='Yes';
+    const sorted=students.slice().sort((a,b)=>(hasMed(b)-hasMed(a))||((signed(a)?1:0)-(signed(b)?1:0))||nm(a).localeCompare(nm(b)));
+    const here=students.filter(s=>(c[idOf(s)]||{}).here).length, back=students.filter(s=>(c[idOf(s)]||{}).back).length;
+    const meds=students.filter(hasMed), unsigned=students.filter(s=>!signed(s));
+    const cov=FieldTrips.coverage(students);
+    const missingFam=cov.list.filter(f=>!f.slips && !f.noPhone), cantCheck=cov.noPhone;
+    const covered=cov.list.filter(f=>f.slips).length;
+    const tel=(p)=>{ const d=String(p||'').replace(/[^\d+]/g,''); return p&&d.length>=7? `<a href="tel:${esc(d)}" style="color:var(--info);font-weight:600;white-space:nowrap">📞 ${esc(p)}</a>` : `<span class="ai-sub">${esc(p||'—')}</span>`; };
+    const famPhone=f=>{ try{ return famContactPhone(f.key)||[...f.phones][0]||''; }catch(e){ return [...f.phones][0]||''; } };
     return `
-      <div class="filters no-print" style="gap:16px;font-size:12.5px;color:var(--ink2)">
-        <span><b>${students.length}</b> student${students.length===1?'':'s'}</span>
-        ${allergyCount? `<span style="color:var(--bad)"><b>${allergyCount}</b> with allergies</span>`:''}
-        ${unsigned? `<span style="color:var(--warn)"><b>${unsigned}</b> missing signature</span>`:''}
+      ${isPast?`<div class="notice warn no-print" style="margin-bottom:12px"><span>🕘</span><span>This trip was on <b>${esc(fmtDate(tripD))}</b> — it's in the past. Pick a different trip above if you're planning the next one.</span></div>`:''}
+      <div class="card" style="margin-bottom:14px;display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+        <div><div style="font-size:30px;font-weight:700;line-height:1">${here}<span style="font-size:16px;color:var(--ink3)"> of ${students.length}</span></div><div class="ai-sub">here</div></div>
+        <div><div style="font-size:30px;font-weight:700;line-height:1">${back}<span style="font-size:16px;color:var(--ink3)"> of ${here}</span></div><div class="ai-sub">back safely</div></div>
+        <div style="flex:1;min-width:160px"><div class="pp-prog"><i style="width:${students.length?Math.round(here/students.length*100):0}%"></i></div><div class="ai-sub">${meds.length?`<b class="c-bad">${meds.length}</b> with allergies / medication · `:''}${unsigned.length?`<b class="c-warn">${unsigned.length}</b> missing signature`:'all signatures captured'}</div></div>
+        <span class="no-print" style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-ftall="here">Everyone here</button>${here?'<button class="btn btn-o btn-sm" data-ftall="back">Everyone back</button>':''}</span>
       </div>
-      <div class="card" style="padding:0;overflow:hidden">
+      ${meds.length?`<div class="warn-box" style="background:color-mix(in srgb,var(--bad) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line));border-radius:12px;padding:10px 14px;margin-bottom:14px"><b class="c-bad">⚠ Medical alerts</b>${meds.map(s=>`<div style="margin-top:4px;font-size:13.5px"><b>${esc(nm(s))}</b> — ${esc([s['Allergies']==='Has allergies'?(s['Allergy Details']||'Allergies'):'',s['Medications']?('Meds: '+s['Medications']):''].filter(Boolean).join(' · '))} · ${tel(s['Phone']||s['Emergency Contact Phone'])}</div>`).join('')}</div>`:''}
+      <details class="card no-print" style="margin-bottom:14px" ${missingFam.length?'open':''}><summary style="cursor:pointer;font-weight:700">📋 Permission check <span class="ai-sub" style="font-weight:400">${covered} of ${cov.list.length} families have a slip${missingFam.length?' · '+missingFam.length+' haven’t':''}</span></summary>
+        <p class="ux-note">Slips are matched to families by phone number (slips use English names, your roster is Arabic). A family counts as covered if any slip has one of their numbers.${cov.unmatched?' '+cov.unmatched+' slip'+(cov.unmatched>1?'s':'')+' didn’t match any family number.':''}</p>
+        ${missingFam.length?`<div style="margin-top:6px">${missingFam.map(f=>`<div class="wrow" style="cursor:default;gap:10px"><span class="t"><b dir="auto">${esc(f.label)}</b> family <span class="ai-sub">· ${f.kids.map(k=>esc(stuShort(k))).join(', ')}</span></span>${tel(famPhone(f))}</div>`).join('')}</div>`:'<p class="ux-note c-ok">Every family with a phone number on file has submitted a slip.</p>'}
+        ${cantCheck.length?`<p class="ux-note">${cantCheck.length} famil${cantCheck.length>1?'ies have':'y has'} no phone on file, so they can’t be checked: ${cantCheck.map(f=>esc(f.label)).join(', ')}.</p>`:''}</details>
+      <div class="card" style="padding:0;overflow:auto">
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:var(--surface2);text-align:left">
-            ${cols.map(c=>`<th style="padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)" ${c==='Here'?'class="no-print"':''}>${c}</th>`).join('')}
-          </tr></thead>
+          <thead><tr style="background:var(--surface2);text-align:left">${['Here','Back','Student','Level','Allergies / Meds','Guardian','Emergency','Signed'].map(h=>`<th style="padding:9px 12px;font-size:11.5px;color:var(--ink3);font-weight:700" ${h==='Here'||h==='Back'?'class="no-print"':''}>${h}</th>`).join('')}</tr></thead>
           <tbody>
-            ${students.map(s=>{
-              const name = [s['Student First Name'],s['Student Middle Name'],s['Student Last Name']].filter(Boolean).join(' ');
-              const rowId = s['Row ID']||name;
+            ${sorted.map(s=>{
+              const name=nm(s), rowId=idOf(s), st=c[rowId]||{};
               const allergy = s['Allergies']==='Has allergies' ? `<span class="tag tag-red">⚠ ${esc(s['Allergy Details']||'Allergies')}</span>` : '<span style="color:var(--ink3)">—</span>';
-              const meds = s['Medications'] ? `<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Medications'])}</div>` : '';
-              const sig = s['Signature Captured']==='Yes' ? (s['Signature File']? `<a href="${esc(s['Signature File'])}" target="_blank" rel="noopener" class="tag tag-green">✓ view</a>` : '<span class="tag tag-green">✓</span>') : '<span class="tag tag-gold">missing</span>';
-              return `<tr style="border-top:1px solid var(--line)">
-                <td style="padding:9px 12px" class="no-print"><input type="checkbox" data-ft-check="${esc(rowId)}" ${FieldTrips._checked[rowId]?'checked':''} style="width:18px;height:18px"></td>
+              const m2 = s['Medications'] ? `<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Medications'])}</div>` : '';
+              const sig = signed(s) ? (s['Signature File']? `<a href="${esc(s['Signature File'])}" target="_blank" rel="noopener" class="tag tag-green">✓ view</a>` : '<span class="tag tag-green">✓</span>') : '<span class="tag tag-gold">missing</span>';
+              return `<tr style="border-top:1px solid var(--line);${st.back?'opacity:.55':''}">
+                <td style="padding:9px 12px" class="no-print"><input type="checkbox" data-ft="${esc(rowId)}|here" ${st.here?'checked':''} style="width:22px;height:22px"></td>
+                <td style="padding:9px 12px" class="no-print"><input type="checkbox" data-ft="${esc(rowId)}|back" ${st.back?'checked':''} ${st.here?'':'disabled'} style="width:22px;height:22px"></td>
                 <td style="padding:9px 12px"><b>${esc(name)}</b>${s['Student Notes']?`<div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${esc(s['Student Notes'])}</div>`:''}</td>
                 <td style="padding:9px 12px;font-size:13px">${esc(s['Level']||'—')}</td>
-                <td style="padding:9px 12px">${allergy}${meds}</td>
-                <td style="padding:9px 12px;font-size:13px">${esc([s['Guardian First Name'],s['Guardian Last Name']].filter(Boolean).join(' ')||'—')}<div style="font-size:11.5px;color:var(--ink3)">${esc(s['Phone']||'')}</div></td>
-                <td style="padding:9px 12px;font-size:13px">${esc(s['Emergency Contact Name']||'—')}<div style="font-size:11.5px;color:var(--ink3)">${esc(s['Emergency Contact Phone']||'')}</div></td>
+                <td style="padding:9px 12px">${allergy}${m2}</td>
+                <td style="padding:9px 12px;font-size:13px">${esc([s['Guardian First Name'],s['Guardian Last Name']].filter(Boolean).join(' ')||'—')}<div style="font-size:12px">${tel(s['Phone'])}</div></td>
+                <td style="padding:9px 12px;font-size:13px">${esc(s['Emergency Contact Name']||'—')}<div style="font-size:12px">${tel(s['Emergency Contact Phone'])}</div></td>
                 <td style="padding:9px 12px">${sig}</td>
               </tr>`;
             }).join('')}
