@@ -298,16 +298,29 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .td-b.strong{border-color:color-mix(in srgb,var(--ok,#2e7d4f) 55%,var(--line));color:var(--ok,#2e7d4f)}.td-b.shaky{border-color:color-mix(in srgb,var(--gold,#d9ac54) 70%,var(--line));color:var(--gold-text,#8a6520)}.td-b.forgot{border-color:color-mix(in srgb,var(--bad,#b3392f) 55%,var(--line));color:var(--bad,#b3392f)}
 .td-b:active{transform:scale(.94)}.td-wk{margin:0;flex:1 1 200px}
 @media(max-width:640px){.td-grid{grid-template-columns:1fr}.td-b{min-width:64px;padding:10px 8px}}
-.hubbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin:0 0 16px;padding:8px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh1,0 1px 2px rgba(0,0,0,.04))}
+.pc{padding:0;overflow:hidden}.pc-sum{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 16px;flex-wrap:wrap}.pc-sum::-webkit-details-marker{display:none}
+.pc-ring{width:50px;height:50px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex-shrink:0;position:relative}.pc-ring:before{content:'';position:absolute;inset:5px;border-radius:50%;background:var(--surface)}.pc-ring b{position:relative;font-size:12px}
+.pc-t{display:flex;flex-direction:column;flex:1;min-width:160px}.pc-t b{font-family:var(--f-display);font-size:17px}.pc-t span{font-size:12.5px;color:var(--ink3)}
+.pc-pills{display:flex;gap:6px;flex-wrap:wrap}.pcp{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}.pcp.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}.pcp.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}.pcp.dim{background:var(--surface2);color:var(--ink3);font-weight:600}
+.pc-car{color:var(--ink3);transition:transform .15s}.pc[open] .pc-car{transform:rotate(180deg)}
+.pc-bar{height:4px;background:var(--line)}.pc-bar i{display:block;height:100%}
+.pc-hint{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:12px 16px 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--info) 9%,var(--surface));font-size:12.5px;color:var(--ink2)}
+.pc-list{display:flex;flex-direction:column;padding:8px 10px 6px}.pc-row{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line);flex-wrap:wrap}.pc-row:last-child{border-bottom:0}
+.pc-av{width:36px;height:36px;border-radius:50%;background:color-mix(in srgb,var(--gold) 22%,var(--surface));display:grid;place-items:center;font-weight:800;color:var(--ink2);flex-shrink:0}
+.pc-n{flex:1;min-width:150px;display:flex;flex-direction:column;gap:3px}.pc-n b{font-size:14px;text-align:left}.pc-k{display:flex;gap:5px;flex-wrap:wrap}.pc-k em{font-style:normal;font-size:11.5px;padding:1px 8px;border-radius:999px;background:var(--surface2);color:var(--ink2)}
+.pc-ph{font:600 12.5px var(--f-mono);color:var(--info);text-decoration:none;white-space:nowrap}.pc-ph:hover{text-decoration:underline}
+.pc-ok{margin:12px 16px;padding:14px;border-radius:12px;background:color-mix(in srgb,var(--ok) 11%,var(--surface));color:var(--ok);font-weight:600;text-align:center}
+.pc-cant{margin:6px 16px 14px;font-size:12.5px;color:var(--ink3);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hubbar{display:flex;align-items:center;gap:6px 10px;flex-wrap:nowrap;margin:0 0 14px;padding:5px 8px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh1,0 1px 2px rgba(0,0,0,.04))}
 .hub-t{font-family:var(--f-display,inherit);font-weight:800;font-size:15px;color:var(--green,#1a4a35);padding:0 6px}
-.hub-tabs{display:flex;gap:4px;flex-wrap:wrap}
-.hub-tab{border:0;background:transparent;color:var(--ink2,#444);font:600 13px/1 var(--f-body,inherit);padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.hub-tabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}.hub-tabs::-webkit-scrollbar{display:none}.hub-more{position:relative;flex-shrink:0}.hub-more summary{list-style:none;cursor:pointer;font:600 12.5px var(--f-body,inherit);padding:7px 10px;border-radius:9px;color:var(--ink2);display:inline-flex;gap:5px;align-items:center}.hub-more summary::-webkit-details-marker{display:none}.hub-more summary:hover,.hub-more[open] summary{background:var(--bg2,rgba(0,0,0,.05))}.hub-more .pop{position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:210px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column;gap:2px}.hub-more .pop .hub-tab{width:100%;justify-content:flex-start}.hub-x{display:flex;gap:6px;flex-shrink:0}.hub-x .btn{padding:6px 10px;font-size:12px;white-space:nowrap}
+.hub-tab{border:0;background:transparent;color:var(--ink2,#444);font:600 12.5px/1 var(--f-body,inherit);white-space:nowrap;flex-shrink:0;padding:8px 10px;border-radius:10px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 .hub-tab:hover{background:var(--bg2,rgba(0,0,0,.05))}
 .hub-tab.on{background:var(--green,#1a4a35);color:#fff}
 .hub-tab i{font-style:normal;font-size:11px;font-weight:800;background:var(--gold,#d9ac54);color:#20261f;border-radius:20px;padding:2px 7px}
 @media(max-width:640px){.pt-hero{padding:18px}.pt-hero>div:first-child{flex:1 1 100%!important}}
 .hub-x{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
-@media(max-width:640px){.hub-x{margin-left:0;width:100%}.hub-tabs{width:100%}.hub-tab{flex:1 1 auto;justify-content:center}}
+@media(max-width:640px){.hub-t span.hn{display:none}.hub-x .btn{padding:6px 8px}.hubbar{flex-wrap:wrap}.hub-x{width:100%}}
 .toast-undo{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:inherit;border-radius:8px;padding:4px 12px;font-weight:700;font-size:13px;cursor:pointer}
 .td-att{padding:12px 14px;margin-bottom:12px}.td-atthead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.td-hint{font-size:12px;color:var(--ink3);margin:8px 0}
 .td-acs{display:flex;flex-wrap:wrap;gap:6px}.td-ac{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:4px 10px 4px 4px;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit}
@@ -605,8 +618,8 @@ html[data-theme="dark"] .rcover{filter:brightness(.9)}
 body:has(#classModeOverlay) #overlays{position:relative;z-index:9100}
 body:has(#classModeOverlay) #toasts{z-index:9200}
 .cm-wrap{--sz:112px}
-.cm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--sz) + 26px),1fr));gap:14px 12px;align-items:start}
-.cm-t{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px 9px;border-radius:18px;border:1.5px solid var(--line);background:color-mix(in srgb,var(--c) 9%,var(--surface));cursor:pointer;font:inherit;color:inherit;text-align:center;transition:transform .12s,background .2s,box-shadow .2s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.cm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--sz) + 26px),1fr));gap:12px 10px;align-items:stretch}
+.cm-t{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:9px 5px 8px;height:100%;border-radius:18px;border:1.5px solid var(--line);background:color-mix(in srgb,var(--c) 9%,var(--surface));cursor:pointer;font:inherit;color:inherit;text-align:center;transition:transform .12s,background .2s,box-shadow .2s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .cm-t:active{transform:scale(.95)}
 .cm-t.on{border-color:color-mix(in srgb,var(--c) 70%,transparent);box-shadow:0 3px 14px color-mix(in srgb,var(--c) 28%,transparent);background:color-mix(in srgb,var(--c) 14%,var(--surface))}
 .cm-ph{position:relative;width:var(--sz);height:var(--sz);border-radius:50%;flex-shrink:0;padding:4px;background:conic-gradient(var(--c),var(--c));display:flex}
@@ -619,8 +632,8 @@ body:has(#classModeOverlay) #toasts{z-index:9200}
 .cm-c{position:absolute;left:-4px;top:-4px;display:flex;flex-direction:column;gap:3px}
 .cm-c i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--surface);border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.18)}
 .cm-c i.al{border-color:var(--bad);background:#fff1f0}
-.cm-n{font-size:13px;font-weight:700;line-height:1.25;max-width:100%;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cm-s{font-size:10.5px;font-family:var(--f-mono);letter-spacing:.03em;color:var(--c);font-weight:700;text-transform:uppercase}
+.cm-n{font-size:12px;font-weight:700;line-height:1.25;max-width:100%;overflow-wrap:anywhere;display:flex;align-items:center;justify-content:center;text-align:center;height:2.5em;overflow:hidden;unicode-bidi:plaintext}
+.cm-s{font-size:9.5px;white-space:nowrap;margin-top:auto;font-family:var(--f-mono);letter-spacing:.03em;color:var(--c);font-weight:700;text-transform:uppercase}
 .cm-t.un .cm-s{color:var(--ink3);font-weight:500}
 .cm-top{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .cm-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--surface)}
@@ -1171,9 +1184,9 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 66 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 67<span id="foot-count" hidden>0</span></div>
   </aside>
-  <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#/students/attendance" data-tb="students/attendance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Attendance</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
+  <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
   <div class="main">
     <header class="topbar">
@@ -4345,7 +4358,11 @@ function navId(){ const {id,param}=Router.parse(); if(id==='students'&&param==='
 function hubBadge(key){ try{ if(key==='today') return TD.needCount(); if(key==='goals') return GA.alerts().length; if(key==='hearing') return HP.build().queue.length; if(key==='hear') return RP.stu().reduce((a,s)=>a+RP.ready(s).length,0); if(key==='poem') return PT.stu().reduce((a,s)=>a+PT.sum(s).due,0); }catch(e){} return 0; }
 function hubShell(v,hub,key){
   const H=HUBS[hub];
-  v.innerHTML=`<div class="hubbar no-print"><span class="hub-t">${H.ico} ${H.name}</span><div class="hub-tabs">${H.tabs.map(([k,l,h])=>{ const n=hubBadge(k); return `<button class="hub-tab ${k===key?'on':''}" data-go="${h}">${l}${n?`<i>${n}</i>`:''}</button>`; }).join('')}</div><span class="hub-x">${H.extra||''}</span></div><div class="hub-body"></div>`;
+  const LIM=6; let pri=H.tabs.slice(0,LIM), rest=H.tabs.slice(LIM); const act=rest.find(t=>t[0]===key); if(act){ pri=pri.slice(0,LIM-1).concat([act]); rest=rest.filter(t=>t!==act).concat(H.tabs.slice(0,LIM).filter(t=>!pri.includes(t))); }
+  const tb=([k,l,h])=>{ const n=hubBadge(k); return `<button class="hub-tab ${k===key?'on':''}" data-go="${h}">${l}${n?`<i>${n}</i>`:''}</button>`; };
+  const restN=rest.reduce((a,t)=>a+(+hubBadge(t[0])||0),0);
+  v.innerHTML=`<div class="hubbar no-print"><span class="hub-t">${H.ico} <span class="hn">${H.name}</span></span><div class="hub-tabs">${pri.map(tb).join('')}</div>${rest.length?`<details class="hub-more"><summary>More ▾${restN?`<span style="background:var(--gold);color:#20261f;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800">${restN}</span>`:''}</summary><div class="pop">${rest.map(tb).join('')}</div></details>`:''}<span class="hub-x">${H.extra||''}</span></div><div class="hub-body"></div>`;
+  const hm=v.querySelector('.hub-more'); if(hm){ const off=e=>{ if(!document.body.contains(hm)){ document.removeEventListener('click',off); return; } if(!hm.contains(e.target)) hm.open=false; }; document.addEventListener('click',off); }
   wireCommon(v);
   return v.querySelector('.hub-body');
 }
@@ -4454,10 +4471,10 @@ const Layout = {
     let html='';
     const B=navBadges(), nb=n=>n>0?`<span class="nb">${n>99?'99+':n}</span>`:'';
     const wk=[0,6].includes(new Date().getDay());
-    const cd=`<div class="grp">⚡ Class day</div>`+[['students/attendance','Attendance','check',B.att?'•':''],['students/progress','Progress tracker','trend',''],['teacher','Treat goals & rewards','donut',B.rew],['students/fieldtrip','Field trip','bus',B.trip]].map(([h,t,ic,b])=>`<a href="#/${h}" data-mod="${h}" class="sc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[ic]}</svg>${t}${b?(b==='•'?'<span class="nb nd" title="Attendance not taken yet today"></span>':nb(b)):''}</a>`).join('');
+    const cd=`<div class="grp">⚡ Class day</div>`+[['classmode','Class Mode','check',B.att?'•':''],['students/progress','Progress tracker','trend',''],['teacher','Treat goals','donut',B.rew],['students/fieldtrip','Field trip','bus',B.trip]].map(([h,t,ic,b])=>`<a href="#/${h}" data-mod="${h}" class="sc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[ic]}</svg>${t}${b?(b==='•'?'<span class="nb nd" title="Attendance not taken yet today"></span>':nb(b)):''}</a>`).join('');
     if(wk) html+=cd;
     gnames.forEach(g=>{
-      const mods=groups[g].slice().sort((a,b)=>Layout.rank(u.order,a.id)-Layout.rank(u.order,b.id));
+      const mods=groups[g].filter(m=>m.id!=='library').slice().sort((a,b)=>Layout.rank(u.order,a.id)-Layout.rank(u.order,b.id));
       const vis=mods.filter(m=>E||!u.hidden.includes(m.id)||m.id==='settings');
       if(!vis.length) return;
       html+=`<div class="grp">${g}${E?`<span class="lay-navc"><button type="button" data-gm="${esc(g)}:-1" aria-label="Move section up">▲</button><button type="button" data-gm="${esc(g)}:1" aria-label="Move section down">▼</button></span>`:''}</div>`;
@@ -6353,7 +6370,7 @@ const Teacher = {
         const corner=[al?`<i class="al" title="Allergy on file">⚠</i>`:'',bd===0?'<i title="Birthday today!">🎂</i>':(bd!=null&&bd>0&&bd<=7?`<i title="Birthday in ${bd}d">🎈</i>`:''),heard.has(s.id)?'<i title="Heard today">📖</i>':'',(prev[s.id]==='A'&&!st)?'<i title="Absent last class">↩</i>':''].join('');
         return `<button class="cm-t ${st?'on '+st:'un'}" data-cmstu="${s.id}" style="--c:${c}" aria-label="${esc(name)} — currently ${stName}. Tap to change. Press and hold for more.">
           <span class="cm-ph"><span class="av">${s.photo?`<img src="${s.photo}" alt="" loading="lazy" onerror="this.replaceWith(document.createTextNode(this.dataset.i))" data-i="${esc(initials(s.name))}">`:esc(initials(s.name))}</span>${st?`<i class="cm-b">${ICON[st]}</i>`:''}${corner?`<span class="cm-c">${corner}</span>`:''}</span>
-          <span class="cm-n" dir="auto">${esc(name)}</span><span class="cm-s">${st?PT_ATT_LABEL[st]:'tap to mark'}</span></button>`; };
+          <span class="cm-n" dir="auto">${esc(name)}</span><span class="cm-s">${st?({P:'Present',L:'Late',A:'Absent',E:'Excused'}[st]||PT_ATT_LABEL[st]):'tap to mark'}</span></button>`; };
       const sections = V.group && !V.lvl ? LEVELS.map(L=>{ const g=list.filter(s=>s.level===L); if(!g.length) return ''; const all2=lvlOf(L), hp=all2.filter(s=>rec[s.id]==='P'||rec[s.id]==='L').length;
           return `<div class="cm-sec">${L} — ${esc(LEVEL_SUB[L]||'')}<span class="rl"></span><small>${hp}/${all2.length} here</small></div><div class="cm-grid">${g.map(tile).join('')}</div>`; }).join('')
         : `<div class="cm-grid">${list.map(tile).join('')}</div>`;
@@ -11661,10 +11678,22 @@ const FieldTrips = {
             <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${i.med?`<span class="tag tag-red">⚠ ${esc(r['Allergy Details']||r['Medications']||'medical')}</span>`:''}${i.signed?(r['Signature File']?`<a href="${esc(r['Signature File'])}" target="_blank" rel="noopener" class="tag tag-green">✓ signed</a>`:'<span class="tag tag-green">✓ signed</span>'):'<span class="tag tag-gold">unsigned</span>'}</div></div>
           <div class="no-print" style="display:flex;flex-direction:column;gap:6px"><label style="display:flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" data-ft="${esc(i.id)}|here" ${i.st.here?'checked':''} style="width:24px;height:24px"> Here</label><label style="display:flex;gap:6px;align-items:center;font-size:12.5px;${i.st.here?'':'opacity:.4'}"><input type="checkbox" data-ft="${esc(i.id)}|back" ${i.st.back?'checked':''} ${i.st.here?'':'disabled'} style="width:24px;height:24px"> Back</label></div></div>
           <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12.5px"><span><span class="ai-sub">Guardian</span> ${esc([r['Guardian First Name'],r['Guardian Last Name']].filter(Boolean).join(' ')||'')} ${tel(r['Phone'])}</span><span><span class="ai-sub">Emergency</span> ${esc(r['Emergency Contact Name']||'')} ${tel(r['Emergency Contact Phone'])}</span></div></div>`; }).join('')}</div>
-      <details class="card no-print" style="margin-bottom:14px" ${(famMissing.length&&!isPast)?'open':''}><summary style="cursor:pointer;font-weight:700">📋 Permission check <span class="ai-sub" style="font-weight:400">${anyMatch? (roster.length-unsignedKids.length)+' of '+roster.length+' students signed' : covered+' of '+cov.list.length+' families have a slip'}${famMissing.length?' · '+famMissing.length+' famil'+(famMissing.length>1?'ies':'y')+' to chase':''}${cantCheck.length?' · '+cantCheck.length+' can’t be checked':''}</span></summary>
-        ${anyMatch?`<p class="ux-note">${nMatched} of ${items.length} slips are matched to students. ${items.length-nMatched?`<button class="btn btn-o btn-sm" data-ftmatch="1">Match the other ${items.length-nMatched}</button>`:''}</p>`:`<p class="ux-note">Right now this only knows which <b>families</b> sent a slip (matched by phone), not which child. <button class="btn btn-p btn-sm" data-ftmatch="1">🔗 Match slips to students</button> to unlock exact names and photos.</p>`}
-        ${famMissing.length?`<div style="margin-top:6px">${famMissing.map(f=>{ const kids=anyMatch? f.kids.filter(k=>!signedStu.has(k.id)) : f.kids; return `<div class="wrow" style="cursor:default;gap:10px;flex-wrap:wrap"><span class="t"><b dir="auto">${esc(f.label)}</b> family <span class="ai-sub">· ${kids.map(k=>esc(ptFirst(k))).join(', ')}</span></span>${reminded[f.key]?`<span class="tag tag-dim">reminded ${esc(fmtDate(reminded[f.key]))}</span>`:''}${tel(famPhone(f))}<button class="btn btn-o btn-sm" data-ftremind="${esc(f.key)}">💬 Remind</button></div>`; }).join('')}</div>`:'<p class="ux-note c-ok">Every family we can check has submitted a slip.</p>'}
-        ${cantCheck.length?`<p class="ux-note">${cantCheck.length} famil${cantCheck.length>1?'ies have':'y has'} no phone on file, so they can't be checked: ${cantCheck.map(f=>esc(f.label)).join(', ')}.</p>`:''}</details>
+      ${(()=>{ const tot=anyMatch?roster.length:cov.list.length, done=anyMatch?(roster.length-unsignedKids.length):covered, pct=tot?Math.round(done/tot*100):0, all=!famMissing.length;
+        const fp=p=>{ const dg=String(p||'').replace(/\D/g,'').slice(-10); return dg.length===10?`(${dg.slice(0,3)}) ${dg.slice(3,6)}-${dg.slice(6)}`:String(p||''); };
+        const col=all?'var(--ok)':pct>=70?'var(--gold)':'var(--bad)';
+        return `<details class="card no-print pc" style="margin-bottom:14px" ${(famMissing.length&&!isPast)?'open':''}><summary class="pc-sum">
+          <span class="pc-ring" style="--p:${pct};--c:${col}"><b>${pct}%</b></span>
+          <span class="pc-t"><b>Permission slips</b><span>${done} of ${tot} ${anyMatch?'students':'families'} signed${all?' · all clear ✓':''}</span></span>
+          <span class="pc-pills">${famMissing.length?`<span class="pcp bad">${famMissing.length} to chase</span>`:'<span class="pcp ok">✓ nothing to chase</span>'}${cantCheck.length?`<span class="pcp dim">${cantCheck.length} unchecked</span>`:''}</span><span class="pc-car">▾</span></summary>
+          <div class="pc-bar"><i style="width:${pct}%;background:${col}"></i></div>
+          ${anyMatch?`<p class="ux-note">${nMatched} of ${items.length} slips are matched to students. ${items.length-nMatched?`<button class="btn btn-o btn-sm" data-ftmatch="1">Match the other ${items.length-nMatched}</button>`:''}</p>`:`<div class="pc-hint"><span>Slips are matched by <b>family phone</b>, so this can't tell which child is missing.</span><button class="btn btn-p btn-sm" data-ftmatch="1">🔗 Match slips to students</button></div>`}
+          ${famMissing.length?`<div class="pc-list">${famMissing.map(f=>{ const kids=anyMatch? f.kids.filter(k=>!signedStu.has(k.id)) : f.kids; const ph=famPhone(f), dg=String(ph||'').replace(/[^\d+]/g,'');
+            return `<div class="pc-row"><span class="pc-av"><bdi dir="auto">${esc((f.label||'?').trim().slice(0,1))}</bdi></span>
+              <span class="pc-n"><b><bdi dir="auto">${esc(f.label)}</bdi> family</b><span class="pc-k">${kids.map(k=>`<em><bdi dir="auto">${esc(ptFirst(k))}</bdi></em>`).join('')}</span></span>
+              ${reminded[f.key]?`<span class="pcp dim" title="Last reminder">reminded ${esc(fmtDate(reminded[f.key]))}</span>`:''}
+              ${dg.length>=7?`<a class="pc-ph" href="tel:${esc(dg)}">📞 ${esc(fp(ph))}</a>`:''}
+              <button class="btn btn-p btn-sm" data-ftremind="${esc(f.key)}">💬 Remind</button></div>`; }).join('')}</div>`:'<div class="pc-ok">🎉 Every family we can check has submitted a slip.</div>'}
+          ${cantCheck.length?`<div class="pc-cant"><b>No phone on file</b> — can't be checked:<span class="pc-k">${cantCheck.map(f=>`<em><bdi dir="auto">${esc(f.label)}</bdi></em>`).join('')}</span></div>`:''}</details>`; })()}
       <details class="card no-print" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">📝 Incident &amp; trip notes <span class="ai-sub" style="font-weight:400">${(lg.notes||[]).length} note${(lg.notes||[]).length===1?'':'s'}</span></summary>
         <div style="display:flex;gap:8px;margin-top:8px"><input id="ftNote" placeholder="e.g. 11:20 — Ali scraped his knee, first aid given" style="flex:1"><button class="btn btn-o btn-sm" id="ftNoteAdd">Add</button></div>
         ${(lg.notes||[]).map(n=>`<div class="wrow" style="cursor:default"><span class="ai-sub" style="min-width:64px">${esc(n.t)}</span><span class="t">${esc(n.x)}</span></div>`).join('')}</details>`;
@@ -17258,7 +17287,7 @@ function navMark(nv){ const cur=nv||navId(), h=location.hash; $$('#nav a').forEa
 function footStatus(){ const f=$('#footbk'); if(!f) return; const bk=DB.data.settings.lastBackupAt, dd=bk?Math.floor((Date.now()-new Date(bk))/864e5):null; const col=dd==null||dd>14?'#e86a5e':dd>7?'#e8b84f':'#7fcf9c'; f.innerHTML=`<a href="#/settings" style="color:${col};text-decoration:none">● Backup ${dd==null?'never':dd===0?'today':dd+'d ago'}</a>`; }
 function buildNav(){
   $('#nav').innerHTML = Layout.navMarkup();
-  $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); Router.go('#/'+a.dataset.mod); }));
+  $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); if(a.dataset.mod==='classmode'){ $('#sidebar').classList.remove('open'); Teacher.openClassMode(); return; } Router.go('#/'+a.dataset.mod); }));
   navMark(); footStatus();
   Layout.wireNav();
 }
@@ -17279,6 +17308,7 @@ function bootApp(){
   $('#layBtn').onclick=()=>Layout.toggle();
   $('#logoutBtn').onclick=()=>confirmBox('Log out of AMAN Central?', doLogout);
   $('#hambBtn').onclick=()=>$('#sidebar').classList.toggle('open');
+  const tbc=$('#tbClass'); if(tbc) tbc.onclick=e=>{ e.preventDefault(); e.stopPropagation(); Teacher.openClassMode(); };
   const tbm=$('#tbMore'); if(tbm) tbm.onclick=e=>{ e.preventDefault(); e.stopPropagation(); $('#sidebar').classList.toggle('open'); };
   document.addEventListener('click', e=>{ if(window.innerWidth<=900 && !e.target.closest('#sidebar') && !e.target.closest('#hambBtn')) $('#sidebar').classList.remove('open'); });
   Router.render();
