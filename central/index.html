@@ -298,6 +298,13 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .td-b.strong{border-color:color-mix(in srgb,var(--ok,#2e7d4f) 55%,var(--line));color:var(--ok,#2e7d4f)}.td-b.shaky{border-color:color-mix(in srgb,var(--gold,#d9ac54) 70%,var(--line));color:var(--gold-text,#8a6520)}.td-b.forgot{border-color:color-mix(in srgb,var(--bad,#b3392f) 55%,var(--line));color:var(--bad,#b3392f)}
 .td-b:active{transform:scale(.94)}.td-wk{margin:0;flex:1 1 200px}
 @media(max-width:640px){.td-grid{grid-template-columns:1fr}.td-b{min-width:64px;padding:10px 8px}}
+.ptl-h{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap;margin:2px 2px 10px}.ptl-h h2{font-family:var(--f-display);font-size:22px;margin:0}.ptl-h span{font-size:12.5px;color:var(--ink3)}
+.ptc{padding:10px 14px 12px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}.ptc-r{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}.ptc-r .sp{flex:1}
+.ptc-nav{display:inline-flex;align-items:center;gap:2px;background:var(--surface2);border-radius:999px;padding:2px}.ptc-nav b{min-width:54px;text-align:center;font-family:var(--f-mono);font-size:14px}.ptc-nav b.mo{font-family:var(--f-display);min-width:88px;font-size:15px}.ptc-nav .btn{padding:3px 10px;font-size:16px;border-radius:999px}
+.ptc-d{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.ptc-d::-webkit-scrollbar{display:none}.ptc-d .chip{flex-shrink:0}
+.ptc-w{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);padding-top:8px;border-top:1px dashed var(--line)}.ptc-w .sp{flex:1}
+.ptc-tot{margin:0 0 12px}.ptc-tot>summary{cursor:pointer;font-weight:700;color:var(--green);font-size:12.5px;padding:2px 4px;list-style:none}.ptc-tot>summary::-webkit-details-marker{display:none}.ptc-tot>summary:after{content:' ▾';color:var(--ink3)}.ptc-tot:not([open])>summary:after{content:' ▸'}
+.ptf{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin:0 0 14px}.ptf-l{display:inline-flex;gap:6px;flex-wrap:wrap}.ptf input{flex:1;min-width:140px;max-width:240px}.ptf .seg{margin-left:auto}
 .pc{padding:0;overflow:hidden}.pc-sum{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 16px;flex-wrap:wrap}.pc-sum::-webkit-details-marker{display:none}
 .pc-ring{width:50px;height:50px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex-shrink:0;position:relative}.pc-ring:before{content:'';position:absolute;inset:5px;border-radius:50%;background:var(--surface)}.pc-ring b{position:relative;font-size:12px}
 .pc-t{display:flex;flex-direction:column;flex:1;min-width:160px}.pc-t b{font-family:var(--f-display);font-size:17px}.pc-t span{font-size:12.5px;color:var(--ink3)}
@@ -418,6 +425,17 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .pt-sec{margin:8px 0}.pt-sh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;margin-bottom:5px}.pt-cells{display:flex;flex-wrap:wrap;gap:5px}
 .pt-big{font-size:clamp(24px,5vw,32px);line-height:2.05;text-align:center}.pt-w{display:inline-block;padding:0 3px;border-radius:6px}.pt-w.rh{box-shadow:inset 0 -7px 0 -1px color-mix(in srgb,var(--gold) 45%,transparent)}
 .pt-next .pt-big{background:var(--surface2);border-radius:12px;padding:6px 10px}
+.pt-huge{font-size:clamp(30px,6.2vw,46px);line-height:2.1;text-align:center;background:linear-gradient(180deg,var(--surface2),color-mix(in srgb,var(--gold) 9%,var(--surface)));border-radius:16px;padding:12px 14px;margin-top:4px}.pt-huge .pt-w.rh{border-bottom:3px solid var(--gold);border-radius:3px}
+.pt-today{border-top:4px solid var(--gold)}.pt-trow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);flex-wrap:wrap}.pt-trow:last-child{border-bottom:0}.pt-trow.done{opacity:.55}
+.pt-tk{font:800 10.5px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;min-width:58px;text-align:center}.pt-tk.learn{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}.pt-tk.rev{background:color-mix(in srgb,var(--gold) 24%,transparent);color:#8a6200}
+.pt-tt{flex:1;min-width:120px;display:flex;flex-direction:column}.pt-tt small{color:var(--ink3);font-size:12px}.pt-tt small.pt-ar{font-size:17px;color:var(--ink2);text-align:right}.pt-tb{display:flex;gap:5px}
+.pt-r{min-width:38px;border:1px solid var(--line2);background:var(--surface)}.pt-r.s:hover{background:color-mix(in srgb,var(--gold) 30%,var(--surface))}.pt-r.f:hover{background:color-mix(in srgb,var(--bad) 18%,var(--surface))}
+.pt-finish{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px}.pt-finish>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.pt-finish b{font-family:var(--f-display);font-size:20px}.pt-finish span{font-size:11.5px;color:var(--ink3)}
+@media(max-width:640px){.pt-finish{grid-template-columns:repeat(2,1fr)}}
+.pt-band{background:color-mix(in srgb,var(--pc) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--pc) 24%,var(--line));border-top:4px solid var(--pc);border-radius:14px;padding:10px 12px 12px;margin:12px 0}.pt-bh{display:flex;align-items:center;gap:10px;color:var(--pc);margin-bottom:8px;flex-wrap:wrap}.pt-bh .pt-ar{font-size:19px}.pt-bh b{flex:1;min-width:140px}
+.pt-flow{display:flex;flex-wrap:wrap;gap:12px 22px}.pt-sg small{display:block;font-size:11.5px;color:var(--ink2);margin-bottom:4px}.pt-sg small em{font-style:normal;font-family:var(--f-mono);color:var(--ink3)}.pt-cells2{display:flex;gap:5px;flex-wrap:wrap}.pt-cells2 .pt-c{width:30px;height:30px;font-size:11px}
+.pt-rec{display:flex;flex-direction:column;gap:8px}.pt-rrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 11px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}.pt-rrow.sm{padding:6px 11px}.pt-rbt{display:flex;gap:6px;flex-wrap:wrap}
+.pt-rlive{align-items:center;gap:12px;padding:10px 12px;border-radius:11px;background:color-mix(in srgb,var(--bad) 10%,var(--surface))}.pt-rlive i{width:12px;height:12px;border-radius:50%;background:var(--bad);animation:ptpulse 1s infinite}@keyframes ptpulse{50%{opacity:.25}}.pt-rlive b{font-family:var(--f-mono);flex:1}
 .pt-modal{max-height:92vh;overflow:auto}.pt-mh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
 .pt-recap{background:color-mix(in srgb,var(--ok) 10%,var(--surface));border-radius:10px;padding:8px 11px;margin-bottom:10px;font-size:12px}.pt-recap small{font:700 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ok)}.pt-recap .pt-ar{font-size:17px;margin-top:2px}
 .pt-tabs{display:flex;gap:6px;margin-bottom:10px}.pt-note{font-size:11.5px;color:var(--gold);text-align:center;margin:2px 0 10px}
@@ -1184,7 +1202,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 67<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 69<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -4353,6 +4371,7 @@ const HUBS={
     extra:'<button class="btn btn-ghost btn-sm" data-go="#/teacher/lessons">Lesson plans ↗</button><button class="btn btn-ghost btn-sm" data-go="#/teacher/curriculum">Curriculum ↗</button>'}
 };
 HUBS.adm={name:'Admissions',ico:'📥',tabs:[['aman','🏫 AMAN','#/admissions'],['amaanah','🌙 Amaanah','#/amaanah-admissions']],extra:''};
+HUBS.intel={name:'Analytics & AI',ico:'📈',tabs:[['analytics','📈 Analytics','#/analytics'],['ai','✨ AI Assistant','#/ai']],extra:''};
 HUBS.fin={name:'Admin & Tuition',ico:'🏛️',tabs:[['admin','🏛 Administration','#/admin'],['tuition','💰 Tuition','#/tuition']],extra:''};
 function navId(){ const {id,param}=Router.parse(); if(id==='students'&&param==='progress') return 'hifz'; if(id==='students'&&param==='gradebook') return 'islamic'; const m=Registry.get(id); return (m&&m.nav)||id; }
 function hubBadge(key){ try{ if(key==='today') return TD.needCount(); if(key==='goals') return GA.alerts().length; if(key==='hearing') return HP.build().queue.length; if(key==='hear') return RP.stu().reduce((a,s)=>a+RP.ready(s).length,0); if(key==='poem') return PT.stu().reduce((a,s)=>a+PT.sum(s).due,0); }catch(e){} return 0; }
@@ -4362,6 +4381,7 @@ function hubShell(v,hub,key){
   const tb=([k,l,h])=>{ const n=hubBadge(k); return `<button class="hub-tab ${k===key?'on':''}" data-go="${h}">${l}${n?`<i>${n}</i>`:''}</button>`; };
   const restN=rest.reduce((a,t)=>a+(+hubBadge(t[0])||0),0);
   v.innerHTML=`<div class="hubbar no-print"><span class="hub-t">${H.ico} <span class="hn">${H.name}</span></span><div class="hub-tabs">${pri.map(tb).join('')}</div>${rest.length?`<details class="hub-more"><summary>More ▾${restN?`<span style="background:var(--gold);color:#20261f;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800">${restN}</span>`:''}</summary><div class="pop">${rest.map(tb).join('')}</div></details>`:''}<span class="hub-x">${H.extra||''}</span></div><div class="hub-body"></div>`;
+  requestAnimationFrame(()=>{ const on=v.querySelector('.hub-tabs .hub-tab.on'); if(on){ const bx=on.parentElement; bx.scrollLeft=Math.max(0,on.offsetLeft-bx.offsetLeft-12); } });
   const hm=v.querySelector('.hub-more'); if(hm){ const off=e=>{ if(!document.body.contains(hm)){ document.removeEventListener('click',off); return; } if(!hm.contains(e.target)) hm.open=false; }; document.addEventListener('click',off); }
   wireCommon(v);
   return v.querySelector('.hub-body');
@@ -4471,7 +4491,7 @@ const Layout = {
     let html='';
     const B=navBadges(), nb=n=>n>0?`<span class="nb">${n>99?'99+':n}</span>`:'';
     const wk=[0,6].includes(new Date().getDay());
-    const cd=`<div class="grp">⚡ Class day</div>`+[['classmode','Class Mode','check',B.att?'•':''],['students/progress','Progress tracker','trend',''],['teacher','Treat goals','donut',B.rew],['students/fieldtrip','Field trip','bus',B.trip]].map(([h,t,ic,b])=>`<a href="#/${h}" data-mod="${h}" class="sc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[ic]}</svg>${t}${b?(b==='•'?'<span class="nb nd" title="Attendance not taken yet today"></span>':nb(b)):''}</a>`).join('');
+    const cd=`<div class="grp">⚡ Class day</div>`+[['classmode','Class Mode','check',B.att?'•':''],['students/progress','Progress tracker','trend',''],['students/cleaning','Cleaning','broom',0],['students/fieldtrip','Field trip','bus',B.trip]].map(([h,t,ic,b])=>`<a href="#/${h}" data-mod="${h}" class="sc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[ic]}</svg>${t}${b?(b==='•'?'<span class="nb nd" title="Attendance not taken yet today"></span>':nb(b)):''}</a>`).join('');
     if(wk) html+=cd;
     gnames.forEach(g=>{
       const mods=groups[g].filter(m=>m.id!=='library').slice().sort((a,b)=>Layout.rank(u.order,a.id)-Layout.rank(u.order,b.id));
@@ -10482,53 +10502,37 @@ const Progress = {
     const wk = this._weekendView ? ptWeekendPair(session) : null;
     const closed = wk ? (closureFor(wk.sat) && closureFor(wk.sun) ? closureFor(wk.sat) : null) : closureFor(session);
 
-    v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" data-go="#/students">← Students</button>
-     <div style="margin-top:12px">${moduleHeroHTML('Student Progress', 'Progress Tracker', "Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly.", '📊')}</div>
-     <div class="filters no-print">
-       <button class="btn btn-o btn-sm" id="ptClosures">📅 Manage closures</button>
-       <button class="btn ${this._pctHidden?'btn-p':'btn-o'} btn-sm" id="ptPctHide">${this._pctHidden?PT_ICO_EYE+' Percentages hidden':PT_ICO_EYE_OFF+' Hide percentages for screenshot'}</button>
-       <button class="btn ${this._weekendView?'btn-p':'btn-o'} btn-sm" id="ptWeekendView">${this._weekendView?'📅 Single day':'🗓️ Show Sat + Sun'}</button>
-       ${wk?`<button class="btn btn-p btn-sm" id="ptWeekendPrint">👩‍🏫 Teacher sheet</button><button class="btn btn-p btn-sm" id="ptParentSheet">👪 Parent sheet</button><button class="btn btn-o btn-sm" id="ptFamCards">👨‍👩‍👧 Family cards</button>`:''}
-     </div>
-     ${this._pctHidden?`<p class="page-sub" style="margin-top:-6px">Percentages are hidden class-wide. Tap Reveal on one student at a time before you screenshot, then Hide it again for the next.</p>`:''}
-     ${wk?`<p class="page-sub" style="margin-top:-6px">Showing the weekend of ${fmtDate(wk.sat)} – ${fmtDate(wk.sun)} — both days on one card, good for a single screenshot.</p>`:''}
-
-     <div class="filters no-print" style="align-items:center;gap:10px">
-       <button class="btn btn-ghost btn-sm" id="ptYearPrev" aria-label="Previous year">←</button>
-       <b style="font-family:var(--f-mono);font-size:15px;min-width:48px;text-align:center">${year}</b>
-       <button class="btn btn-ghost btn-sm" id="ptYearNext" aria-label="Next year">→</button>
-       <span style="width:1px;height:20px;background:var(--line2)"></span>
-       <button class="btn btn-ghost btn-sm" id="ptMonthPrev" aria-label="Previous month">←</button>
-       <b style="font-family:var(--f-display);font-size:15px;min-width:90px;text-align:center">${month}</b>
-       <button class="btn btn-ghost btn-sm" id="ptMonthNext" aria-label="Next month">→</button>
-     </div>
-     <div class="filters no-print" style="overflow-x:auto;flex-wrap:nowrap;margin-top:-6px">
-       ${ptWeekendDates(year)[month].map(md=>{ const dk=ptFullDate(year,md); const c=closureFor(dk);
-         return `<button class="chip ${dk===session?'on':''}" style="${c?'opacity:.6;text-decoration:line-through':''}" data-ptsession="${md}">${c?'⛔ ':''}${ptChip(year,md)}</button>`; }).join('')}
+    v.innerHTML = `<div class="ptl-h no-print"><h2>📊 Progress Tracker</h2><span>Attendance · Qur'an · Homework · Classwork — one tap per cell, saves instantly</span></div>
+     <div class="card ptc no-print">
+       <div class="ptc-r">
+         <span class="ptc-nav"><button class="btn btn-ghost btn-sm" id="ptYearPrev" aria-label="Previous year">‹</button><b>${year}</b><button class="btn btn-ghost btn-sm" id="ptYearNext" aria-label="Next year">›</button></span>
+         <span class="ptc-nav"><button class="btn btn-ghost btn-sm" id="ptMonthPrev" aria-label="Previous month">‹</button><b class="mo">${month}</b><button class="btn btn-ghost btn-sm" id="ptMonthNext" aria-label="Next month">›</button></span>
+         <span class="sp"></span>
+         <button class="btn ${this._weekendView?'btn-p':'btn-o'} btn-sm" id="ptWeekendView" title="Show Saturday and Sunday together">${this._weekendView?'📅 Single day':'🗓️ Sat + Sun'}</button>
+         <details class="st-more"><summary class="btn btn-o btn-sm" aria-label="More options">⋯</summary><div class="pop">
+           <button class="btn btn-sm" id="ptClosures">📅 Manage closures</button>
+           <button class="btn btn-sm" id="ptPctHide">${this._pctHidden?PT_ICO_EYE+' Percentages hidden — tap to show':PT_ICO_EYE_OFF+' Hide percentages (screenshots)'}</button></div></details>
+       </div>
+       <div class="ptc-d">${ptWeekendDates(year)[month].map(md=>{ const dk=ptFullDate(year,md); const c=closureFor(dk);
+         return `<button class="chip ${dk===session?'on':''}" style="${c?'opacity:.6;text-decoration:line-through':''}" data-ptsession="${md}">${c?'⛔ ':''}${ptChip(year,md)}</button>`; }).join('')}</div>
+       ${wk?`<div class="ptc-w"><span>Weekend of <b>${fmtDate(wk.sat)} – ${fmtDate(wk.sun)}</b> · both days on one card</span><span class="sp"></span><button class="btn btn-p btn-sm" id="ptWeekendPrint">👩‍🏫 Teacher sheet</button><button class="btn btn-p btn-sm" id="ptParentSheet">👪 Parent sheet</button><button class="btn btn-o btn-sm" id="ptFamCards">👨‍👩‍👧 Family cards</button></div>`:''}
+       ${this._pctHidden?`<div class="ptc-w"><span>🙈 Percentages hidden class-wide — tap Reveal on one student at a time before you screenshot.</span></div>`:''}
      </div>
 
      ${closed ? `
      <div class="notice warn" style="margin-bottom:14px">
        <span>⛔</span><span><b>School closed — ${esc(closed.reason)}</b>${closed.note?` · ${esc(closed.note)}`:''}<br><span style="font-size:12px;color:var(--ink2)">${wk?`Both ${fmtDate(wk.sat)} and ${fmtDate(wk.sun)} aren't`:`${fmtDate(session)} isn't`} counted as a session. Pick a different date above to take attendance.</span></span>
      </div>` : `
-     <details class="card" style="margin-bottom:14px" id="ptLiveCounterD" ${this._liveCounterOpen?'open':''}>
-       <summary style="cursor:pointer;font-weight:700;color:var(--green);font-size:13px">📊 Class totals — ${wk?`${fmtDate(wk.sat)} – ${fmtDate(wk.sun)}`:fmtDate(session)}</summary>
+     <details class="ptc-tot" id="ptLiveCounterD" ${this._liveCounterOpen?'open':''}>
+       <summary>📊 Class totals — ${wk?`${fmtDate(wk.sat)} – ${fmtDate(wk.sun)}`:fmtDate(session)}</summary>
        <div id="ptLiveCounter" style="background:var(--green);color:#fff;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 16px;margin-top:10px;border-radius:10px">${wk ? this._liveCounterHTMLWeekend(all, wk.sat, wk.sun) : this._liveCounterHTML(all, session, sat)}</div>
      </details>
 
-     <div class="filters no-print">
-       <button class="chip ${!lvl?'on':''}" data-ptlvl="">All</button>
-       ${LEVELS.map(L=>`<button class="chip ${lvl===L?'on':''}" data-ptlvl="${L}">${L}</button>`).join('')}
-       <input type="search" id="ptFind" placeholder="Find student…" value="${esc(find)}" dir="rtl" style="max-width:190px">
+     <div class="ptf no-print">
+       <span class="ptf-l"><button class="chip ${!lvl?'on':''}" data-ptlvl="">All</button>${LEVELS.map(L=>`<button class="chip ${lvl===L?'on':''}" data-ptlvl="${L}">${L}</button>`).join('')}</span>
+       <input type="search" id="ptFind" placeholder="Find student…" value="${esc(find)}" dir="auto">
+       <span class="seg" role="group" aria-label="Sort">${[['name','A–Z'],['age-asc','Youngest'],['age-desc','Oldest']].map(([k,t])=>`<button class="${this._ptSort===k?'on':''}" data-ptsort="${k}">${t}</button>`).join('')}</span>
      </div>
-     <details class="card" style="margin-bottom:14px" id="ptSortD" ${this._sortOpen?'open':''}>
-       <summary style="cursor:pointer;font-weight:700;color:var(--green);font-size:13px">Sort</summary>
-       <div class="filters" style="margin-top:10px">
-         <button class="chip ${this._ptSort==='name'?'on':''}" data-ptsort="name">Name</button>
-         <button class="chip ${this._ptSort==='age-asc'?'on':''}" data-ptsort="age-asc">Youngest first</button>
-         <button class="chip ${this._ptSort==='age-desc'?'on':''}" data-ptsort="age-desc">Oldest first</button>
-       </div>
-     </details>
 
      ${shown.length ? LEVELS.map(L=>{ const g=levelGroups[L]; if(!g.length) return '';
        return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
@@ -10578,7 +10582,6 @@ const Progress = {
     this._wireComboSom(v);
     this._wireComboSomWeights(v);
     const lcD=$('#ptLiveCounterD',v); if(lcD) lcD.ontoggle=()=>{ this._liveCounterOpen=lcD.open; };
-    const sortD=$('#ptSortD',v); if(sortD) sortD.ontoggle=()=>{ this._sortOpen=sortD.open; };
     // Opening a student IS a real navigation to a new screen, so this one
     // keeps Router.render() — scrolling to the top of the detail view on
     // open is the behavior you'd actually want here.
@@ -13280,19 +13283,107 @@ const POEM_PARTS = [
   {n:3,en:'The Unseen & the Prophet ﷺ',ar:'الْغَيْبُ وَالنَّبِيُّ ﷺ',a:26,b:38,c:'#a0522d'},
   {n:4,en:'The Messengers & the End',ar:'الرُّسُلُ وَالْخَاتِمَةُ',a:39,b:47,c:'#2f6f8f'}];
 const POEM_SECS = (()=>{ const o=[]; POEM.forEach(b=>{ if(b.section) o.push({a:b.n,b:47,en:b.sectionEn,ar:b.section}); }); o.forEach((s,i)=>{ s.b=i<o.length-1?o[i+1].a-1:47; }); return o; })();
+const POEM_ORIG = JSON.parse(JSON.stringify(POEM));
+DB.migrate=(f=>function(d){ const r=f.call(this,d); try{ PT.applyEdits(r); }catch(e){} return r; })(DB.migrate);
 const poemPart = n => POEM_PARTS.find(p=>n>=p.a&&n<=p.b);
 const poemSec = n => POEM_SECS.find(s=>n>=s.a&&n<=s.b);
 const PT = {
-  PACE_DEFAULT:2, sid:null,
+  PACE_DEFAULT:2, sid:null, LADDER:[1,3,7,21],
+  dueTxt(x){ return x.r==='forgot'?'needs re-learning':x.overdue>0?x.overdue+(x.overdue===1?' day':' days')+' overdue':'due today'; },
+  /* ---- recitation audio: blobs live in IndexedDB on this device (too big for the app data / backups) ---- */
+  audio:{
+    _db:null, cur:null,
+    db(){ return PT.audio._db||(PT.audio._db=new Promise((res,rej)=>{ const q=indexedDB.open('aman-audio',1); q.onupgradeneeded=()=>q.result.createObjectStore('clips',{keyPath:'id'}); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); })); },
+    async put(id,blob){ const d=await PT.audio.db(); return new Promise((res,rej)=>{ const t=d.transaction('clips','readwrite'); t.objectStore('clips').put({id,blob}); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); },
+    async get(id){ const d=await PT.audio.db(); return new Promise((res,rej)=>{ const r=d.transaction('clips').objectStore('clips').get(id); r.onsuccess=()=>res(r.result&&r.result.blob); r.onerror=()=>rej(r.error); }); },
+    async del(id){ const d=await PT.audio.db(); return new Promise(res=>{ const t=d.transaction('clips','readwrite'); t.objectStore('clips').delete(id); t.oncomplete=()=>res(); }); },
+    stop(){ if(PT.audio.cur){ try{ PT.audio.cur.pause(); }catch(e){} PT.audio.cur=null; } },
+    async play(id){ PT.audio.stop(); const b=await PT.audio.get(id); if(!b){ toast('That recording is not on this device'); return null; } const a=new Audio(URL.createObjectURL(b)); PT.audio.cur=a; a.play().catch(()=>toast('Tap again to play')); return new Promise(res=>{ a.onended=()=>res(true); a.onerror=()=>res(false); a.onpause=()=>res(false); }); },
+    async record(onTick){ if(!navigator.mediaDevices||!window.MediaRecorder) throw new Error('Recording is not supported in this browser'); const st=await navigator.mediaDevices.getUserMedia({audio:true}); const mr=new MediaRecorder(st), ch=[], t0=Date.now(); mr.ondataavailable=e=>{ if(e.data&&e.data.size) ch.push(e.data); };
+      const tick=setInterval(()=>{ const s=(Date.now()-t0)/1000; if(onTick) onTick(s); if(s>=90) ctl.stop(); },250);
+      const done=new Promise(res=>{ mr.onstop=()=>{ clearInterval(tick); st.getTracks().forEach(t=>t.stop()); res({blob:new Blob(ch,{type:mr.mimeType||'audio/webm'}),dur:Math.round((Date.now()-t0)/1000)}); }; });
+      mr.start(); const ctl={stop:()=>{ if(mr.state!=='inactive') mr.stop(); },done}; return ctl; }
+  },
+  /* ---- profile helpers ---- */
+  lastEv(s,n){ const b=s.poem&&s.poem.b&&s.poem.b[n]; return b?(b.chk?b.chk.date:b.date)||'':''; },
+  todayPlan(s){ const m=PT.sum(s), tdy=today(), mem=[]; for(let n=1;n<=47;n++) if(PT.isMem(s,n)) mem.push(n);
+    const doneT=mem.filter(n=>{ const b=s.poem.b[n]; return b.chk&&b.chk.date===tdy; });
+    const dueL=mem.filter(n=>PT.st(s,n).due).sort((a,b)=>PT.st(s,b).overdue-PT.st(s,a).overdue||a-b);
+    const rest=mem.filter(n=>!doneT.includes(n)&&!dueL.includes(n)&&!(s.poem.b[n].bulk&&!s.poem.b[n].chk)).sort((a,b)=>PT.lastEv(s,a).localeCompare(PT.lastEv(s,b))||a-b);
+    const pick=doneT.concat(dueL.concat(rest).slice(0,Math.max(0,3-doneT.length))).slice(0,3);
+    return {learn:m.next, learning:(()=>{ for(let n=1;n<=47;n++) if(PT.st(s,n).k==='learning') return n; return null; })(), revise:pick.map(n=>({n,done:doneT.includes(n),st:PT.st(s,n)}))}; },
+  pace(s){ const m=PT.sum(s), log=(s.poem&&s.poem.log)||[], cut=new Date(Date.now()-28*864e5).toISOString().slice(0,10);
+    const recent=log.filter(l=>l.date>=cut&&l.act==='mem').length; let per=recent/4, basis='your last 4 weeks'; if(!per){ per=+PT.cfg().perWeek||PT.PACE_DEFAULT; basis='class pace'; }
+    const rem=47-m.memN, wk=rem?Math.ceil(rem/per):0, eta=new Date(Date.now()+wk*7*864e5).toISOString().slice(0,10);
+    const wkKey=d=>{ const t=parseLocalDate(d); const dow=(t.getDay()+1)%7; return Math.floor((t.getTime()-dow*864e5)/6048e5); };
+    const act=new Set(log.map(l=>wkKey(l.date))); let cw=wkKey(today()), streak=0, gap=0; if(!act.has(cw)) cw--; for(let i=0;i<60;i++){ if(act.has(cw)){ streak++; gap=0; } else { gap++; if(gap>1) break; } cw--; }
+    return {rem,per,basis,wk,eta,streak}; },
+  share(s){ const m=PT.sum(s), nm=ptFirst(s), last=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.isMem(s,n)).pop();
+    const txt=`As-salāmu ʿalaykum,\n\nMā shāʾ Allāh — ${nm} has now memorized ${m.memN} of 47 bayts of Manẓūmat Taʿlīm aṣ-Ṣibyān fī at-Tawḥīd${last?' (most recently bayt '+last+')':''}.${m.due?' A few bayts are due for a quick recall check — a minute of recitation at home each day really helps.':' Please keep encouraging them to recite at home.'}\n\nJazākum Allāhu khayran,\nAl-Madrasatu An-Nuriyyah`;
+    const o=overlay(`<div class="modal" style="max-width:480px"><h3>👪 Share ${esc(nm)}'s progress</h3><textarea id="shT" rows="7" style="width:100%">${esc(txt)}</textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-p" id="shMsg">💬 Message family</button><button class="btn btn-o" id="shCp">📋 Copy text</button><button class="btn btn-o" id="shImg">🖼 Make image card</button></div><div class="mfoot"><button class="btn btn-ghost" id="shX">Close</button></div></div>`,true);
+    $('#shX',o).onclick=()=>o.remove(); $('#shCp',o).onclick=()=>{ if(navigator.clipboard) navigator.clipboard.writeText($('#shT',o).value).then(()=>toast('Copied')); };
+    $('#shMsg',o).onclick=()=>{ const t=$('#shT',o).value; o.remove(); FU.compose(s,t,{title:'Message to '+(AI2.stuParent(s)||'family')}); };
+    $('#shImg',o).onclick=()=>PT.shareImage(s); },
+  shareImage(s){ const m=PT.sum(s), nm=ptFirst(s), W=1080, H=1080, c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+    g.fillStyle='#f5eedf'; g.fillRect(0,0,W,H); g.fillStyle='#1a4a35'; g.fillRect(0,0,W,300); g.fillStyle='#d9ac54'; g.fillRect(0,300,W,8);
+    g.textAlign='center'; g.fillStyle='#e6c277'; g.font='700 30px Georgia,serif'; g.fillText('TAWḤĪD POEM · MEMORIZATION',W/2,90);
+    g.fillStyle='#fff'; g.font='700 84px Georgia,serif'; g.fillText(nm,W/2,200); g.font='400 34px Georgia,serif'; g.fillStyle='#cfe3d6'; g.fillText('Al-Madrasatu An-Nuriyyah',W/2,258);
+    const cx=W/2, cy=560, r=180; g.lineWidth=36; g.lineCap='round'; g.strokeStyle='#e4dcc8'; g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.stroke();
+    g.strokeStyle='#b8872a'; g.beginPath(); g.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(.001,m.memN/47)); g.stroke();
+    g.fillStyle='#1a4a35'; g.font='700 150px Georgia,serif'; g.fillText(String(m.memN),cx,cy+40); g.font='400 36px Georgia,serif'; g.fillStyle='#6b6b60'; g.fillText('of 47 bayts',cx,cy+96); g.font='italic 34px Georgia,serif'; g.fillText('memorized',cx,cy+r+78);
+    POEM_PARTS.forEach((p,i)=>{ let k=0; for(let n=p.a;n<=p.b;n++) if(PT.isMem(s,n)) k++; const tot=p.b-p.a+1, x=110+i*220, w=190; g.fillStyle='#e4dcc8'; g.fillRect(x,890,w,16); g.fillStyle=p.c; g.fillRect(x,890,w*k/tot,16); g.fillStyle='#6b6b60'; g.font='600 26px Georgia,serif'; g.fillText('Part '+p.n,x+w/2,940); g.fillText(k+'/'+tot,x+w/2,976); });
+    g.fillStyle='#1a4a35'; g.font='italic 34px Georgia,serif'; g.fillText('Mā shāʾ Allāh — keep going!',W/2,1042);
+    c.toBlob(async b=>{ const f=new File([b],nm+'-tawhid-poem.png',{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f],title:nm+' — Tawḥīd poem'}); return; }catch(e){ if(e&&e.name==='AbortError') return; } } const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=f.name; a.click(); toast('Image saved'); }); },
+  /* ---- corrections to the poem text (kept in settings so they travel with backups) ---- */
+  FIELDS:['sadr','ajuz','en','section','sectionEn'],
+  applyEdits(d){ const ed=((d||DB.data).settings||{}).poemEdits||{};
+    POEM.forEach((b,i)=>{ const o=POEM_ORIG[i], e=ed[b.n]||{}; PT.FIELDS.forEach(k=>{ if(o[k]!==undefined) b[k]=(e[k]!==undefined)?e[k]:o[k]; }); });
+    POEM_SECS.forEach(sc=>{ const b=POEM[sc.a-1]; if(b&&b.section){ sc.ar=b.section; sc.en=b.sectionEn; } }); },
+  editCount(){ return Object.keys(DB.data.settings.poemEdits||{}).length; },
+  edited(n){ return !!((DB.data.settings.poemEdits||{})[n]); },
+  saveEdit(n,vals){ const st=DB.data.settings; st.poemEdits=st.poemEdits||{}; const o=POEM_ORIG[n-1], diff={}; PT.FIELDS.forEach(k=>{ if(o[k]!==undefined&&vals[k]!==undefined&&vals[k]!==o[k]) diff[k]=vals[k]; });
+    if(Object.keys(diff).length) st.poemEdits[n]=diff; else delete st.poemEdits[n]; PT.applyEdits(); DB.log('Poem text corrected — bayt '+n); DB.save(); },
+  editor(n,done){
+    n=Math.max(1,Math.min(47,n)); const b=POEM[n-1], o0=POEM_ORIG[n-1], sec=!!o0.section, ed=PT.edited(n);
+    const ov=overlay(`<div class="modal" style="max-width:600px;width:96vw"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">✏️ Edit bayt ${n} <span style="color:var(--ink3);font-weight:400;font-size:14px">of 47</span></h3>${ed?'<span class="tag tag-gold">edited</span>':''}</div>
+      <p class="ai-sub" style="margin:4px 0 10px">Changes apply everywhere — the study screen, quizzes, journey map and certificates. Student progress is not affected.</p>
+      <div class="field"><label>First half (ṣadr)</label><textarea id="pe-sadr" class="pt-ar" dir="rtl" rows="2" style="font-size:22px;line-height:1.9;width:100%">${esc(b.sadr)}</textarea></div>
+      <div class="field"><label>Second half (ʿajuz)</label><textarea id="pe-ajuz" class="pt-ar" dir="rtl" rows="2" style="font-size:22px;line-height:1.9;width:100%">${esc(b.ajuz)}</textarea></div>
+      <div class="field"><label>English meaning</label><textarea id="pe-en" rows="3" style="width:100%">${esc(b.en)}</textarea></div>
+      ${sec?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="field"><label>Section title (Arabic)</label><input id="pe-sec" class="pt-ar" dir="rtl" value="${esc(b.section)}" style="font-size:18px"></div><div class="field"><label>Section title (English)</label><input id="pe-secen" value="${esc(b.sectionEn)}"></div></div>`:''}
+      ${ed?`<details style="margin:2px 0 8px"><summary class="ai-sub" style="cursor:pointer">Show the original text</summary><div class="pt-ar" style="font-size:19px;line-height:1.9;margin-top:6px;color:var(--ink2)">${esc(o0.sadr)}<br>${esc(o0.ajuz)}</div><div class="ai-sub">${esc(o0.en)}</div></details>`:''}
+      <div class="mfoot" style="justify-content:space-between;flex-wrap:wrap"><span style="display:flex;gap:6px">${ed?'<button class="btn btn-ghost btn-sm" id="pe-reset">↺ Restore original</button>':''}<button class="btn btn-o btn-sm" id="pe-prev" ${n<=1?'disabled':''}>← Prev</button><button class="btn btn-o btn-sm" id="pe-next" ${n>=47?'disabled':''}>Next →</button></span><span style="display:flex;gap:6px"><button class="btn btn-o" id="pe-x">Cancel</button><button class="btn btn-p" id="pe-s">Save</button></span></div></div>`,true);
+    const read=()=>{ const v={sadr:$('#pe-sadr',ov).value.trim(),ajuz:$('#pe-ajuz',ov).value.trim(),en:$('#pe-en',ov).value.trim()}; if(sec){ v.section=$('#pe-sec',ov).value.trim(); v.sectionEn=$('#pe-secen',ov).value.trim(); } return v; };
+    const dirty=()=>{ const v=read(); return PT.FIELDS.some(k=>v[k]!==undefined&&v[k]!==b[k]); };
+    const commit=()=>{ const v=read(); if(!v.sadr||!v.ajuz){ toast('Both halves of the bayt need text'); return false; } PT.saveEdit(n,v); return true; };
+    const after=()=>{ if(done) done(); else Router.render(); if(typeof QJ!=='undefined'&&QJ.root) try{ QJ.refresh(); }catch(e){} };
+    $('#pe-x',ov).onclick=()=>ov.remove();
+    $('#pe-s',ov).onclick=()=>{ if(!commit()) return; ov.remove(); toast('Bayt '+n+' saved'); after(); };
+    const rs=$('#pe-reset',ov); if(rs) rs.onclick=()=>{ confirmBox('Restore the original text of bayt '+n+'?',()=>{ const st=DB.data.settings; if(st.poemEdits) delete st.poemEdits[n]; PT.applyEdits(); DB.log('Poem text restored — bayt '+n); DB.save(); ov.remove(); toast('Restored'); after(); }); };
+    const go=d=>{ if(dirty()){ if(!commit()) return; toast('Bayt '+n+' saved'); } ov.remove(); PT.editor(n+d,done); };
+    $('#pe-prev',ov).onclick=()=>go(-1); $('#pe-next',ov).onclick=()=>go(1);
+  },
+  editList(){
+    const ov=overlay(`<div class="modal" style="max-width:640px;width:96vw;max-height:88vh;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">✏️ Edit poem text</h3><button class="btn btn-ghost btn-sm" id="pl-x">Close</button></div>
+      <p class="ai-sub" style="margin:4px 0 8px">Tap any bayt to correct its Arabic, translation or section title. <span id="pl-cnt"></span></p>
+      <input type="search" id="pl-q" placeholder="Search Arabic or English…" dir="auto" style="width:100%;margin-bottom:8px"><div id="pl-list" style="overflow:auto;flex:1;display:flex;flex-direction:column;gap:4px"></div></div>`,true);
+    const norm=t=>String(t).replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,'').toLowerCase();
+    const draw=()=>{ const q=norm($('#pl-q',ov).value.trim()); const c=PT.editCount(); $('#pl-cnt',ov).textContent=c?c+' bayt'+(c>1?'s':'')+' edited so far.':'';
+      $('#pl-list',ov).innerHTML=POEM.filter(b=>!q||norm(b.sadr+' '+b.ajuz+' '+b.en+' '+(b.section||'')).includes(q)).map(b=>`<button class="wrow" data-pe="${b.n}" style="cursor:pointer;text-align:left;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px 10px"><b style="min-width:26px;font-family:var(--f-mono)">${b.n}</b><span style="flex:1;min-width:0"><span class="pt-ar" style="display:block;font-size:17px;line-height:1.7">${esc(b.sadr)} &nbsp; ${esc(b.ajuz)}</span><span class="ai-sub" style="display:block;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.en)}</span></span>${PT.edited(b.n)?'<span class="tag tag-gold">edited</span>':''}</button>`).join('')||'<div class="ai-sub">No match.</div>';
+      $$('[data-pe]',ov).forEach(x=>x.onclick=()=>{ ov.remove(); PT.editor(+x.dataset.pe,()=>{ Router.render(); PT.editList(); }); }); };
+    $('#pl-x',ov).onclick=()=>ov.remove(); $('#pl-q',ov).oninput=draw; draw(); },
   cfg(){ const st=DB.data.settings; return st.poemCfg=st.poemCfg||{start:'',perWeek:PT.PACE_DEFAULT,meaning:false}; },
   stu(){ return DB.data.students.filter(s=>s.active!==false&&s.level==='Level 3').sort((a,b)=>String(a.name).localeCompare(String(b.name))); },
   diff(a){ return Math.max(0,Math.round((new Date(today())-parseLocalDate(a))/864e5)); },
   st(s,n){
     const b=s.poem&&s.poem.b&&s.poem.b[n]; if(!b) return {k:'none'};
     if(b.st==='learning') return {k:'learning',date:b.date};
-    const ev=b.chk?b.chk.date:b.date, days=PT.diff(ev), iv=b.chk?(b.chk.r==='strong'?21:b.chk.r==='shaky'?7:0):7;
+    const ev=b.chk?b.chk.date:b.date, days=PT.diff(ev);
+    // Spaced ladder: 1 → 3 → 7 → 21 days. Each strong check climbs a step, shaky steps back, forgot starts over (due right away).
+    const iv=!b.chk?PT.LADDER[0]:b.chk.r==='forgot'?0:PT.LADDER[Math.max(0,Math.min(3,b.chk.lvl!=null?b.chk.lvl:(b.chk.r==='strong'?3:2)))];
     const due=!(b.bulk&&!b.chk)&&days>=iv; // bulk-marked bayts wait for a first real recall check instead of flooding the due list
-    return {k: !due&&b.chk&&b.chk.r==='strong'?'solid':due?'due':'mem', date:b.date, days, due, overdue:Math.max(0,days-iv), r:b.chk&&b.chk.r};
+    return {k: !due&&b.chk&&b.chk.r==='strong'?'solid':due?'due':'mem', date:b.date, days, due, overdue:Math.max(0,days-iv), left:Math.max(0,iv-days), iv, r:b.chk&&b.chk.r};
   },
   isMem(s,n){ const k=PT.st(s,n).k; return k==='mem'||k==='solid'||k==='due'; },
   sum(s){
@@ -13309,7 +13400,7 @@ const PT = {
     PT.log(s,n,st); DB.log((s.preferredName||s.name)+' — Tawḥīd poem bayt '+n+' → '+(st==='mem'?'memorized':st)); DB.save();
     if(st==='mem') PT.celebrateIf(s,n,before);
   },
-  check(s,n,r){ const b=s.poem&&s.poem.b&&s.poem.b[n]; if(!b||b.st!=='mem') return; b.chk={date:today(),r}; PT.log(s,n,'check-'+r); DB.log((s.preferredName||s.name)+' — poem bayt '+n+' recall: '+r); DB.save(); },
+  check(s,n,r){ const b=s.poem&&s.poem.b&&s.poem.b[n]; if(!b||b.st!=='mem') return; const pl=b.chk&&b.chk.lvl!=null?b.chk.lvl:(b.chk?(b.chk.r==='strong'?3:b.chk.r==='shaky'?2:0):0); b.chk={date:today(),r,lvl:r==='strong'?Math.min(3,pl+1):r==='shaky'?Math.max(0,pl-1):0}; PT.log(s,n,'check-'+r); DB.log((s.preferredName||s.name)+' — poem bayt '+n+' recall: '+r); DB.save(); },
   setThrough(s,upto){ s.poem=s.poem||{b:{}}; s.poem.b=s.poem.b||{}; for(let n=1;n<=upto;n++) if(!PT.isMem(s,n)) s.poem.b[n]={st:'mem',date:today(),bulk:true}; PT.log(s,upto,'through'); DB.log((s.preferredName||s.name)+' — poem memorized through bayt '+upto); DB.save(); },
   celebrateIf(s,n,before){
     const nm=s.preferredName||s.name, sec=poemSec(n), part=poemPart(n);
@@ -13342,7 +13433,7 @@ const PT = {
     v.innerHTML=`<div class="page-wm"><div class="pt-hero"><div style="min-width:0;flex:1"><div class="eyebrow" style="color:#d9b765">Level 3 · Memorization</div><h2 class="page-title" style="color:#fff;margin:2px 0 4px">Tawḥīd Poem Tracker</h2>
        <div class="pt-ar pt-title">مَنْظُومَةُ تَعْلِيمِ الصِّبْيَانِ التَّوْحِيدِ</div>
        <p style="color:#cfd7e4;margin:6px 0 0">${rows.length} students · class average ${avg.toFixed(1)} of 47 bayts${done?' · '+done+' finished 🌟':''}${dueN?' · '+dueN+' recall checks due':''}</p></div>
-       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start"><button class="btn btn-sm" style="background:#d9ac54;color:#20261f;border:0" data-qjourney="poem">🗺 Poem journey</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptPace">⚙ Class pace</button></div></div>
+       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start"><button class="btn btn-sm" style="background:#d9ac54;color:#20261f;border:0" data-qjourney="poem">🗺 Poem journey</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptPace">⚙ Class pace</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptEditText">✏️ Edit poem text${PT.editCount()?' ('+PT.editCount()+')':''}</button></div></div>
      ${exp!=null&&rows.length?`<div class="notice info" style="margin:0 0 14px">🎯 <div><b>Class pace: ${cf.perWeek} bayts a week</b> from ${esc(fmtDate(cf.start))} — by now that is bayt <b>${exp}</b>. <b>${ahead}</b> on or ahead · <b>${behind}</b> behind.${nextCommon?` Most are working on bayt ${nextCommon.n} next.`:''}</div></div>`
        :`<div class="notice info no-print" style="margin:0 0 14px">🎯 <div>Set a <b>class pace</b> (for example 2 bayts a week) and each student gets an on-pace / behind marker. <button class="btn btn-o btn-sm" id="ptPace2" style="margin-left:6px">Set pace</button></div></div>`}
      <div class="pt-parts">${POEM_PARTS.map((p,i)=>`<div class="pt-part" style="--pc:${p.c}"><span class="pt-ar">${p.ar}</span><b>Part ${p.n} · ${esc(p.en)}</b><small>Bayts ${p.a}–${p.b}</small><div class="bar"><i style="width:${partAvg[i].toFixed(0)}%;background:${p.c}"></i></div><small>${partAvg[i].toFixed(0)}% of the class</small></div>`).join('')}</div>
@@ -13352,6 +13443,7 @@ const PT = {
      ${dueN?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div class="wlist">${rows.filter(r=>r.m.due).map(r=>`<div class="wrow" style="cursor:default;flex-wrap:wrap;gap:6px 8px;align-items:center">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1;min-width:120px"><b>${esc(r.s.preferredName||r.s.name)}</b></span><span style="display:flex;gap:5px;flex-wrap:wrap">${[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(r.s,n).k==='due').slice(0,10).map(n=>`<button class="rev-chip due" data-ptb="${r.s.id}|${n}">Bayt ${n}<small>${PT.st(r.s,n).r==='forgot'?'forgot':PT.st(r.s,n).overdue+'d over'}</small></button>`).join('')}</span></div>`).join('')}</div></div>`:''}
     </div>`;
     wireCommon(v); PT.wire(v);
+    $('#ptEditText',v).onclick=()=>PT.editList();
     const pc=()=>PT.paceForm(); $('#ptPace',v)&&($('#ptPace',v).onclick=pc); $('#ptPace2',v)&&($('#ptPace2',v).onclick=pc);
   },
   paceForm(){
@@ -13368,20 +13460,32 @@ const PT = {
   /* ---------- student page ---------- */
   student(v,id){
     const s=DB.data.students.find(x=>x.id===id), m=PT.sum(s), nm=s.preferredName||s.name, exp=PT.expected();
-    const sectionsHTML=POEM_PARTS.map(p=>`<div class="pt-pgroup" style="--pc:${p.c}"><div class="pt-ph"><span class="pt-ar">${p.ar}</span><b>Part ${p.n} · ${esc(p.en)}</b></div>${POEM_SECS.filter(sc=>sc.a>=p.a&&sc.b<=p.b).map(sc=>{ let k=0; for(let n=sc.a;n<=sc.b;n++) if(PT.isMem(s,n)) k++; const tot=sc.b-sc.a+1;
-      return `<div class="pt-sec"><div class="pt-sh"><span><b>${esc(sc.en)}</b> <span class="pt-ar" style="font-size:15px;color:var(--ink3)">${sc.ar}</span></span><span class="tag ${k===tot?'tag-green':k?'tag-gold':'tag-dim'}">${k===tot?'🏅 ':''}${k}/${tot}</span></div><div class="pt-cells">${[...Array(tot)].map((_,i)=>PT.cell(s,sc.a+i)).join('')}</div></div>`; }).join('')}</div>`).join('');
+    const sectionsHTML=POEM_PARTS.map(p=>{ let pk=0; for(let n=p.a;n<=p.b;n++) if(PT.isMem(s,n)) pk++; const pt=p.b-p.a+1;
+      return `<div class="pt-band" style="--pc:${p.c}"><div class="pt-bh"><span class="pt-ar">${p.ar}</span><b>Part ${p.n} · ${esc(p.en)}</b><span class="tag ${pk===pt?'tag-green':pk?'tag-gold':'tag-dim'}">${pk===pt?'🏅 ':''}${pk}/${pt}</span></div>
+      <div class="pt-flow">${POEM_SECS.filter(sc=>sc.a>=p.a&&sc.b<=p.b).map(sc=>{ let k=0; for(let n=sc.a;n<=sc.b;n++) if(PT.isMem(s,n)) k++; const tot=sc.b-sc.a+1;
+        return `<div class="pt-sg"><small>${esc(sc.en)} <em>${k}/${tot}</em>${k===tot?' ✓':''}</small><div class="pt-cells2">${[...Array(tot)].map((_,i)=>PT.cell(s,sc.a+i)).join('')}</div></div>`; }).join('')}</div></div>`; }).join('');
     const nx=m.next, nb=nx?POEM[nx-1]:null, dueList=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(s,n).k==='due');
     const log=((s.poem&&s.poem.log)||[]).slice(0,8), quiz=((s.poem&&s.poem.quiz)||[]).slice(0,5);
     v.innerHTML=`<div class="page-wm"><button class="btn btn-ghost btn-sm no-print" data-go="#/poem">← Tawḥīd Poem</button>
       <div class="pt-shead">${PT.ring(m.pct,92,m.memN+'<small>/47</small>')}<div style="min-width:0;flex:1"><div class="eyebrow">Tawḥīd poem</div><h2 class="page-title" style="margin:0;text-align:left" dir="auto">${esc(s.name)}</h2>
         <div class="adm-tags" style="margin-top:6px"><span class="tag tag-green">✅ ${m.memN} memorized</span>${m.learn?`<span class="tag tag-gold">🌱 ${m.learn} learning</span>`:''}${m.solid?`<span class="tag tag-gold">⭐ ${m.solid} solid</span>`:''}${m.due?`<span class="tag tag-red">🔁 ${m.due} to re-check</span>`:''}${exp!=null?`<span class="tag ${m.contig>=exp?'tag-green':'tag-red'}">${m.contig>=exp?'on pace':'behind pace — expected bayt '+exp}</span>`:''}</div></div></div>
-      <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px"><button class="btn btn-p btn-sm" data-qjourney="poem">🗺 Journey map</button><button class="btn btn-o btn-sm" id="ptQuiz">🎯 Quiz me</button>${nx?`<button class="btn btn-o btn-sm" data-ptb="${s.id}|${nx}">▶ Study bayt ${nx}</button>`:''}<button class="btn btn-o btn-sm" id="ptThrough">⏩ Memorized through…</button>${m.memN===47?`<button class="btn btn-o btn-sm" id="ptCert">🏆 Certificate</button>`:''}<button class="btn btn-ghost btn-sm" data-go="#/students/${s.id}">Profile →</button></div>
-      ${nb?`<div class="card pt-next"><div class="whead"><h3>Next up — bayt ${nx}</h3><span style="font-size:12px;color:var(--ink3)">${esc(poemSec(nx).en)}</span></div><div class="pt-ar pt-big">${PT.rhyme(nb.sadr)}<br>${PT.rhyme(nb.ajuz)}</div>${PT.cfg().meaning?`<p style="font-size:13px;color:var(--ink2);font-style:italic;margin:8px 0 0">${esc(nb.en)}</p>`:''}</div>`:`<div class="card"><p style="margin:0;color:var(--ok)">🌟 The whole poem is memorized — mā shāʾ Allāh. Keep it fresh with recall checks.</p></div>`}
-      ${dueList.length?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap">${dueList.map(n=>`<button class="rev-chip due" data-ptb="${s.id}|${n}">Bayt ${n}<small>${PT.st(s,n).r==='forgot'?'forgot parts':PT.st(s,n).overdue+'d overdue'}</small></button>`).join('')}</div></div>`:''}
+      <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px"><button class="btn btn-p btn-sm" data-qjourney="poem">🗺 Journey map</button><button class="btn btn-o btn-sm" id="ptQuiz">🎯 Quiz me</button><button class="btn btn-o btn-sm" id="ptShare">👪 Share</button><button class="btn btn-ghost btn-sm" id="ptEditStu">✏️ Edit text</button>${nx?`<button class="btn btn-o btn-sm" data-ptb="${s.id}|${nx}">▶ Study bayt ${nx}</button>`:''}<button class="btn btn-o btn-sm" id="ptThrough">⏩ Memorized through…</button>${m.memN===47?`<button class="btn btn-o btn-sm" id="ptCert">🏆 Certificate</button>`:''}<button class="btn btn-ghost btn-sm" data-go="#/students/${s.id}">Profile →</button></div>
+      ${(()=>{ const tp=PT.todayPlan(s), pc=PT.pace(s), tdone=tp.revise.filter(x=>x.done).length;
+        const lrn=tp.learn?`<div class="pt-trow"><span class="pt-tk learn">Learn</span><span class="pt-tt"><b>Bayt ${tp.learn}</b><small class="pt-ar" dir="rtl">${esc(POEM[tp.learn-1].sadr)}</small></span><span class="pt-tb"><button class="btn btn-o btn-sm" data-ptb="${s.id}|${tp.learn}">▶ Study</button><button class="btn btn-p btn-sm" data-ptset="${s.id}|${tp.learn}|mem">✅ Got it</button></span></div>`:'';
+        const rev=tp.revise.map(x=>`<div class="pt-trow${x.done?' done':''}"><span class="pt-tk rev">Revise</span><span class="pt-tt"><b>Bayt ${x.n}</b><small>${x.done?'✓ checked today':x.st.due?PT.dueTxt(x.st):'last seen '+x.st.days+'d ago'}</small></span><span class="pt-tb">${x.done?'':`<button class="btn btn-sm pt-r s" data-ptchk="${s.id}|${x.n}|strong" title="Strong">⭐</button><button class="btn btn-sm pt-r m" data-ptchk="${s.id}|${x.n}|shaky" title="Shaky">〰</button><button class="btn btn-sm pt-r f" data-ptchk="${s.id}|${x.n}|forgot" title="Forgot">✗</button><button class="btn btn-ghost btn-sm" data-ptb="${s.id}|${x.n}">▶</button>`}</span></div>`).join('');
+        const body=lrn+rev; return `<div class="card pt-today no-print"><div class="whead"><h3>🎯 Today's plan</h3><span class="ai-sub">${tp.revise.length?tdone+' of '+tp.revise.length+' revisions done':'nothing to revise yet'}</span></div>${body||'<p class="ai-sub" style="margin:0">Start by learning the first bayt — it will show up here.</p>'}</div>
+        <div class="pt-finish"><div><b>${pc.rem?pc.rem:'🌟'}</b><span>${pc.rem?'bayts to go':'complete'}</span></div><div><b>${pc.rem?'~'+pc.wk:'—'}</b><span>${pc.rem?'weeks at '+(pc.per<10?pc.per.toFixed(1).replace('.0',''):Math.round(pc.per))+'/wk ('+pc.basis+')':''}</span></div><div><b>${pc.rem?esc(fmtDate(pc.eta)):'—'}</b><span>projected finish</span></div><div><b>${pc.streak?'🔥 '+pc.streak:'—'}</b><span>${pc.streak?'week'+(pc.streak>1?'s':'')+' in a row':'no streak yet'}</span></div></div>`; })()}
+      ${nb?`<div class="card pt-next"><div class="whead"><h3>Next up — bayt ${nx}</h3><span style="font-size:12px;color:var(--ink3)">${esc(poemSec(nx).en)}</span></div><div class="pt-ar pt-huge">${PT.rhyme(nb.sadr)}<br>${PT.rhyme(nb.ajuz)}</div>${PT.cfg().meaning?`<p style="font-size:13px;color:var(--ink2);font-style:italic;margin:10px 0 0;text-align:center">${esc(nb.en)}</p>`:`<div style="text-align:center;margin-top:8px"><button class="btn btn-ghost btn-sm" id="ptNxM">Show meaning</button><p id="ptNxMt" style="display:none;font-size:13px;color:var(--ink2);font-style:italic;margin:6px 0 0">${esc(nb.en)}</p></div>`}</div>`:`<div class="card"><p style="margin:0;color:var(--ok)">🌟 The whole poem is memorized — mā shāʾ Allāh. Keep it fresh with recall checks.</p></div>`}
+      ${dueList.length?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap">${dueList.map(n=>`<button class="rev-chip due" data-ptb="${s.id}|${n}">Bayt ${n}<small>${PT.dueTxt(PT.st(s,n))}</small></button>`).join('')}</div></div>`:''}
       <div class="card"><div class="whead"><h3>All 47 bayts</h3></div><div class="pt-legend"><span><i class="pt-c none mini"></i>not started</span><span><i class="pt-c learning mini"></i>learning</span><span><i class="pt-c mem mini"></i>memorized</span><span><i class="pt-c solid mini"></i>solid ⭐</span><span><i class="pt-c due mini"></i>check due</span></div>${sectionsHTML}</div>
       ${quiz.length||log.length?`<div class="card"><div class="whead"><h3>Recent activity</h3></div>${quiz.length?`<p style="font-size:12.5px;margin:0 0 6px">Quiz scores: ${quiz.map(q=>`<b>${q.score}/${q.of}</b> <span style="color:var(--ink3)">${esc(fmtDate(q.date))}</span>`).join(' · ')}</p>`:''}<div class="wlist">${log.map(l=>`<div class="wrow" style="cursor:default"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${esc(fmtDate(l.date))}</span><span class="t">${l.act==='through'?'Memorized through bayt '+l.n:'Bayt '+l.n+' → '+esc(({mem:'memorized',learning:'learning',none:'cleared','check-strong':'recall check: strong','check-shaky':'recall check: shaky','check-forgot':'recall check: forgot'})[l.act]||l.act)}</span></div>`).join('')}</div></div>`:''}</div>`;
     wireCommon(v); PT.wire(v);
     $('#ptQuiz',v).onclick=()=>PT.quiz(s.id);
+    const ptE=$('#ptEditStu',v); if(ptE) ptE.onclick=()=>PT.editList();
+    $('#ptShare',v).onclick=()=>PT.share(s);
+    const nxm=$('#ptNxM',v); if(nxm) nxm.onclick=()=>{ $('#ptNxMt',v).style.display='block'; nxm.remove(); };
+    $$('[data-ptchk]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n,r]=b.dataset.ptchk.split('|'); PT.check(s,+n,r); toast('Bayt '+n+' — '+({strong:'strong ⭐',shaky:'shaky',forgot:'needs re-learning'})[r]); Router.render(); });
+    $$('[data-ptset]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n,st]=b.dataset.ptset.split('|'); PT.setSt(s,+n,st); toast('Bayt '+n+' memorized ✅'); Router.render(); if(typeof QJ!=='undefined'&&QJ.root) try{ QJ.refresh(); }catch(x){} });
     $('#ptThrough',v).onclick=()=>PT.throughForm(s);
     const c=$('#ptCert',v); if(c) c.onclick=()=>PT.certificate(s);
   },
@@ -13397,10 +13501,11 @@ const PT = {
     const o=overlay(`<div class="modal pt-modal" id="pt-study" style="max-width:640px;width:96vw"><div class="pt-mh"><div><div class="eyebrow" style="margin:0">${esc(s.preferredName||s.name)} · Part ${part.n} · ${esc(sec.en)}</div><h3 style="margin:2px 0 0">Bayt ${n} <span style="color:var(--ink3);font-weight:400">of 47</span></h3></div>
         <span class="tag ${({none:'tag-dim',learning:'tag-gold',mem:'tag-green',solid:'tag-green',due:'tag-red'})[cur.k]}">${({none:'not started',learning:'🌱 learning',mem:'✅ memorized',solid:'⭐ solid',due:'🔁 check due'})[cur.k]}</span></div>
       ${prev&&!b.section?`<div class="pt-recap"><small>Just before — bayt ${n-1}</small><div class="pt-ar">${esc(prev.sadr)} &nbsp; ${esc(prev.ajuz)}</div></div>`:b.section?`<div class="pt-recap"><small>New topic</small><div class="pt-ar">${esc(b.section)}</div></div>`:''}
-      <div class="pt-tabs"><button class="chip on" data-pt="learn">📖 Learn</button><button class="chip" data-pt="drill">🧩 Drill</button><button class="chip" data-pt="cue">🎤 Recite</button></div>
+      <div class="pt-tabs"><button class="chip on" data-pt="learn">📖 Learn</button><button class="chip" data-pt="drill">🧩 Drill</button><button class="chip" data-pt="cue">🎤 Recite</button><button class="chip" data-pt="rec">🎙 Record</button></div>
       <div id="pt-pane"></div>
       <div class="pt-foot no-print"><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-o btn-sm" data-st="learning">🌱 Learning</button><button class="btn btn-p btn-sm" data-st="mem">✅ Memorized</button>${cur.k!=='none'?'<button class="btn btn-ghost btn-sm" data-st="none">Clear</button>':''}</div>
-        <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-nav="-1" ${n<=1?'disabled':''}>← Prev</button><button class="btn btn-o btn-sm" data-nav="1" ${n>=47?'disabled':''}>Next →</button><button class="btn btn-ghost btn-sm" data-x="c">Close</button></div></div></div>`,true);
+        <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-nav="-1" ${n<=1?'disabled':''}>← Prev</button><button class="btn btn-o btn-sm" data-nav="1" ${n>=47?'disabled':''}>Next →</button><button class="btn btn-ghost btn-sm" data-ed="1" title="Correct a mistake in this bayt">✏️ Edit</button><button class="btn btn-ghost btn-sm" data-x="c">Close</button></div></div></div>`,true);
+    $('[data-ed]',o).onclick=()=>{ o.remove(); PT.editor(n,()=>{ Router.render(); PT.study(sid,n,tab); }); };
     const pane=$('#pt-pane',o); let hidden=0, order=[];
     const words=()=>[...b.sadr.trim().split(/\s+/).map(t=>({t,h:1})),...b.ajuz.trim().split(/\s+/).map(t=>({t,h:2}))];
     const paneLearn=()=>{ pane.innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div><div class="pt-note">Listen for the matching ending on both lines — that is your ear's anchor.</div>
@@ -13419,9 +13524,28 @@ const PT = {
       pane.innerHTML=`<p style="font-size:13px;color:var(--ink2);margin:0 0 8px">Recite the whole bayt from memory, starting with:</p><div class="pt-ar pt-big" style="margin:6px 0">${esc(first)} …</div><div id="pt-rev"><button class="btn btn-o" id="pt-reveal">Reveal the bayt</button></div>`;
       $('#pt-reveal',pane).onclick=()=>{ $('#pt-rev',pane).innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div>${cur.k==='none'||cur.k==='learning'?'<p style="font-size:12.5px;color:var(--ink2);margin:8px 0 0">Mark it ✅ Memorized below once they can recite it cleanly.</p>':`<p style="font-size:12.5px;color:var(--ink2);margin:8px 0 6px">How was the recitation?</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-p btn-sm" data-r="strong">✅ Strong</button><button class="btn btn-o btn-sm" data-r="shaky">〰 Shaky</button><button class="btn btn-danger btn-sm" data-r="forgot">❗ Forgot parts</button></div>`}`;
         $$('[data-r]',pane).forEach(x=>x.onclick=()=>{ PT.check(s,n,x.dataset.r); toast('Bayt '+n+' — '+({strong:'strong ⭐',shaky:'shaky',forgot:'needs re-learning'})[x.dataset.r]); o.remove(); Router.render(); if(QJ.root) QJ.refresh(); }); }; };
-    const show=t=>{ $$('[data-pt]',o).forEach(x=>x.classList.toggle('on',x.dataset.pt===t)); (t==='drill'?paneDrill:t==='cue'?paneCue:paneLearn)(); };
+    const paneRec=()=>{ PT.audio.stop(); const st=DB.data.settings; st.poemModel=st.poemModel||{}; s.poem=s.poem||{b:{}}; s.poem.rec=s.poem.rec||{};
+      const mdl=st.poemModel[n], rc=s.poem.rec[n]||[], nm=esc(s.preferredName||s.name);
+      pane.innerHTML=`<div class="pt-rec"><div class="pt-rrow"><div><b>Your model recitation</b><div class="ai-sub">Record it once — every student hears the same example.</div></div><span class="pt-rbt">${mdl?`<button class="btn btn-o btn-sm" data-pl="${mdl.id}">▶ Play</button><button class="btn btn-ghost btn-sm" data-rk="model">↺ Re-record</button><button class="btn btn-ghost btn-sm" data-rdm="1">🗑</button>`:`<button class="btn btn-p btn-sm" data-rk="model">● Record model</button>`}</span></div>
+        <div class="pt-rrow"><div><b>${nm}'s recitation</b><div class="ai-sub">${rc.length?rc.length+' saved attempt'+(rc.length>1?'s':''):'No recordings yet'}</div></div><span class="pt-rbt"><button class="btn btn-p btn-sm" data-rk="stu">● Record ${nm}</button></span></div>
+        <div id="pt-rlive" class="pt-rlive" style="display:none"><i></i><b id="pt-rt">0:00</b><button class="btn btn-sm" id="pt-rstop" style="background:var(--bad);color:#fff">■ Stop &amp; save</button></div>
+        ${rc.map((r,i)=>`<div class="pt-rrow sm"><span class="ai-sub">${esc(fmtDate(r.date))} · ${r.dur||0}s${i===0?' · latest':''}</span><span class="pt-rbt"><button class="btn btn-o btn-sm" data-pl="${r.id}">▶</button><button class="btn btn-ghost btn-sm" data-rdel="${r.id}">🗑</button></span></div>`).join('')}
+        ${mdl&&rc.length?`<button class="btn btn-o" id="pt-cmp" style="margin-top:8px;width:100%">⇄ Compare: your model → ${nm}</button>`:''}
+        <p class="ai-sub" style="margin:8px 0 0">Recordings stay on this device only (they are not part of backups).</p></div>`;
+      $$('[data-pl]',pane).forEach(x=>x.onclick=()=>PT.audio.play(x.dataset.pl));
+      const cmp=$('#pt-cmp',pane); if(cmp) cmp.onclick=async()=>{ cmp.disabled=true; await PT.audio.play(mdl.id); await new Promise(r=>setTimeout(r,500)); await PT.audio.play(rc[0].id); cmp.disabled=false; };
+      const rdm=$('[data-rdm]',pane); if(rdm) rdm.onclick=()=>confirmBox('Delete your model recording for bayt '+n+'?',async()=>{ await PT.audio.del(mdl.id); delete st.poemModel[n]; DB.save(); paneRec(); });
+      $$('[data-rdel]',pane).forEach(x=>x.onclick=()=>confirmBox('Delete this recording?',async()=>{ await PT.audio.del(x.dataset.rdel); s.poem.rec[n]=rc.filter(r=>r.id!==x.dataset.rdel); DB.save(); paneRec(); }));
+      $$('[data-rk]',pane).forEach(x=>x.onclick=async()=>{ let ctl; try{ ctl=await PT.audio.record(sec=>{ const t=$('#pt-rt',pane); if(t) t.textContent=Math.floor(sec/60)+':'+String(Math.floor(sec%60)).padStart(2,'0'); }); }catch(err){ toast(/denied|NotAllowed|Permission/i.test(String(err))?'Allow the microphone to record':String(err.message||err)); return; }
+        $('#pt-rlive',pane).style.display='flex'; $$('[data-rk]',pane).forEach(y=>y.disabled=true);
+        $('#pt-rstop',pane).onclick=()=>ctl.stop();
+        const {blob,dur}=await ctl.done; const id=(x.dataset.rk==='model'?'m-':'s-')+uid();
+        try{ await PT.audio.put(id,blob); }catch(err){ toast('Could not save the recording'); paneRec(); return; }
+        if(x.dataset.rk==='model'){ if(st.poemModel[n]) PT.audio.del(st.poemModel[n].id); st.poemModel[n]={id,date:today(),dur}; } else { (s.poem.rec[n]=s.poem.rec[n]||[]).unshift({id,date:today(),dur}); if(s.poem.rec[n].length>6){ s.poem.rec[n].splice(6).forEach(r=>PT.audio.del(r.id)); } }
+        DB.save(); toast('Recording saved'); paneRec(); }); };
+    const show=t=>{ $$('[data-pt]',o).forEach(x=>x.classList.toggle('on',x.dataset.pt===t)); (t==='drill'?paneDrill:t==='cue'?paneCue:t==='rec'?paneRec:paneLearn)(); };
     $$('[data-pt]',o).forEach(x=>x.onclick=()=>show(x.dataset.pt)); show(tab||'learn');
-    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=c]',o).onclick=()=>{ PT.audio.stop(); o.remove(); };
     $$('[data-nav]',o).forEach(x=>x.onclick=()=>{ o.remove(); PT.study(sid,n+ +x.dataset.nav); });
     $$('[data-st]',o).forEach(x=>x.onclick=()=>{ PT.setSt(s,n,x.dataset.st); o.remove(); toast('Bayt '+n+' → '+({mem:'memorized ✅',learning:'learning 🌱',none:'cleared'})[x.dataset.st]); Router.render(); if(QJ.root) QJ.refresh(); });
   },
@@ -15850,8 +15974,9 @@ function stuFlags(a,b){ // transparent rules: behind / ahead / attention
     return {s, attP, q:q.length, needsRev, flags, prog};
   });
 }
-Registry.register({ id:'analytics', name:'Analytics', icon:'chart', group:'Intelligence',
+Registry.register({ id:'analytics', name:'Analytics & AI', icon:'chart', group:'Intelligence',
 render(v,param){
+  v=hubShell(v,'intel','analytics');
   const tab=param||'overview';
   const T={overview:'🎛 Overview', students:'Students & Levels', attendance:'Attendance', curriculum:'Curriculum', admin:'Administrative', kb:'Knowledge Base', reports:'Reports'};
   const R=anaRange();
@@ -16654,8 +16779,9 @@ const AI_PATTERNS = [
   [/prioritiz|this week|what should i (do|focus)/i, ()=>aiPrioritize()],
 ];
 
-Registry.register({ id:'ai', name:'AI Assistant', icon:'spark', group:'Intelligence',
+Registry.register({ id:'ai', name:'AI Assistant', icon:'spark', group:null, nav:'analytics',
 render(v){
+  v=hubShell(v,'intel','ai');
   v.innerHTML = `<div class="eyebrow">Operations Assistant · Instant · Offline · Explainable</div><h2 class="page-title">Assistant</h2>
    <p class="page-sub">Every answer here is computed live from your school's data, right on this device — nothing is sent anywhere. Ask a question or tap a shortcut.</p>
    <div class="ai-wrap"><div class="ai-msgs" id="aiMsgs"></div>
@@ -17269,6 +17395,7 @@ const NAV_ICONS = {
  moon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/>',
  check:'<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/>',
  trend:'<path d="M3 17 9 11l4 4 8-9"/><path d="M15 6h6v6"/>',
+ broom:'<path d="M14.5 3.5 10 12"/><path d="M7 12h8.5l1.5 8H5.5Z"/><path d="M9 16v3.5M12.5 16v3.5"/>',
  donut:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/>',
  bus:'<rect x="4" y="4" width="16" height="13" rx="2.5"/><path d="M4 11h16M7.5 20v-3M16.5 20v-3"/><circle cx="8" cy="14" r=".6"/><circle cx="16" cy="14" r=".6"/>',
  coins:'<circle cx="8.5" cy="8.5" r="5.5"/><path d="M8.5 6v5M6 8.5h5"/><path d="M13 15.5a5.5 5.5 0 1 0 5.5-5.5"/>',
@@ -17292,6 +17419,7 @@ function buildNav(){
   Layout.wireNav();
 }
 window.addEventListener('hashchange',()=>{ try{ navMark(); }catch(e){} });
+document.addEventListener('click',e=>{ $$('details.st-more[open]').forEach(d=>{ if(!d.contains(e.target)) d.open=false; else if(e.target.closest('.pop .btn')) d.open=false; }); });
 // ---------- authentication (client-side lock screen — see setup notes) ----------
 // This is a deterrent, not real security: the file has no server, so the
 // username/password below are visible to anyone who views the page source,
