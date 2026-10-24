@@ -137,11 +137,12 @@ html[data-theme="dark"] .sidebar{background:#0a130e;border-right:1px solid var(-
 .nav a:hover{background:rgba(244,234,214,.08);color:#f4ead6}
 .nav a.on{background:linear-gradient(90deg,rgba(184,135,42,.28),rgba(184,135,42,.10));color:#f8f0da;box-shadow:inset 2.5px 0 0 var(--gold-bright)}
 .nav a.on svg{opacity:1}
+.backbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 12px 7px 9px;font:600 12.5px var(--f-ui);cursor:pointer;flex-shrink:0;max-width:170px}.backbtn[hidden]{display:none}.backbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.backbtn:hover{background:var(--surface2)}@media(max-width:560px){.backbtn span{display:none}.backbtn{padding:8px 9px}}
 .nav .nb{margin-left:auto;min-width:19px;height:19px;border-radius:10px;background:var(--gold-bright);color:#1a1207;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;font-family:var(--f-ui)}
 .nav .nb.nd{min-width:9px;width:9px;height:9px;padding:0;background:#e86a5e}
 .nav a.sc svg{opacity:.9}
 #tabbar{display:none}
-@media (max-width:900px){#tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}#tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink3);text-decoration:none;padding:4px 0;border-radius:10px}#tabbar a svg{width:22px;height:22px}#tabbar a.on{color:var(--green);background:color-mix(in srgb,var(--gold) 16%,transparent)}.main{padding-bottom:70px}}
+@media (max-width:900px) and (not ((orientation:landscape) and (max-height:520px))){#tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}#tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink3);text-decoration:none;padding:4px 0;border-radius:10px}#tabbar a svg{width:22px;height:22px}#tabbar a.on{color:var(--green);background:color-mix(in srgb,var(--gold) 16%,transparent)}.main{padding-bottom:70px}}
 .side-foot{padding:12px 16px;border-top:1px solid rgba(244,234,214,.1);font-size:11px;color:rgba(233,226,205,.6);font-family:var(--f-mono)}
 .main{flex:1;margin-left:var(--sidebar-w);min-width:0;display:flex;flex-direction:column}
 .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top)) 22px 12px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
@@ -837,6 +838,8 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .st-head h1{font-family:var(--f-display);font-size:30px;line-height:1.1;margin:2px 0 0;color:var(--ink)}
 .st-head .sub{font-size:13px;color:var(--ink3);margin-top:3px}
 .st-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.sid{font-family:var(--f-mono);font-weight:700;color:var(--ink2);letter-spacing:.02em}.st-pho .sid{font-size:10.5px}
+.st-tool{padding:10px 12px;display:flex;flex-direction:column;gap:9px;margin-bottom:14px}.stt-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.stt-r .sp{flex:1}.st-tool select{width:auto;min-width:120px;flex:0 0 auto}.stt-r input[type=search]{flex:1 1 170px;min-width:150px;max-width:260px}.stt-lv{display:inline-flex;gap:6px;flex-wrap:wrap}.stt-q{padding-top:9px;border-top:1px dashed var(--line)}
 .st-stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit}
 .st-stat b{display:block;font-family:var(--f-display);font-size:24px;line-height:1.1;color:var(--green)}
 .st-stat span{font-size:11.5px;color:var(--ink3);font-weight:600}
@@ -934,7 +937,7 @@ html[data-theme="dark"] .sbar{fill:var(--gold-bright)}
   body{background:#fff;color:#000}body::before{display:none}
   .card,.widget{box-shadow:none;border-color:#ccc;break-inside:avoid}
 }
-@media (max-width:900px){
+@media (max-width:900px), (orientation:landscape) and (max-height:520px){
   .sidebar{transform:translateX(-100%)}
   .sidebar.open{transform:none;box-shadow:var(--shadow-lg)}
   .main{margin-left:0}
@@ -1205,13 +1208,14 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 70<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 71<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
   <div class="main">
     <header class="topbar">
       <button class="hamb iconbtn" id="hambBtn" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
+      <button class="backbtn" id="backBtn" hidden aria-label="Go back"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>Back</span></button>
       <button class="searchbtn" id="openPalette">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
         Search or command… <kbd>⌘K</kbd>
@@ -4375,6 +4379,7 @@ const HUBS={
 };
 HUBS.adm={name:'Admissions',ico:'📥',tabs:[['aman','🏫 AMAN','#/admissions'],['amaanah','🌙 Amaanah','#/amaanah-admissions']],extra:''};
 HUBS.intel={name:'Analytics & AI',ico:'📈',tabs:[['analytics','📈 Analytics','#/analytics'],['ai','✨ AI Assistant','#/ai']],extra:''};
+HUBS.ops={name:'Cleaning & Trips',ico:'🧹',tabs:[['cleaning','🧹 Cleaning','#/students/cleaning'],['trip','🎒 Field trip','#/students/fieldtrip']],extra:''};
 HUBS.fin={name:'Admin & Tuition',ico:'🏛️',tabs:[['admin','🏛 Administration','#/admin'],['tuition','💰 Tuition','#/tuition']],extra:''};
 function navId(){ const {id,param}=Router.parse(); if(id==='students'&&param==='progress') return 'hifz'; if(id==='students'&&param==='gradebook') return 'islamic'; const m=Registry.get(id); return (m&&m.nav)||id; }
 function hubBadge(key){ try{ if(key==='today') return TD.needCount(); if(key==='goals') return GA.alerts().length; if(key==='hearing') return HP.build().queue.length; if(key==='hear') return RP.stu().reduce((a,s)=>a+RP.ready(s).length,0); if(key==='poem') return PT.stu().reduce((a,s)=>a+PT.sum(s).due,0); }catch(e){} return 0; }
@@ -4494,7 +4499,7 @@ const Layout = {
     let html='';
     const B=navBadges(), nb=n=>n>0?`<span class="nb">${n>99?'99+':n}</span>`:'';
     const wk=[0,6].includes(new Date().getDay());
-    const cd=`<div class="grp">⚡ Class day</div>`+[['classmode','Class Mode','check',B.att?'•':''],['students/progress','Progress tracker','trend',''],['students/cleaning','Cleaning','broom',0],['students/fieldtrip','Field trip','bus',B.trip]].map(([h,t,ic,b])=>`<a href="#/${h}" data-mod="${h}" class="sc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[ic]}</svg>${t}${b?(b==='•'?'<span class="nb nd" title="Attendance not taken yet today"></span>':nb(b)):''}</a>`).join('');
+    const cd=`<div class="grp">⚡ Class day</div>`+[['classmode','Class Mode','check',B.att?'•':''],['students/progress','Progress tracker','trend',''],['students/cleaning','Cleaning & Trips','broom',0]].map(([h,t,ic,b])=>`<a href="#/${h}" data-mod="${h}" class="sc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICONS[ic]}</svg>${t}${b?(b==='•'?'<span class="nb nd" title="Attendance not taken yet today"></span>':nb(b)):''}</a>`).join('');
     if(wk) html+=cd;
     gnames.forEach(g=>{
       const mods=groups[g].filter(m=>m.id!=='library').slice().sort((a,b)=>Layout.rank(u.order,a.id)-Layout.rank(u.order,b.id));
@@ -4610,7 +4615,7 @@ const Rewards = {
     const donut=g.type==='juz';
     return `<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap">${avatarHTML(g.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}
       <span class="t" style="flex:1;min-width:150px"><b>${esc(g.s.name)}</b> ${esc(Rewards.label(g))}<br><span style="font-size:10.5px;color:var(--ink3)">${fmtDate(g.date)}${donut?'':' · ready for Level 2?'}</span></span>
-      ${donut?'':`<button class="btn btn-o btn-sm no-print" data-rwpromo="${g.s.id}">Promote → Level 2</button>`}
+      ${donut?'':(g.s.level==='Level 1'?`<button class="btn btn-o btn-sm no-print" data-rwpromo="${g.s.id}">Promote → Level 2</button>`:`<span class="tag tag-green no-print" title="Already promoted — just mark the party held">✓ already ${esc(g.s.level)}</span>`)}
       <button class="btn btn-p btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}">${donut?'🍩 Delivered':'🎉 Party held'}</button>
       <button class="btn btn-ghost btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}|skip" title="Not right? Dismiss without celebrating" style="padding:2px 6px">✕</button></div>`; },
   cardHTML(){
@@ -4667,9 +4672,14 @@ Rewards.wire();
 
 const Router = {
   current:null,
-  go(hash){ this.current = hash;
+  stack:[],
+  go(hash){ const prev=this.current!==null?this.current:location.hash;
+    if(prev && prev!==hash && prev!=='#/'){ const L=this.stack[this.stack.length-1]; if(!L||L.hash!==prev) this.stack.push({hash:prev,y:window.scrollY||0}); if(this.stack.length>30) this.stack.shift(); }
+    this.current = hash;
     try{ if(location.hash!==hash) history.replaceState(null,'',hash); }catch(e){}
     this.render(); window.scrollTo(0,0); },
+  back(){ const p=this.stack.pop(); if(!p) return; this.current=p.hash; try{ history.replaceState(null,'',p.hash); }catch(e){} this.render(); requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,p.y||0))); },
+  updBack(){ const b=$('#backBtn'); if(!b) return; const p=this.stack[this.stack.length-1]; b.hidden=!p; if(p){ const id=(p.hash.slice(2).split('/')[0])||'dashboard', m=Registry.get(id); b.querySelector('span').textContent=m?m.name:'Back'; } },
   parse(){ const h=((this.current!==null?this.current:location.hash)||'#/').slice(2); const [id,param]=h.split('/'); return {id:id||'dashboard', param:param?decodeURIComponent(param):null}; },
   render(){
     const {id,param} = this.parse();
@@ -4677,8 +4687,8 @@ const Router = {
     try{ Rewards.check(); }catch(e){ console.error('rewards',e); }
     const v = $('#view'); v.innerHTML='';
     m.render(v, param);
-    const _nv=Registry.get(id)?navId():m.id; navMark(_nv);
-    if(window.innerWidth<=900) $('#sidebar').classList.remove('open');
+    const _nv=Registry.get(id)?navId():m.id; navMark(_nv); Router.updBack();
+    if(window.innerWidth<=900||matchMedia('(orientation:landscape) and (max-height:520px)').matches) $('#sidebar').classList.remove('open');
     // Scroll-to-top intentionally lives in go() / the hashchange listener
     // below, NOT here — render() is also called directly, ~130 places
     // throughout the app, purely to redraw the CURRENT view in place after
@@ -7109,11 +7119,12 @@ function hifzStats(s){
   const idx=order.indexOf(cur);
   let pages=0; for(let i=0;i<idx;i++) pages+=surahSpan(order[i]);
   const curSpan=surahSpan(cur);
-  let within=0;
-  if(h.curPage){ within=Math.max(0, Math.min(h.curPage - QS[cur].p, curSpan)); pages+=within; }
+  let within=0; const nAyah=SURAH_AYAHS[cur], ayah=Math.max(0,Math.min(+h.curAyah||0,nAyah));
+  if(ayah>0){ within=ayah/nAyah*curSpan; pages+=within; }   // āyah entered → exact within-sūrah fraction
+  else if(h.curPage){ within=Math.max(0, Math.min(h.curPage - QS[cur].p, curSpan)); pages+=within; }
   const total=order.reduce((a,n)=>a+surahSpan(n),0); /* per-path total (603 for both current paths; Fātiḥah outside path) */
   const pct=Math.min(100, pages/total*100);
-  return {pid, order, cur, idx, pages, total, pct, next:order.slice(idx+1, idx+4), curSpan, within};
+  return {pid, order, cur, idx, pages, total, pct, next:order.slice(idx+1, idx+4), curSpan, within, ayah, nAyah, exactAyah:ayah>0, surahPct:ayah>0?ayah/nAyah*100:(curSpan>0?within/curSpan*100:0)};
 }
 /* ---- Ḥifẓ milestone goals (per-student Juzʼ targets w/ deadline, for the
    class-wide treat incentive) ---- */
@@ -7197,10 +7208,12 @@ function checkHifzGoal(s){
 // Used by BOTH the student profile's Ḥifẓ section and the Class Treat
 // Goals roster's quick-update control, so updating a student's position
 // is one real place, not two copies that could quietly drift apart.
-function updateHifzPosition(s, {cur, curPage}={}){
+function updateHifzPosition(s, {cur, curPage, curAyah}={}){
   s.hifz = s.hifz || {path:'standard', cur:114, curPage:null, goalWeekly:0, strengths:'', improve:''};
-  if(cur!=null){ s.hifz.cur = cur; s.hifz.curPage = null; }
-  else if(curPage!==undefined){ s.hifz.curPage = curPage!=null ? Math.max(QS[s.hifz.cur].p, Math.min(604, curPage)) : null; }
+  if(cur!=null){ s.hifz.cur = cur; s.hifz.curPage = null; s.hifz.curAyah = null; }
+  else if(curAyah!==undefined){ const c=s.hifz.cur, n=SURAH_AYAHS[c], a=Math.max(0,Math.min(n,Math.round(+curAyah||0)));
+    s.hifz.curAyah = a>0?a:null; s.hifz.curPage = a>0 ? Math.min(604, Math.max(QS[c].p, Math.floor(QS[c].p + a/n*surahSpan(c)))) : null; }   // page is kept in step so Juzʼ goals still work
+  else if(curPage!==undefined){ s.hifz.curAyah = null; s.hifz.curPage = curPage!=null ? Math.max(QS[s.hifz.cur].p, Math.min(604, curPage)) : null; }
   s.hifzLog = s.hifzLog || [];
   const pages = hifzStats(s).pages;
   const todayEntry = s.hifzLog.find(x=>x.date===today());
@@ -7641,9 +7654,9 @@ function ayahStats(st){
   // student has reached, based on page position within it.
   let ayahs=0;
   for(let i=0;i<st.idx;i++) ayahs+=SURAH_AYAHS[st.order[i]];
-  if(st.curSpan>0) ayahs += Math.round(st.within/st.curSpan * SURAH_AYAHS[st.cur]);
+  if(st.exactAyah) ayahs += st.ayah; else if(st.curSpan>0) ayahs += Math.round(st.within/st.curSpan * SURAH_AYAHS[st.cur]);
   const total=st.order.reduce((a,n)=>a+SURAH_AYAHS[n],0);
-  return {ayahs, total, remaining:total-ayahs, pct:Math.min(100, ayahs/total*100)};
+  return {ayahs, total, remaining:total-ayahs, pct:Math.min(100, ayahs/total*100), exact:st.exactAyah};
 }
 function paceETA(log, curVal, total, field){ // generic pace from dated logs
   if(!log||log.length<2) return null;
@@ -7698,8 +7711,8 @@ Registry.register({ id:'students', name:'Students', icon:'cap', group:'Workspace
 render(v,param){
   if(param==='attendance') return Students.attendance(v);
   if(param==='progress') return Progress.render(hubShell(v,'hifz','progress'));
-  if(param==='cleaning') return Cleaning.render(v);
-  if(param==='fieldtrip') return FieldTrips.render(v);
+  if(param==='cleaning') return Cleaning.render(hubShell(v,'ops','cleaning'));
+  if(param==='fieldtrip') return FieldTrips.render(hubShell(v,'ops','trip'));
   if(param==='gradebook') return Gradebook.render(hubShell(v,'islamic','gradebook'));
   if(param && DB.data.students.find(s=>s.id===param)) return Students.profile(v,param);
   Students.list(v);
@@ -7794,6 +7807,8 @@ const Students = {
       if(s.trialEnds&&s.trialEnds>=today()) f.push({t:'Trial until '+fmtDate(s.trialEnds), k:'info'});
       return f; };
     const needsAttn = s => s.active!==false && (attToday[s.id]==='A' || (s.hw&&(s.hw.tries||0)>=3));
+    const sidTxt = s=>s.studentNo?'AMAN-'+String(s.studentNo).padStart(3,'0'):'';
+    const sidTag = s=>sidTxt(s)?`<span class="sid">${sidTxt(s)}</span>`:'';
     const view = d.settings.stuView || (d.settings.stuDense!=null ? (d.settings.stuDense?'compact':'cards') : (window.innerWidth<700?'compact':'cards'));
     const dense = view==='compact';
     const fracOf = s=>{ try{ if(s.level==='Level 1') return Math.min(1,((s.gb&&s.gb.page)||0)/GB_TOTAL); if(s.level==='Level 3') return Math.min(1,hifzStats(s).pct/100); }catch(e){} return null; };
@@ -7829,19 +7844,19 @@ const Students = {
         return `<div class="card st-card st-row" ${attr} style="border-left-color:${lvlAccent};padding:8px 12px;align-items:center">${sel}
           <div style="position:relative;flex-shrink:0">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}${dot}</div>
           <div style="min-width:0;flex:1"><b class="nm" dir="auto" style="font-size:14.5px">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
-          <div class="mt" style="margin:1px 0 0">${ageTxt}${ageTxt?' · ':''}${left||progShort(s)}</div>
+          <div class="mt" style="margin:1px 0 0">${sidTag(s)}${sidTxt(s)?' · ':''}${ageTxt}${ageTxt?' · ':''}${left||progShort(s)}</div>
           ${chips(ex.slice(0,2))}${ex.length>2?`<div class="ai-sub" style="font-size:10.5px;margin-top:3px">+${ex.length-2} more</div>`:''}</div></div>`;
       }
       const fr=fracOf(s), P=fr==null?100:Math.round(fr*100), bd=daysToBirthday(s.dob);
       const badges=[sg&&sg.allergy?['⚠','Allergy on file','var(--bad)']:null, bd!=null&&bd>=0&&bd<=14?['🎂',bd===0?'Birthday today':'Birthday in '+bd+' days','']:null, sg&&sg.sotm?['🌟','Student of the Month ×'+sg.sotm,'']:null, sg&&sg.ready?['🎓','Ready for Level 2','']:null].filter(Boolean).map(b=>`<span class="bdg" title="${esc(b[1])}" style="${b[2]?'color:'+b[2]:''}">${b[0]}</span>`).join('');
       if(view==='photos'){
-        return `<div class="st-pho" ${attr} style="--lv:${lvlAccent};--p:${P}">${sel}<div class="rg">${avatarHTML(s,'width:100%;height:100%;border-radius:50%;font-size:28px')}${dot}</div><b class="nm" dir="auto">${esc(s.preferredName||s.name)}</b><span class="mt">${left?'':(ageTxt?ageTxt+' · ':'')+(fr!=null?P+'%':s.level==='Level 2'?'p.'+(((s.mus&&s.mus.page)||'—')):'')}</span>${badges?`<span class="bdgs">${badges}</span>`:''}</div>`; }
+        return `<div class="st-pho" ${attr} style="--lv:${lvlAccent};--p:${P}">${sel}<div class="rg">${avatarHTML(s,'width:100%;height:100%;border-radius:50%;font-size:28px')}${dot}</div><b class="nm" dir="auto">${esc(s.preferredName||s.name)}</b><span class="mt">${sidTag(s)}</span><span class="mt">${left?'':(ageTxt?ageTxt+' · ':'')+(fr!=null?P+'%':s.level==='Level 2'?'p.'+(((s.mus&&s.mus.page)||'—')):'')}</span>${badges?`<span class="bdgs">${badges}</span>`:''}</div>`; }
       // big number: the one thing you want to know about this student's progress
       let big='', sub='';
       if(s.active===false){ big=''; sub=''; }
       else if(s.level==='Level 1'){ const p=(s.gb&&s.gb.page)||0; big='p.'+p; sub='of '+GB_TOTAL+' · Green Book'; }
       else if(s.level==='Level 2'){ const p=(s.mus&&s.mus.page)||0; big=p?'p.'+p:'—'; sub='Muṣḥaf'; }
-      else { try{ const st=hifzStats(s); big=Math.round(st.pct)+'%'; sub=esc(QS[st.cur].name); }catch(e){ big='—'; } }
+      else { try{ const st=hifzStats(s); big=Math.round(st.pct)+'%'; sub=esc(QS[st.cur].name)+(st.exactAyah?' · āyah '+st.ayah+'/'+st.nAyah+' ('+Math.round(st.surahPct)+'%)':''); }catch(e){ big='—'; } }
       const statEx = ex.filter(x=>!/^(⚠ allergy|🎓|🎂)/.test(x.t));
       const first=statEx[0], more=statEx.length-1;
       const stale = sg&&sg.stale!=null&&sg.stale>=14;
@@ -7851,7 +7866,7 @@ const Students = {
         ${badges?`<span class="bdgs tr">${badges}</span>`:''}
         <div class="sc2-h"><div class="rg">${avatarHTML(s,'width:100%;height:100%;border-radius:50%;font-size:26px')}${dot}</div>
           <div class="sc2-n"><b class="nm" dir="auto">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
-          <div class="mt" title="AMAN-${String(s.studentNo||0).padStart(3,'0')}">${ageTxt||'age —'}${dotsRow}</div></div></div>
+          <div class="mt">${sidTag(s)}${sidTxt(s)?' · ':''}${ageTxt||'age —'}${dotsRow}</div></div></div>
         <div class="sc2-b">${left||`<div class="bn"><b>${big}</b><span>${sub}</span></div><div class="sp2">${sg?spark(sg.spark,lvlAccent):''}<span class="pc">${paceTxt}</span></div>`}</div>
         <div class="sc2-f">${foot}</div></div>`; };
 
@@ -7899,15 +7914,18 @@ const Students = {
            <div class="hd">Records</div>
            <button class="btn btn-sm" id="stImport">⇪ Import students</button>
            <button class="btn btn-sm" id="stExport">⬇ Export CSV</button>
-           <button class="btn btn-sm" id="stEmerCard">🆘 Emergency card</button>
            <button class="btn btn-sm" id="stShare">🌟 Create share card</button>
            <button class="btn btn-sm" id="stSelect">${selectMode?'✕ Done selecting':'☑ Select several'}</button>
            <div class="hd">Family updates</div>
            <button class="btn btn-sm" id="stSyncUpdates">📝 Check family updates</button>
            <button class="btn btn-sm" id="stUpdateCfg">⚙ Update sync settings <span style="margin-left:auto;font-size:11px;color:var(--ink3)">${d.settings.updateLastSync?'synced '+rel(d.settings.updateLastSync):'never synced'}</span></button>
-           <div class="hd">Other pages</div>
-           <button class="btn btn-sm" data-go="#/students/cleaning">🧹 Cleaning schedule</button>
-           <button class="btn btn-sm" data-go="#/students/fieldtrip">🎒 Field trip checklist</button>
+           <div class="hd">Go to</div>
+           <button class="btn btn-sm" data-go="#/students/attendance">✅ Attendance</button>
+           <button class="btn btn-sm" data-go="#/students/progress">📊 Progress tracker</button>
+           <button class="btn btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
+           <button class="btn btn-sm" data-go="#/students/gradebook">📗 Gradebook</button>
+           <button class="btn btn-sm" data-go="#/analytics">📈 Insights</button>
+           <button class="btn btn-sm" data-go="#/students/cleaning">🧹 Cleaning &amp; field trips</button>
            <button class="btn btn-sm" data-go="#/admissions">📥 Admissions</button>
            <div class="hd">Journey maps</div>
            <div style="padding:2px 4px 6px">${QJ.buttonsHTML().replace('<span style="font-size:11.5px;color:var(--ink3)">🗺 Journey maps</span>','')}</div>
@@ -7915,30 +7933,23 @@ const Students = {
        </div></div>
      <div class="st-stats no-print">
        <button class="st-stat" data-go="#/students/attendance"><b>${actAll.length}</b><span>Active students</span></button>
-       <button class="st-stat" data-go="#/students/attendance"><b>${markedToday?presentToday:'—'}</b><span>${markedToday?'Present today (of '+markedToday+' marked)':'Attendance not marked today'}</span></button>
-       <button class="st-stat ${attnCount?'warn':''} ${Students._attnOnly?'on':''}" id="stAttn"><b>${attnCount}</b><span>Need attention${Students._attnOnly?' · showing only these':''}</span></button>
-       <button class="st-stat" id="stBday"><b>${bdays}</b><span>Birthdays in 14 days</span></button>
-     </div>
-     <div class="st-quick no-print">
-       <button class="btn btn-o btn-sm" data-go="#/students/attendance">✅ Attendance</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/progress">📊 Progress tracker</button>
-       <button class="btn btn-o btn-sm" data-go="#/teacher/homework">🎙️ Homework</button>
-       <button class="btn btn-o btn-sm" data-go="#/students/gradebook">📗 Gradebook</button>
-       <button class="btn btn-o btn-sm" data-go="#/analytics">📈 Insights</button>
+       <button class="st-stat" data-go="#/students/attendance"><b>${markedToday?presentToday:'—'}</b><span>${markedToday?'Present today · '+markedToday+' marked':'Attendance not marked'}</span></button>
+       <button class="st-stat ${attnCount?'warn':''} ${Students._attnOnly?'on':''}" id="stAttn"><b>${attnCount}</b><span>Need attention${Students._attnOnly?' · filtered':''}</span></button>
+       <button class="st-stat" id="stBday"><b>${bdays}</b><span>Birthdays · 14 days</span></button>
      </div>
      ${(()=>{ const act=d.students.filter(s=>s.active!==false), sgs=act.map(s=>({s,g:Students.sig(s)}));
        const c={bad:sgs.filter(x=>x.g.k==='bad').length,warn:sgs.filter(x=>x.g.k==='warn').length,ready:sgs.filter(x=>x.g.ready).length,allergy:sgs.filter(x=>x.g.allergy).length,stale:sgs.filter(x=>x.g.stale!=null&&x.g.stale>=14).length,sibs:sgs.filter(x=>x.g.sibs.length).length};
-       const ch=(k,t,n,cls)=>n||Students._sigF===k?`<button class="chip ${Students._sigF===k?'on':''}" data-sigf="${k}" ${cls?'':''}>${t} <b>${n}</b></button>`:'';
-       return `<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 0 10px"><span class="ai-sub">Quick view:</span><button class="chip" id="stLegend" title="How to read the cards" style="padding:2px 9px">ⓘ</button>${ch('bad','🔴 At risk',c.bad)}${ch('warn','🟠 Worth a look',c.warn+c.bad)}${ch('stale','🕒 No update 2+ wks',c.stale)}${ch('ready','🎓 Ready to promote',c.ready)}${ch('allergy','⚠ Allergies',c.allergy)}${ch('sibs','👥 Has siblings',c.sibs)}${Students._sigF?'<button class="chip" data-sigf="">✕ Clear</button>':''}</div>`; })()}
-     <div class="st-bar no-print">
-       ${d.students.length?`<input type="search" id="stFind" placeholder="Find a student…" value="${esc(Students._find||'')}">`:''}
-       <span style="display:inline-flex;gap:6px;flex-wrap:wrap">${[['','All'],...LEVELS.map(L=>[L,L])].map(([L,t])=>`<button class="chip ${levelFilter===L?'on':''}" data-stl="${L}">${t}</button>`).join('')}</span>
-       <span class="sp"></span>
-       <select id="stStatus" aria-label="Filter by status"><option value="active" ${statusFilter==='active'?'selected':''}>Active</option><option value="inactive" ${statusFilter==='inactive'?'selected':''}>Inactive</option><option value="all" ${statusFilter==='all'?'selected':''}>All</option></select>
-       <select id="stSort" aria-label="Sort students by"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="attn" ${sortBy==='attn'?'selected':''}>Sort: Needs attention first</option><option value="family" ${sortBy==='family'?'selected':''}>Group: By family</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
-       <span class="seg" role="group" aria-label="Student view">${[['compact','▤','Compact'],['cards','▦','Cards'],['photos','◉','Photos']].map(([k,i,t])=>`<button class="${view===k?'on':''}" data-stv="${k}" title="${t} view">${i} <span class="sgl">${t}</span></button>`).join('')}</span>
-       <button class="chip ${favOnly?'on':''}" id="stFav">★ Favorites</button>
-     </div>
+       const ch=(k,t,n)=>n||Students._sigF===k?`<button class="chip ${Students._sigF===k?'on':''}" data-sigf="${k}">${t} <b>${n}</b></button>`:'';
+       return `<div class="card st-tool no-print">
+         <div class="stt-r">
+           ${d.students.length?`<input type="search" id="stFind" placeholder="Find a student…" value="${esc(Students._find||'')}">`:''}
+           <span class="stt-lv">${[['','All'],...LEVELS.map(L=>[L,L])].map(([L,t])=>`<button class="chip ${levelFilter===L?'on':''}" data-stl="${L}">${t}</button>`).join('')}</span>
+           <span class="sp"></span>
+           <select id="stStatus" aria-label="Filter by status"><option value="active" ${statusFilter==='active'?'selected':''}>Active</option><option value="inactive" ${statusFilter==='inactive'?'selected':''}>Inactive</option><option value="all" ${statusFilter==='all'?'selected':''}>All</option></select>
+           <select id="stSort" aria-label="Sort students by"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="attn" ${sortBy==='attn'?'selected':''}>Sort: Needs attention</option><option value="family" ${sortBy==='family'?'selected':''}>Group: Family</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
+           <span class="seg" role="group" aria-label="Student view">${[['compact','▤','Compact'],['cards','▦','Cards'],['photos','◉','Photos']].map(([k,i,t])=>`<button class="${view===k?'on':''}" data-stv="${k}" title="${t} view">${i} <span class="sgl">${t}</span></button>`).join('')}</span>
+         </div>
+         <div class="stt-r stt-q"><span class="ai-sub">Quick view</span><button class="chip" id="stLegend" title="How to read the cards" style="padding:2px 9px">ⓘ</button>${ch('bad','🔴 At risk',c.bad)}${ch('warn','🟠 Worth a look',c.warn+c.bad)}${ch('stale','🕒 No update 2+ wks',c.stale)}${ch('ready','🎓 Ready to promote',c.ready)}${ch('allergy','⚠ Allergies',c.allergy)}${ch('sibs','👥 Siblings',c.sibs)}${Students._sigF?'<button class="chip" data-sigf="">✕ Clear</button>':''}<span class="sp"></span><button class="chip ${favOnly?'on':''}" id="stFav">★ Favorites</button></div></div>`; })()}
      ${(()=>{ const pending = (d.pendingUpdates||[]); if(!pending.length) return '';
        const needsMatch = pending.filter(u=>!u.matchedStudentId || !d.students.some(s=>s.id===u.matchedStudentId)).length;
        return `<details class="no-print" open style="margin-bottom:14px">
@@ -7979,7 +7990,6 @@ const Students = {
     $('#stImport',v)&&($('#stImport',v).onclick=imp); $('#stImport2',v)&&($('#stImport2',v).onclick=imp);
     $('#stShare',v)&&($('#stShare',v).onclick=()=>Students.sharePanel());
     $('#stExport',v).onclick=()=>Students.exportCSV();
-    $('#stEmerCard',v).onclick=()=>Students.printEmergencyCard();
     $('#stFav',v).onclick=()=>{ Students._favOnly=!favOnly; Router.render(); };
     const _mo=$('.st-more',v); if(_mo){ const off=e=>{ if(!document.body.contains(_mo)){ document.removeEventListener('click',off); return; } if(!_mo.contains(e.target)) _mo.open=false; }; document.addEventListener('click',off); $$('.pop .btn',_mo).forEach(b=>b.addEventListener('click',()=>{ _mo.open=false; })); }
     $$('[data-stl]',v).forEach(b=>b.onclick=()=>{ Students._levelFilter=b.dataset.stl; Router.render(); });
@@ -8356,7 +8366,7 @@ const Students = {
   // level up; still refuses sideways/backward moves.
   promote(s, targetLevel){
     const i=LEVELS.indexOf(s.level), ti=LEVELS.indexOf(targetLevel);
-    if(i<0 || ti<=i) return;
+    if(i<0) return; if(ti<=i){ toast((s.preferredName||s.name)+' is already '+s.level); return; }
     const skipped = ti>i+1 ? LEVELS.slice(i+1, ti) : [];
     const msg = 'Promote '+s.name+' to '+targetLevel+' — '+LEVEL_SUB[targetLevel]+'? Their '+LEVEL_SUB[s.level]+' history is kept.'
       + (skipped.length ? ' This skips '+skipped.join(' and ')+' entirely — make sure that\u2019s intended.' : '');
@@ -8996,19 +9006,21 @@ const Students = {
          ${admField('Progress % (pages)', st.pct.toFixed(1)+'%')}
          ${admField('Pages completed', st.pages.toFixed(0))}
          ${admField('Pages remaining', remaining.toFixed(0))}
-         ${admField('Progress % (āyāt, est.)', ays.pct.toFixed(1)+'%')}
-         ${admField('Āyāt completed (est.)', ays.ayahs)}
-         ${admField('Āyāt remaining (est.)', ays.remaining)}
+         ${admField('Progress % (āyāt'+(ays.exact?'':', est.')+')', ays.pct.toFixed(2)+'%')}
+         ${admField('Āyāt completed'+(ays.exact?'':' (est.)'), ays.ayahs)}
+         ${admField('Āyāt remaining'+(ays.exact?'':' (est.)'), ays.remaining)}
+         ${admField('This sūrah', (st.exactAyah?st.ayah+' / '+st.nAyah+' āyāt · ':'')+(st.exactAyah?'':'~')+st.surahPct.toFixed(0)+'%')}
          ${admField('Daily goal (pages)', eta3?(eta3.pace/7).toFixed(2)+' p/day':'—')}
          ${admField('Daily goal (āyāt, est.)', eta3?Math.round(eta3.pace*ayahDensity/7)+' āyāt/day':'—')}
          <div style="grid-column:1/-1">${admField('Estimated finish date', eta3?fmtDate(eta3.date.toISOString())+' — based on '+eta3.pace+' pages/week':'Record 2+ dated updates and this fills in automatically')}</div>
        </div>
        <div class="bar" style="height:10px;margin-bottom:6px"><i style="width:${st.pct}%"></i></div>
-       <p style="font-size:11px;color:var(--ink3)">Āyah figures are estimated from page position within the current sūrah, since page breaks don't align exactly with āyah breaks. Pages are the more precise measure and drive the finish-date projection above.</p>
+       <p style="font-size:11px;color:var(--ink3)">${ays.exact?'Āyah figures are exact — counted from the current āyah you entered. The page is kept in step automatically (estimated), and pages still drive the finish-date projection.':'Āyah figures are estimated from the page position within the current sūrah. Enter the current āyah below for exact percentages.'}</p>
      </details>
      <div class="card" style="margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:5px">
-        <b style="font-family:var(--f-display);font-size:17px">${esc(QS[st.cur].name)} <span style="font-size:12px;color:var(--ink3);font-family:var(--f-ui)">(sūrah ${st.cur} · starts p.${QS[st.cur].p})</span></b></div>
+        <b style="font-family:var(--f-display);font-size:17px">${esc(QS[st.cur].name)} <span style="font-size:12px;color:var(--ink3);font-family:var(--f-ui)">(sūrah ${st.cur} · ${st.nAyah} āyāt · starts p.${QS[st.cur].p})</span></b>
+        <span class="tag ${st.exactAyah?'tag-green':'tag-dim'}" title="${st.exactAyah?'Exact — from the āyah you entered':'Estimated from the page; enter the current āyah for an exact figure'}">${st.exactAyah?'āyah '+st.ayah+' of '+st.nAyah+' · '+st.surahPct.toFixed(0)+'% of this sūrah':'~'+st.surahPct.toFixed(0)+'% of this sūrah (est.)'}</span></div>
       <div class="bar" style="height:10px;margin-bottom:10px"><i style="width:${st.pct}%"></i></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:12px">
         <span class="tag tag-green">${newest30} new · 30d</span><span class="tag tag-gold">${rev30} review · 30d</span>
@@ -9017,7 +9029,8 @@ const Students = {
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
         <div class="field"><label>Memorization path (per student)</label><select id="hz-path">${Object.entries(HIFZ_PATHS).map(([k,p])=>`<option value="${k}" ${k===st.pid?'selected':''}>${p.name}</option>`).join('')}</select></div>
         <div class="field"><label>Current sūrah</label><select id="hz-sur">${st.order.map(n=>`<option value="${n}" ${n===st.cur?'selected':''}>${QS[n].name}</option>`).join('')}</select></div>
-        <div class="field"><label>Current page (within sūrah)</label><input id="hz-page" type="number" min="1" max="604" value="${h.curPage||''}" placeholder="${QS[st.cur].p}"></div>
+        <div class="field"><label>Current āyah <span style="font-weight:400;color:var(--ink3)">(memorized up to · of ${st.nAyah})</span></label><input id="hz-ayah" type="number" min="0" max="${st.nAyah}" value="${st.exactAyah?st.ayah:''}" placeholder="e.g., ${Math.max(1,Math.round(st.nAyah/2))}"></div>
+        <div class="field"><label>Current page (within sūrah) <span style="font-weight:400;color:var(--ink3)">${st.exactAyah?'· set from āyah':'· or use āyah'}</span></label><input id="hz-page" type="number" min="1" max="604" value="${h.curPage||''}" placeholder="${QS[st.cur].p}"></div>
         <div class="field"><label>Optional: target weekly pace, for comparison</label><input id="hz-goal" type="number" min="0" max="30" step="0.5" value="${h.goalWeekly||''}" placeholder="e.g., 2"></div>
         <div class="field"><label>Strengths</label><input id="hz-str" value="${esc(h.strengths||'')}" placeholder="strong retention, beautiful tone…"></div>
         <div class="field"><label>Needs improvement</label><input id="hz-imp" value="${esc(h.improve||'')}" placeholder="revision consistency, similar āyāt…"></div></div>
@@ -9027,6 +9040,7 @@ const Students = {
     $('#hz-path',el).onchange=e=>{ h.path=e.target.value; const ord=HIFZ_PATHS[h.path].order(); if(!ord.includes(h.cur)) h.cur=ord[0]; h.curPage=null; DB.log(s.name+' → '+HIFZ_PATHS[h.path].name); saveH(); };
     $('#hz-sur',el).onchange=e=>{ updateHifzPosition(s,{cur:+e.target.value}); DB.save(); Router.render(); };
     const hifzCert=$('#hifzCertBtn',el); if(hifzCert) hifzCert.onclick=()=>printHTMLDocument(renderHifzCertificate({name:s.name}));
+    $('#hz-ayah',el).onchange=e=>{ updateHifzPosition(s,{curAyah:e.target.value===''?0:+e.target.value}); DB.save(); Router.render(); };
     $('#hz-page',el).onchange=e=>{ updateHifzPosition(s,{curPage:+e.target.value||null}); DB.save(); Router.render(); };
     $('#hz-goal',el).onchange=e=>{ h.goalWeekly=+e.target.value||0; saveH(); };
     const hzGoalSet=$('#hzGoalSet',el); if(hzGoalSet) hzGoalSet.onclick=()=>{
@@ -13640,7 +13654,7 @@ const Admin = {
     const acts=[]; d.activity.filter(a=>/task|event|staff|payment|tuition|family|meeting|enroll|promot|student|flyer|notice/i.test(a.text)).forEach(a=>{ const L=acts[acts.length-1]; if(L&&L.text===a.text&&Math.abs(new Date(L.t)-new Date(a.t))<36e5) L.n++; else acts.push({text:a.text,t:a.t,n:1}); });
     el.innerHTML = `
      <div class="kpis" style="margin-bottom:16px">
-       ${kpi('🎓',act.length,'Active students','#/students')}${kpi('👪',fams.filter(f=>!f.solo).length+(fams.some(f=>f.solo)?'+':''),'Families','#/tuition/families')}${kpi('💵',(collected?'$'+collected:'—'),'Tuition · '+nowM,'#/tuition/overview',outstanding?'$'+outstanding+' outstanding':'',pctPaid)}${kpi('📨',anNeed.length,'Notices to send','#/absences')}${kpi('💬',fuUnsent,'Updates unsent','#/family')}${kpi('🗓️',ncLab,'Next class','#/admin/calendar',nextEv.length?esc(nextEv[0].title):'')}</div>
+       ${kpi('🎓',act.length,'Active students','#/students')}${kpi('👪',fams.filter(f=>!f.solo).length+(fams.some(f=>f.solo)?'+':''),'Families','#/tuition/families')}${kpi('💵',(collected?'$'+collected:'—'),'Tuition · '+nowM,'#/tuition/overview',outstanding?'$'+outstanding+' outstanding':'',pctPaid)}${kpi('📨',anNeed.length,'Notices to send','#/absences')}${kpi('💬',fuUnsent,'Updates unsent','#/family')}<button class="kpi-card" id="admEmer" title="Print an emergency contact + medical card for every student"><span class="ki">🆘</span><b style="font-size:17px">Emergency card</b><span>Print for all students</span><small style="font-size:10.5px;color:var(--ink3)">contacts · allergies</small></button></div>
      <div class="widget wfull" style="border-top:3px solid ${A.length?'var(--gold)':'var(--ok)'};margin-bottom:14px"><div class="whead"><h3>✅ Today — what needs you</h3><span class="tag ${A.length?'tag-gold':'tag-green'}">${A.length||'all clear'}</span></div>${todayHtml}</div>
      <div class="grid g2" style="align-items:start">
       <div class="widget" style="border-top:3px solid var(--info)"><div class="whead"><h3>🗓️ Upcoming</h3><button class="btn btn-ghost btn-sm" data-go="#/admin/calendar">Calendar →</button></div>
@@ -13660,6 +13674,7 @@ const Admin = {
     wireCommon(el);
     $$('button[data-ai]',el).forEach(b=>b.onclick=()=>{ sessionStorage.setItem('ai_q', b.dataset.ai); Router.go('#/ai'); });
     $$('[data-fix]',el).forEach(b=>b.onclick=()=>{ if(b.dataset.fix==='finder') FU.finder(()=>Admin.overview(el)); else Admin.regModal(incompl,()=>Admin.overview(el)); });
+    const em=$('#admEmer',el); if(em) em.onclick=()=>Students.printEmergencyCard();
   },
   regModal(list,cb){ const o=overlay(`<div class="modal" style="max-width:520px"><h3>📋 Missing registration info</h3><div style="max-height:55vh;overflow:auto">${list.map(s=>`<div class="an-row" style="${AN.vars(AN.PAL[2])}">${avatarHTML(s,'width:32px;height:32px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="an-who"><b dir="auto">${esc(ptFirst(s))}</b><small>missing: ${esc(regComplete(s).join(', '))}</small></div><button class="btn btn-p btn-sm" data-rg="${s.id}">Open →</button></div>`).join('')}</div><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" id="rgF">🔎 Find contacts from family records</button></div></div>`,true);
     $('[data-x=c]',o).onclick=()=>o.remove(); $('#rgF',o).onclick=()=>{ o.remove(); FU.finder(cb); }; $$('[data-rg]',o).forEach(b=>b.onclick=()=>{ o.remove(); Router.go('#/students/'+b.dataset.rg); }); },
@@ -17413,11 +17428,11 @@ function navBadges(){
     o.rew=(typeof Rewards!=='undefined'?Rewards.pending().length:0)+d.students.filter(s=>s.active!==false&&(s.hifzGoalHistory||[]).some(h=>h.status==='met'&&!h.celebrated)).length;
   }catch(e){} return o; }
 function setTabbar(){ const h=location.hash||'#/dashboard', tb=$('#tabbar'); if(!tb) return; $$('a[data-tb]',tb).forEach(a=>{ const t=a.dataset.tb; a.classList.toggle('on', t==='more'?false: (t==='dashboard'?(h==='#/dashboard'||h==='#/'||h===''):h.startsWith('#/'+t))); }); }
-function navMark(nv){ const cur=nv||navId(), h=location.hash; $$('#nav a').forEach(a=>{ a.classList.toggle('on', a.classList.contains('sc')? h==='#/'+a.dataset.mod : a.dataset.mod===cur); }); setTabbar(); }
+function navMark(nv){ const cur=nv||navId(), h=location.hash; $$('#nav a').forEach(a=>{ a.classList.toggle('on', a.classList.contains('sc')? (h==='#/'+a.dataset.mod||(a.dataset.mod==='students/cleaning'&&h==='#/students/fieldtrip')) : a.dataset.mod===cur); }); setTabbar(); }
 function footStatus(){ const f=$('#footbk'); if(!f) return; const bk=DB.data.settings.lastBackupAt, dd=bk?Math.floor((Date.now()-new Date(bk))/864e5):null; const col=dd==null||dd>14?'#e86a5e':dd>7?'#e8b84f':'#7fcf9c'; f.innerHTML=`<a href="#/settings" style="color:${col};text-decoration:none">● Backup ${dd==null?'never':dd===0?'today':dd+'d ago'}</a>`; }
 function buildNav(){
   $('#nav').innerHTML = Layout.navMarkup();
-  $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); if(a.dataset.mod==='classmode'){ $('#sidebar').classList.remove('open'); Teacher.openClassMode(); return; } Router.go('#/'+a.dataset.mod); }));
+  $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); if(a.dataset.mod==='classmode'){ $('#sidebar').classList.remove('open'); Teacher.openClassMode(); return; } Router.go('#/'+a.dataset.mod); Router.stack=[]; Router.updBack(); }));
   navMark(); footStatus();
   Layout.wireNav();
 }
@@ -17439,9 +17454,10 @@ function bootApp(){
   $('#layBtn').onclick=()=>Layout.toggle();
   $('#logoutBtn').onclick=()=>confirmBox('Log out of AMAN Central?', doLogout);
   $('#hambBtn').onclick=()=>$('#sidebar').classList.toggle('open');
+  $('#backBtn').onclick=()=>Router.back();
   const tbc=$('#tbClass'); if(tbc) tbc.onclick=e=>{ e.preventDefault(); e.stopPropagation(); Teacher.openClassMode(); };
   const tbm=$('#tbMore'); if(tbm) tbm.onclick=e=>{ e.preventDefault(); e.stopPropagation(); $('#sidebar').classList.toggle('open'); };
-  document.addEventListener('click', e=>{ if(window.innerWidth<=900 && !e.target.closest('#sidebar') && !e.target.closest('#hambBtn')) $('#sidebar').classList.remove('open'); });
+  document.addEventListener('click', e=>{ if((window.innerWidth<=900||matchMedia('(orientation:landscape) and (max-height:520px)').matches) && !e.target.closest('#sidebar') && !e.target.closest('#hambBtn')) $('#sidebar').classList.remove('open'); });
   Router.render();
 }
 function showApp(){
