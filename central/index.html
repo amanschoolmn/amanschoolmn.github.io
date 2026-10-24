@@ -790,13 +790,17 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .st-card{cursor:pointer;display:flex;gap:12px;align-items:flex-start;border-left:4px solid var(--ok);padding:12px 14px}
 .st-card .nm{display:block;font-weight:700;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
 .st-card .mt{font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin:1px 0 6px}
+.st-card .nm{text-align:left;unicode-bidi:plaintext}
+.st-card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.grid.st-dense{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+@media(max-width:700px){.grid.st-dense{grid-template-columns:1fr}}
 .st-flags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
 .st-flag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--ink2)}
 .st-flag.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
 .st-flag.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
 .st-flag.gold{background:color-mix(in srgb,var(--gold) 20%,transparent);color:var(--gold-text,#8a6520)}
 .st-flag.info{background:color-mix(in srgb,var(--info) 16%,transparent);color:var(--info)}
-@media(max-width:640px){.st-more .pop{position:fixed;left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:75vh;overflow:auto;z-index:150}.st-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.st-head h1{font-size:26px}.st-bar select{max-width:none;flex:1 1 120px}}
+@media(max-width:640px){.st-more .pop{position:fixed;left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:75vh;overflow:auto;z-index:150}.st-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.st-stat{padding:7px 8px}.st-stat b{font-size:19px}.st-stat span{font-size:9.5px;line-height:1.2;display:block}.st-quick{gap:6px}.st-quick .btn{padding:5px 9px;font-size:12px}.st-head h1{font-size:26px}.st-bar select{max-width:none;flex:1 1 120px}}
 .filters select{width:auto;padding:7px 30px 7px 11px;font-size:12.5px}
 .filters input[type=search]{max-width:260px;padding:7.5px 12px;font-size:13px}
 
@@ -1117,7 +1121,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">v1.0 · build 63 · <span id="foot-count">0</span> resources indexed</div>
+    <div class="side-foot">v1.0 · build 64 · <span id="foot-count">0</span> resources indexed</div>
   </aside>
 
   <div class="main">
@@ -7582,7 +7586,37 @@ const Students = {
     const sotm=new Set(d.achievements.filter(a=>a.sid===s.id&&a.type==='sotm').map(a=>a.text)).size;
     let k='none';
     if(strip.some(x=>x)||log.length){ k='ok'; if(abs>=2||(stale!=null&&stale>=35)) k='bad'; else if(abs>=1||(stale!=null&&stale>=14)||(pace!=null&&pace<=0&&!ready)) k='warn'; }
-    return {strip,abs,stale,pace,allergy,sibs,ready,sotm,k};
+    return {strip,abs,stale,pace,allergy,sibs,ready,sotm,k,last4:last4.length};
+  },
+  // Typical weekly pace for a level (median of students who are moving) — pace is judged against this, never against zero
+  med(L){
+    const d=DB.data, key=today()+'|'+d.students.length+'|'+Object.keys(d.attendance).length;
+    if(!Students._medC||Students._medC.k!==key) Students._medC={k:key,v:{}};
+    if(Students._medC.v[L]!==undefined) return Students._medC.v[L];
+    const a=d.students.filter(s=>s.active!==false&&s.level===L).map(s=>Students.sig(s).pace).filter(p=>p!=null&&p>0).sort((a,b)=>a-b);
+    return Students._medC.v[L]=a.length>=3?a[Math.floor(a.length/2)]:null;
+  },
+  // Long-press sheet: the things you actually do with one student, without opening their profile
+  quickSheet(s){
+    const d=DB.data, ph=AI2.stuPhone(s), dg=String(ph||'').replace(/[^\d+]/g,''), att=(d.attendance[today()]||{})[s.id];
+    const o=overlay(`<div class="modal" style="max-width:380px"><div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">${avatarHTML(s,'width:48px;height:48px;border-radius:50%;font-size:16px;flex-shrink:0')}<b dir="auto" style="font-size:17px">${esc(s.preferredName||s.name)}</b></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${dg.length>=7?`<a class="btn btn-o" href="tel:${esc(dg)}" style="text-decoration:none;text-align:center">📞 Call ${esc(AI2.stuParent(s)||'parent')}</a>`:'<div class="ai-sub">No parent phone on file.</div>'}
+        <button class="btn btn-o" id="qsMsg">💬 Message parent</button>
+        <button class="btn btn-o" id="qsOpen">📖 Open profile (progress, notes)</button>
+        <div class="ai-sub" style="margin-top:4px">Mark today${att?' — now: <b>'+esc(PT_ATT_LABEL[att]||att)+'</b>':''}</div>
+        <div style="display:flex;gap:6px"><button class="btn ${att==='P'?'btn-p':'btn-o'}" data-qa="P" style="flex:1">Present</button><button class="btn ${att==='L'?'btn-p':'btn-o'}" data-qa="L" style="flex:1">Late</button><button class="btn ${att==='A'?'btn-p':'btn-o'}" data-qa="A" style="flex:1">Absent</button></div>
+      </div><div class="mfoot"><button class="btn btn-o" id="qsX">Close</button></div></div>`,true);
+    $('#qsX',o).onclick=()=>o.remove();
+    $('#qsOpen',o).onclick=()=>{ o.remove(); Router.go('#/students/'+s.id); };
+    $('#qsMsg',o).onclick=()=>{ o.remove(); FU.compose(s,'As-salāmu ʿalaykum,\n\n',{title:'Message to '+(AI2.stuParent(s)||'parent')}); };
+    $$('[data-qa]',o).forEach(b=>b.onclick=()=>{ d.attendance[today()]=d.attendance[today()]||{}; d.attendance[today()][s.id]=b.dataset.qa; DB.log('Quick attendance: '+s.name+' → '+b.dataset.qa); DB.save(); o.remove(); toast((s.preferredName||s.name)+' marked '+(PT_ATT_LABEL[b.dataset.qa]||b.dataset.qa)); Router.render(); });
+  },
+  legend(){
+    const o=overlay(`<div class="modal" style="max-width:420px"><h3>How to read the cards</h3>
+      <p style="font-size:13px;line-height:1.7"><span style="color:var(--bad)">●</span> <b>Red dot</b> — 2+ absences in the last 4 sessions, or no progress update in 35+ days.<br><span style="color:var(--gold)">●</span> <b>Amber dot</b> — one absence, no update in 2+ weeks, or slower than the level's usual pace.<br><b>No dot</b> — nothing to flag. Healthy students stay quiet on purpose.<br><br><b>Row of dots</b> (only shown when something's off) — the last 6 sessions, newest on the right: <span style="color:var(--ok)">●</span> present, <span style="color:var(--gold)">●</span> late, <span style="color:var(--bad)">●</span> absent, ○ excused.<br><br><b>Pace</b> — pages per week over the last month, compared with the middle student of the same level. Amber means well under that.</p>
+      <div class="mfoot"><button class="btn btn-p" id="lgX">Got it</button></div></div>`,true);
+    $('#lgX',o).onclick=()=>o.remove();
   },
   /* ---------- LIST: progress at a glance ---------- */
   list(v){
@@ -7606,7 +7640,7 @@ const Students = {
     const activeShown = statusFilter==='all'? stu.filter(s=>s.active!==false) : stu;
 
     const prog = s=>{
-      if(s.level==='Level 1'){ const p=(s.gb&&s.gb.page)||0; return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>GB p.${p}</span><span>${Math.round(p/GB_TOTAL*100)}%</span></div><div class="bar"><i style="width:${p/GB_TOTAL*100}%"></i></div></div>`; }
+      if(s.level==='Level 1'){ const p=(s.gb&&s.gb.page)||0; return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>Green Book p.${p} of ${GB_TOTAL}</span><span>${Math.round(p/GB_TOTAL*100)}%</span></div><div class="bar"><i style="width:${p/GB_TOTAL*100}%"></i></div></div>`; }
       if(s.level==='Level 2'){ const p=(s.mus&&s.mus.page)||0; return `<span class="tag tag-blue">Muṣḥaf p.${p||'—'}</span>`; }
       const st=hifzStats(s); return `<div style="min-width:110px"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--f-mono);color:var(--ink3)"><span>${esc(QS[st.cur].name)}</span><span>${st.pct.toFixed(0)}%</span></div><div class="bar"><i style="width:${st.pct}%"></i></div></div>`;
     };
@@ -7619,21 +7653,55 @@ const Students = {
       if(s.trialEnds&&s.trialEnds>=today()) f.push({t:'Trial until '+fmtDate(s.trialEnds), k:'info'});
       return f; };
     const needsAttn = s => s.active!==false && (attToday[s.id]==='A' || (s.hw&&(s.hw.tries||0)>=3));
+    const dense = d.settings.stuDense!=null ? !!d.settings.stuDense : window.innerWidth<700;
+    const progShort = s=>{ if(s.level==='Level 1'){ const p=(s.gb&&s.gb.page)||0; return `Green Book p.${p} · ${Math.round(p/GB_TOTAL*100)}%`; }
+      if(s.level==='Level 2'){ const p=(s.mus&&s.mus.page)||0; return 'Muṣḥaf p.'+(p||'—'); }
+      const st=hifzStats(s); return esc(QS[st.cur].name)+' · '+st.pct.toFixed(0)+'% memorized'; };
+    // Only exceptions get a chip — a healthy student's card stays quiet
+    const exOf = (s,sg)=>{ const ex=[]; if(!sg) return ex;
+      if(sg.allergy) ex.push({t:'⚠ allergy',k:'bad'});
+      if(sg.ready) ex.push({t:'🎓 ready for Level 2',k:'ok'});
+      if(sg.abs>=1) ex.push({t:sg.abs+' absent of last '+sg.last4,k:sg.abs>=2?'bad':'gold'});
+      if(sg.stale!=null&&sg.stale>=14) ex.push({t:'last update '+sg.stale+'d ago',k:sg.stale>=35?'bad':'gold'});
+      const med=Students.med(s.level); let behind=false, pt='';
+      if(s.level==='Level 3'&&s.hifzGoal&&sg.pace!=null){ try{ const g=s.hifzGoal, jp=juzProgress(s,g.juz), dl=g.deadline?Math.round((new Date(g.deadline)-new Date(today()))/864e5):null, rem=Math.max(0,jp.tot-jp.done);
+          if(rem>0&&dl!=null&&dl>0){ const need=rem/(dl/7); if(sg.pace<need*0.8){ behind=true; pt='needs '+(need<1?'<1':Math.ceil(need))+' p/wk for goal, doing '+sg.pace.toFixed(1); } } }catch(e){} }
+      if(!behind&&sg.pace!=null&&med&&sg.pace<med*0.5){ behind=true; pt='slower pace · '+sg.pace.toFixed(1)+' p/wk vs usual '+med.toFixed(1); }
+      if(!behind&&sg.pace!=null&&sg.pace<=0&&!sg.ready&&sg.stale!=null&&sg.stale<14){ behind=true; pt='no movement this month'; }
+      if(behind) ex.push({t:pt,k:'gold'});
+      (flagsOf(s)||[]).filter(x=>x.k!=='ok').forEach(x=>ex.push({t:x.t,k:x.k}));
+      return ex; };
     const card = s => { const age=ageFromDob(s.dob); const sg=s.active===false?null:Students.sig(s);
       const lvlAccent = s.level==='Level 1'?'var(--ok)':s.level==='Level 2'?'var(--info)':'#7B4FA0';
-      const fl = s.active===false ? [] : flagsOf(s);
-      return `<div class="card st-card" ${selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}"`} style="border-left-color:${lvlAccent}">
-        ${selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none;margin-top:12px">`:''}
-        <div style="position:relative;flex-shrink:0">${avatarHTML(s)}${sg&&sg.k!=='none'?`<i title="${sg.k==='ok'?'On track':sg.k==='warn'?'Worth a look':'Needs attention'}" style="position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;border:2px solid var(--surface);background:${sg.k==='ok'?'var(--ok)':sg.k==='warn'?'var(--gold)':'var(--bad)'}"></i>`:''}</div>
+      const ex = exOf(s,sg); const showDot = sg && (sg.k==='warn'||sg.k==='bad');
+      const dot = showDot?`<i title="${sg.k==='warn'?'Worth a look':'Needs attention'}" style="position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;border-radius:50%;border:2px solid var(--surface);background:${sg.k==='warn'?'var(--gold)':'var(--bad)'}"></i>`:'';
+      const ageTxt = age==null?'':(age<3||age>25)?`<span style="color:var(--bad)" title="Check this date of birth">⚠ ${age}y?</span>`:age+'y';
+      const left = s.active===false?'<span class="tag tag-dim">left AMAN</span>':s.startDate&&s.startDate>today()?`<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`:'';
+      const chips = list=>list.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">${list.map(x=>`<span class="st-flag ${x.k}">${esc(x.t)}</span>`).join('')}</div>`:'';
+      const dotsRow = sg&&sg.strip.some(x=>x&&x!=='P')?`<span title="Last ${sg.strip.length} sessions, newest on the right" style="letter-spacing:2px;margin-left:6px">${sg.strip.map(x=>x==='P'?'<span style="color:var(--ok)">●</span>':x==='L'?'<span style="color:var(--gold)">●</span>':x==='A'?'<span style="color:var(--bad)">●</span>':x==='E'?'<span style="color:var(--info)">○</span>':'<span style="color:var(--ink3)">·</span>').join('')}</span>`:'';
+      const sel = selectMode?`<input type="checkbox" class="sel-cb" data-sid="${s.id}" aria-label="Select ${esc(s.name)}" ${selected.has(s.id)?'checked':''} style="width:17px;height:17px;flex-shrink:0;pointer-events:none;margin-top:12px">`:'';
+      const attr = selectMode?`data-selcard="${s.id}"`:`data-go="#/students/${s.id}" data-lp="${s.id}"`;
+      if(dense){
+        return `<div class="card st-card st-row" ${attr} style="border-left-color:${lvlAccent};padding:8px 12px;align-items:center">${sel}
+          <div style="position:relative;flex-shrink:0">${avatarHTML(s,'width:44px;height:44px;border-radius:50%;font-size:15px')}${dot}</div>
+          <div style="min-width:0;flex:1"><b class="nm" dir="auto" style="font-size:14.5px">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
+          <div class="mt" style="margin:1px 0 0">${ageTxt}${ageTxt?' · ':''}${left||progShort(s)}</div>
+          ${chips(ex.slice(0,2))}${ex.length>2?`<div class="ai-sub" style="font-size:10.5px;margin-top:3px">+${ex.length-2} more</div>`:''}</div></div>`;
+      }
+      return `<div class="card st-card" ${attr} style="border-left-color:${lvlAccent}">${sel}
+        <div style="position:relative;flex-shrink:0">${avatarHTML(s)}${dot}</div>
         <div style="min-width:0;flex:1"><b class="nm" dir="auto">${s.favorite?'★ ':''}${esc(s.preferredName||s.name)}</b>
-        <div class="mt" title="AMAN-${String(s.studentNo||0).padStart(3,'0')}">${age!=null?(age<5||age>19?`<span style="color:var(--bad)" title="Check this date of birth">⚠ ${age}y?</span>`:age+'y'):'age —'}${sg&&sg.strip.length?` · <span title="Last ${sg.strip.length} sessions" style="letter-spacing:2px">${sg.strip.map(x=>x==='P'?'<span style="color:var(--ok)">●</span>':x==='L'?'<span style="color:var(--gold)">●</span>':x==='A'?'<span style="color:var(--bad)">●</span>':x==='E'?'<span style="color:var(--info)">○</span>':'<span style="color:var(--ink3)">·</span>').join('')}</span>`:''}</div>
-        ${s.active===false?'<span class="tag tag-dim">left AMAN</span>':s.startDate&&s.startDate>today()?`<span class="tag tag-blue">starts ${fmtDate(s.startDate)}</span>`:prog(s)}
-        ${sg&&s.active!==false?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">${sg.allergy?'<span class="st-flag bad">⚠ allergy</span>':''}${sg.ready?'<span class="st-flag ok">🎓 ready for Level 2</span>':''}${sg.pace!=null?`<span class="st-flag ${sg.pace>0?'ok':'gold'}">${sg.pace>0?'▲ '+(sg.pace>=10?Math.round(sg.pace):sg.pace.toFixed(1))+' p/wk':'• no movement'}</span>`:''}${sg.stale!=null&&sg.stale>=14?`<span class="st-flag ${sg.stale>=35?'bad':'gold'}">last update ${sg.stale}d ago</span>`:''}${sg.sibs.length?`<span class="st-flag info" title="${esc(sg.sibs.map(x=>x.preferredName||x.name).join(', '))}">👥 ${sg.sibs.length} sibling${sg.sibs.length>1?'s':''}</span>`:''}${sg.sotm?`<span class="st-flag gold">🌟 SOTM ×${sg.sotm}</span>`:''}${sg.k==='none'?'<span class="st-flag info" style="opacity:.7">no recent data</span>':''}</div>`:''}
-        ${fl.length?`<div class="st-flags">${fl.map(x=>`<span class="st-flag ${x.k}">${esc(x.t)}</span>`).join('')}</div>`:''}</div></div>`; };
+        <div class="mt" title="AMAN-${String(s.studentNo||0).padStart(3,'0')}">${ageTxt||'age —'}${dotsRow}</div>
+        ${left||prog(s)}
+        ${sg&&s.active!==false&&sg.pace!=null?`<div class="ai-sub" style="font-size:11px;margin-top:4px">${sg.pace>0?sg.pace.toFixed(1)+' pages/week':'no movement'} (last month)${sg.sotm?` · 🌟 SOTM ×${sg.sotm}`:''}</div>`:(sg&&sg.sotm?`<div class="ai-sub" style="font-size:11px;margin-top:4px">🌟 SOTM ×${sg.sotm}</div>`:'')}
+        ${chips(ex)}</div></div>`; };
 
     const sortFns = { level:(a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level)||a.name.localeCompare(b.name),
-      name:(a,b)=>a.name.localeCompare(b.name), recent:(a,b)=>(b.studentNo||0)-(a.studentNo||0) };
-    const useSections = !levelFilter && sortBy==='level';
+      name:(a,b)=>a.name.localeCompare(b.name), recent:(a,b)=>(b.studentNo||0)-(a.studentNo||0),
+      attn:(a,b)=>{ const R={bad:0,warn:1,ok:2,none:3}; return (R[Students.sig(a).k]-R[Students.sig(b).k])||a.name.localeCompare(b.name); },
+      family:(a,b)=>String(famKey(a)||'~').localeCompare(String(famKey(b)||'~'))||a.name.localeCompare(b.name) };
+    const useSections = !levelFilter && (sortBy==='level'||sortBy==='attn');
+    const gridCls = dense?'grid st-dense':'grid g3';
 
     let bodyHTML;
     if(!activeShown.length && !inact.length){
@@ -7644,9 +7712,14 @@ const Students = {
     } else if(useSections){
       bodyHTML = LEVELS.map(L=>{ const g=activeShown.filter(s=>s.level===L); if(!g.length) return '';
         return `<div class="sect">${L} — ${LEVEL_SUB[L]}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div>
-         <div class="grid g3">${g.sort(sortFns.name).map(card).join('')}</div>`; }).join('');
+         <div class="${gridCls}">${g.sort(sortBy==='attn'?sortFns.attn:sortFns.name).map(card).join('')}</div>`; }).join('');
+    } else if(sortBy==='family'){
+      const fams={}; activeShown.slice().sort(sortFns.family).forEach(s=>{ const k=famKey(s)||('solo-'+s.id); (fams[k]=fams[k]||[]).push(s); });
+      const multi=Object.entries(fams).filter(([k,g])=>g.length>1), single=Object.values(fams).filter(g=>g.length===1).map(g=>g[0]);
+      bodyHTML = multi.map(([k,g])=>`<div class="sect">👨‍👩‍👧 <bdi dir="auto">${esc(g.map(x=>ptFirst(x)).join(' · '))}</bdi><span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${g.length}</span></div><div class="${gridCls}">${g.map(card).join('')}</div>`).join('')
+        + (single.length?`<div class="sect">Single-child families<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${single.length}</span></div><div class="${gridCls}">${single.sort(sortFns.name).map(card).join('')}</div>`:'');
     } else {
-      bodyHTML = `<div class="grid g3">${activeShown.slice().sort(sortFns[sortBy]).map(card).join('')}</div>`;
+      bodyHTML = `<div class="${gridCls}">${activeShown.slice().sort(sortFns[sortBy]||sortFns.name).map(card).join('')}</div>`;
     }
 
     const actAll = d.students.filter(s=>s.active!==false);
@@ -7693,13 +7766,14 @@ const Students = {
      ${(()=>{ const act=d.students.filter(s=>s.active!==false), sgs=act.map(s=>({s,g:Students.sig(s)}));
        const c={bad:sgs.filter(x=>x.g.k==='bad').length,warn:sgs.filter(x=>x.g.k==='warn').length,ready:sgs.filter(x=>x.g.ready).length,allergy:sgs.filter(x=>x.g.allergy).length,stale:sgs.filter(x=>x.g.stale!=null&&x.g.stale>=14).length,sibs:sgs.filter(x=>x.g.sibs.length).length};
        const ch=(k,t,n,cls)=>n||Students._sigF===k?`<button class="chip ${Students._sigF===k?'on':''}" data-sigf="${k}" ${cls?'':''}>${t} <b>${n}</b></button>`:'';
-       return `<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 0 10px"><span class="ai-sub">Quick view:</span>${ch('bad','🔴 At risk',c.bad)}${ch('warn','🟠 Worth a look',c.warn+c.bad)}${ch('stale','🕒 No update 2+ wks',c.stale)}${ch('ready','🎓 Ready to promote',c.ready)}${ch('allergy','⚠ Allergies',c.allergy)}${ch('sibs','👥 Has siblings',c.sibs)}${Students._sigF?'<button class="chip" data-sigf="">✕ Clear</button>':''}</div>`; })()}
+       return `<div class="no-print" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 0 10px"><span class="ai-sub">Quick view:</span><button class="chip" id="stLegend" title="How to read the cards" style="padding:2px 9px">ⓘ</button>${ch('bad','🔴 At risk',c.bad)}${ch('warn','🟠 Worth a look',c.warn+c.bad)}${ch('stale','🕒 No update 2+ wks',c.stale)}${ch('ready','🎓 Ready to promote',c.ready)}${ch('allergy','⚠ Allergies',c.allergy)}${ch('sibs','👥 Has siblings',c.sibs)}${Students._sigF?'<button class="chip" data-sigf="">✕ Clear</button>':''}</div>`; })()}
      <div class="st-bar no-print">
        ${d.students.length?`<input type="search" id="stFind" placeholder="Find a student…" value="${esc(Students._find||'')}">`:''}
        <span style="display:inline-flex;gap:6px;flex-wrap:wrap">${[['','All'],...LEVELS.map(L=>[L,L])].map(([L,t])=>`<button class="chip ${levelFilter===L?'on':''}" data-stl="${L}">${t}</button>`).join('')}</span>
        <span class="sp"></span>
        <select id="stStatus" aria-label="Filter by status"><option value="active" ${statusFilter==='active'?'selected':''}>Active</option><option value="inactive" ${statusFilter==='inactive'?'selected':''}>Inactive</option><option value="all" ${statusFilter==='all'?'selected':''}>All</option></select>
-       <select id="stSort" aria-label="Sort students by"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
+       <select id="stSort" aria-label="Sort students by"><option value="level" ${sortBy==='level'?'selected':''}>Sort: Level</option><option value="name" ${sortBy==='name'?'selected':''}>Sort: Name</option><option value="attn" ${sortBy==='attn'?'selected':''}>Sort: Needs attention first</option><option value="family" ${sortBy==='family'?'selected':''}>Group: By family</option><option value="recent" ${sortBy==='recent'?'selected':''}>Sort: Recently added</option></select>
+       <button class="chip" id="stDense" title="Switch between compact rows and full cards">${dense?'▦ Full cards':'▤ Compact'}</button>
        <button class="chip ${favOnly?'on':''}" id="stFav">★ Favorites</button>
      </div>
      ${(()=>{ const pending = (d.pendingUpdates||[]); if(!pending.length) return '';
@@ -7728,6 +7802,14 @@ const Students = {
      ${statusFilter==='all'&&inact.length?`<div class="sect">Inactive — no longer enrolled<span class="rule"></span></div>
       <div class="grid g3">${inact.map(card).join('')}</div>`:''}`;
     wireCommon(v);
+    const sdn=$('#stDense',v); if(sdn) sdn.onclick=()=>{ d.settings.stuDense=dense?0:1; DB.save(); Router.render(); };
+    const slg=$('#stLegend',v); if(slg) slg.onclick=()=>Students.legend();
+    if(!v._lpWired){ v._lpWired=true; v.addEventListener('click',e=>{ if(Students._lpSup){ e.stopPropagation(); e.preventDefault(); Students._lpSup=false; } },true); }
+    $$('[data-lp]',v).forEach(el=>{ let t=null,x0=0,y0=0; const stop=()=>{ clearTimeout(t); t=null; };
+      el.addEventListener('pointerdown',e=>{ x0=e.clientX; y0=e.clientY; stop(); t=setTimeout(()=>{ t=null; const st=d.students.find(z=>z.id===el.dataset.lp); if(st){ Students._lpSup=true; setTimeout(()=>{ Students._lpSup=false; },700); if(navigator.vibrate) try{ navigator.vibrate(15); }catch(_){} Students.quickSheet(st); } },520); });
+      el.addEventListener('pointermove',e=>{ if(t&&(Math.abs(e.clientX-x0)>8||Math.abs(e.clientY-y0)>8)) stop(); });
+      ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,stop));
+      el.addEventListener('contextmenu',e=>{ e.preventDefault(); }); });
     $$('[data-sigf]',v).forEach(b=>b.onclick=()=>{ Students._sigF=(Students._sigF===b.dataset.sigf)?'':b.dataset.sigf; Router.render(); });
     const add=()=>this.form(); const imp=()=>this.importCSV();
     $('#stAdd',v)&&($('#stAdd',v).onclick=add); $('#stAdd2',v)&&($('#stAdd2',v).onclick=add);
