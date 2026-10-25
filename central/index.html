@@ -417,7 +417,25 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .pt-c.solid{background:linear-gradient(155deg,#e6c277,#b8872a);border-color:#b8872a;color:#20261f}
 .pt-c.due{background:color-mix(in srgb,var(--bad) 18%,var(--surface));border-color:var(--bad);color:var(--bad)}
 .pt-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin-bottom:8px}.pt-legend span{display:flex;align-items:center;gap:5px}
-.pt-board{overflow-x:auto}.pt-brow,.pt-bhead{display:grid;grid-template-columns:150px minmax(420px,1fr) 44px;gap:8px;align-items:center;margin-bottom:5px}
+.pt-board{overflow-x:auto;padding-bottom:4px}.pt-board>*{min-width:max-content}.pt-brow,.pt-bhead{display:grid;grid-template-columns:150px minmax(440px,1fr) 40px 40px 74px;gap:8px;align-items:center;margin-bottom:5px}
+.pt-brow .pt-bname{position:sticky;left:0;z-index:2;background:var(--surface);padding:2px 6px 2px 0}
+.pt-nums{display:flex;gap:2px}.pt-nums span{flex:1;text-align:center;font:600 8.5px var(--f-mono);color:var(--ink3);height:11px;overflow:visible;white-space:nowrap}
+.pt-c.sec{margin-left:5px}.pt-nums span.sec{margin-left:5px}
+.pt-c.pace{position:relative;margin-right:3px}.pt-c.pace::after{content:'';position:absolute;right:-4px;top:-5px;bottom:-5px;width:2px;border-radius:2px;background:var(--gold)}
+.pt-nums span.pace{color:var(--gold);font-weight:800}
+.pt-dl{font:700 11.5px var(--f-mono);text-align:center;border-radius:999px;padding:1px 0}.pt-dl.ok{color:var(--ok)}.pt-dl.bad{color:var(--bad)}.pt-dl.z{color:var(--ink3)}
+.pt-mv{display:flex;align-items:flex-end;gap:5px;font:600 10.5px var(--f-mono);color:var(--ink2)}.pt-mv .sp4{display:inline-flex;gap:1px;align-items:flex-end;height:14px}.pt-mv .sp4 i{display:block;width:3px;background:var(--ok);border-radius:1px;min-height:1px;opacity:.85}.pt-mv.stuck{color:var(--bad)}
+.pt-grp{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font:700 11px var(--f-ui);letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);position:sticky;left:0}.pt-grp:first-of-type{margin-top:2px}.pt-grp i{flex:1;height:1px;background:var(--line);min-width:20px}.pt-grp b{font-family:var(--f-mono);color:var(--ink3)}
+.pt-wkrow .pt-wk{flex:1;height:34px;border:0;background:none;padding:0;display:flex;align-items:flex-end;cursor:pointer;border-radius:3px;position:relative}.pt-wkrow .pt-wk i{display:block;width:100%;border-radius:3px 3px 0 0;min-height:2px}.pt-wkrow .pt-wk:hover{background:var(--surface2)}.pt-wkrow .pt-wk.sec{margin-left:5px}
+.pt-wkrow .lab{font:700 11px var(--f-ui);color:var(--ink2);position:sticky;left:0;background:var(--surface);z-index:2}
+.pt-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 10px}.pt-tools .sp{flex:1}
+.pt-tg{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--f-ui);color:var(--ink2);cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--surface)}.pt-tg.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pt-les{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:14px}
+.pt-lr{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}.pt-lr:first-of-type{border-top:0}.pt-lr>b{font:700 12.5px var(--f-ui);min-width:96px;flex-shrink:0}.pt-lr>span{display:flex;gap:4px;flex-wrap:wrap}
+.pt-nm{border:1px solid var(--line);background:var(--surface2);border-radius:999px;padding:1px 8px;font:600 11.5px var(--f-ui);color:var(--ink);cursor:pointer}.pt-nm:hover{border-color:var(--gold)}
+.pt-goalbar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:8px 0 6px}.pt-goalbar i{display:block;height:100%;background:linear-gradient(90deg,var(--ok),var(--gold));border-radius:999px}
+.pt-pop{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:8px;min-width:190px;max-width:260px}.pt-pop h4{margin:0 0 6px;font:700 12.5px var(--f-ui)}.pt-pop h4 small{display:block;font-weight:500;color:var(--ink3);font-size:11px}.pt-pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 8px;border-radius:8px;font:600 13px var(--f-ui);color:var(--ink);cursor:pointer}.pt-pop button:hover{background:var(--surface2)}
+@media print{.pt-hero,.pt-parts,.pt-tools,.pt-les,.pt-due,.notice,.pt-pop{display:none!important}.pt-board{overflow:visible}.pt-brow .pt-bname{position:static}.pt-board>*{min-width:0}@page{size:landscape;margin:10mm}.pt-mv{display:none}.pt-brow,.pt-bhead{grid-template-columns:110px 1fr 30px 30px}.pt-brow>.pt-mv,.pt-bhead>.pt-mvh{display:none}.pt-bname img,.pt-bname .av{display:none}}
 .pt-strip{display:flex;gap:2px}.pt-bp{height:14px;border-radius:4px;color:#fff;font:700 9px var(--f-mono);text-align:center;line-height:14px;opacity:.9}
 .pt-bname{display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font:600 12.5px var(--f-ui);text-align:left;min-width:0}.pt-bname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pt-bn{font:700 12px var(--f-mono);text-align:right}.pt-bn em{font-style:normal;margin-left:3px}.pt-bn em.ok{color:var(--ok)}.pt-bn em.bad{color:var(--bad)}
@@ -450,7 +468,7 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .pt-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 .pt-opts{display:grid;gap:8px}.pt-opt{text-align:left;padding:11px 13px;border-radius:11px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px/1.45 var(--f-ui);cursor:pointer}.pt-opt.ar{font-family:'Amiri',serif;font-size:21px;direction:rtl;text-align:center}.pt-opt:hover:not(:disabled){border-color:var(--gold)}.pt-opt.ok{background:color-mix(in srgb,var(--ok) 20%,var(--surface));border-color:var(--ok)}.pt-opt.bad{background:color-mix(in srgb,var(--bad) 18%,var(--surface));border-color:var(--bad)}
 .qj-jz.poem{background:#1a4a35;color:#f4ead6}
-@media(max-width:720px){.rp-kpis,.pt-parts{grid-template-columns:repeat(2,1fr)}.pt-brow,.pt-bhead{grid-template-columns:96px minmax(380px,1fr) 38px}.pt-hero{padding:18px 16px}.pt-title{font-size:22px}.rp-day{grid-template-columns:38px 1fr auto}}
+@media(max-width:720px){.rp-kpis,.pt-parts{grid-template-columns:repeat(2,1fr)}.pt-brow,.pt-bhead{grid-template-columns:96px minmax(400px,1fr) 34px 34px 64px}.pt-hero{padding:18px 16px}.pt-title{font-size:22px}.rp-day{grid-template-columns:38px 1fr auto}}
 /* ---- Admissions logos + Amaanah hero ---- */
 .logo-tile{flex-shrink:0;background:#fffdf6;border:1px solid var(--line);border-radius:16px;padding:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .logo-tile img{display:block;height:96px;width:auto;max-width:130px;object-fit:contain}
@@ -838,6 +856,12 @@ html[data-theme="dark"] .gcenter text{fill:#14211a}
 .st-head h1{font-family:var(--f-display);font-size:30px;line-height:1.1;margin:2px 0 0;color:var(--ink)}
 .st-head .sub{font-size:13px;color:var(--ink3);margin-top:3px}
 .st-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.apc{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;margin-bottom:12px}.apc-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.apc-seat{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.apc-seat b{font-family:var(--f-display);font-size:30px;line-height:1}.apc-seat span{font-size:13px;color:var(--ink3)}.apc-seat em{font-style:normal;font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px}.apc-seat em.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}.apc-seat em.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.apc .adm-seatbar{flex:1;min-width:120px;max-width:none}
+.apc-chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.apc-chips .sp{flex:1}.apc-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line2);background:var(--surface);font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer}.apc-chip b{font-family:var(--f-mono)}.apc-chip span{color:var(--ink2)}.apc-chip.zero{opacity:.5;cursor:default}.apc-chip:not(.zero):hover{background:var(--surface2)}
+.apc-chip i{width:9px;height:9px;border-radius:50%;display:inline-block}.apc-chip i[data-phase="review"]{background:var(--stage-review)}.apc-chip i[data-phase="waitlist"]{background:var(--stage-waitlist)}.apc-chip i[data-phase="interview"]{background:var(--stage-interview)}.apc-chip i[data-phase="agreement"]{background:var(--stage-agreement)}.apc-chip i[data-phase="decision"]{background:var(--stage-decision)}.apc-chip i[data-phase="accepted"]{background:var(--stage-accepted)}.apc-chip i[data-phase="notfit"]{background:var(--stage-notfit)}
+.apc-meta{font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)}
+.apt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}.apt .sp{flex:1}.apt input[type=search]{flex:1 1 180px;min-width:150px;max-width:260px}
 .sid{font-family:var(--f-mono);font-weight:700;color:var(--ink2);letter-spacing:.02em}.st-pho .sid{font-size:10.5px}
 .st-tool{padding:10px 12px;display:flex;flex-direction:column;gap:9px;margin-bottom:14px}.stt-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.stt-r .sp{flex:1}.st-tool select{width:auto;min-width:120px;flex:0 0 auto}.stt-r input[type=search]{flex:1 1 170px;min-width:150px;max-width:260px}.stt-lv{display:inline-flex;gap:6px;flex-wrap:wrap}.stt-q{padding-top:9px;border-top:1px dashed var(--line)}
 .st-stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit}
@@ -1208,7 +1232,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 71<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 73<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -7957,9 +7981,9 @@ const Students = {
        <div style="margin-top:8px">${pending.map((u,i)=>{
          const s = u.matchedStudentId ? d.students.find(x=>x.id===u.matchedStudentId) : null;
          return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-           <div><b>${esc(u.studentName||'(no name given)')}</b> ${s?`<span class="tag tag-green" style="margin-left:4px">matched: ${esc(s.preferredName||s.name)}</span>`:'<span class="tag tag-gold" style="margin-left:4px">needs matching</span>'}
+           <div style="display:flex;gap:10px;align-items:center">${s?avatarHTML(s,'width:42px;height:42px;border-radius:50%;font-size:14px;flex-shrink:0'):`<span style="width:42px;height:42px;border-radius:50%;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">❔</span>`}<div style="min-width:0"><b>${esc(u.studentName||'(no name given)')}</b> ${s?`<span class="tag tag-green" style="margin-left:4px">matched: <bdi dir="auto">${esc(s.preferredName||s.name)}</bdi></span>`:'<span class="tag tag-gold" style="margin-left:4px">needs matching</span>'}
              <div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${esc(u.guardianName||'—')}${u.whatChanged?' · changed: '+esc(u.whatChanged):''}</div>
-             <div style="font-size:11.5px;color:var(--ink3);margin-top:2px;font-family:var(--f-mono)">${u.submitted?fmtDate(u.submitted):''}</div></div>
+             <div style="font-size:11.5px;color:var(--ink3);margin-top:2px;font-family:var(--f-mono)">${u.submitted?fmtDate(u.submitted):''}</div></div></div>
            <div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-p btn-sm" data-review-update="${i}">Review</button><button class="btn btn-ghost btn-sm" data-dismiss-update="${i}">Dismiss</button></div>
          </div>`;
        }).join('')}</div>
@@ -8132,12 +8156,12 @@ const Students = {
             </label>`).join('')}`).join('')}`;
     };
     let student = u.matchedStudentId ? DB.data.students.find(x=>x.id===u.matchedStudentId) : null;
-    const o = overlay(`<div class="modal" style="max-width:560px"><h3>Review family update — ${esc(u.studentName||'(no name given)')}</h3>
+    const o = overlay(`<div class="modal" style="max-width:560px"><h3 style="display:flex;align-items:center;gap:10px">${student?avatarHTML(student,'width:44px;height:44px;border-radius:50%;font-size:15px;flex-shrink:0'):''}<span>Review family update — ${esc(u.studentName||'(no name given)')}</span></h3>
       <p style="font-size:13px;color:var(--ink2);margin:-6px 0 12px">Submitted by <b>${esc(u.guardianName||'—')}</b>${u.email?' ('+esc(u.email)+')':''} · ${u.submitted?fmtDate(u.submitted):''}</p>
       <div id="upd-body">${student? renderFor(student) : ''}</div>
       <div id="upd-pick" style="${student?'display:none':''}">
         <input type="search" id="upd-find" placeholder="Search by student name…" style="margin-bottom:8px">
-        <div id="upd-list" style="max-height:240px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:6px"></div>
+        <div id="upd-list" style="max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:6px"></div>
       </div>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s" ${student?'':'disabled'}>Apply selected changes</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
@@ -8146,8 +8170,9 @@ const Students = {
       const shown = DB.data.students.filter(s=>s.active!==false && (!f || s.name.toLowerCase().includes(f)));
       $('#upd-list',o).innerHTML = shown.length? shown.slice(0,30).map(s=>
         `<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;padding:6px 4px;font-weight:400;border-bottom:1px solid var(--line);cursor:pointer">
-          <input type="radio" name="upd-pick-r" class="upd-pick-cb" data-sid="${s.id}" style="width:auto">
-          ${esc(s.preferredName||s.name)} <span style="color:var(--ink3);font-size:12px">— AMAN-${String(s.studentNo||0).padStart(3,'0')}</span>
+          <input type="radio" name="upd-pick-r" class="upd-pick-cb" data-sid="${s.id}" style="width:auto;flex-shrink:0">
+          ${avatarHTML(s,'width:38px;height:38px;border-radius:50%;font-size:13px;flex-shrink:0')}
+          <span style="min-width:0;flex:1"><bdi dir="auto" style="font-weight:600">${esc(s.preferredName||s.name)}</bdi><br><span style="color:var(--ink3);font-size:11.5px;font-family:var(--f-mono)">AMAN-${String(s.studentNo||0).padStart(3,'0')} · ${esc(s.level)}</span></span>
         </label>`).join('') : '<p style="font-size:12.5px;color:var(--ink3);padding:8px">No matching students.</p>';
       $$('.upd-pick-cb',o).forEach(cb=>cb.onchange=()=>{
         student = DB.data.students.find(x=>x.id===cb.dataset.sid);
@@ -13435,6 +13460,52 @@ const PT = {
   /* ---------- helpers ---------- */
   rhyme(t){ const w=String(t).trim().split(/\s+/); return w.map((x,i)=>`<span class="pt-w${i===w.length-1?' rh':''}">${esc(x)}</span>`).join(' '); },
   ring(p,sz,label){ const r=(sz-8)/2, c=2*Math.PI*r; return `<div class="pt-ring" style="width:${sz}px;height:${sz}px"><svg width="${sz}" height="${sz}"><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 ${sz/2} ${sz/2})"/></svg><b>${label}</b></div>`; },
+  bset(){ const st=DB.data.settings; return st.ptBoard=st.ptBoard||{sort:'name',group:false}; },
+  move(s){ const log=(s.poem&&s.poem.log)||[], t=today(), c7=RP.addDays(t,-7), c21=RP.addDays(t,-21), wk=[0,0,0,0];
+    log.forEach(l=>{ if(l.act!=='mem') return; const d=PT.diff(l.date); if(d<28) wk[3-Math.floor(d/7)]++; });
+    const last=log[0]?log[0].date:null; return {w:log.filter(l=>l.act==='mem'&&l.date>=c7).length, wk, last, stuck:!!last&&last<c21, lastD:last?PT.diff(last):null}; },
+  grpKey(r){ if(r.m.memN===47) return 'a'; if(!r.m.memN&&!r.m.learn) return 'z'; return 'p'+(5-poemPart(r.m.next||47).n); },
+  grpLab(k){ if(k==='a') return '🌟 Finished the poem'; if(k==='z') return 'Not started yet'; const p=POEM_PARTS[4-(+k.slice(1))]; return 'Working in Part '+p.n+' · '+p.en; },
+  quick(btn){
+    const [sid,ns]=btn.dataset.ptq.split('|'), n=+ns, s=DB.data.students.find(x=>x.id===sid); if(!s) return;
+    $$('.pt-pop').forEach(e=>e.remove()); const k=PT.st(s,n).k, nm=ptFirst(s);
+    const acts=k==='none'?[['learning','📖 Start learning'],['mem','✅ Memorized'],['thru','⏩ Memorized through bayt '+n]]
+      :k==='learning'?[['mem','✅ Memorized'],['none','↺ Not started']]
+      :[['strong','⭐ Recall: strong'],['shaky','〰 Recall: shaky'],['forgot','✖ Forgot — relearn'],['none','↺ Unmark']];
+    const pop=document.createElement('div'); pop.className='pt-pop';
+    pop.innerHTML=`<h4>${esc(nm)} · bayt ${n}<small>${esc(poemSec(n).en)}</small></h4>`+acts.map(a=>`<button data-a="${a[0]}">${a[1]}</button>`).join('')+`<button data-a="study" style="color:var(--ink3)">🔍 Open study screen</button>`;
+    document.body.append(pop); const r=btn.getBoundingClientRect(), pw=pop.offsetWidth, ph=pop.offsetHeight;
+    pop.style.left=Math.max(8,Math.min(innerWidth-pw-8,r.left-pw/2+r.width/2))+'px'; pop.style.top=(r.bottom+ph+10>innerHeight?Math.max(8,r.top-ph-8):r.bottom+6)+'px';
+    const kill=()=>{ pop.remove(); document.removeEventListener('mousedown',away,true); }; const away=e=>{ if(!pop.contains(e.target)) kill(); }; setTimeout(()=>document.addEventListener('mousedown',away,true),0);
+    pop.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const a=b.dataset.a; kill(); if(a==='study') return PT.study(sid,n);
+      const x=UNDO.snap(s);
+      if(a==='thru') PT.setThrough(s,n); else if(a==='strong'||a==='shaky'||a==='forgot') PT.check(s,n,a); else PT.setSt(s,n,a);
+      toast(nm+' — bayt '+n+({learning:' learning',mem:' memorized',thru:' and all before it memorized',none:' cleared',strong:' strong ⭐',shaky:' shaky',forgot:' needs re-learning'})[a],()=>{ UNDO.restore(x); Router.render(); }); Router.render(); };
+  },
+  colInfo(n){
+    const L=PT.stu(), b=POEM[n-1], g={mem:[],learning:[],none:[],due:[]};
+    L.forEach(s=>{ const k=PT.st(s,n).k; (k==='solid'?g.mem:g[k]).push(s); });
+    const chips=a=>a.length?a.map(s=>`<button class="pt-nm" data-ptq2="${s.id}">${esc(ptFirst(s))}</button>`).join(' '):'<span class="ai-sub">—</span>';
+    const o=overlay(`<div class="modal" style="max-width:520px;width:96vw"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Bayt ${n} — the class</h3><button class="btn btn-ghost btn-sm" id="ci-x">Close</button></div>
+      <div class="pt-ar" dir="rtl" style="font-size:22px;line-height:1.9;margin:8px 0">${esc(b.sadr)}<br>${esc(b.ajuz)}</div>
+      <p class="ai-sub" style="margin:0 0 10px">${esc(poemSec(n).en)} · ${g.mem.length+g.due.length} of ${L.length} have memorized it</p>
+      ${g.due.length?`<div class="pt-lr"><b style="color:var(--bad)">🔁 Recall due (${g.due.length})</b><span>${chips(g.due)}</span></div>`:''}
+      <div class="pt-lr"><b>📖 Learning (${g.learning.length})</b><span>${chips(g.learning)}</span></div>
+      <div class="pt-lr"><b>Not yet (${g.none.length})</b><span>${chips(g.none)}</span></div>
+      <div class="pt-lr"><b style="color:var(--ok)">✅ Memorized (${g.mem.length})</b><span>${chips(g.mem)}</span></div></div>`,true);
+    $('#ci-x',o).onclick=()=>o.remove(); $$('[data-ptq2]',o).forEach(x=>x.onclick=()=>{ o.remove(); PT.study(x.dataset.ptq2,n); });
+  },
+  goalForm(){
+    const cf=PT.cfg(), g=cf.goal||{n:POEM_PARTS[0].b,date:''};
+    const o=overlay(`<div class="modal" style="max-width:400px"><h3>🎯 Class goal</h3><p style="font-size:13px;color:var(--ink2);margin-bottom:10px">Pick a milestone and a date. The board tracks how many students are there.</p>
+      <div class="field"><label>Everyone memorized through bayt</label><input type="number" id="cg-n" min="1" max="47" value="${g.n}"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 10px">${POEM_PARTS.map(p=>`<button class="pt-nm" data-cgp="${p.b}">End of Part ${p.n} (${p.b})</button>`).join('')}</div>
+      <div class="field"><label>By</label><input type="date" id="cg-d" value="${esc(g.date||'')}"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button>${cf.goal?'<button class="btn btn-ghost" data-x="r">Remove goal</button>':''}<button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+    $$('[data-cgp]',o).forEach(b=>b.onclick=()=>{ $('#cg-n',o).value=b.dataset.cgp; });
+    $('[data-x=c]',o).onclick=()=>o.remove(); const r=$('[data-x=r]',o); if(r) r.onclick=()=>{ delete cf.goal; DB.save(); o.remove(); Router.render(); };
+    $('[data-x=s]',o).onclick=()=>{ const d=$('#cg-d',o).value; if(!d){ toast('Choose a date'); return; } cf.goal={n:Math.max(1,Math.min(47,+$('#cg-n',o).value||1)),date:d}; DB.save(); o.remove(); toast('Goal saved'); Router.render(); };
+  },
   cell(s,n,mini){ const k=PT.st(s,n).k; return `<button class="pt-c ${k}${mini?' mini':''}" data-ptb="${s.id}|${n}" title="Bayt ${n} — ${({none:'not started',learning:'learning',mem:'memorized',solid:'solid ⭐',due:'memorized — recall check due'})[k]}">${mini?'':n}</button>`; },
   /* ---------- module render ---------- */
   render(v,param){
@@ -13444,22 +13515,60 @@ const PT = {
     const partAvg=POEM_PARTS.map(p=>{ if(!rows.length) return 0; let t=0; rows.forEach(r=>{ for(let n=p.a;n<=p.b;n++) if(PT.isMem(r.s,n)) t++; }); return t/(rows.length*(p.b-p.a+1))*100; });
     const behind=exp==null?0:rows.filter(r=>r.m.contig<exp).length, ahead=exp==null?0:rows.length-behind;
     const front=rows.length?Math.max(...rows.map(r=>r.m.contig)):0, nextCommon=(()=>{ const m={}; rows.forEach(r=>{ if(r.m.next) m[r.m.next]=(m[r.m.next]||0)+1; }); const e=Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0]; return e?{n:+e[0],c:e[1]}:null; })();
+    const bs=PT.bset(), secStart=new Set(POEM_SECS.map(x=>x.a).filter(x=>x>1));
+    const sorters={name:(x,y)=>0, progress:(x,y)=>y.m.memN-x.m.memN||y.m.contig-x.m.contig, pace:(x,y)=>(exp!=null?(x.m.contig-exp)-(y.m.contig-exp):x.m.contig-y.m.contig)||x.m.memN-y.m.memN, due:(x,y)=>y.m.due-x.m.due||y.m.memN-x.m.memN};
+    const sortedRows=rows.slice().sort(sorters[bs.sort]||sorters.name);
+    const xc=n=>(secStart.has(n)?' sec':'')+(exp>=1&&n===exp?' pace':'');
+    const rowHTML=r=>{ const mv=PT.move(r.s), fin=r.m.memN===47, dl=exp==null?null:r.m.contig-exp, started=r.m.memN||r.m.learn;
+      const mx=Math.max(1,...mv.wk), mvH=fin?'<span class="pt-mv">🌟</span>':!started?'<span class="pt-mv"></span>'
+        :mv.stuck?`<span class="pt-mv stuck" title="No poem progress logged for ${mv.lastD} days">🧊 ${Math.round(mv.lastD/7)}w</span>`
+        :`<span class="pt-mv" title="New bayts per week, last 4 weeks"><span class="sp4">${mv.wk.map(c=>`<i style="height:${Math.round(c/mx*100)}%"></i>`).join('')}</span>${mv.last?'+'+mv.w+' wk':'—'}</span>`;
+      return `<div class="pt-brow"><button class="pt-bname" data-go="#/poem/${r.s.id}">${avatarHTML(r.s,'width:22px;height:22px;border-radius:50%;font-size:8px;flex-shrink:0')}<span dir="auto">${esc(r.s.preferredName||r.s.name)}</span></button><div class="pt-strip">${[...Array(47)].map((_,i)=>PT.cell(r.s,i+1,true).replace('data-ptb','data-ptq').replace('class="pt-c ','class="pt-c'+xc(i+1)+' ')).join('')}</div><span class="pt-bn">${r.m.memN}</span><span class="pt-dl ${dl==null?'z':dl>=0?'ok':'bad'}" title="${dl==null?'':dl>=0?'ahead of the class pace':'behind the class pace'}">${dl==null?'':dl>0?'+'+dl:dl<0?'−'+(-dl):'0'}</span>${mvH}</div>`; };
+    let bodyHTML='';
+    if(bs.group){ const keys=[...new Set(sortedRows.map(PT.grpKey))].sort(); keys.forEach(k=>{ const gr=sortedRows.filter(r=>PT.grpKey(r)===k); bodyHTML+=`<div class="pt-grp">${PT.grpLab(k)} <i></i><b>${gr.length}</b></div>`+gr.map(rowHTML).join(''); }); }
+    else bodyHTML=sortedRows.map(rowHTML).join('');
+    const wkRow=(()=>{ const N=rows.length||1; return `<div class="pt-brow pt-wkrow" style="margin-top:8px"><span class="lab" title="Share of the class that has each bayt memorized — tap a bar to see who needs it">Class has it ↑</span><div class="pt-strip">${[...Array(47)].map((_,i)=>{ const n=i+1, have=rows.filter(r=>PT.isMem(r.s,n)).length, p=have/N*100, c=p>=75?'var(--ok)':p>=40?'var(--gold)':'var(--bad)'; return `<button class="pt-wk${xc(n).replace(' pace','')}" data-ptcol="${n}" title="Bayt ${n} — ${have} of ${N} (${Math.round(p)}%)"><i style="height:${Math.max(6,p)}%;background:${c};opacity:${have?1:.25}"></i></button>`; }).join('')}</div><span></span><span></span><span></span></div>`; })();
     const boardHTML = !rows.length ? '<p style="color:var(--ink3)">No Level 3 students.</p>'
-      : '<div class="pt-bhead"><span></span><div class="pt-strip">'+POEM_PARTS.map(p=>'<div class="pt-bp" style="flex:'+(p.b-p.a+1)+';background:'+p.c+'">P'+p.n+'</div>').join('')+'</div><span></span></div>'
-        + rows.map(r=>`<div class="pt-brow"><button class="pt-bname" data-go="#/poem/${r.s.id}">${avatarHTML(r.s,'width:22px;height:22px;border-radius:50%;font-size:8px;flex-shrink:0')}<span dir="auto">${esc(r.s.preferredName||r.s.name)}</span></button><div class="pt-strip">${[...Array(47)].map((_,i)=>PT.cell(r.s,i+1,true)).join('')}</div><span class="pt-bn">${r.m.memN}${exp!=null?`<em class="${r.m.contig>=exp?'ok':'bad'}" title="${r.m.contig>=exp?'on pace':'behind pace'}">${r.m.contig>=exp?'●':'○'}</em>`:''}</span></div>`).join('');
+      : '<div class="pt-bhead"><span></span><div class="pt-strip">'+POEM_PARTS.map(p=>'<div class="pt-bp" style="flex:'+(p.b-p.a+1)+';background:'+p.c+'">P'+p.n+'</div>').join('')+'</div><span></span><span></span><span></span></div>'
+        + '<div class="pt-bhead" style="margin-bottom:3px"><span></span><div class="pt-nums">'+[...Array(47)].map((_,i)=>{ const n=i+1; return `<span class="${xc(n).trim()}" title="${exp>=1&&n===exp?'Class pace — bayt '+n:''}">${n===1||n%5===0||(exp>=1&&n===exp)?n:''}</span>`; }).join('')+'</div><span class="ai-sub" style="font-size:9.5px;text-align:center">bayts</span><span class="ai-sub" style="font-size:9.5px;text-align:center" title="Contiguous bayts vs class pace">vs pace</span><span class="ai-sub pt-mvh" style="font-size:9.5px">this week</span></div>'
+        + bodyHTML + wkRow;
+    // Saturday lesson groups
+    const nextMap={}; rows.forEach(r=>{ if(r.m.next) (nextMap[r.m.next]=nextMap[r.m.next]||[]).push(r.s); });
+    const nextGroups=Object.entries(nextMap).filter(e=>e[1].length>=2).sort((a,b)=>b[1].length-a[1].length||a[0]-b[0]).slice(0,4);
+    const dueMap={}; rows.forEach(r=>{ for(let n=1;n<=47;n++) if(PT.st(r.s,n).k==='due') (dueMap[n]=dueMap[n]||[]).push(r.s); });
+    const dueGroups=Object.entries(dueMap).filter(e=>e[1].length>=2).sort((a,b)=>b[1].length-a[1].length||a[0]-b[0]).slice(0,4);
+    const nmChips=(arr,n)=>arr.slice(0,8).map(s=>`<button class="pt-nm" data-ptq2="${s.id}|${n}">${esc(ptFirst(s))}</button>`).join('')+(arr.length>8?`<span class="ai-sub">+${arr.length-8}</span>`:'');
+    const lessonsHTML=rows.length?`<div class="pt-les"><div class="card" style="margin:0"><div class="whead"><h3>📚 Teach once, save time</h3></div>
+        ${nextGroups.length?nextGroups.map(([n,a])=>`<div class="pt-lr"><b>Teach bayt ${n}<small style="display:block;font-weight:500;color:var(--ink3)">${a.length} students are next</small></b><span>${nmChips(a,n)}</span></div>`).join(''):'<p class="ai-sub" style="margin:0">Everyone is on a different bayt right now — nothing to group.</p>'}
+        ${dueGroups.length?`<div style="margin:10px 0 2px;font:700 11px var(--f-ui);text-transform:uppercase;letter-spacing:.04em;color:var(--ink3)">Recite together (recall due)</div>`+dueGroups.map(([n,a])=>`<div class="pt-lr"><b style="color:var(--bad)">Bayt ${n}<small style="display:block;font-weight:500;color:var(--ink3)">${a.length} due</small></b><span>${nmChips(a,n)}</span></div>`).join(''):''}</div>
+      ${(()=>{ const g=cf.goal; if(!g) return `<div class="card" style="margin:0"><div class="whead"><h3>🎯 Class goal</h3></div><p class="ai-sub" style="margin:0 0 10px">Set a target such as “everyone through Part 1 by December 15” and watch the class close in on it.</p><button class="btn btn-o btn-sm" id="ptGoal">Set a goal</button></div>`;
+        const got=rows.filter(r=>r.m.contig>=g.n), left=rows.filter(r=>r.m.contig<g.n).sort((a,b)=>b.m.contig-a.m.contig), days=Math.round((parseLocalDate(g.date)-parseLocalDate(today()))/864e5), pc=rows.length?got.length/rows.length*100:0;
+        return `<div class="card" style="margin:0"><div class="whead"><h3>🎯 Everyone through bayt ${g.n}</h3><button class="btn btn-ghost btn-sm" id="ptGoal">Edit</button></div>
+        <div style="font:700 22px var(--f-mono)">${got.length}<span style="font-size:14px;color:var(--ink3)"> of ${rows.length} there</span></div><div class="pt-goalbar"><i style="width:${pc.toFixed(0)}%"></i></div>
+        <p class="ai-sub" style="margin:0 0 8px">${esc(fmtDate(g.date))} · ${days>0?days+' days left':days===0?'today':Math.abs(days)+' days past'}${left.length&&days>0?' · about '+(Math.ceil(left.reduce((n,r)=>n+(g.n-r.m.contig),0)/Math.max(1,Math.ceil(days/7)))/1).toFixed(0)+' bayts a week across the class':''}</p>
+        ${left.length?`<div style="display:flex;gap:4px;flex-wrap:wrap">${left.map(r=>`<button class="pt-nm" data-go="#/poem/${r.s.id}" title="${g.n-r.m.contig} bayt${g.n-r.m.contig===1?'':'s'} to go">${esc(ptFirst(r.s))} · ${g.n-r.m.contig}</button>`).join('')}</div>`:'<p style="margin:0;color:var(--ok);font-weight:600">🌟 Goal reached — mā shāʾ Allāh!</p>'}</div>`; })()}</div>`:'';
     v.innerHTML=`<div class="page-wm"><div class="pt-hero"><div style="min-width:0;flex:1"><div class="eyebrow" style="color:#d9b765">Level 3 · Memorization</div><h2 class="page-title" style="color:#fff;margin:2px 0 4px">Tawḥīd Poem Tracker</h2>
        <div class="pt-ar pt-title">مَنْظُومَةُ تَعْلِيمِ الصِّبْيَانِ التَّوْحِيدِ</div>
        <p style="color:#cfd7e4;margin:6px 0 0">${rows.length} students · class average ${avg.toFixed(1)} of 47 bayts${done?' · '+done+' finished 🌟':''}${dueN?' · '+dueN+' recall checks due':''}</p></div>
-       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start"><button class="btn btn-sm" style="background:#d9ac54;color:#20261f;border:0" data-qjourney="poem">🗺 Poem journey</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptPace">⚙ Class pace</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptEditText">✏️ Edit poem text${PT.editCount()?' ('+PT.editCount()+')':''}</button></div></div>
+       <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start"><button class="btn btn-sm" style="background:#d9ac54;color:#20261f;border:0" data-qjourney="poem">🗺 Poem journey</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptPace">⚙ Class pace</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptPrint">🖨 Print board</button><button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)" id="ptEditText">✏️ Edit poem text${PT.editCount()?' ('+PT.editCount()+')':''}</button></div></div>
      ${exp!=null&&rows.length?`<div class="notice info" style="margin:0 0 14px">🎯 <div><b>Class pace: ${cf.perWeek} bayts a week</b> from ${esc(fmtDate(cf.start))} — by now that is bayt <b>${exp}</b>. <b>${ahead}</b> on or ahead · <b>${behind}</b> behind.${nextCommon?` Most are working on bayt ${nextCommon.n} next.`:''}</div></div>`
        :`<div class="notice info no-print" style="margin:0 0 14px">🎯 <div>Set a <b>class pace</b> (for example 2 bayts a week) and each student gets an on-pace / behind marker. <button class="btn btn-o btn-sm" id="ptPace2" style="margin-left:6px">Set pace</button></div></div>`}
      <div class="pt-parts">${POEM_PARTS.map((p,i)=>`<div class="pt-part" style="--pc:${p.c}"><span class="pt-ar">${p.ar}</span><b>Part ${p.n} · ${esc(p.en)}</b><small>Bayts ${p.a}–${p.b}</small><div class="bar"><i style="width:${partAvg[i].toFixed(0)}%;background:${p.c}"></i></div><small>${partAvg[i].toFixed(0)}% of the class</small></div>`).join('')}</div>
      <div class="card" style="margin-top:14px"><div class="whead"><h3>Class board — all 47 bayts</h3></div>
-       <div class="pt-legend"><span><i class="pt-c none mini"></i>not started</span><span><i class="pt-c learning mini"></i>learning</span><span><i class="pt-c mem mini"></i>memorized</span><span><i class="pt-c solid mini"></i>solid ⭐</span><span><i class="pt-c due mini"></i>recall check due</span></div>
+       <div class="pt-tools no-print"><span class="seg" role="group" aria-label="Sort board">${[['name','A–Z'],['progress','Progress'],['pace','Behind pace'],['due','Recall due']].map(([k,t])=>`<button class="${(bs.sort||'name')===k?'on':''}" data-ptsort2="${k}">${t}</button>`).join('')}</span><button class="pt-tg ${bs.group?'on':''}" id="ptGroup">▤ Group by stage</button><span class="sp"></span><span class="ai-sub" style="font-size:11.5px">Tap a bayt to mark it · tap a bar below to see who needs it</span></div>
+       <div class="pt-legend"><span><i class="pt-c none mini"></i>not started</span><span><i class="pt-c learning mini"></i>learning</span><span><i class="pt-c mem mini"></i>memorized</span><span><i class="pt-c solid mini"></i>solid ⭐</span><span><i class="pt-c due mini"></i>recall check due</span>${exp>=1?'<span><i style="display:inline-block;width:2px;height:14px;background:var(--gold);border-radius:2px;vertical-align:middle"></i>class pace (bayt '+exp+')</span>':''}<span>🧊 no progress in 3+ weeks</span></div>
        <div class="pt-board">${boardHTML}</div></div>
-     ${dueN?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div class="wlist">${rows.filter(r=>r.m.due).map(r=>`<div class="wrow" style="cursor:default;flex-wrap:wrap;gap:6px 8px;align-items:center">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1;min-width:120px"><b>${esc(r.s.preferredName||r.s.name)}</b></span><span style="display:flex;gap:5px;flex-wrap:wrap">${[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(r.s,n).k==='due').slice(0,10).map(n=>`<button class="rev-chip due" data-ptb="${r.s.id}|${n}">Bayt ${n}<small>${PT.st(r.s,n).r==='forgot'?'forgot':PT.st(r.s,n).overdue+'d over'}</small></button>`).join('')}</span></div>`).join('')}</div></div>`:''}
+     ${lessonsHTML}
+     ${dueN?`<div class="card pt-due"><div class="whead"><h3>🔁 Recall checks due</h3></div><div class="wlist">${rows.filter(r=>r.m.due).map(r=>`<div class="wrow" style="cursor:default;flex-wrap:wrap;gap:6px 8px;align-items:center">${avatarHTML(r.s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1;min-width:120px"><b>${esc(r.s.preferredName||r.s.name)}</b></span><span style="display:flex;gap:5px;flex-wrap:wrap">${[...Array(47)].map((_,i)=>i+1).filter(n=>PT.st(r.s,n).k==='due').slice(0,10).map(n=>`<button class="rev-chip due" data-ptb="${r.s.id}|${n}">Bayt ${n}<small>${PT.st(r.s,n).r==='forgot'?'forgot':PT.st(r.s,n).overdue+'d over'}</small></button>`).join('')}</span></div>`).join('')}</div></div>`:''}
     </div>`;
     wireCommon(v); PT.wire(v);
+    $$('[data-ptq]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); PT.quick(b); });
+    $$('[data-ptcol]',v).forEach(b=>b.onclick=()=>PT.colInfo(+b.dataset.ptcol));
+    $$('[data-ptq2]',v).forEach(b=>b.onclick=()=>{ const [sid,n]=b.dataset.ptq2.split('|'); PT.study(sid,+n); });
+    $$('[data-ptsort2]',v).forEach(b=>b.onclick=()=>{ PT.bset().sort=b.dataset.ptsort2; DB.save(); PT.render(v); });
+    const gb=$('#ptGroup',v); if(gb) gb.onclick=()=>{ const q=PT.bset(); q.group=!q.group; DB.save(); PT.render(v); };
+    const gl=$('#ptGoal',v); if(gl) gl.onclick=()=>PT.goalForm();
+    const pr=$('#ptPrint',v); if(pr) pr.onclick=()=>window.print();
     $('#ptEditText',v).onclick=()=>PT.editList();
     const pc=()=>PT.paceForm(); $('#ptPace',v)&&($('#ptPace',v).onclick=pc); $('#ptPace2',v)&&($('#ptPace2',v).onclick=pc);
   },
@@ -14960,23 +15069,26 @@ const Admissions = {
       </div>`;
     v.innerHTML = `<div class="page-wm"><div class="ama-hero aman-hero"><div class="logo-tile" title="Al-Madrasatu An-Nuriyyah"><img src="${AMAN_LOGO}" alt="AMAN logo"></div><div style="min-width:0"><div class="eyebrow">AMAN Admissions Pipeline</div><h2 class="page-title">AMAN Admissions</h2>
      <div class="ama-tag">Youth Educated… Family Cultivated… World Illuminated</div><p>${esc(summary)}</p></div></div>
-     ${(()=>{ const st=admSeats(), wlN=active.filter(a=>a.stage==='waitlist').length;
-        return `<div class="adm-seats no-print"><div style="font-size:13px"><b style="font-family:var(--f-mono)">${st.filled}</b> of <b style="font-family:var(--f-mono)">${st.cap}</b> seats filled · <b style="color:${st.open?'var(--ok)':'var(--bad)'}">${st.open} open</b>${wlN?` · ${wlN} on the waiting list`:''}</div>
-          <div class="adm-seatbar" title="${st.filled} active students of ${st.cap} seats"><i style="width:${Math.min(100,st.filled/st.cap*100).toFixed(1)}%"></i></div>
-          <button class="btn btn-ghost btn-sm" id="admSeatCfg" title="Change the seat capacity">⚙ Capacity</button></div>`; })()}
-     ${funnelStrip}
-     ${healthStrip}
-     <div class="filters no-print">
-       <button class="btn btn-p btn-sm" id="admSync">⇪ Sync New Applications</button>
-       <button class="btn btn-o btn-sm" id="admSyncAgr">✅ Check Signed Agreements</button>
-       <button class="btn btn-o btn-sm" id="admAdd">＋ Add Application</button>
-       <button class="btn btn-ghost btn-sm" id="admCfg">⚙ Sync Settings</button>
-       ${d.admissions.length?`<input type="search" id="admFind" placeholder="Find applicant or parent…" value="${esc(Admissions._find||'')}" style="max-width:220px">`:''}
-       <span style="margin-left:auto;font-size:11.5px;color:var(--ink3);font-family:var(--f-mono)">${d.settings.admissionsLastSync?'Last synced '+rel(d.settings.admissionsLastSync):'Never synced'}</span>
-     </div>
-     ${d.admissions.length?`<div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px">
-       ${[['all','All'],['stale','⏱ Idle 8d+'],['health','⚕ Health note'],['sib','👪 Siblings'],['fits','✓ Fits open seats']].map(([k,l])=>(k==='all'||fcount[k]||flt===k)?`<button class="chip ${flt===k?'on':''}" data-admflt="${k}">${l} ${fcount[k]}</button>`:'').join('')}
-       <span style="margin-left:auto;display:flex;gap:4px"><button class="chip ${!compact?'on':''}" data-admview="cards" title="Detailed cards">▦ Cards</button><button class="chip ${compact?'on':''}" data-admview="compact" title="Compact list">☰ Compact</button></span>
+     ${(()=>{ const st=admSeats(), wlN=counts.waitlist, pct=Math.min(100,st.filled/Math.max(1,st.cap)*100);
+        const chipDefs=[['review','Review',counts.review,1],['interview','Interview',counts.interview,1],['agreement','Agreement',counts.agreement,1],['decision','Decision',counts.decision,1],['accepted','Ready to enroll',counts.enrollment,1],['waitlist','Waiting list',wlN,0],['notfit','Not a fit',notfit.length,0]];
+        const chip=([k,l,n,always])=>(n||always)?`<button class="apc-chip${n?'':' zero'}" data-phase="${k}" ${n?`data-jump="${k}"`:'disabled'}><i data-phase="${k}"></i><b>${n}</b><span>${l}</span></button>`:'';
+        return `<div class="card apc no-print">
+          <div class="apc-top"><div class="apc-seat"><b>${st.filled}</b><span>of ${st.cap} seats</span><em class="${st.open?'ok':'bad'}">${st.open} open</em></div>
+            <div class="adm-seatbar" title="${st.filled} active students of ${st.cap} seats"><i style="width:${pct.toFixed(1)}%"></i></div>
+            <button class="btn btn-ghost btn-sm" id="admSeatCfg" title="Change the seat capacity">⚙ Capacity</button></div>
+          <div class="apc-chips">${chipDefs.map(chip).join('')}<span class="sp"></span><span class="apc-meta">${d.admissions.length} application${d.admissions.length===1?'':'s'} · ${enrolled.length} enrolled</span></div>
+          ${healthTotal?`<div class="ph-bar">${healthSegs.filter(([,,n])=>n>0).map(([key,,n])=>`<div class="ph-seg" data-phase="${key}" data-jump="${key}" style="width:${(n/healthTotal*100).toFixed(2)}%" title="${key} — ${n}"></div>`).join('')}</div>`:''}</div>`; })()}
+     <div class="apt no-print">
+       <button class="btn btn-p btn-sm" id="admSync">⇪ Sync new applications</button>
+       <button class="btn btn-o btn-sm" id="admAdd">＋ Add application</button>
+       <details class="st-more"><summary class="btn btn-o btn-sm" aria-label="More">⋯</summary><div class="pop">
+         <button class="btn btn-sm" id="admSyncAgr">✅ Check signed agreements</button>
+         <button class="btn btn-sm" id="admCfg">⚙ Sync settings</button></div></details>
+       ${d.admissions.length?`<input type="search" id="admFind" placeholder="Find applicant or parent…" value="${esc(Admissions._find||'')}">`:''}
+       <span class="sp"></span><span class="apc-meta">${d.settings.admissionsLastSync?'Synced '+rel(d.settings.admissionsLastSync):'Never synced'}</span></div>
+     ${d.admissions.length?`<div class="apt no-print" style="margin-top:-2px">
+       ${[['all','All'],['stale','⏱ Idle 8d+'],['health','⚕ Health note'],['sib','👪 Siblings'],['fits','✓ Fits open seats']].map(([k,l])=>(k==='all'||fcount[k]||flt===k)?`<button class="chip ${flt===k?'on':''}" data-admflt="${k}">${l} <b>${fcount[k]}</b></button>`:'').join('')}
+       <span class="sp"></span><span class="seg" role="group" aria-label="View"><button class="${!compact?'on':''}" data-admview="cards" title="Detailed cards">▦ <span class="sgl">Cards</span></button><button class="${compact?'on':''}" data-admview="compact" title="Compact list">☰ <span class="sgl">Compact</span></button></span>
      </div>`:''}
      ${(()=>{ const pending = d.unmatchedAgreements.map((u,i)=>({u,i})).filter(x=>!x.u.dismissed); return pending.length?`<details class="no-print" open style="margin-bottom:14px">
        <summary style="cursor:pointer;padding:10px 14px;background:color-mix(in srgb,var(--warn) 10%,var(--surface));border:1px solid var(--warn);border-radius:10px;font-size:13.5px;font-weight:600">⚠ ${pending.length} agreement submission${pending.length===1?'':'s'} couldn\u2019t be auto-matched \u2014 needs a quick manual match</summary>
