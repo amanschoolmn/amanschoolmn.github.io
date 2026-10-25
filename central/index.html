@@ -679,7 +679,7 @@ body:has(#classModeOverlay) #toasts{z-index:9200}
 .cm-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--surface)}
 .cm-sec{display:flex;align-items:center;gap:10px;margin:18px 2px 10px;font-family:var(--f-display);font-size:16px;font-weight:600}
 .cm-sec:first-child{margin-top:2px}.cm-sec span.rl{flex:1;height:1px;background:var(--line)}.cm-sec small{font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400}
-.cm-tbar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;width:130px}.cm-tbar i{display:block;height:100%;background:var(--gold);transition:width 1s linear}
+.cm-flt{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:10px 0 0}.cm-tbar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;width:130px}.cm-tbar i{display:block;height:100%;background:var(--gold);transition:width 1s linear}
 @keyframes cmpick{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 .cm-pick{animation:cmpick .45s ease}
 
@@ -1232,7 +1232,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 74<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 75<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -13255,15 +13255,22 @@ Object.assign(HW,{
 /* ---- 2. class mode ---- */
 const CM={
   ids:[], rest:[], i:0, el:null,
-  open(){ const B=HP.build(); CM.ids=B.queue.map(x=>x.s.id); CM.rest=B.rest.map(x=>x.s.id); if(!CM.ids.length) CM.ids=CM.rest.splice(0,CM.rest.length); if(!CM.ids.length){ toast('Nobody is waiting — mark attendance first'); return; } CM.i=0;
+  lv:'all', gen:'all', B:null,
+  load(){ const B=CM.B=HP.build(), f=x=>(CM.lv==='all'||String(CR.lvl(x.s))===CM.lv)&&(CM.gen==='all'||genOf(x.s)===CM.gen);
+    CM.ids=B.queue.filter(f).map(x=>x.s.id); CM.rest=B.rest.filter(f).map(x=>x.s.id); if(!CM.ids.length) CM.ids=CM.rest.splice(0,CM.rest.length); CM.i=0; return B.queue.length+B.rest.length>0; },
+  flt(){ const B=CM.B; if(!B) return ''; const all=B.queue.concat(B.rest).map(x=>x.s), lvOk=s=>CM.lv==='all'||String(CR.lvl(s))===CM.lv, gnOk=s=>CM.gen==='all'||genOf(s)===CM.gen;
+    const lvs=[3,2,1].filter(l=>all.some(s=>CR.lvl(s)===l)), hasG=all.some(s=>genOf(s)==='B')&&all.some(s=>genOf(s)==='S'); if(lvs.length<2&&!hasG) return '';
+    const ch=(code,on,t,n)=>`<button class="chip ${on?'on':''}" data-cm="${code}">${t} <b>${n}</b></button>`;
+    return `<div class="cm-flt">${lvs.length>1?ch('lv:all',CM.lv==='all','All levels',all.filter(gnOk).length)+lvs.map(l=>ch('lv:'+l,CM.lv===String(l),'Level '+l,all.filter(s=>CR.lvl(s)===l&&gnOk(s)).length)).join(''):''}${lvs.length>1&&hasG?'<span style="width:1px;background:var(--line);margin:0 4px"></span>':''}${hasG?[['all','Everyone',all.filter(lvOk).length],['B','Brothers',all.filter(s=>lvOk(s)&&genOf(s)==='B').length],['S','Sisters',all.filter(s=>lvOk(s)&&genOf(s)==='S').length]].map(([k,t,n])=>ch('gn:'+k,CM.gen===k,t,n)).join(''):''}</div>`; },
+  open(){ CM.lv='all'; CM.gen='all'; if(!CM.load()){ toast('Nobody is waiting — mark attendance first'); return; }
     if(!CM.el){ CM.el=document.createElement('div'); CM.el.className='cm'; document.body.appendChild(CM.el); CM.el.onclick=e=>{ const b=e.target.closest('[data-cm]'); if(b) CM.act(b.dataset.cm); }; } CM.draw(); },
   close(){ if(CM.el){ CM.el.remove(); CM.el=null; } try{ Router.render(); }catch(e){} },
   cur(){ return DB.data.students.find(x=>x.id===CM.ids[CM.i]); },
   ins(t){ return t.final?'Recite the whole sūrah, start to end':(t.cum&&t.a>1?'Recite from āyah 1 to āyah '+t.b+' · new part: '+t.a+(t.b>t.a?'–'+t.b:''):'Recite āyah '+t.a+(t.b>t.a?' to '+t.b:'')); },
   draw(){ const el=CM.el; if(!el) return; const n=CM.ids.length;
-    if(CM.i>=n){ el.innerHTML=`<div class="cm-in"><div class="cm-top"><b>Class mode · finished</b><button class="btn btn-o btn-sm" data-cm="close">Close</button></div><div class="cm-body" style="align-items:stretch;text-align:left"><h2 class="page-title" style="margin:0 0 8px">That’s everyone in the queue</h2>${HW.summaryHTML()}<div class="mfoot" style="justify-content:flex-start;margin-top:14px">${CM.rest.length?`<button class="btn btn-p" data-cm="more">Keep going — ${CM.rest.length} more waiting</button>`:''}<button class="btn ${CM.rest.length?'btn-o':'btn-p'}" data-cm="msg">✉ Message families</button><button class="btn btn-o" data-cm="print">🖨 Homework sheets</button><button class="btn btn-o" data-cm="close">Close</button></div></div></div>`; return; }
+    if(CM.i>=n){ el.innerHTML=`<div class="cm-in"><div class="cm-top"><b>Class mode · finished</b><button class="btn btn-o btn-sm" data-cm="close">Close</button></div>${CM.flt()}<div class="cm-body" style="align-items:stretch;text-align:left"><h2 class="page-title" style="margin:0 0 8px">That’s everyone in the queue</h2>${HW.summaryHTML()}<div class="mfoot" style="justify-content:flex-start;margin-top:14px">${CM.rest.length?`<button class="btn btn-p" data-cm="more">Keep going — ${CM.rest.length} more waiting</button>`:''}<button class="btn ${CM.rest.length?'btn-o':'btn-p'}" data-cm="msg">✉ Message families</button><button class="btn btn-o" data-cm="print">🖨 Homework sheets</button><button class="btn btn-o" data-cm="close">Close</button></div></div></div>`; return; }
     const s=CM.cur(), L3=CR.lvl(s)===3, h=s.hw, t=L3?HW.target(s):null, rem=CM.ids.slice(CM.i).reduce((a,id)=>a+HP.est(DB.data.students.find(x=>x.id===id)),0), ms=h?HW.missed(s):0, wk=h?HW.weak(s,h.n,h.b):[];
-    el.innerHTML=`<div class="cm-in"><div class="cm-top"><button class="btn btn-o btn-sm" data-cm="close">✕ Exit</button><b>${CM.i+1} of ${n}</b><span>about ${rem} min left</span></div>
+    el.innerHTML=`<div class="cm-in"><div class="cm-top"><button class="btn btn-o btn-sm" data-cm="close">✕ Exit</button><b>${CM.i+1} of ${n}</b><span>about ${rem} min left</span></div>${CM.flt()}
       <div class="cm-body">${avatarHTML(s,'width:84px;height:84px;border-radius:50%;font-size:28px')}<h2 class="cm-name" dir="auto">${esc(CR.nm(s))}</h2><div class="adm-tags">${CR.lvTag(s)}${h&&h.tries?`<span class="tag tag-red">attempt ${h.tries+1}</span>`:''}${h&&(h.tries||0)>=3?'<span class="tag tag-red">⚠ stuck</span>':''}${ms?`<span class="tag tag-gold">missed ${ms} class${ms>1?'es':''}</span>`:''}</div>
       ${L3?`<div class="cm-p" dir="auto">${esc(HW.label(t))}</div><p class="cm-ins">${esc(CM.ins(t))}</p>${wk.length?`<p class="cm-ins" style="color:var(--bad)">Weak spots: āyah ${esc(HW.weakTxt(wk))}</p>`:''}${h?`<p class="td-hint" style="margin:0">given ${esc(fmtDate(h.given))}</p>`:'<p class="td-hint" style="margin:0">No homework yet — the result will set it.</p>'}
         <div class="cm-btns">${[['E','✓','Excellent','strong'],['G','~','Good','shaky'],['F','✗','Failed','forgot'],['N','⏸','Not yet','ny']].map(([c,i,l,k])=>`<button class="td-b ${k}" data-cm="${c}">${i}<small>${l}</small></button>`).join('')}</div>
@@ -13271,7 +13278,7 @@ const CM={
         <div class="cm-sub"><button class="btn btn-o btn-sm" data-cm="back" ${CM.i?'':'disabled'}>← Back</button><button class="btn btn-o btn-sm" data-cm="skip">↷ Skip</button><button class="btn btn-o btn-sm" data-cm="portion">✎ Change portion</button><button class="btn btn-o btn-sm" data-cm="log">＋ Log</button></div>`
       :`<div style="width:100%;max-width:520px;text-align:left;margin-top:8px">${TD.posHTML(s)}</div><div class="cm-sub" style="margin-top:12px"><button class="btn btn-o btn-sm" data-cm="back" ${CM.i?'':'disabled'}>← Back</button><button class="btn btn-p" data-cm="heard">✓ Heard — next</button><button class="btn btn-o btn-sm" data-cm="skip">↷ Skip</button></div>`}</div></div>`;
     if(!L3) TD.wirePos(el,()=>CM.draw()); },
-  act(code){ const s=CM.cur(); if(code==='close') return CM.close(); if(code==='more'){ CM.ids=CM.ids.concat(CM.rest); CM.rest=[]; return CM.draw(); } if(code==='msg') return HW.queueUI(); if(code==='print') return HW.printSheets(); if(!s) return; const idx=CM.i;
+  act(code){ if(code.startsWith('lv:')||code.startsWith('gn:')){ if(code[0]==='l') CM.lv=code.slice(3); else CM.gen=code.slice(3); CM.load(); return CM.draw(); } const s=CM.cur(); if(code==='close') return CM.close(); if(code==='more'){ CM.ids=CM.ids.concat(CM.rest); CM.rest=[]; return CM.draw(); } if(code==='msg') return HW.queueUI(); if(code==='print') return HW.printSheets(); if(!s) return; const idx=CM.i;
     if(code==='back'){ CM.i=Math.max(0,CM.i-1); return CM.draw(); }
     if(code==='skip'){ HP.skip.add(s.id); CM.i++; return CM.draw(); }
     if(code==='heard'){ HP.mark(s,null); CM.i++; return CM.draw(); }
