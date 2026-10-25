@@ -1232,7 +1232,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 73<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 74<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -6405,11 +6405,28 @@ const Teacher = {
     const overlay=document.createElement('div');
     overlay.id='classModeOverlay';
     overlay.style.cssText='position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
-    const V={lvl:'',flt:'',size:d.settings.cmSize||'M',group:d.settings.cmGroup!==false}; const hist=[]; const picked=new Set();
+    const V={lvl:'',gen:'',flt:'',size:d.settings.cmSize||'M',group:d.settings.cmGroup!==false}; const hist=[]; const picked=new Set();
     const SZ={S:84,M:112,L:148};
     const cyc={undefined:'P', P:'L', L:'A', A:'E', E:undefined};
     const COL={P:'var(--ok)',L:'var(--warn)',A:'var(--bad)',E:'var(--info)'};
     const ICON={P:'✓',L:'⏰',A:'✕',E:'E'};
+    // Update only what changed instead of rebuilding the whole screen — rebuilding re-created every photo on every tap, which is what made it flicker.
+    const cmApply=html=>{
+      const tmp=document.createElement('div'); tmp.innerHTML=html; const nc=[...tmp.children];
+      if(overlay.children.length!==3||nc.length!==3){ overlay.innerHTML=html; return; }
+      const oc=[...overlay.children];
+      [0,1].forEach(i=>{ if(oc[i].outerHTML!==nc[i].outerHTML) overlay.replaceChild(nc[i],oc[i]); });
+      const o=oc[2], n=nc[2], ot=$$('[data-cmstu]',o), nt=$$('[data-cmstu]',n), os=$$('.cm-sec',o), ns=$$('.cm-sec',n);
+      const same=ot.length===nt.length&&ot.every((t,i)=>t.dataset.cmstu===nt[i].dataset.cmstu)&&os.length===ns.length&&o.children.length===n.children.length&&o.firstElementChild.children.length===n.firstElementChild.children.length;
+      if(!same){ overlay.replaceChild(n,o); return; }
+      o.firstElementChild.setAttribute('style',n.firstElementChild.getAttribute('style')||'');
+      os.forEach((e,i)=>{ if(e.outerHTML!==ns[i].outerHTML) e.replaceWith(ns[i]); });
+      ot.forEach((t,i)=>{ const q=nt[i]; if(t.className===q.className&&t.getAttribute('style')===q.getAttribute('style')&&t.getAttribute('aria-label')===q.getAttribute('aria-label')&&t.querySelector('.cm-b')===null===(q.querySelector('.cm-b')===null)&&t.querySelector('.cm-c')?.outerHTML===q.querySelector('.cm-c')?.outerHTML&&t.querySelector('.cm-s').textContent===q.querySelector('.cm-s').textContent) return;
+        t.className=q.className; t.setAttribute('style',q.getAttribute('style')); t.setAttribute('aria-label',q.getAttribute('aria-label'));
+        const tp=t.querySelector('.cm-ph'), qp=q.querySelector('.cm-ph'), av=tp.querySelector('.av'); if(av) qp.querySelector('.av').replaceWith(av); tp.replaceWith(qp);
+        t.querySelector('.cm-s').replaceWith(q.querySelector('.cm-s')); });
+      if(o.children[1]&&o.children[1].outerHTML!==n.children[1].outerHTML) o.children[1].replaceWith(n.children[1]);
+    };
     const paint=()=>{
       const rec=d.attendance[date];
       const all=d.students.filter(s=>s.active!==false && (!s.startDate||s.startDate<=date));
@@ -6420,7 +6437,7 @@ const Teacher = {
       const heard=new Set((d.quran||[]).filter(q=>q.date===date&&!q.seed).map(q=>q.sid));
       all.forEach(s=>{ if([...(s.gbLog||[]),...(s.musLog||[]),...(s.hifzLog||[])].some(x=>x.date===date)||(s.heardAt||[]).some(x=>String(x).slice(0,10)===date)) heard.add(s.id); });
       const lvlOf=L=>all.filter(s=>s.level===L);
-      let list=all.filter(s=>(!V.lvl||s.level===V.lvl)&&(!V.flt||(V.flt==='U'?!rec[s.id]:V.flt==='H'?(here&&(rec[s.id]==='P'||rec[s.id]==='L')&&!heard.has(s.id)):rec[s.id]===V.flt)));
+      let list=all.filter(s=>(!V.lvl||s.level===V.lvl)&&(!V.gen||genOf(s)===V.gen)&&(!V.flt||(V.flt==='U'?!rec[s.id]:V.flt==='H'?(here&&(rec[s.id]==='P'||rec[s.id]==='L')&&!heard.has(s.id)):rec[s.id]===V.flt)));
       const tile=s=>{ const st=rec[s.id], name=s.preferredName||s.name, c=st?COL[st]:'var(--line2)';
         const stName={P:'present',L:'late',A:'absent, unexcused',E:'absent, excused'}[st]||'unmarked';
         const al=!!(s.application&&isAllergyPositive(s.application.allergy)); const bd=daysToBirthday(s.dob);
@@ -6432,7 +6449,7 @@ const Teacher = {
           return `<div class="cm-sec">${L} — ${esc(LEVEL_SUB[L]||'')}<span class="rl"></span><small>${hp}/${all2.length} here</small></div><div class="cm-grid">${g.map(tile).join('')}</div>`; }).join('')
         : `<div class="cm-grid">${list.map(tile).join('')}</div>`;
       const chip=(k,t,n,col)=>`<button class="chip ${V.flt===k?'on':''}" data-cmf="${k}" style="${col?'border-color:'+col:''}">${t} <b>${n}</b></button>`;
-      overlay.innerHTML=`
+      const html=`
         <div class="cm-top">
           <b style="font-family:var(--f-display);font-size:19px">🖥 Class Mode</b>
           ${UX.ring(here,all.length,58,here===all.length&&all.length?'var(--ok)':'var(--gold)')}
@@ -6444,6 +6461,7 @@ const Teacher = {
         </div>
         <div class="cm-bar">
           <span style="display:inline-flex;gap:6px;flex-wrap:wrap">${[['','All'],...LEVELS.map(L=>[L,L.replace('Level ','L')+' · '+lvlOf(L).length])].filter(x=>x[0]===''||lvlOf(x[0]).length).map(([L,t])=>`<button class="chip ${V.lvl===L?'on':''}" data-cml="${L}">${t}</button>`).join('')}</span>
+          ${all.some(s=>genOf(s)==='B')&&all.some(s=>genOf(s)==='S')?`<span style="width:1px;height:22px;background:var(--line)"></span><span style="display:inline-flex;gap:6px">${[['','Everyone'],['B','Brothers · '+all.filter(s=>genOf(s)==='B').length],['S','Sisters · '+all.filter(s=>genOf(s)==='S').length]].map(([g,t])=>`<button class="chip ${V.gen===g?'on':''}" data-cmg="${g}">${t}</button>`).join('')}</span>`:''}
           <span style="width:1px;height:22px;background:var(--line)"></span>
           ${chip('U','Unmarked',unm)}${chip('A','Absent',absent,'var(--bad)')}${chip('L','Late',late,'var(--warn)')}${exc?chip('E','Excused',exc,'var(--info)'):''}${chip('H','Not heard yet',here?all.filter(s=>(rec[s.id]==='P'||rec[s.id]==='L')&&!heard.has(s.id)).length:0)}
           <span style="margin-left:auto;display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -6459,22 +6477,25 @@ const Teacher = {
         <div style="flex:1;overflow-y:auto;padding:16px 18px 28px"><div class="cm-wrap" style="--sz:${SZ[V.size]}px">
           ${sections}${!list.length?`<div class="empty" style="padding:30px"><h3>${V.flt?'Nobody matches this filter':'No students to mark'}</h3>${V.flt?'<p>Tap the filter again to clear it.</p>':''}</div>`:''}
         </div>${unm===0&&all.length&&!V.flt?`<div style="text-align:center;margin-top:18px;color:var(--ok);font-weight:700">✓ Everyone is marked — ${here} here${absent?', '+absent+' absent':''}${exc?', '+exc+' excused':''}</div>`:''}</div>`;
-      const setS=(sid,v)=>{ hist.push({sid,prev:rec[sid]}); if(v===undefined) delete rec[sid]; else rec[sid]=v; };
+      cmApply(html);
+      // Same behaviour as the Progress tracker: Absent / Excused fills Qur’an + classwork (+ homework on Saturdays) as Excused, and changing back undoes only what was auto-filled.
+      const setS=(sid,v)=>{ const snap=AN.setAtt(sid,date,v); if(v!=='E'&&d.attendanceReasons&&d.attendanceReasons[date]) delete d.attendanceReasons[date][sid]; hist.push({sid,snap}); };
       const keepScroll=fn=>{ const sc=overlay.children[2], y=sc?sc.scrollTop:0; fn(); const sc2=overlay.children[2]; if(sc2) sc2.scrollTop=y; };
-      $$('[data-cmstu]',overlay).forEach(b=>{ let t=null,x0=0,y0=0,lp=false; const stop=()=>{ clearTimeout(t); t=null; };
+      $$('[data-cmstu]',overlay).forEach(b=>{ if(b._cmw) return; b._cmw=1; let t=null,x0=0,y0=0,lp=false; const stop=()=>{ clearTimeout(t); t=null; };
         b.addEventListener('pointerdown',e=>{ lp=false; x0=e.clientX; y0=e.clientY; stop(); t=setTimeout(()=>{ t=null; lp=true; const s=d.students.find(z=>z.id===b.dataset.cmstu); if(navigator.vibrate) try{ navigator.vibrate(15); }catch(_){} if(s) Students.quickSheet(s,{noProfile:true,onDone:()=>keepScroll(paint)}); },520); });
         b.addEventListener('pointermove',e=>{ if(t&&(Math.abs(e.clientX-x0)>8||Math.abs(e.clientY-y0)>8)) stop(); });
         ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,stop));
         b.addEventListener('contextmenu',e=>e.preventDefault());
         b.onclick=()=>{ if(lp){ lp=false; return; } const sid=b.dataset.cmstu; setS(sid,cyc[rec[sid]]); if(navigator.vibrate) try{ navigator.vibrate(8); }catch(_){} DB.save(); keepScroll(paint); }; });
       $$('[data-cml]',overlay).forEach(b=>b.onclick=()=>{ V.lvl=b.dataset.cml; paint(); });
+      $$('[data-cmg]',overlay).forEach(b=>b.onclick=()=>{ V.gen=b.dataset.cmg; paint(); });
       $$('[data-cmf]',overlay).forEach(b=>b.onclick=()=>{ V.flt=V.flt===b.dataset.cmf?'':b.dataset.cmf; paint(); });
       $$('[data-cmsz]',overlay).forEach(b=>b.onclick=()=>{ V.size=b.dataset.cmsz; d.settings.cmSize=V.size; DB.save(); keepScroll(paint); });
       $('#cmGrp',overlay).onclick=()=>{ V.group=!V.group; d.settings.cmGroup=V.group; DB.save(); paint(); };
-      $('#cmUndo',overlay).onclick=()=>{ const h=hist.pop(); if(!h) return; if(h.prev===undefined) delete rec[h.sid]; else rec[h.sid]=h.prev; DB.save(); keepScroll(paint); };
-      $('#cmAllP',overlay).onclick=()=>{ const targets=all.filter(s=>!rec[s.id]); if(!targets.length){ toast('Everyone is already marked'); return; } targets.forEach(s=>setS(s.id,'P')); DB.log('Attendance: all present · '+date); DB.save(); paint(); toast('Marked '+targets.length+' present',()=>{ for(let i=0;i<targets.length;i++){ const h=hist.pop(); if(!h) break; if(h.prev===undefined) delete rec[h.sid]; else rec[h.sid]=h.prev; } DB.save(); paint(); }); };
+      $('#cmUndo',overlay).onclick=()=>{ const h=hist.pop(); if(!h) return; AN.restore(h.sid,date,h.snap); DB.save(); keepScroll(paint); };
+      $('#cmAllP',overlay).onclick=()=>{ const targets=all.filter(s=>!rec[s.id]); if(!targets.length){ toast('Everyone is already marked'); return; } targets.forEach(s=>setS(s.id,'P')); DB.log('Attendance: all present · '+date); DB.save(); paint(); toast('Marked '+targets.length+' present',()=>{ for(let i=0;i<targets.length;i++){ const h=hist.pop(); if(!h) break; AN.restore(h.sid,date,h.snap); } DB.save(); paint(); }); };
       $('#cmPick',overlay).onclick=()=>{
-        const pool=all.filter(s=>(rec[s.id]==='P'||rec[s.id]==='L')&&(!V.lvl||s.level===V.lvl));
+        const pool=all.filter(s=>(rec[s.id]==='P'||rec[s.id]==='L')&&(!V.lvl||s.level===V.lvl)&&(!V.gen||genOf(s)===V.gen));
         if(!pool.length){ toast('Mark some students present first'); return; }
         let fresh=pool.filter(s=>!picked.has(s.id)); if(!fresh.length){ picked.clear(); fresh=pool; toast('Everyone has had a turn — starting a new round'); }
         const win=fresh[Math.floor(Math.random()*fresh.length)]; picked.add(win.id);
@@ -7788,7 +7809,7 @@ const Students = {
     $('#qsX',o).onclick=()=>o.remove();
     const qo=$('#qsOpen',o); if(qo) qo.onclick=()=>{ o.remove(); Router.go('#/students/'+s.id); };
     $('#qsMsg',o).onclick=()=>{ o.remove(); FU.compose(s,'As-salāmu ʿalaykum,\n\n',{title:'Message to '+(AI2.stuParent(s)||'parent')}); };
-    $$('[data-qa]',o).forEach(b=>b.onclick=()=>{ d.attendance[today()]=d.attendance[today()]||{}; d.attendance[today()][s.id]=b.dataset.qa; DB.log('Quick attendance: '+s.name+' → '+b.dataset.qa); DB.save(); o.remove(); toast((s.preferredName||s.name)+' marked '+(PT_ATT_LABEL[b.dataset.qa]||b.dataset.qa)); if(opt.onDone) opt.onDone(); else Router.render(); });
+    $$('[data-qa]',o).forEach(b=>b.onclick=()=>{ AN.setAtt(s.id,today(),b.dataset.qa); DB.log('Quick attendance: '+s.name+' → '+b.dataset.qa); DB.save(); o.remove(); toast((s.preferredName||s.name)+' marked '+(PT_ATT_LABEL[b.dataset.qa]||b.dataset.qa)); if(opt.onDone) opt.onDone(); else Router.render(); });
   },
   legend(){
     const o=overlay(`<div class="modal" style="max-width:420px"><h3>How to read the cards</h3>
@@ -9162,7 +9183,7 @@ const Students = {
       : `<div class="empty"><h3>No students to mark</h3><p>Import or add students first.</p><button class="btn btn-p" data-go="#/students">Go to Students</button></div>`}`;
     wireCommon(v);
     $('#attDate',v).onchange=e=>{ Students._attDate=e.target.value; Router.render(); };
-    const ap=$('#allP',v); if(ap) ap.onclick=()=>{ stu.forEach(s=>rec[s.id]='P'); DB.log('Attendance: all present · '+date); DB.save(); Router.render(); };
+    const ap=$('#allP',v); if(ap) ap.onclick=()=>{ stu.forEach(s=>AN.setAtt(s.id,date,'P')); DB.log('Attendance: all present · '+date); DB.save(); Router.render(); };
     // A single pill only ever changes its own student's attendance record —
     // patching just that <tr> (instead of the old Router.render(), which
     // rebuilt the WHOLE table, including every avatar <img> in it) means no
@@ -9172,7 +9193,7 @@ const Students = {
       if(!tr) return;
       $$('button[data-att]',tr).forEach(b=>b.onclick=()=>{
         const [sid,k]=b.dataset.att.split('_');
-        rec[sid] = rec[sid]===k? undefined : k; if(rec[sid]===undefined) delete rec[sid];
+        AN.setAtt(sid,date,rec[sid]===k?undefined:k);
         if(rec[sid]!=='E') delete reasons[sid];
         DB.save();
         tr.innerHTML = Students._attRowHTML(s,date,rec,reasons);
@@ -9288,6 +9309,7 @@ function ptWeekendPair(session){
 // for the existing 'A' (unexcused) and 'E' (excused) codes.
 const PT_ATT_CYCLE = [undefined,'P','L','A','E'];
 const PT_ATT_LABEL = {P:'Present', L:'Late', A:'Absent', E:'Excused absence'};
+const genOf = s => { const g=String((s&&s.gender)||'').trim().toLowerCase(); return /^(sister|female|girl|f)\b/.test(g)?'S':/^(brother|male|boy|m)\b/.test(g)?'B':''; };
 const PT_RES = {PASS:'Passed', FAIL:'Failed', DONE:'Done', INC:'Incomplete', EXC:'Excused'};
 const ptRes = v => PT_RES[v] || '—';
 const PT_Q_CYCLE = [null,'PASS','FAIL','EXC'];
@@ -9849,7 +9871,7 @@ const AN={
   ds(t){ const x=new Date(t),p=n=>String(n).padStart(2,'0'); return x.getFullYear()+'-'+p(x.getMonth()+1)+'-'+p(x.getDate()); },
   setAtt(sid,date,nv){ const d=DB.data; d.attendance[date]=d.attendance[date]||{}; d.progress[date]=d.progress[date]||{}; d.attendanceReasons=d.attendanceReasons||{}; const p0=d.progress[date][sid];
     const snap={a:d.attendance[date][sid],p:p0?JSON.parse(JSON.stringify(p0)):undefined,r:(d.attendanceReasons[date]||{})[sid]};
-    d.attendance[date][sid]=nv; const p=d.progress[date][sid];
+    if(nv===undefined) delete d.attendance[date][sid]; else d.attendance[date][sid]=nv; const p=d.progress[date][sid];
     if(nv==='A'||nv==='E'){ const q=d.progress[date][sid]=p||{quran:null,hw:null,cw:null}; q.auto=q.auto||[]; ['quran','cw'].concat(PT_isSat(date)?['hw']:[]).forEach(f=>{ if(!q[f]){ q[f]='EXC'; q.auto.push(f); } }); }
     else if(p&&p.auto){ p.auto.forEach(f=>{ if(p[f]==='EXC') p[f]=null; }); delete p.auto; }
     return snap; },
@@ -12581,7 +12603,7 @@ const CR={
 };
 /* ---------- TODAY ---------- */
 const TD = {
-  f:'need', lv:'all', attOpen:null, _v:null,
+  f:'need', lv:'all', gen:'all', attOpen:null, _v:null,
   isClass(){ const d=new Date().getDay(); return d===0||d===6; },
   cfgOf(s){ return CR.lvl(s)===1?{k:'gb',lk:'gbLog',T:GB_TOTAL,nm:'Green Book',pre:''}:{k:'mus',lk:'musLog',T:MUSHAF_TOTAL,nm:'Muṣḥaf',pre:'Muṣḥaf '}; },
   setPos(s,pg,flu){ const c=TD.cfgOf(s), t=today(); const g=s[c.k]=s[c.k]||{page:0,fluency:''}, log=s[c.lk]=s[c.lk]||[];
@@ -12627,22 +12649,22 @@ const TD = {
     TD._v=v; const t=today(), all=TD.rows(), act=CR.active(), rec=CR.att();
     const nP=act.filter(s=>rec[s.id]==='P'||rec[s.id]==='L').length, nA=act.filter(s=>rec[s.id]==='A'||rec[s.id]==='E').length, nU=act.length-nP-nA;
     if(TD.attOpen==null) TD.attOpen=TD.isClass()&&nP+nA===0;
-    const inLv=r=>TD.lv==='all'||String(r.L)===TD.lv;
+    const inLv=r=>(TD.lv==='all'||String(r.L)===TD.lv)&&(TD.gen==='all'||genOf(r.s)===TD.gen), hasGen=act.some(s=>genOf(s)==='B')&&act.some(s=>genOf(s)==='S'), gcnt=g=>act.filter(s=>g==='all'||genOf(s)===g).length;
     const present=all.filter(r=>!r.absent&&inLv(r)), show=TD.f==='all'?present:present.filter(r=>r.need);
     show.sort((a,b)=>(b.need-a.need)||(b.L-a.L)||String(a.s.name).localeCompare(b.s.name));
     const absent=all.filter(r=>r.absent&&inLv(r));
     const l3=all.filter(r=>r.L===3&&!r.absent), nHear=l3.reduce((n,r)=>n+r.ready.length+r.due.length,0), nPoem=l3.reduce((n,r)=>n+r.poem.length,0), nPos=all.filter(r=>r.L<3&&!r.absent&&!r.doneToday).length, nNeed=all.filter(r=>inLv(r)&&r.need).length;
     const kpi=(n,l,c)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${l}</span></div>`;
-    const dt=new Date(), cnt=L=>all.filter(r=>(L==='all'||String(r.L)===L)&&r.need).length;
+    const dt=new Date(), cnt=L=>all.filter(r=>(L==='all'||String(r.L)===L)&&(TD.gen==='all'||genOf(r.s)===TD.gen)&&r.need).length;
     v.innerHTML=`<div class="page-wm"><div class="eyebrow">${TD.isClass()?'Class day':'Prep'} · all levels</div><h2 class="page-title">Today</h2>
       <p class="page-sub">${esc(dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))} — mark who is here, then work down the list. One tap rates it, and every tap has an Undo.</p>
       <div class="no-print" style="margin:0 0 12px"><button class="btn btn-p btn-sm" id="tdCm">▶ Class mode</button> <span class="td-hint">One student at a time, big buttons — for hearing in class.</span></div>
       <div class="card td-att no-print"><div class="td-atthead"><b>① Attendance</b><span class="tag tag-green">${nP} here</span>${nA?`<span class="tag tag-red">${nA} absent</span>`:''}${nU?`<span class="tag tag-dim">${nU} not marked</span>`:''}<span style="margin-left:auto;display:flex;gap:6px"><button class="btn btn-o btn-sm" id="tdAllP" ${nU?'':'disabled'}>Mark the rest present</button><button class="btn btn-ghost btn-sm" id="tdAttT">${TD.attOpen?'Hide ▴':'Edit ▾'}</button></span></div>
-        ${TD.attOpen?`<p class="td-hint">Tap a name to cycle: not marked → present → late → absent → excused absence. Absent students move out of the list and get a follow-up message button.</p><div class="td-acs">${act.slice().sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).map(TD.attChip).join('')}</div>`:''}</div>
+        ${TD.attOpen?`<p class="td-hint">Tap a name to cycle: not marked → present → late → absent → excused absence. Absent students move out of the list and get a follow-up message button.</p><div class="td-acs">${act.filter(s=>(TD.lv==='all'||String(CR.lvl(s))===TD.lv)&&(TD.gen==='all'||genOf(s)===TD.gen)).sort((a,b)=>CR.lvl(b)-CR.lvl(a)||String(a.name).localeCompare(b.name)).map(TD.attChip).join('')}</div>`:''}</div>
       ${(()=>{ const nh=all.filter(r=>r.L===3&&!ML.lastNew(r.s)&&!r.absent&&!r.s.hw).length; return nh>=2?`<div class="notice warn no-print" style="margin:0 0 12px">🧭 <div><b>${nh} Level 3 students need a starting point.</b> Set where each one is once — then every card shows the right next portion. <button class="btn btn-p btn-sm" data-hwsetup>🧭 Set up students</button></div></div>`:''; })()}
       ${present.length?(()=>{ const hd=present.filter(r=>CR.ds(CR.lastHeard(r.s))===0).length; return `<div class="no-print" style="max-width:460px;margin:0 0 10px"><div class="pp-prog"><i style="width:${Math.round(hd/present.length*100)}%"></i></div><div class="ai-sub">${hd} of ${present.length} present students heard today</div></div>`; })():''}
       <div class="rp-kpis no-print">${nHear?kpi(nHear,'Juzʼ to hear (L3)','var(--gold)'):''}${nPoem?kpi(nPoem,'Poem bayts due','var(--info)'):''}${nPos?kpi(nPos,'L1/L2 not updated yet','var(--orange)'):''}${kpi(nNeed+' of '+present.length,'still need you','var(--ok)')}</div>
-      <div class="filters no-print"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<button class="chip ${TD.lv===k?'on':''}" data-tdlv="${k}">${l} (${cnt(k)})</button>`).join('')}</span><span style="display:flex;gap:4px"><button class="chip ${TD.f==='need'?'on':''}" data-tdf="need">Needs me</button><button class="chip ${TD.f==='all'?'on':''}" data-tdf="all">Everyone</button></span></div>
+      <div class="filters no-print"><span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','All levels'],['3','Level 3'],['2','Level 2'],['1','Level 1']].map(([k,l])=>`<button class="chip ${TD.lv===k?'on':''}" data-tdlv="${k}">${l} (${cnt(k)})</button>`).join('')}</span>${hasGen?`<span style="display:flex;gap:4px;flex-wrap:wrap">${[['all','Everyone'],['B','Brothers'],['S','Sisters']].map(([k,l])=>`<button class="chip ${TD.gen===k?'on':''}" data-tdgen="${k}">${l} (${gcnt(k)})</button>`).join('')}</span>`:''}<span style="display:flex;gap:4px"><button class="chip ${TD.f==='need'?'on':''}" data-tdf="need">Needs me</button><button class="chip ${TD.f==='all'?'on':''}" data-tdf="all">Everyone</button></span></div>
       ${show.length?`<div class="td-grid">${show.map(TD.card).join('')}</div>`:`<div class="empty"><div class="big">🌟</div><h3>${present.length?'Everyone is all clear':'Nobody here yet'}</h3><p>${present.length?'Switch to “Everyone” to log anyway.':'Mark attendance above to start.'}</p></div>`}
       ${absent.length?`<div class="card td-abs"><div class="whead"><h3>Absent today (${absent.length})</h3></div>${absent.map(r=>`<div class="td-it">${avatarHTML(r.s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<div class="td-lab"><b dir="auto">${esc(CR.nm(r.s))}</b><small>${r.a==='E'?'Excused absence':'Absent (unexcused)'} · ${r.s.missSent===t?'✓ follow-up sent':'no follow-up yet'}${r.s.hw?' · 📌 '+esc(HW.label(r.s.hw))+' stays due':''}</small></div><button class="btn btn-o btn-sm" data-tdmiss="${r.s.id}">✉ Follow up</button><button class="btn btn-ghost btn-sm" data-tdhere="${r.s.id}">Actually here</button></div>`).join('')}</div>`:''}</div>`;
     wireCommon(v); RP.wire(v); TD.wirePos(v,()=>TD.render(v));
@@ -12650,11 +12672,12 @@ const TD = {
     $('#tdCm',v).onclick=()=>CM.open();
     $('#tdAttT',v).onclick=()=>{ TD.attOpen=!TD.attOpen; rr(); };
     $('#tdAllP',v).onclick=()=>{ const r0=DB.data.attendance[t]=DB.data.attendance[t]||{}; act.forEach(s=>{ if(!r0[s.id]) r0[s.id]='P'; }); DB.log('Attendance: rest present · '+t); DB.save(); rr(); };
-    $$('[data-tdatt]',v).forEach(b=>b.onclick=()=>{ const id=b.dataset.tdatt, r0=DB.data.attendance[t]=DB.data.attendance[t]||{}; const seq=['','P','L','A','E']; const nx=seq[(seq.indexOf(r0[id]||'')+1)%seq.length]; if(nx) r0[id]=nx; else delete r0[id]; if(nx!=='E'&&DB.data.attendanceReasons[t]) delete DB.data.attendanceReasons[t][id]; DB.save(); rr(); });
-    $$('[data-tdhere]',v).forEach(b=>b.onclick=()=>{ DB.data.attendance[t][b.dataset.tdhere]='P'; DB.save(); rr(); });
+    $$('[data-tdatt]',v).forEach(b=>b.onclick=()=>{ const id=b.dataset.tdatt, r0=DB.data.attendance[t]=DB.data.attendance[t]||{}; const seq=['','P','L','A','E']; const nx=seq[(seq.indexOf(r0[id]||'')+1)%seq.length]; AN.setAtt(id,t,nx||undefined); if(nx!=='E'&&DB.data.attendanceReasons[t]) delete DB.data.attendanceReasons[t][id]; DB.save(); rr(); });
+    $$('[data-tdhere]',v).forEach(b=>b.onclick=()=>{ AN.setAtt(b.dataset.tdhere,t,'P'); DB.save(); rr(); });
     $$('[data-tdmiss]',v).forEach(b=>b.onclick=()=>{ const s=DB.data.students.find(x=>x.id===b.dataset.tdmiss); if(s) FU.compose(s,FU.missText(s,t),{title:'Missed-class follow-up',onSent:()=>{ s.missSent=t; DB.save(); }}); });
     $$('[data-tdf]',v).forEach(b=>b.onclick=()=>{ TD.f=b.dataset.tdf; rr(); });
     $$('[data-tdlv]',v).forEach(b=>b.onclick=()=>{ TD.lv=b.dataset.tdlv; rr(); });
+    $$('[data-tdgen]',v).forEach(b=>b.onclick=()=>{ TD.gen=b.dataset.tdgen; rr(); });
     $$('[data-tdlog]',v).forEach(b=>b.onclick=()=>ML.form(b.dataset.tdlog));
     const rate=(kind,fn)=>$$('[data-'+kind+']',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n,r]=b.dataset[kind].split('|'), s=DB.data.students.find(x=>x.id===sid); if(!s) return; const x=UNDO.snap(s); fn(s,+n,r); toast(CR.nm(s)+' · '+(kind==='tdrev'?'Juzʼ ':'bayt ')+n+' — '+({strong:'Strong ✓',shaky:'Shaky',forgot:'Forgot — stays due'})[r],()=>{ UNDO.restore(x); rr(); }); rr(); });
     rate('tdrev',(s,N,r)=>Rev.log(s,N,r)); rate('tdpoem',(s,n,r)=>PT.check(s,n,r));
