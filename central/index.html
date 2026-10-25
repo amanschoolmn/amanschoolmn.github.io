@@ -428,6 +428,9 @@ html[data-theme="dark"] .chip.on{background:var(--gold-bright);border-color:var(
 .pt-grp{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font:700 11px var(--f-ui);letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);position:sticky;left:0}.pt-grp:first-of-type{margin-top:2px}.pt-grp i{flex:1;height:1px;background:var(--line);min-width:20px}.pt-grp b{font-family:var(--f-mono);color:var(--ink3)}
 .pt-wkrow .pt-wk{flex:1;height:34px;border:0;background:none;padding:0;display:flex;align-items:flex-end;cursor:pointer;border-radius:3px;position:relative}.pt-wkrow .pt-wk i{display:block;width:100%;border-radius:3px 3px 0 0;min-height:2px}.pt-wkrow .pt-wk:hover{background:var(--surface2)}.pt-wkrow .pt-wk.sec{margin-left:5px}
 .pt-wkrow .lab{font:700 11px var(--f-ui);color:var(--ink2);position:sticky;left:0;background:var(--surface);z-index:2}
+.pt-ew{border:0;background:none;font:inherit;color:inherit;padding:0 5px;border-radius:8px;cursor:pointer;position:relative}.pt-ew:hover{background:var(--surface2)}.pt-ew.part{box-shadow:inset 0 -3px 0 var(--info)}.pt-ew.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);box-shadow:inset 0 -3px 0 var(--bad)}.pt-ew.sel{outline:2px solid var(--gold)}.pt-ew sup{font:700 10px var(--f-mono);color:var(--bad);margin-right:2px}
+.pt-zoom{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface2);text-align:center}.pt-zw{font-size:58px;line-height:1.9;direction:rtl}.pt-cl{cursor:pointer;border-radius:8px;padding:6px 1px}.pt-cl:hover{background:var(--line)}.pt-cl.l{background:color-mix(in srgb,var(--bad) 30%,transparent);box-shadow:inset 0 -4px 0 var(--bad)}.pt-cl.v{background:color-mix(in srgb,var(--info) 30%,transparent);box-shadow:inset 0 -4px 0 var(--info)}
+.pt-trouble{margin:10px 0 0;padding:8px 12px;border:1px solid color-mix(in srgb,var(--bad) 40%,var(--line));background:color-mix(in srgb,var(--bad) 7%,var(--surface));border-radius:12px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pt-trouble .pt-ar{font-size:19px}.pt-c.err{box-shadow:inset 0 -3px 0 var(--bad)}
 .pt-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 10px}.pt-tools .sp{flex:1}
 .pt-tg{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--f-ui);color:var(--ink2);cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--surface)}.pt-tg.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .pt-les{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:14px}
@@ -1232,7 +1235,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 75<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 76<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -13490,6 +13493,12 @@ const PT = {
   /* ---------- helpers ---------- */
   rhyme(t){ const w=String(t).trim().split(/\s+/); return w.map((x,i)=>`<span class="pt-w${i===w.length-1?' rh':''}">${esc(x)}</span>`).join(' '); },
   ring(p,sz,label){ const r=(sz-8)/2, c=2*Math.PI*r; return `<div class="pt-ring" style="width:${sz}px;height:${sz}px"><svg width="${sz}" height="${sz}"><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 ${sz/2} ${sz/2})"/></svg><b>${label}</b></div>`; },
+  words(b){ return [...b.sadr.trim().split(/\s+/).map(t=>({t,h:1})),...b.ajuz.trim().split(/\s+/).map(t=>({t,h:2}))]; },
+  clusters(w){ return w.match(/[^\u064B-\u065F\u0670\u06D6-\u06ED][\u064B-\u065F\u0670\u06D6-\u06ED]*/gu)||[w]; },
+  errOf(s,n){ const e=s.poem&&s.poem.err&&s.poem.err[n]; return e&&e.items&&e.items.length?e:null; },
+  errTxt(s,n){ const e=PT.errOf(s,n); if(!e) return ''; const W=PT.words(POEM[n-1]); return e.items.map(x=>{ const w=W[x.w]; if(!w) return ''; const cl=PT.clusters(w.t); return x.k==='w'?w.t:x.k==='l'?'letter '+(cl[x.c]||'')+' in '+w.t:'vowel on '+(cl[x.c]||'')+' in '+w.t; }).filter(Boolean); },
+  errBanner(s,n){ const e=PT.errOf(s,n); if(!e) return ''; const W=PT.words(POEM[n-1]), seen=new Set(); const ws=e.items.filter(x=>W[x.w]&&!seen.has(x.w)&&seen.add(x.w)).map(x=>`<span class="pt-ar">${esc(W[x.w].t)}</span>`).join(' · ');
+    return `<div class="pt-trouble no-print">⚠ <b>Trouble spots:</b> ${ws}<button class="btn btn-ghost btn-sm" data-goerr="1" style="margin-left:auto">✍️ Edit</button></div>`; },
   bset(){ const st=DB.data.settings; return st.ptBoard=st.ptBoard||{sort:'name',group:false}; },
   move(s){ const log=(s.poem&&s.poem.log)||[], t=today(), c7=RP.addDays(t,-7), c21=RP.addDays(t,-21), wk=[0,0,0,0];
     log.forEach(l=>{ if(l.act!=='mem') return; const d=PT.diff(l.date); if(d<28) wk[3-Math.floor(d/7)]++; });
@@ -13500,14 +13509,14 @@ const PT = {
     const [sid,ns]=btn.dataset.ptq.split('|'), n=+ns, s=DB.data.students.find(x=>x.id===sid); if(!s) return;
     $$('.pt-pop').forEach(e=>e.remove()); const k=PT.st(s,n).k, nm=ptFirst(s);
     const acts=k==='none'?[['learning','📖 Start learning'],['mem','✅ Memorized'],['thru','⏩ Memorized through bayt '+n]]
-      :k==='learning'?[['mem','✅ Memorized'],['none','↺ Not started']]
-      :[['strong','⭐ Recall: strong'],['shaky','〰 Recall: shaky'],['forgot','✖ Forgot — relearn'],['none','↺ Unmark']];
+      :k==='learning'?[['mem','✅ Memorized'],['err','✍️ Mark a mistake'],['none','↺ Not started']]
+      :[['strong','⭐ Recall: strong'],['shaky','〰 Recall: shaky'],['forgot','✖ Forgot — relearn'],['err','✍️ Mark a mistake'],['none','↺ Unmark']];
     const pop=document.createElement('div'); pop.className='pt-pop';
     pop.innerHTML=`<h4>${esc(nm)} · bayt ${n}<small>${esc(poemSec(n).en)}</small></h4>`+acts.map(a=>`<button data-a="${a[0]}">${a[1]}</button>`).join('')+`<button data-a="study" style="color:var(--ink3)">🔍 Open study screen</button>`;
     document.body.append(pop); const r=btn.getBoundingClientRect(), pw=pop.offsetWidth, ph=pop.offsetHeight;
     pop.style.left=Math.max(8,Math.min(innerWidth-pw-8,r.left-pw/2+r.width/2))+'px'; pop.style.top=(r.bottom+ph+10>innerHeight?Math.max(8,r.top-ph-8):r.bottom+6)+'px';
     const kill=()=>{ pop.remove(); document.removeEventListener('mousedown',away,true); }; const away=e=>{ if(!pop.contains(e.target)) kill(); }; setTimeout(()=>document.addEventListener('mousedown',away,true),0);
-    pop.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const a=b.dataset.a; kill(); if(a==='study') return PT.study(sid,n);
+    pop.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const a=b.dataset.a; kill(); if(a==='study') return PT.study(sid,n); if(a==='err') return PT.study(sid,n,'err');
       const x=UNDO.snap(s);
       if(a==='thru') PT.setThrough(s,n); else if(a==='strong'||a==='shaky'||a==='forgot') PT.check(s,n,a); else PT.setSt(s,n,a);
       toast(nm+' — bayt '+n+({learning:' learning',mem:' memorized',thru:' and all before it memorized',none:' cleared',strong:' strong ⭐',shaky:' shaky',forgot:' needs re-learning'})[a],()=>{ UNDO.restore(x); Router.render(); }); Router.render(); };
@@ -13522,7 +13531,8 @@ const PT = {
       ${g.due.length?`<div class="pt-lr"><b style="color:var(--bad)">🔁 Recall due (${g.due.length})</b><span>${chips(g.due)}</span></div>`:''}
       <div class="pt-lr"><b>📖 Learning (${g.learning.length})</b><span>${chips(g.learning)}</span></div>
       <div class="pt-lr"><b>Not yet (${g.none.length})</b><span>${chips(g.none)}</span></div>
-      <div class="pt-lr"><b style="color:var(--ok)">✅ Memorized (${g.mem.length})</b><span>${chips(g.mem)}</span></div></div>`,true);
+      <div class="pt-lr"><b style="color:var(--ok)">✅ Memorized (${g.mem.length})</b><span>${chips(g.mem)}</span></div>
+      ${(()=>{ const W=PT.words(b), sl={}; L.forEach(s=>{ const e=PT.errOf(s,n); if(e) e.items.forEach(x=>{ (sl[x.w]=sl[x.w]||new Set()).add(s.id); }); }); const en=Object.entries(sl).sort((a,c)=>c[1].size-a[1].size); return en.length?`<div class="pt-lr"><b style="color:var(--bad)">✍️ Common slips</b><span>${en.slice(0,5).map(([w,st])=>`<span class="pt-nm" style="cursor:default"><span class="pt-ar" style="font-size:16px">${esc((W[w]||{t:''}).t)}</span> · ${st.size}</span>`).join(' ')}</span></div>`:''; })()}</div>`,true);
     $('#ci-x',o).onclick=()=>o.remove(); $$('[data-ptq2]',o).forEach(x=>x.onclick=()=>{ o.remove(); PT.study(x.dataset.ptq2,n); });
   },
   goalForm(){
@@ -13536,7 +13546,7 @@ const PT = {
     $('[data-x=c]',o).onclick=()=>o.remove(); const r=$('[data-x=r]',o); if(r) r.onclick=()=>{ delete cf.goal; DB.save(); o.remove(); Router.render(); };
     $('[data-x=s]',o).onclick=()=>{ const d=$('#cg-d',o).value; if(!d){ toast('Choose a date'); return; } cf.goal={n:Math.max(1,Math.min(47,+$('#cg-n',o).value||1)),date:d}; DB.save(); o.remove(); toast('Goal saved'); Router.render(); };
   },
-  cell(s,n,mini){ const k=PT.st(s,n).k; return `<button class="pt-c ${k}${mini?' mini':''}" data-ptb="${s.id}|${n}" title="Bayt ${n} — ${({none:'not started',learning:'learning',mem:'memorized',solid:'solid ⭐',due:'memorized — recall check due'})[k]}">${mini?'':n}</button>`; },
+  cell(s,n,mini){ const k=PT.st(s,n).k; return `<button class="pt-c ${k}${PT.errOf(s,n)?' err':''}${mini?' mini':''}" data-ptb="${s.id}|${n}" title="Bayt ${n} — ${({none:'not started',learning:'learning',mem:'memorized',solid:'solid ⭐',due:'memorized — recall check due'})[k]}">${mini?'':n}</button>`; },
   /* ---------- module render ---------- */
   render(v,param){
     if(param && DB.data.students.find(s=>s.id===param)) return PT.student(v,param);
@@ -13612,7 +13622,7 @@ const PT = {
     const r=$('[data-x=r]',o); if(r) r.onclick=()=>{ cf.start=''; DB.save(); o.remove(); Router.render(); };
     $('[data-x=s]',o).onclick=()=>{ cf.start=$('#pt-st',o).value||today(); cf.perWeek=Math.max(1,Math.min(10,+$('#pt-pw',o).value||2)); cf.meaning=$('#pt-mn',o).checked; DB.save(); o.remove(); toast('Saved'); Router.render(); };
   },
-  wire(v){ $$('[data-ptb]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n]=b.dataset.ptb.split('|'); PT.study(sid,+n); }); },
+  wire(v){ $$('[data-pterr]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n]=b.dataset.pterr.split('|'); PT.study(sid,+n,'err'); }); $$('[data-ptb]',v).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,n]=b.dataset.ptb.split('|'); PT.study(sid,+n); }); },
   /* ---------- student page ---------- */
   student(v,id){
     const s=DB.data.students.find(x=>x.id===id), m=PT.sum(s), nm=s.preferredName||s.name, exp=PT.expected();
@@ -13632,6 +13642,7 @@ const PT = {
         const body=lrn+rev; return `<div class="card pt-today no-print"><div class="whead"><h3>🎯 Today's plan</h3><span class="ai-sub">${tp.revise.length?tdone+' of '+tp.revise.length+' revisions done':'nothing to revise yet'}</span></div>${body||'<p class="ai-sub" style="margin:0">Start by learning the first bayt — it will show up here.</p>'}</div>
         <div class="pt-finish"><div><b>${pc.rem?pc.rem:'🌟'}</b><span>${pc.rem?'bayts to go':'complete'}</span></div><div><b>${pc.rem?'~'+pc.wk:'—'}</b><span>${pc.rem?'weeks at '+(pc.per<10?pc.per.toFixed(1).replace('.0',''):Math.round(pc.per))+'/wk ('+pc.basis+')':''}</span></div><div><b>${pc.rem?esc(fmtDate(pc.eta)):'—'}</b><span>projected finish</span></div><div><b>${pc.streak?'🔥 '+pc.streak:'—'}</b><span>${pc.streak?'week'+(pc.streak>1?'s':'')+' in a row':'no streak yet'}</span></div></div>`; })()}
       ${nb?`<div class="card pt-next"><div class="whead"><h3>Next up — bayt ${nx}</h3><span style="font-size:12px;color:var(--ink3)">${esc(poemSec(nx).en)}</span></div><div class="pt-ar pt-huge">${PT.rhyme(nb.sadr)}<br>${PT.rhyme(nb.ajuz)}</div>${PT.cfg().meaning?`<p style="font-size:13px;color:var(--ink2);font-style:italic;margin:10px 0 0;text-align:center">${esc(nb.en)}</p>`:`<div style="text-align:center;margin-top:8px"><button class="btn btn-ghost btn-sm" id="ptNxM">Show meaning</button><p id="ptNxMt" style="display:none;font-size:13px;color:var(--ink2);font-style:italic;margin:6px 0 0">${esc(nb.en)}</p></div>`}</div>`:`<div class="card"><p style="margin:0;color:var(--ok)">🌟 The whole poem is memorized — mā shāʾ Allāh. Keep it fresh with recall checks.</p></div>`}
+      ${(()=>{ const es=[...Array(47)].map((_,i)=>i+1).filter(n=>PT.errOf(s,n)); return es.length?`<div class="card"><div class="whead"><h3>✍️ Trouble spots</h3><span class="ai-sub">${es.length} bayt${es.length>1?'s':''}</span></div><div class="wlist">${es.map(n=>`<div class="wrow" data-pterr="${s.id}|${n}" style="cursor:pointer;gap:10px;align-items:center"><b style="min-width:54px;font-family:var(--f-mono)">Bayt ${n}</b><span class="t pt-ar" style="flex:1;font-size:17px;line-height:1.8">${PT.errTxt(s,n).map(esc).join(' · ')}</span></div>`).join('')}</div></div>`:''; })()}
       ${dueList.length?`<div class="card"><div class="whead"><h3>🔁 Recall checks due</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap">${dueList.map(n=>`<button class="rev-chip due" data-ptb="${s.id}|${n}">Bayt ${n}<small>${PT.dueTxt(PT.st(s,n))}</small></button>`).join('')}</div></div>`:''}
       <div class="card"><div class="whead"><h3>All 47 bayts</h3></div><div class="pt-legend"><span><i class="pt-c none mini"></i>not started</span><span><i class="pt-c learning mini"></i>learning</span><span><i class="pt-c mem mini"></i>memorized</span><span><i class="pt-c solid mini"></i>solid ⭐</span><span><i class="pt-c due mini"></i>check due</span></div>${sectionsHTML}</div>
       ${quiz.length||log.length?`<div class="card"><div class="whead"><h3>Recent activity</h3></div>${quiz.length?`<p style="font-size:12.5px;margin:0 0 6px">Quiz scores: ${quiz.map(q=>`<b>${q.score}/${q.of}</b> <span style="color:var(--ink3)">${esc(fmtDate(q.date))}</span>`).join(' · ')}</p>`:''}<div class="wlist">${log.map(l=>`<div class="wrow" style="cursor:default"><span class="m" style="font-family:var(--f-mono);font-size:11px;color:var(--ink3)">${esc(fmtDate(l.date))}</span><span class="t">${l.act==='through'?'Memorized through bayt '+l.n:'Bayt '+l.n+' → '+esc(({mem:'memorized',learning:'learning',none:'cleared','check-strong':'recall check: strong','check-shaky':'recall check: shaky','check-forgot':'recall check: forgot'})[l.act]||l.act)}</span></div>`).join('')}</div></div>`:''}</div>`;
@@ -13657,16 +13668,17 @@ const PT = {
     const o=overlay(`<div class="modal pt-modal" id="pt-study" style="max-width:640px;width:96vw"><div class="pt-mh"><div><div class="eyebrow" style="margin:0">${esc(s.preferredName||s.name)} · Part ${part.n} · ${esc(sec.en)}</div><h3 style="margin:2px 0 0">Bayt ${n} <span style="color:var(--ink3);font-weight:400">of 47</span></h3></div>
         <span class="tag ${({none:'tag-dim',learning:'tag-gold',mem:'tag-green',solid:'tag-green',due:'tag-red'})[cur.k]}">${({none:'not started',learning:'🌱 learning',mem:'✅ memorized',solid:'⭐ solid',due:'🔁 check due'})[cur.k]}</span></div>
       ${prev&&!b.section?`<div class="pt-recap"><small>Just before — bayt ${n-1}</small><div class="pt-ar">${esc(prev.sadr)} &nbsp; ${esc(prev.ajuz)}</div></div>`:b.section?`<div class="pt-recap"><small>New topic</small><div class="pt-ar">${esc(b.section)}</div></div>`:''}
-      <div class="pt-tabs"><button class="chip on" data-pt="learn">📖 Learn</button><button class="chip" data-pt="drill">🧩 Drill</button><button class="chip" data-pt="cue">🎤 Recite</button><button class="chip" data-pt="rec">🎙 Record</button></div>
+      <div class="pt-tabs"><button class="chip on" data-pt="learn">📖 Learn</button><button class="chip" data-pt="drill">🧩 Drill</button><button class="chip" data-pt="cue">🎤 Recite</button><button class="chip" data-pt="rec">🎙 Record</button><button class="chip" data-pt="err">✍️ Mistakes${PT.errOf(s,n)?' •':''}</button></div>
       <div id="pt-pane"></div>
       <div class="pt-foot no-print"><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-o btn-sm" data-st="learning">🌱 Learning</button><button class="btn btn-p btn-sm" data-st="mem">✅ Memorized</button>${cur.k!=='none'?'<button class="btn btn-ghost btn-sm" data-st="none">Clear</button>':''}</div>
         <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" data-nav="-1" ${n<=1?'disabled':''}>← Prev</button><button class="btn btn-o btn-sm" data-nav="1" ${n>=47?'disabled':''}>Next →</button><button class="btn btn-ghost btn-sm" data-ed="1" title="Correct a mistake in this bayt">✏️ Edit</button><button class="btn btn-ghost btn-sm" data-x="c">Close</button></div></div></div>`,true);
     $('[data-ed]',o).onclick=()=>{ o.remove(); PT.editor(n,()=>{ Router.render(); PT.study(sid,n,tab); }); };
     const pane=$('#pt-pane',o); let hidden=0, order=[];
     const words=()=>[...b.sadr.trim().split(/\s+/).map(t=>({t,h:1})),...b.ajuz.trim().split(/\s+/).map(t=>({t,h:2}))];
-    const paneLearn=()=>{ pane.innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div><div class="pt-note">Listen for the matching ending on both lines — that is your ear's anchor.</div>
+    const paneLearn=()=>{ pane.innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div><div class="pt-note">Listen for the matching ending on both lines — that is your ear's anchor.</div>${PT.errBanner(s,n)}
       ${PT.cfg().meaning?`<div class="pt-mean"><b>Plain meaning</b>${esc(b.en)}</div>`:`<div id="pt-mwrap" class="no-print" style="text-align:center"><button class="btn btn-ghost btn-sm" id="pt-showm">Show English meaning</button></div>`}
       <div class="pt-reps"><span>Read aloud</span>${[1,2,3].map(i=>`<button class="pt-rep" data-rep="${i}">${i}</button>`).join('')}<span id="pt-repmsg" style="font-size:12px;color:var(--ok)"></span></div>`;
+      const ge=$('[data-goerr]',pane); if(ge) ge.onclick=()=>show('err');
       const sm=$('#pt-showm',pane); if(sm) sm.onclick=()=>{ $('#pt-mwrap',pane).innerHTML=`<div class="pt-mean" style="text-align:left"><b>Plain meaning</b>${esc(b.en)}</div>`; };
       let c=0; $$('[data-rep]',pane).forEach(x=>x.onclick=()=>{ c=Math.max(c,+x.dataset.rep); $$('[data-rep]',pane).forEach(y=>y.classList.toggle('on',+y.dataset.rep<=c)); $('#pt-repmsg',pane).textContent=c>=3?'Now try the Drill 👉':''; }); };
     const paneDrill=()=>{ const W=words(); if(!order.length){ order=W.map((_,i)=>i).reverse(); }
@@ -13680,6 +13692,26 @@ const PT = {
       pane.innerHTML=`<p style="font-size:13px;color:var(--ink2);margin:0 0 8px">Recite the whole bayt from memory, starting with:</p><div class="pt-ar pt-big" style="margin:6px 0">${esc(first)} …</div><div id="pt-rev"><button class="btn btn-o" id="pt-reveal">Reveal the bayt</button></div>`;
       $('#pt-reveal',pane).onclick=()=>{ $('#pt-rev',pane).innerHTML=`<div class="pt-ar pt-big">${PT.rhyme(b.sadr)}<br>${PT.rhyme(b.ajuz)}</div>${cur.k==='none'||cur.k==='learning'?'<p style="font-size:12.5px;color:var(--ink2);margin:8px 0 0">Mark it ✅ Memorized below once they can recite it cleanly.</p>':`<p style="font-size:12.5px;color:var(--ink2);margin:8px 0 6px">How was the recitation?</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-p btn-sm" data-r="strong">✅ Strong</button><button class="btn btn-o btn-sm" data-r="shaky">〰 Shaky</button><button class="btn btn-danger btn-sm" data-r="forgot">❗ Forgot parts</button></div>`}`;
         $$('[data-r]',pane).forEach(x=>x.onclick=()=>{ PT.check(s,n,x.dataset.r); toast('Bayt '+n+' — '+({strong:'strong ⭐',shaky:'shaky',forgot:'needs re-learning'})[x.dataset.r]); o.remove(); Router.render(); if(QJ.root) QJ.refresh(); }); }; };
+    let ed=null;
+    const paneErr=()=>{ PT.audio.stop(); const W=words(), prev=PT.errOf(s,n); if(!ed) ed={items:prev?JSON.parse(JSON.stringify(prev.items)):[],sel:null};
+      const find=(w,k,c)=>ed.items.find(x=>x.w===w&&x.k===k&&(k==='w'||x.c===c)), drop=x=>{ ed.items=ed.items.filter(y=>y!==x); };
+      const wb=i=>{ const wm=ed.items.filter(x=>x.w===i), t=Math.max(0,...wm.map(x=>x.t||1)); return `<button class="pt-ew ${wm.some(x=>x.k==='w')?'bad':wm.length?'part':''}${ed.sel===i?' sel':''}" data-ew="${i}">${t>1?'<sup>×'+t+'</sup>':''}${esc(W[i].t)}</button>`; };
+      const line=h=>W.map((w,i)=>w.h===h?wb(i):'').join(' ');
+      const zoom=ed.sel==null?'':(()=>{ const cl=PT.clusters(W[ed.sel].t); return `<div class="pt-zoom"><div class="pt-zw pt-ar">${cl.map((c,ci)=>`<span class="pt-cl ${find(ed.sel,'l',ci)?'l':find(ed.sel,'v',ci)?'v':''}" data-cl="${ci}">${esc(c)}</span>`).join('')}</div><div class="ai-sub" style="margin-bottom:8px">Tap a letter: once = wrong <b style="color:var(--bad)">letter</b>, twice = wrong <b style="color:var(--info)">vowel</b>, third tap clears.</div><button class="btn btn-sm ${find(ed.sel,'w')?'btn-p':'btn-o'}" data-ww="1">${find(ed.sel,'w')?'✓ Whole word marked':'Mark the whole word'}</button></div>`; })();
+      const names=ed.items.map((x,i)=>{ const cl=PT.clusters(W[x.w].t); return `<span class="pt-nm" data-rmi="${i}" title="Tap to remove">✕ <span class="pt-ar" style="font-size:15px">${esc(W[x.w].t)}</span> · ${x.k==='w'?'whole word':x.k==='l'?'letter '+esc(cl[x.c]||''):'vowel on '+esc(cl[x.c]||'')}${(x.t||1)>1?' · again ×'+x.t:''}</span>`; }).join(' ');
+      pane.innerHTML=`<p style="font-size:13px;color:var(--ink2);margin:0 0 6px">Tap the word ${esc(s.preferredName||s.name)} got wrong. Then tap into it to pinpoint the letter or vowel.</p><div class="pt-ar pt-big">${line(1)}<br>${line(2)}</div>${zoom}
+        <div style="margin:12px 0 4px;display:flex;gap:5px;flex-wrap:wrap">${names||'<span class="ai-sub">Nothing marked yet.</span>'}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn btn-p" id="pt-esave">Save mistakes</button>${prev?'<button class="btn btn-o" id="pt-efix">✓ All fixed — clear</button>':''}</div>`;
+      $$('[data-ew]',pane).forEach(x=>x.onclick=()=>{ const i=+x.dataset.ew; ed.sel=ed.sel===i?null:i; paneErr(); });
+      $$('[data-cl]',pane).forEach(x=>x.onclick=()=>{ const c=+x.dataset.cl, w=ed.sel, hasV=/[\u064B-\u065F\u0670\u06D6-\u06ED]/.test(PT.clusters(W[w].t)[c]||''), l=find(w,'l',c), v=find(w,'v',c);
+        if(!l&&!v) ed.items.push({w,k:'l',c}); else if(l){ drop(l); if(hasV) ed.items.push({w,k:'v',c}); } else drop(v); paneErr(); });
+      const ww=$('[data-ww]',pane); if(ww) ww.onclick=()=>{ const f=find(ed.sel,'w'); if(f) drop(f); else ed.items.push({w:ed.sel,k:'w'}); paneErr(); };
+      $$('[data-rmi]',pane).forEach(x=>x.onclick=()=>{ ed.items.splice(+x.dataset.rmi,1); paneErr(); });
+      $('#pt-esave',pane).onclick=()=>{ const t=today(), pe=PT.errOf(s,n); s.poem=s.poem||{b:{}}; s.poem.err=s.poem.err||{};
+        const items=ed.items.map(x=>{ const o=pe&&pe.items.find(y=>y.w===x.w&&y.k===x.k&&(x.k==='w'||y.c===x.c)); return {w:x.w,k:x.k,c:x.c,t:o?(pe.date===t?(o.t||1):(o.t||1)+1):1}; });
+        if(items.length) s.poem.err[n]={date:t,items}; else delete s.poem.err[n]; DB.log((s.preferredName||s.name)+' — poem bayt '+n+' mistakes: '+(items.length?PT.errTxt(s,n).join('; '):'cleared')); DB.save(); toast(items.length?'Saved — '+items.length+' mistake'+(items.length>1?'s':''):'Cleared'); ed=null; Router.render(); paneErr(); };
+      const fx=$('#pt-efix',pane); if(fx) fx.onclick=()=>{ delete s.poem.err[n]; DB.log((s.preferredName||s.name)+' — poem bayt '+n+' mistakes fixed'); DB.save(); toast('Marked as fixed'); ed=null; Router.render(); paneErr(); };
+    };
     const paneRec=()=>{ PT.audio.stop(); const st=DB.data.settings; st.poemModel=st.poemModel||{}; s.poem=s.poem||{b:{}}; s.poem.rec=s.poem.rec||{};
       const mdl=st.poemModel[n], rc=s.poem.rec[n]||[], nm=esc(s.preferredName||s.name);
       pane.innerHTML=`<div class="pt-rec"><div class="pt-rrow"><div><b>Your model recitation</b><div class="ai-sub">Record it once — every student hears the same example.</div></div><span class="pt-rbt">${mdl?`<button class="btn btn-o btn-sm" data-pl="${mdl.id}">▶ Play</button><button class="btn btn-ghost btn-sm" data-rk="model">↺ Re-record</button><button class="btn btn-ghost btn-sm" data-rdm="1">🗑</button>`:`<button class="btn btn-p btn-sm" data-rk="model">● Record model</button>`}</span></div>
@@ -13699,7 +13731,7 @@ const PT = {
         try{ await PT.audio.put(id,blob); }catch(err){ toast('Could not save the recording'); paneRec(); return; }
         if(x.dataset.rk==='model'){ if(st.poemModel[n]) PT.audio.del(st.poemModel[n].id); st.poemModel[n]={id,date:today(),dur}; } else { (s.poem.rec[n]=s.poem.rec[n]||[]).unshift({id,date:today(),dur}); if(s.poem.rec[n].length>6){ s.poem.rec[n].splice(6).forEach(r=>PT.audio.del(r.id)); } }
         DB.save(); toast('Recording saved'); paneRec(); }); };
-    const show=t=>{ $$('[data-pt]',o).forEach(x=>x.classList.toggle('on',x.dataset.pt===t)); (t==='drill'?paneDrill:t==='cue'?paneCue:t==='rec'?paneRec:paneLearn)(); };
+    const show=t=>{ $$('[data-pt]',o).forEach(x=>x.classList.toggle('on',x.dataset.pt===t)); (t==='drill'?paneDrill:t==='cue'?paneCue:t==='rec'?paneRec:t==='err'?paneErr:paneLearn)(); };
     $$('[data-pt]',o).forEach(x=>x.onclick=()=>show(x.dataset.pt)); show(tab||'learn');
     $('[data-x=c]',o).onclick=()=>{ PT.audio.stop(); o.remove(); };
     $$('[data-nav]',o).forEach(x=>x.onclick=()=>{ o.remove(); PT.study(sid,n+ +x.dataset.nav); });
