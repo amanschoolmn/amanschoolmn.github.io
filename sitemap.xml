@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://amanschoolmn.github.io/</loc>
+    <loc>https://amanschoolmn.org/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/about/</loc>
+    <loc>https://amanschoolmn.org/about/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/about/our-team/</loc>
+    <loc>https://amanschoolmn.org/about/our-team/</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/curriculum/</loc>
+    <loc>https://amanschoolmn.org/curriculum/</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/programs/</loc>
+    <loc>https://amanschoolmn.org/programs/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/amaanah/</loc>
+    <loc>https://amanschoolmn.org/amaanah/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/admissions/</loc>
+    <loc>https://amanschoolmn.org/admissions/</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/admissions/tuition/</loc>
+    <loc>https://amanschoolmn.org/admissions/tuition/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/apply/</loc>
+    <loc>https://amanschoolmn.org/apply/</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/student-life/</loc>
+    <loc>https://amanschoolmn.org/student-life/</loc>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/news/</loc>
+    <loc>https://amanschoolmn.org/news/</loc>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/contact/</loc>
+    <loc>https://amanschoolmn.org/contact/</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://amanschoolmn.github.io/policies/</loc>
+    <loc>https://amanschoolmn.org/policies/</loc>
     <priority>0.3</priority>
   </url>
 </urlset>

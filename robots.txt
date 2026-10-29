@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://amanschoolmn.github.io/sitemap.xml
+Sitemap: https://amanschoolmn.org/sitemap.xml
 
 Disallow: /central/
