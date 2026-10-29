@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 81<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 82<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -2285,7 +2285,15 @@ function wireTimeWheel(container, id){
     hidden.value = String(h24).padStart(2,'0')+':'+String(v.m).padStart(2,'0');
     hidden.dispatchEvent(new Event('change', {bubbles:true}));
   };
-  const touch = (c)=>{ if(c.dataset.touched!=='1'){ c.dataset.touched='1'; if(placeholder) placeholder.remove(); } };
+  // Touching ANY column commits the whole time. The other columns show their
+  // resting value highlighted (e.g. :00, AM) so what you see is what is saved;
+  // previously an untouched AM/PM or minute column left the time blank and
+  // forms rejected it even though a full time looked selected.
+  const touch = (c)=>{
+    if(placeholder) placeholder.remove();
+    cols.forEach(x=>{ if(x.dataset.touched!=='1'){ x.dataset.touched='1'; snapTo(x, currentIndex(x), false); } });
+    c.dataset.touched='1';
+  };
   cols.forEach(c=>{
     const initVal = c.dataset.init;
     c.dataset.touched = initVal!=='' ? '1' : '0';
@@ -15307,7 +15315,8 @@ const Admissions = {
     wireTimeWheel(o, 'il-time');
     $('[data-x=s]',o).onclick=()=>{
       const dateVal = $('#il-date',o).value, timeVal = $('#il-time',o).value;
-      if(!dateVal || !timeVal){ toast('Interview date and time are required'); return; }
+      if(!dateVal){ toast('Pick the interview date'); return; }
+      if(!timeVal){ toast('Pick the interview time \u2014 scroll or tap the hour, minute, AM/PM wheel'); return; }
       const loc = $('#il-loc',o).value.trim() || AMAN_ADDRESS;
       const prog = $('#il-prog',o).value;
       const selectedSibs = siblings.filter(s => { const cb = o.querySelector(`[data-sid="${s.id}"]`); return cb && cb.checked; });
@@ -15358,7 +15367,9 @@ const Admissions = {
     wireTimeWheel(o, 'ac-t1'); wireTimeWheel(o, 'ac-t2');
     $('[data-x=s]',o).onclick=()=>{
       const startVal = $('#ac-start',o).value, t1 = $('#ac-t1',o).value, t2 = $('#ac-t2',o).value;
-      if(!startVal || !t1 || !t2){ toast('Start date and class start/end times are required'); return; }
+      if(!startVal){ toast('Pick the class start date'); return; }
+      if(!t1){ toast('Pick the class start time'); return; }
+      if(!t2){ toast('Pick the class end time'); return; }
       const loc = $('#ac-loc',o).value.trim() || AMAN_ADDRESS;
       const reg = parseFloat($('#ac-reg',o).value) || 0;
       const tui = parseFloat($('#ac-tui',o).value) || 0;
