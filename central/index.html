@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 79<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 80<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -4311,10 +4311,12 @@ const DB = {
   saveNow(){ try{ localStorage.setItem(this.KEY, JSON.stringify(this.data)); }catch(e){ toast('⚠ Save failed — storage may be full'); } },
   log(text){ this.data.activity.unshift({t:new Date().toISOString(), text}); this.data.activity = this.data.activity.slice(0,80); },
   export(){
+    // Stamp the backup time BEFORE serializing, so the file itself carries it — otherwise a restored backup always says "Backup never".
+    this.data.settings.lastBackupAt = new Date().toISOString();
     const blob = new Blob([JSON.stringify(this.data,null,1)], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = 'AMAN-Central-Backup-'+today()+'.json'; a.click(); URL.revokeObjectURL(a.href);
-    this.data.settings.lastBackupAt = new Date().toISOString(); this.saveNow();
+    this.saveNow(); try{ footStatus(); }catch(e){}
     toast('Backup downloaded');
   },
   import(file){
@@ -4322,7 +4324,10 @@ const DB = {
     rd.onload = ()=>{ try{
       const d = JSON.parse(rd.result);
       if(!Array.isArray(d.resources)) throw 0;
-      this.data = this.migrate(d); this.log('Backup restored from file'); this.saveNow(); Router.go(Router.current||location.hash||'#/dashboard'); toast('Backup restored');
+      // Backups saved by older builds carry no backup date. The restored data is exactly what that file holds, so date it by when the file was saved.
+      const fm=file.lastModified?new Date(file.lastModified).toISOString():'', prevBk=(d.settings&&d.settings.lastBackupAt)||'';
+      d.settings=d.settings||{}; if(fm&&(!prevBk||prevBk<fm)) d.settings.lastBackupAt=fm;
+      this.data = this.migrate(d); this.log('Backup restored from file'); this.saveNow(); try{ footStatus(); }catch(e){} Router.go(Router.current||location.hash||'#/dashboard'); toast('Backup restored');
     }catch(e){ toast('⚠ Not a valid AMAN Central backup'); } };
     rd.readAsText(file);
   },
