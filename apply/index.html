@@ -154,10 +154,10 @@
         <div class="totals-box">
           <div class="totals-row"><span class="totals-label">Students Enrolled</span><span class="totals-value" id="totalStudents">0</span></div>
           <div class="totals-row"><span class="totals-label">Registration Fee <span class="totals-note">$50 × students</span></span><span class="totals-value" id="totalRegFee">$0</span></div>
-          <div class="totals-row"><span class="totals-label">Monthly Tuition <span class="totals-note">$90 × students/mo</span></span><span class="totals-value" id="totalTuition">$0/mo</span></div>
+          <div class="totals-row"><span class="totals-label">Monthly Tuition <span class="totals-note" id="tuitionRateNote">$100 × students/mo</span></span><span class="totals-value" id="totalTuition">$0/mo</span></div>
           <div class="totals-row totals-grand"><span class="totals-label">Total Due at Enrollment</span><span class="totals-value" id="grandTotal">$0</span></div>
         </div>
-        <div style="background:rgba(26,74,53,0.05);border:1px solid rgba(26,74,53,0.15);padding:1rem 1.2rem;font-size:0.85rem;color:#3a3020;line-height:1.75;margin-top:0.5rem">
+        <div class="notice-card">
           All registrations will be reviewed prior to final acceptance. Payment is required upon acceptance to secure enrollment, as class sizes are limited. AMAN reserves the right to adjust tuition fees at any time — parents will be notified in advance.
         </div>
         <div class="fnav"><div></div><button class="btn-next" onclick="nextStep(1)">Next: Family Info →</button></div>
@@ -251,7 +251,7 @@
         <div class="field-sec">Agreements</div>
         <label class="agr-item" id="agr1" onclick="toggleAgr(this)"><input type="checkbox" id="ag1"/><span>I have read and agree to AMAN's <strong>attendance and tardiness policy</strong>. Unexcused absences beyond 3 days lead to dismissal; tardiness beyond 15 minutes results in the student being sent home.</span></label>
         <label class="agr-item" id="agr2" onclick="toggleAgr(this)"><input type="checkbox" id="ag2"/><span>I agree to ensure my child follows the <strong>Islamic dress code</strong> every session without exception.</span></label>
-        <label class="agr-item" id="agr3" onclick="toggleAgr(this)"><input type="checkbox" id="ag3"/><span>I understand the <strong>registration fee is $50 per student</strong>, due upon enrollment, and monthly tuition is <strong>$90/student</strong>, due at the beginning of every month.</span></label>
+        <label class="agr-item" id="agr3" onclick="toggleAgr(this)"><input type="checkbox" id="ag3"/><span>I understand the <strong>registration fee is $50 per student</strong>, due upon enrollment, and monthly tuition is <strong>$100/student</strong> (<strong>$90/student</strong> for families enrolling 4 or more children), due at the beginning of every month.</span></label>
         <label class="agr-item" id="agr4" onclick="toggleAgr(this)"><input type="checkbox" id="ag4"/><span>I commit to the <strong>parent partnership pledge</strong>: reviewing lessons at home, reinforcing Islamic manners, communicating with staff, and prioritizing attendance.</span></label>
         <hr class="hdivider"/>
         <div class="field-sec">Terms &amp; Conditions</div>
@@ -403,10 +403,17 @@
       <div class="suc-title">Application Submitted!</div>
       <div class="suc-ref" id="suc-ref">Reference #: AMAN-000000</div>
       <div class="suc-body">JazākAllāhu Khayran for applying to Al-Madrasatu An-Nuriyyah. Your application has been received and is now under review, in shā Allah.</div>
+      <div class="suc-summary" id="sucSummary"></div>
+      <div class="suc-actions"><button type="button" id="sucCopy">Copy reference number</button><button type="button" id="sucPrint">Print / save as PDF</button></div>
+      <div style="font-size:0.88rem;color:var(--warm-gray);font-style:italic;max-width:480px;margin:-0.6rem auto 1.6rem">Please keep your reference number &mdash; copy it, print this page, or take a screenshot.</div>
 
       <div style="background:var(--cream);border:1px solid rgba(184,135,42,0.2);border-top:3px solid var(--gold);padding:1.6rem 1.8rem;max-width:520px;margin:1.2rem auto;text-align:left">
         <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--forest);margin-bottom:1.1rem;text-align:center;letter-spacing:0.04em">WHAT HAPPENS NEXT</div>
         <div style="display:flex;flex-direction:column;gap:0.9rem">
+          <div style="display:flex;align-items:flex-start;gap:0.9rem">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--gold);color:var(--deep);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;margin-top:0.1rem">&#10003;</div>
+            <div style="font-size:0.95rem;color:var(--ink-soft);line-height:1.65"><strong style="color:var(--forest)">Application Received</strong><br>You are here &mdash; your application is in.</div>
+          </div>
           <div style="display:flex;align-items:flex-start;gap:0.9rem">
             <div style="width:26px;height:26px;border-radius:50%;background:var(--forest);color:var(--gold-bright);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;margin-top:0.1rem">1</div>
             <div style="font-size:0.95rem;color:var(--ink-soft);line-height:1.65"><strong style="color:var(--forest)">Application Review</strong><br>We will review your application within <strong>2–3 business days</strong>, in shā Allah.</div>
@@ -430,7 +437,7 @@
       </div>
 
       <div style="font-size:0.9rem;color:var(--ink-soft);margin-bottom:1.5rem">
-        Questions? &nbsp;📞 <strong>(952) 217-3629</strong> &nbsp;·&nbsp; ✉️ <strong>amanschool.mn@gmail.com</strong>
+        Questions? &nbsp;📞 <strong>(612) 444-2609</strong> &nbsp;·&nbsp; ✉️ <strong>amanschool.mn@gmail.com</strong>
       </div>
       <a class="btn btn-gold" href="/" style="display:inline-flex;margin-bottom:1rem">&larr; Return to Home</a>
     </div>
@@ -499,5 +506,6 @@
 </button>
 
 <script src="/assets/js/main.js" defer></script>
+<script src="/assets/js/apply-enhance.js" defer></script>
 </body>
 </html>
