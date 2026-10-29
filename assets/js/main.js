@@ -468,28 +468,42 @@ function v(id, eid) {
   er.classList.toggle('show',!ok);
   return ok;
 }
+// ── STUDENT VALIDATION ───────────────────
+// Every field marked * in a student's block is required: New/Returning, Program, first & last
+// name, date of birth (age 6+), gender, Qur'an reading ability. paint=true shows the errors;
+// paint=false only reports whether the student blocks are complete (used to unlock "Add Another Student").
+function validateStudents(paint) {
+  let ok = true;
+  const flag = (el, er, good) => {
+    if(paint) { if(el) el.classList.toggle('err', !good); if(er) er.classList.toggle('show', !good); }
+    if(!good) ok = false;
+  };
+  const req = (id) => {
+    const el = document.getElementById(id);
+    flag(el, document.getElementById('e_' + id), !!el && el.value.trim() !== '');
+  };
+  document.querySelectorAll('.student-block').forEach((panel, idx) => {
+    const n = idx + 1;
+    const sr = document.querySelector('input[name="s'+n+'_status"]:checked');
+    flag(null, document.getElementById('e_s'+n+'_status'), !!sr);
+    req('s'+n+'_program');
+    if(!sr) return;                                   // details stay hidden until New/Returning is chosen
+    req('s'+n+'_fname'); req('s'+n+'_lname'); req('s'+n+'_dob'); req('s'+n+'_gender'); req('s'+n+'_quran');
+    const dob = document.getElementById('s'+n+'_dob');
+    const ageEl = document.getElementById('s'+n+'_age');
+    const ageEr = document.getElementById('e_s'+n+'_age');
+    if(dob && dob.value && ageEl) {
+      const age = parseInt(ageEl.value);
+      flag(null, ageEr, !(isNaN(age) || age < 6));
+    } else if(ageEr && paint) { ageEr.classList.remove('show'); }
+  });
+  return ok;
+}
+
 function validateStep(step) {
   let ok = true;
   if(step===1) {
-    document.querySelectorAll('.student-block').forEach((panel,idx) => {
-      const n = idx+1;
-      const sr = document.querySelector('input[name="s'+n+'_status"]:checked');
-      const se = document.getElementById('e_s'+n+'_status');
-      if(se){ se.classList.toggle('show',!sr); if(!sr) ok=false; }
-      // Only validate details fields if details are visible
-      const details = document.getElementById('sdetails'+n);
-      if(details && details.style.display !== 'none') {
-        if(!v('s'+n+'_fname','e_s'+n+'_fname')) ok=false;
-        if(!v('s'+n+'_lname','e_s'+n+'_lname')) ok=false;
-        const dobEl = document.getElementById('s'+n+'_dob');
-        const dobEr = document.getElementById('e_s'+n+'_dob');
-        if(dobEl&&dobEr){ if(!dobEl.value){dobEl.classList.add('err');dobEr.classList.add('show');ok=false;}else{dobEl.classList.remove('err');dobEr.classList.remove('show');} }
-        const ageEl = document.getElementById('s'+n+'_age');
-        const ageEr = document.getElementById('e_s'+n+'_age');
-        if(ageEl&&ageEr){ const age=parseInt(ageEl.value); if(isNaN(age)||age<6){ageEr.classList.add('show');ok=false;}else{ageEr.classList.remove('show');} }
-        if(!v('s'+n+'_gender','e_s'+n+'_gender')) ok=false;
-      }
-    });
+    if(!validateStudents(true)) ok=false;
   }
   if(step===2) {
     if(!v('p_fname','e_p_fname')) ok=false;

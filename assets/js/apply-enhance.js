@@ -51,7 +51,7 @@
   function queueSave() { clearTimeout(timer); timer = setTimeout(save, 500); }
 
   function restore(d) {
-    while (wrap.querySelectorAll('.student-block').length < d.n) addStudent();
+    while (wrap.querySelectorAll('.student-block').length < d.n) { _add(); tune(); }   // bypass the completeness gate while restoring
     Object.keys(d.f).forEach(function (id) {
       var el = $(id); if (!el) return;
       el.value = d.f[id];
@@ -128,9 +128,9 @@
       el.classList.remove('err');
       var er = $('e_' + el.id); if (er) er.classList.remove('show');
     }
-    queueSave();
+    queueSave(); queueRefreshAdd();
   });
-  wrap.addEventListener('change', queueSave);
+  wrap.addEventListener('change', function () { queueSave(); queueRefreshAdd(); });
   wrap.addEventListener('focusout', function (e) {
     var el = e.target;
     if (!el.id || !/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return;
@@ -150,6 +150,21 @@
     if (bad && bad.focus) { try { bad.focus({ preventScroll: true }); } catch (e) { bad.focus(); } }
   }
 
+  /* ───────── "Add Another Student" is locked until the current students are complete ───────── */
+  var addBtn = wrap.querySelector('.add-more-btn');
+  var gate = document.createElement('div');
+  gate.className = 'add-gate'; gate.setAttribute('role', 'status');
+  gate.textContent = 'Please fill in every required field (*) for your current student before adding another child.';
+  var addRow = wrap.querySelector('.add-more-row');
+  if (addRow) addRow.appendChild(gate);
+  var addTimer = null;
+  function refreshAdd() {
+    var locked = !validateStudents(false);
+    if (addBtn) { addBtn.classList.toggle('locked', locked); addBtn.setAttribute('aria-disabled', locked ? 'true' : 'false'); }
+    if (!locked) gate.classList.remove('show');
+  }
+  function queueRefreshAdd() { clearTimeout(addTimer); addTimer = setTimeout(refreshAdd, 150); }
+
   /* ───────── wrap main.js functions (global function declarations) ───────── */
   var _next = window.nextStep;
   window.nextStep = function (s) {
@@ -162,7 +177,16 @@
   var _submit = window.submitForm;
   window.submitForm = function () { _submit(); firstErrorIntoView($('step4')); };
   var _add = window.addStudent;
-  window.addStudent = function () { _add(); tune(); queueSave(); };
+  window.addStudent = function () {
+    // A new student can only be added once every required field of the current students is filled.
+    if (wrap.querySelectorAll('.student-block').length > 0 && !validateStudents(true)) {
+      gate.classList.add('show', 'nudge');
+      setTimeout(function () { gate.classList.remove('nudge'); }, 600);
+      firstErrorIntoView($('studentsContainer'));
+      return;
+    }
+    _add(); tune(); refreshAdd(); queueSave();
+  };
 
   /* ───────── 3. TOTALS EMPTY STATE + "ALREADY ENROLLED?" NOTE ───────── */
   var note = document.createElement('div');
@@ -179,7 +203,7 @@
     var ts = $('totalStudents');
     if (box && ts) box.classList.toggle('empty', ts.textContent.trim() === '0');
     note.classList.toggle('show', !!wrap.querySelector('input[name$="_status"][value="Returning"]:checked'));
-    queueSave();
+    refreshAdd(); queueSave();
   };
 
   var intro = $('step1') && $('step1').querySelector('.fs-sub');
