@@ -1748,3 +1748,4 @@ section{position:relative;z-index:1}
 #schoolFormWrap .field input,#schoolFormWrap .field select,#schoolFormWrap .field textarea{min-width:0;width:100%}
 @media(max-width:580px){#schoolFormWrap .frow,#schoolFormWrap .frow.three,#schoolFormWrap .frow.four{grid-template-columns:minmax(0,1fr)}#schoolFormWrap .dob-frow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 #schoolFormWrap [id^="rg_s"][id$="_status"] .ropt.sel{background:var(--forest);color:var(--cream)}
+#schoolFormWrap .ropt:focus-within,#schoolFormWrap .copt:focus-within{outline:3px solid var(--gold);outline-offset:2px}
