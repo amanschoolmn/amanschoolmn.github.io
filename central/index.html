@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 82<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 83<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -3699,35 +3699,7 @@ function syncErrorMessage(err){
   }
   return '⚠ Sync failed: ' + (msg || 'unknown error') + '. Check the CSV link in Sync Settings.';
 }
-function openLetterPreview(html){
-  // Rendered as an in-page overlay with an <iframe srcdoc> for the on-screen
-  // preview — real CSS/DOM isolation from the app's own styling, no popup.
-  // Printing (the print button below) goes through printHTMLDocument(),
-  // which isolates the content with a Shadow DOM instead — see the comment
-  // on that function for why it doesn't reuse an iframe for this.
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,20,15,.72);display:flex;flex-direction:column;padding:18px;padding-top:calc(18px + env(safe-area-inset-top));box-sizing:border-box';
-  overlay.className = 'letter-overlay';
-  const bar = document.createElement('div');
-  bar.className = 'no-print';
-  bar.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-shrink:0';
-  const printBtn = document.createElement('button');
-  printBtn.textContent = '🖨️ Print / Save as PDF';
-  printBtn.style.cssText = 'background:#1a4a35;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)';
-  printBtn.onclick = () => printHTMLDocument(html);
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '\u2715 Close preview';
-  closeBtn.style.cssText = 'background:#fff;color:#1a4a35;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)';
-  closeBtn.onclick = () => overlay.remove();
-  bar.appendChild(printBtn);
-  bar.appendChild(closeBtn);
-  const frame = document.createElement('iframe');
-  frame.style.cssText = 'flex:1;width:100%;border:none;border-radius:10px;background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.35)';
-  frame.srcdoc = html;
-  overlay.appendChild(bar);
-  overlay.appendChild(frame);
-  document.body.appendChild(overlay);
-}
+function openLetterPreview(html){ printHTMLDocument(html); }
 // Prints a full HTML document string (as produced by renderSOTMShareCard,
 // renderSOTMCertificate, letter/checklist builders, etc.).
 //
@@ -3761,63 +3733,114 @@ function openLetterPreview(html){
 // rather than #4's original invisible/auto-fire shape, since that was a
 // separate, already-settled bug with no bearing on this revert.
 function printHTMLDocument(html){
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const styleText = [...doc.querySelectorAll('style')].map(s=>s.textContent).join('\n');
-  const bodyHTML = doc.body ? doc.body.innerHTML : html;
-
+  const src = new DOMParser().parseFromString(html, 'text/html');
+  const parts = ptSplitDoc(html);
+  const bodyCls = (src.body && src.body.className) || '';
+  const pageRule = (html.match(/@page[^{]*\{[^}]*\}/g)||[]).pop() || '@page{margin:.3in}';
+  const landscape = /size:\s*landscape/.test(html);
   let host = document.getElementById('print-root');
-  if(!host){
-    host = document.createElement('div');
-    host.id = 'print-root';
-    document.body.appendChild(host);
-  }
-  // Rebuilt fresh every call: a no-print toolbar in the LIGHT dom (real,
-  // directly-tappable buttons) plus a plain child div that gets its own
-  // Shadow DOM for the isolated printable content.
+  if(!host){ host = document.createElement('div'); host.id = 'print-root'; document.body.appendChild(host); }
   host.innerHTML = `<div class="pp-bar no-print">
-      <button type="button" class="pp-go">\uD83D\uDDA8\uFE0F Print / Save as PDF</button>
-      <button type="button" class="pp-x">\u2715 Close</button>
+      <button type="button" class="pp-pdf">📤 Save / Share PDF</button>
+      <button type="button" class="pp-go">🖨️ Print</button>
+      <button type="button" class="pp-x">✕ Close</button>
     </div><div class="pp-shadow"></div>`;
-  const shadowHost = host.querySelector('.pp-shadow');
-  const root = shadowHost.attachShadow({mode:'open'});
-  // .toolbar-actions is each source document's OWN built-in print button,
-  // left over from when these strings were meant to be opened as a
-  // standalone page. With a real Print/Close bar now living outside the
-  // shadow root, that inner one would just be a confusing, unreachable
-  // duplicate, so it's always hidden here.
-  root.innerHTML = `<style>${styleText}\n.toolbar-actions{display:none!important}</style><div class="pt-print-inner">${bodyHTML}</div>`;
+  const root = host.querySelector('.pp-shadow').attachShadow({mode:'open'});
+  // :root/html/body rules are remapped (ptSplitDoc) so the letter's colour
+  // variables and backgrounds resolve inside the shadow root; each document's
+  // own Print button is hidden because the bar above replaces it.
+  root.innerHTML = `${parts.links}<style>${parts.css}
+:host{display:block}
+.pv-doc{-webkit-print-color-adjust:exact;print-color-adjust:exact;min-height:100%}
+.toolbar-actions,.toolbar button.p,.toolbar .no-pdf{display:none!important}
+@media print{.toolbar,.toolbar-actions{display:none!important}}</style><div class="pv-doc ${esc(bodyCls)}">${parts.body}</div>`;
 
-  if(!document.getElementById('print-root-style')){
-    const st = document.createElement('style');
-    st.id = 'print-root-style';
-    // This rule lives in the LIGHT DOM (the app's own stylesheet), targeting
-    // #print-root as a normal element from the outside — shadow encapsulation
-    // only affects what's INSIDE the shadow root, so this still works exactly
-    // as intended: hide everything else on print, show only the print root.
-    st.textContent = `#print-root{display:none}
+  let st = document.getElementById('print-root-style');
+  if(st) st.remove();
+  st = document.createElement('style'); st.id='print-root-style';
+  st.textContent = `#print-root{display:none}
       #print-root.pp-open{display:flex;flex-direction:column;position:fixed;inset:0;z-index:100000;background:#f4ead6}
-      #print-root .pp-shadow{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff}
+      #print-root .pp-shadow{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#d9d2c2}
       #print-root .pp-bar{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-shrink:0;flex-wrap:wrap;
         padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));background:#123626;box-shadow:0 2px 10px rgba(0,0,0,.25)}
       #print-root .pp-bar button{padding:9px 16px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit}
-      #print-root .pp-go{background:#b8872a;color:#20261f}
+      #print-root .pp-pdf{background:#b8872a;color:#20261f}
+      #print-root .pp-go{background:#f4ead6;color:#123626}
       #print-root .pp-x{background:transparent;color:#f4ead6;border:1px solid rgba(244,234,214,.4)!important}
+      ${pageRule}
       @media print{
+        html,body{background:#fff!important;height:auto!important;overflow:visible!important}
         body>*:not(#print-root){display:none!important}
-        #print-root{display:block!important;position:static!important;inset:auto!important}
-        #print-root .pp-shadow{position:static!important;overflow:visible!important;flex:unset!important;height:auto!important}
+        #print-root{display:block!important;position:static!important;inset:auto!important;background:#fff!important}
+        #print-root .pp-shadow{position:static!important;overflow:visible!important;flex:unset!important;height:auto!important;background:#fff!important}
         #print-root .no-print{display:none!important}
       }`;
-    document.head.appendChild(st);
-  }
+  document.head.appendChild(st);
 
   host.classList.add('pp-open');
   const closeHost = () => { host.classList.remove('pp-open'); host.innerHTML=''; };
   host.querySelector('.pp-x').onclick = closeHost;
-  host.querySelector('.pp-go').onclick = () => window.print();
+  host.querySelector('.pp-go').onclick = () => { try{ window.print(); }catch(e){ toast('Printing is not available here — use Save / Share PDF'); } };
+  // iOS home-screen apps often can't print at all, so the dependable route is
+  // a real PDF built here and handed to the share sheet (Save to Files, Print,
+  // Mail, AirDrop all appear there).
+  host.querySelector('.pp-pdf').onclick = async (ev) => {
+    const btn = ev.currentTarget, old = btn.textContent; btn.disabled = true; btn.textContent = 'Building PDF…';
+    try{ await ppMakePdf(html, landscape, (src.title||'AMAN-Document').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').slice(0,60)||'AMAN-Document'); }
+    catch(e){ toast('Couldn’t build the PDF'+(e&&e.message==='offline'?' — it needs an internet connection once':'')+'. Try Print instead.'); console.error(e); }
+    finally{ btn.disabled=false; btn.textContent=old; }
+  };
 }
-
-
+function ppLoadScript(url, test){ return new Promise((res,rej)=>{ if(test()) return res(); const s=document.createElement('script'); s.src=url; s.onload=()=>res(); s.onerror=()=>rej(new Error('offline')); document.head.appendChild(s); }); }
+async function ppMakePdf(html, landscape, name){
+  await ppLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', ()=>typeof html2canvas==='function');
+  await ppLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', ()=>!!(window.jspdf&&window.jspdf.jsPDF));
+  const W = landscape ? 1056 : 816; // 11in / 8.5in at 96dpi
+  const fr = document.createElement('iframe');
+  fr.style.cssText = 'position:fixed;left:-20000px;top:0;width:'+W+'px;height:1200px;border:0;visibility:hidden';
+  document.body.appendChild(fr);
+  try{
+    await new Promise(r=>{ fr.onload=r; fr.srcdoc=html; });
+    const d = fr.contentDocument;
+    const hide = d.createElement('style'); hide.textContent='.toolbar,.toolbar-actions,.no-print{display:none!important}html,body{margin:0!important;padding:0!important;background:#fff!important}.sheet{margin:0!important;box-shadow:none!important;max-width:none!important}';
+    d.head.appendChild(hide);
+    if(d.fonts && d.fonts.ready) await d.fonts.ready;
+    await new Promise(r=>setTimeout(r,300));
+    const target = d.querySelector('.sheet') || d.body;
+    const canvas = await html2canvas(target, {scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:W});
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({unit:'pt', format:'letter', orientation: landscape?'landscape':'portrait'});
+    const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight();
+    const sliceH = Math.floor(canvas.width * ph / pw);
+    if(canvas.height <= sliceH*1.3){ // a letter that only just overflows: shrink onto ONE page rather than strand the signature
+      const k = Math.min(1, sliceH/canvas.height), w = pw*k, hh = (canvas.height*pw/canvas.width)*k;
+      pdf.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',(pw-w)/2,0,w,hh);
+      await ppDeliverPdf(pdf.output('blob'), name); return;
+    }
+    let y = 0, first = true;
+    while(y < canvas.height - 2){
+      const h = Math.min(sliceH, canvas.height - y);
+      const c = document.createElement('canvas'); c.width = canvas.width; c.height = h;
+      const g = c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,h); g.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+      if(!first) pdf.addPage();
+      pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pw, h*pw/canvas.width);
+      first = false; y += h;
+    }
+    const blob = pdf.output('blob');
+    await ppDeliverPdf(blob, name);
+  } finally { fr.remove(); }
+}
+async function ppDeliverPdf(blob, name){
+  const file = new File([blob], name+'.pdf', {type:'application/pdf'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:name}); return; }catch(e){ if(e&&e.name==='AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const o = overlay(`<div class="modal" style="max-width:420px"><h3>📄 PDF ready</h3>
+    <p class="td-hint">Tap Open to view it, then use the share/save button. On a computer it downloads.</p>
+    <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><a class="btn btn-p" href="${url}" download="${esc(name)}.pdf" target="_blank" style="text-decoration:none">Open / Download PDF</a></div></div>`, true);
+  $('[data-x=c]',o).onclick=()=>o.remove();
+}
 function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, interviewDate, interviewTime){
   const subject = 'AMAN \u2014 '+students+' Conditionally Accepted (One Step Left)';
   const lines = [
@@ -9714,7 +9737,7 @@ async function ptDeliverImages(blobs, names, title){
 function ptSplitDoc(html){
   const d=new DOMParser().parseFromString(html,'text/html');
   let css=[...d.querySelectorAll('style')].map(s=>s.textContent).join('\n');
-  css=css.replace(/@page[^{]*\{[^}]*\}/g,'').replace(/(^|[\s,}{])(html|body)(?=[\s,{.:#\[>+~])/g,'$1.pv-doc');
+  css=css.replace(/@page[^{]*\{[^}]*\}/g,'').replace(/:root(?![\w-])/g,':host').replace(/(^|[\s,}{])(html|body)(?=[\s,{.:#\[>+~])/g,'$1.pv-doc');
   const links=[...d.querySelectorAll('link[rel=stylesheet]')].map(l=>l.outerHTML).join('');
   return {css,links,body:d.body?d.body.innerHTML:html};
 }
