@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 80<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 81<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -4052,11 +4052,11 @@ const DB = {
   load(){
     try{
       const raw = localStorage.getItem(this.KEY);
-      if(!raw){ this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
+      if(!raw){ this._fresh='empty'; this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
       const d = JSON.parse(raw);
       if(!d || typeof d!=='object' || !Array.isArray(d.resources)) throw 0;
       this.data = this.migrate(d);
-    }catch(e){ this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); toast('Stored data unreadable — started fresh'); }
+    }catch(e){ this._fresh='unreadable'; this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); toast('Stored data unreadable — started fresh'); }
   },
   migrate(d){
     // future schema bumps slot in here; never destructive
@@ -4308,7 +4308,9 @@ const DB = {
     return d;
   },
   save(){ clearTimeout(this._t); this._t = setTimeout(()=>this.saveNow(), 350); },
-  saveNow(){ try{ localStorage.setItem(this.KEY, JSON.stringify(this.data)); }catch(e){ toast('⚠ Save failed — storage may be full'); } },
+  saveNow(){ try{ const js=JSON.stringify(this.data); localStorage.setItem(this.KEY, js); this.savedAt=Date.now(); this.saveErr=''; try{ const b=document.getElementById('saveWarn'); if(b) b.remove(); }catch(e){}
+      try{ if(typeof DBG!=='undefined') DBG.mirror(); }catch(e){} }
+    catch(e){ this.saveErr=String(e&&e.message||e); toast('⚠ Save failed — storage may be full'); try{ DBG.warn(); }catch(e2){} } },
   log(text){ this.data.activity.unshift({t:new Date().toISOString(), text}); this.data.activity = this.data.activity.slice(0,80); },
   export(){
     // Stamp the backup time BEFORE serializing, so the file itself carries it — otherwise a restored backup always says "Backup never".
@@ -4327,7 +4329,7 @@ const DB = {
       // Backups saved by older builds carry no backup date. The restored data is exactly what that file holds, so date it by when the file was saved.
       const fm=file.lastModified?new Date(file.lastModified).toISOString():'', prevBk=(d.settings&&d.settings.lastBackupAt)||'';
       d.settings=d.settings||{}; if(fm&&(!prevBk||prevBk<fm)) d.settings.lastBackupAt=fm;
-      this.data = this.migrate(d); this.log('Backup restored from file'); this.saveNow(); try{ footStatus(); }catch(e){} Router.go(Router.current||location.hash||'#/dashboard'); toast('Backup restored');
+      this.data = this.migrate(d); this._fresh=null; this.log('Backup restored from file'); this.saveNow(); try{ footStatus(); }catch(e){} Router.go(Router.current||location.hash||'#/dashboard'); toast('Backup restored');
     }catch(e){ toast('⚠ Not a valid AMAN Central backup'); } };
     rd.readAsText(file);
   },
@@ -17700,6 +17702,13 @@ render(v){
      <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:12px">Storage used: ${(bytes/1024).toFixed(0)} KB of ~5 MB (${pctUsed}%)</div>
      <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sExp">Export backup</button>
       <label class="btn btn-o" style="cursor:pointer">Import backup<input type="file" id="sImp" accept=".json" hidden></label></div></div>
+    <div class="card" id="sGuard"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🔒 Storage health</h3>
+     <div class="wlist" style="font-size:13px"><div class="wrow" style="cursor:default"><span class="t">App address</span><span class="m" style="font-size:11px;word-break:break-all">${esc(location.origin+location.pathname)}</span></div>
+       <div class="wrow" style="cursor:default"><span class="t">Last saved on this device</span><span class="m">${DB.savedAt?esc(new Date(DB.savedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})):'not yet this session'}</span></div>
+       <div class="wrow" style="cursor:default"><span class="t">Browser keeps storage</span><span class="m" id="sgPersist">${DBG.persisted===true?'✓ protected':DBG.persisted===false?'not guaranteed':'checking…'}</span></div>
+       <div class="wrow" style="cursor:default"><span class="t">Automatic copy</span><span class="m" id="sgMirror">checking…</span></div></div>
+     ${window.__memStorage?'<p style="color:var(--bad);font-size:13px;margin:8px 0 0">⚠ This browser is blocking storage — nothing is being kept.</p>':''}${DB.saveErr?`<p style="color:var(--bad);font-size:13px;margin:8px 0 0">⚠ Last save failed: ${esc(DB.saveErr)}</p>`:''}
+     <div id="sgSnaps" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div></div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🎛 Customize layout</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Reorder or hide sidebar modules, tabs, and the cards on any page. Saved on this device and included in your backups. You can also tap the sliders icon at the top of any page.</p>
      <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sLay">Start customizing</button><button class="btn btn-o" id="sLayRst">Reset layout</button></div></div>
@@ -17716,6 +17725,9 @@ render(v){
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px;color:var(--bad)">⚠️ Danger zone</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:12px">Reset wipes everything in this browser and restores the seed catalog. Export a backup first.</p>
      <button class="btn btn-danger" id="sReset">Reset AMAN Central</button></div></div>`;
+  DBG.health().then(h=>{ const m=$('#sgMirror',v), sn=$('#sgSnaps',v); if(!m||!v.isConnected) return; m.textContent=h.latest?new Date(h.latest.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' · '+h.latest.n+' students':(DBG.err?'⚠ unavailable':'none yet'); const p=$('#sgPersist',v); if(p&&DBG.persisted!=null) p.textContent=DBG.persisted?'✓ protected':'not guaranteed';
+    sn.innerHTML=h.snaps.length?'<span class="ai-sub" style="width:100%">Restore a daily copy:</span>'+h.snaps.map(k=>`<button class="btn btn-o btn-sm" data-snap="${k}">${esc(k.slice(2))}</button>`).join(''):'';
+    $$('[data-snap]',v).forEach(b=>b.onclick=async()=>{ const x=await DBG.get(b.dataset.snap); if(!x) return; confirmBox('Replace everything with the copy from '+b.dataset.snap.slice(2)+' ('+x.n+' students)? Your current data will be overwritten — export a backup first if unsure.',()=>{ DB.data=DB.migrate(JSON.parse(x.js)); DB.log('Restored the daily copy from '+b.dataset.snap.slice(2)); DB.saveNow(); toast('Restored'); try{ footStatus(); }catch(e){} Router.render(); }); }); });
   $('#sTheme',v).onclick=()=>Theme.toggle();
   $('#sLay',v).onclick=()=>{ Router.go('#/dashboard'); setTimeout(()=>Layout.toggle(true),50); };
   $('#sLayRst',v).onclick=()=>Layout.resetAll();
@@ -17774,6 +17786,35 @@ document.addEventListener('click',e=>{ $$('details.st-more[open]').forEach(d=>{ 
 // username/password below are visible to anyone who views the page source,
 // and the check can be bypassed entirely via the browser console. It stops
 // casual access to the file/device; it does not stop a determined user.
+/* ---------- DATA GUARD: second copy of your data inside the browser (IndexedDB) + loud warnings ----------
+   Everything normally lives in localStorage. If the device ever clears it, or a save fails, this tells you straight away
+   and can bring the data back from the automatic copy. It is NOT a replacement for exporting a backup file. */
+const DBG={
+  open(){ return new Promise((res,rej)=>{ try{ const r=indexedDB.open('aman-central-mirror',1); r.onupgradeneeded=()=>r.result.createObjectStore('snap'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); },
+  async tx(mode,fn){ const db=await DBG.open(); return new Promise((res,rej)=>{ const t=db.transaction('snap',mode), st=t.objectStore('snap'); let out; const r=fn(st); if(r) r.onsuccess=()=>{ out=r.result; }; t.oncomplete=()=>{ db.close(); res(out); }; t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); },
+  put(k,v){ return DBG.tx('readwrite',s=>s.put(v,k)); }, get(k){ return DBG.tx('readonly',s=>s.get(k)); }, del(k){ return DBG.tx('readwrite',s=>s.delete(k)); }, keys(){ return DBG.tx('readonly',s=>s.getAllKeys()); },
+  mirror(){ if(DB._fresh||window.__memStorage) return; clearTimeout(DBG._t); DBG._t=setTimeout(async()=>{ try{ const m={at:Date.now(),n:(DB.data.students||[]).length,js:JSON.stringify(DB.data)}; await DBG.put('latest',m); DBG.lastMirror=m.at;
+      const dk='d-'+today(); if(!(await DBG.get(dk))) await DBG.put(dk,m); const ks=(await DBG.keys()||[]).filter(k=>/^d-/.test(k)).sort(); while(ks.length>7) await DBG.del(ks.shift()); DBG.err=''; }catch(e){ DBG.err=String(e&&e.message||e); } },2500); },
+  warn(){ if(document.getElementById('saveWarn')) return; const b=document.createElement('div'); b.id='saveWarn'; b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;background:#b3261e;color:#fff;padding:10px 16px;font:600 13.5px system-ui;text-align:center';
+    b.innerHTML='⚠ Your latest changes could NOT be saved on this device. Export a backup now. <button style="margin-left:8px;padding:3px 10px;border-radius:8px;border:0;font-weight:700" id="swExp">Export backup</button>'; document.body.appendChild(b); b.querySelector('#swExp').onclick=()=>DB.export(); },
+  async check(){
+    try{ if(navigator.storage&&navigator.storage.persist) DBG.persisted=await navigator.storage.persist(); }catch(e){}
+    if(window.__memStorage){ DBG.ask('mem'); return; }
+    if(DB._fresh) DBG.ask(DB._fresh); },
+  async ask(kind){
+    let m=null; try{ m=await DBG.get('latest'); }catch(e){}
+    const has=m&&m.n>0&&m.js, when=has?new Date(m.at).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+    const why=kind==='mem'?'This browser is blocking storage, so nothing you enter will be kept after you close the app.':kind==='unreadable'?'The saved data on this device could not be read.':'This device had no saved AMAN Central data when the app opened.';
+    const o=overlay(`<div class="modal" style="max-width:480px"><h3 style="margin:0 0 6px;color:var(--bad)">⚠ Your saved data is missing</h3><p style="font-size:14px;margin:0 0 8px">${why}</p>
+      ${has?`<p style="font-size:14px;margin:0 0 10px">An automatic copy was found from <b>${esc(when)}</b> (${m.n} students). Restore it?</p>`:`<p style="font-size:14px;margin:0 0 10px">No automatic copy exists here. Restore your latest exported backup file.</p>`}
+      <p class="ai-sub" style="margin:0 0 10px">This app is running at <b>${esc(location.origin+location.pathname)}</b>. If you used to open it from a different address, your data is saved under that address.</p>
+      <div class="mfoot" style="flex-wrap:wrap">${has?'<button class="btn btn-p" data-x="r">Restore the automatic copy</button>':''}<label class="btn ${has?'btn-o':'btn-p'}" style="cursor:pointer">Import a backup file<input type="file" accept=".json" hidden data-x="f"></label><button class="btn btn-ghost" data-x="k">Start fresh</button></div></div>`,true);
+    const done=()=>{ DB._fresh=null; o.remove(); };
+    const rb=$('[data-x=r]',o); if(rb) rb.onclick=()=>{ try{ DB.data=DB.migrate(JSON.parse(m.js)); DB.log('Restored from the automatic copy ('+when+')'); DB.saveNow(); done(); toast('Restored from the automatic copy'); try{ footStatus(); }catch(e){} Router.render(); }catch(e){ toast('That copy could not be read'); } };
+    $('[data-x=f]',o).onchange=e=>{ if(e.target.files[0]){ done(); DB.import(e.target.files[0]); } };
+    $('[data-x=k]',o).onclick=done; },
+  async health(){ let snaps=[],latest=null; try{ snaps=(await DBG.keys()||[]).filter(k=>/^d-/.test(k)).sort().reverse(); latest=await DBG.get('latest'); }catch(e){} return {snaps,latest}; }
+};
 const AUTH_USER = 'Admin', AUTH_PASS = 'Aman@2020', AUTH_KEY = 'aman_central_auth';
 function bootApp(){
   DB.load();
@@ -17790,6 +17831,7 @@ function bootApp(){
   const tbm=$('#tbMore'); if(tbm) tbm.onclick=e=>{ e.preventDefault(); e.stopPropagation(); $('#sidebar').classList.toggle('open'); };
   document.addEventListener('click', e=>{ if((window.innerWidth<=900||matchMedia('(orientation:landscape) and (max-height:520px)').matches) && !e.target.closest('#sidebar') && !e.target.closest('#hambBtn')) $('#sidebar').classList.remove('open'); });
   Router.render();
+  try{ DBG.check(); }catch(e){}
 }
 function showApp(){
   $('#loginScreen').style.display='none';
