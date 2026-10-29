@@ -165,11 +165,14 @@ function updateTotals() {
     if(r) count++;
   });
   const regFee  = count * 50;
-  const tuition = count * 90;
+  const rate = count >= 4 ? 90 : 100;   // $100/student for 1-3 children; $90/student each for 4+
+  const tuition = count * rate;
   const grandTotal = regFee + tuition;
   const fmt = (n) => '$' + n.toLocaleString();
   const set = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
   set('totalStudents', count);
+  document.querySelectorAll('[id$="_cost"]').forEach(e => { e.value = '$' + rate + '/month'; });
+  set('tuitionRateNote', count >= 4 ? '$90 × students/mo (4+ children rate)' : '$100 × students/mo');
   set('totalRegFee',   count > 0 ? fmt(regFee)   : '$0');
   set('totalTuition',  count > 0 ? fmt(tuition) + '/mo' : '$0/mo');
   set('grandTotal',    count > 0 ? fmt(grandTotal) : '$0');
@@ -273,7 +276,7 @@ function buildStudentHTML(n) {
         <div class="field"><label for="s${n}_grade">Grade</label>
           <select id="s${n}_grade"><option value="">Select grade...</option>${go}</select></div>
         <div class="field"><label for="s${n}_cost">Monthly Program Cost</label>
-          <input type="text" id="s${n}_cost" value="$90/month" readonly style="background:#f0ece0;color:var(--warm-gray)"></div>
+          <input type="text" id="s${n}_cost" value="$100/month" readonly style="background:#f0ece0;color:var(--warm-gray)"></div>
       </div>
 
       <div class="field-sec" style="margin-top:1.4rem">Islamic Background</div>
