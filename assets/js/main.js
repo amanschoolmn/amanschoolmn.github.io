@@ -345,7 +345,10 @@ let _preClickInput   = null;
 
 document.addEventListener('mousedown', function(e) {
   const ropt = e.target.closest('.ropt');
-  if(!ropt) { _preClickChecked = false; _preClickInput = null; return; }
+  // New/Returning is a true two-way toggle: tapping the option that is already selected
+  // must leave it selected (previously it un-checked the radio and hid the student's form
+  // while the button still looked selected).
+  if(!ropt || ropt.closest('[id^="rg_s"][id$="_status"]')) { _preClickChecked = false; _preClickInput = null; return; }
   const inp = ropt.querySelector('input[type=radio]');
   if(!inp) return;
   _preClickChecked = inp.checked;
