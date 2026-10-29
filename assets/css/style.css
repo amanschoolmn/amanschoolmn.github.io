@@ -1749,3 +1749,10 @@ section{position:relative;z-index:1}
 @media(max-width:580px){#schoolFormWrap .frow,#schoolFormWrap .frow.three,#schoolFormWrap .frow.four{grid-template-columns:minmax(0,1fr)}#schoolFormWrap .dob-frow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 #schoolFormWrap [id^="rg_s"][id$="_status"] .ropt.sel{background:var(--forest);color:var(--cream)}
 #schoolFormWrap .ropt:focus-within,#schoolFormWrap .copt:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+/* Add Another Student — locked until the current student is complete */
+#schoolFormWrap .add-more-btn.locked{opacity:.55;border-style:dashed;cursor:not-allowed}
+#schoolFormWrap .add-more-btn.locked .add-plus{background:var(--warm-gray)}
+.add-gate{display:none;margin-top:.7rem;padding:.7rem 1rem;background:rgba(158,42,43,.07);border-left:3px solid var(--red);font-size:.9rem;color:var(--ink-soft);line-height:1.5}
+.add-gate.show{display:block}
+.add-gate.nudge{animation:gateShake .45s ease}
+@keyframes gateShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
