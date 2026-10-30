@@ -1756,3 +1756,12 @@ section{position:relative;z-index:1}
 .add-gate.show{display:block}
 .add-gate.nudge{animation:gateShake .45s ease}
 @keyframes gateShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* HERO EMBLEM (Oct 2026): let the established line wrap on narrow phones instead of clipping */
+@media(max-width:520px){.hero-est{white-space:normal;letter-spacing:0.14em;line-height:1.6;padding:0 1rem}}
+.hero-title{text-wrap:balance}
+
+/* LOGO REFRESH (Oct 2026): new emblem on Programs hub + apply; phone hero title stays on one line */
+.prog-hub-school>img{height:130px;width:auto}
+.enroll-hero img{width:84px;height:auto}
+@media(max-width:520px){.hero h1.hero-title{font-size:clamp(1.1rem,6vw,1.7rem);white-space:nowrap;letter-spacing:0.01em}}
