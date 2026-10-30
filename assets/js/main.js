@@ -162,7 +162,7 @@ function updateTotals() {
   panels.forEach((panel, idx) => {
     const n = idx + 1;
     const r = document.querySelector('input[name="s'+n+'_status"]:checked');
-    if(r) count++;
+    if(r && r.value === 'New') count++;     // Returning students are not part of a new application: no fees here
   });
   const regFee  = count * 50;
   const rate = count >= 4 ? 90 : 100;   // $100/student for 1-3 children; $90/student each for 4+
@@ -235,10 +235,15 @@ function buildStudentHTML(n) {
         </div>
         <div class="ferr" id="e_s${n}_status">Please select one</div>
       </div>
-      <div class="field"><label for="s${n}_program">Program Selection <span class="req">*</span></label>
+      <div class="field prog-field"><label for="s${n}_program">Program Selection <span class="req">*</span></label>
         <select id="s${n}_program"><option value="">Please Select...</option>${po}</select>
         <div class="ferr" id="e_s${n}_program">Required</div>
       </div>
+    </div>
+    <div class="returning-card" style="display:none" role="note">
+      <p class="rc-q"><strong>Already enrolled at AMAN and just updating your information?</strong> You do not need a new application &mdash; use the quick family update form.</p>
+      <a class="rc-cta" href="/update/">Go to the Family Update Form &rarr;</a>
+      <button type="button" class="rc-switch" onclick="switchToNew(this)">Not returning? Switch to New Student</button>
     </div>
     <div class="student-details" id="sdetails${n}" style="display:none;animation:slideDown 0.32s ease">
       <div class="frow three">
@@ -332,11 +337,31 @@ function onStatusSelect(n) {
   if(grp) grp.querySelectorAll('.ropt').forEach(o =>
     o.classList.toggle('sel', o.querySelector('input').checked));
 
-  if(checked && details) {
-    details.style.display = 'block';
-    details.style.animation = 'slideDown 0.32s ease';
+  const panel = document.getElementById('spanel' + n);
+  const card  = panel && panel.querySelector('.returning-card');
+  const prog  = panel && panel.querySelector('.prog-field');
+  const isRet = !!checked && checked.value === 'Returning';
+  // Returning students do NOT fill in this application: show the "use the family update form" card instead.
+  if(card) card.style.display = isRet ? 'block' : 'none';
+  if(prog) prog.style.display = isRet ? 'none' : '';
+  if(details) {
+    if(checked && !isRet) {
+      details.style.display = 'block';
+      details.style.animation = 'slideDown 0.32s ease';
+    } else if(isRet) {
+      details.style.display = 'none';
+    }
   }
   updateTotals();
+}
+
+// "Not returning? Switch to New Student" link on the returning card
+function switchToNew(btn) {
+  const panel = btn.closest('.student-block');
+  const inp = panel && panel.querySelector('input[type=radio][value="New"]');
+  if(!inp) return;
+  inp.checked = true;
+  onStatusSelect(parseInt(panel.id.replace('spanel',''), 10));
 }
 
 // Deselect: use mousedown to record pre-click state, then handle in click
@@ -486,6 +511,7 @@ function validateStudents(paint) {
     const n = idx + 1;
     const sr = document.querySelector('input[name="s'+n+'_status"]:checked');
     flag(null, document.getElementById('e_s'+n+'_status'), !!sr);
+    if(sr && sr.value === 'Returning') return;        // returning students use the family update form: nothing required here
     req('s'+n+'_program');
     if(!sr) return;                                   // details stay hidden until New/Returning is chosen
     req('s'+n+'_fname'); req('s'+n+'_lname'); req('s'+n+'_dob'); req('s'+n+'_gender'); req('s'+n+'_quran');
@@ -504,6 +530,13 @@ function validateStep(step) {
   let ok = true;
   if(step===1) {
     if(!validateStudents(true)) ok=false;
+    // If every student is "Returning" there is nothing to apply for: point them to the update form.
+    const sts = [...document.querySelectorAll('.student-block')].map((p,i) => document.querySelector('input[name="s'+(i+1)+'_status"]:checked'));
+    if(sts.length && sts.every(r => r && r.value === 'Returning')) {
+      ok = false;
+      const c = document.querySelector('.returning-card');
+      if(c) { c.classList.remove('nudge'); void c.offsetWidth; c.classList.add('nudge'); }
+    }
   }
   if(step===2) {
     if(!v('p_fname','e_p_fname')) ok=false;
@@ -555,6 +588,7 @@ function buildReview() {
   allPanels.forEach((panel,idx) => {
     const n = idx+1;
     const sr = document.querySelector('input[name="s'+n+'_status"]:checked');
+    if(sr && sr.value === 'Returning') return;      // returning students are handled by the family update form
     shtml += '<div style="margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid rgba(184,135,42,0.1)">'
       + '<strong style="color:var(--forest);font-family:Playfair Display,serif">Student '+n+'</strong>'
       + '<div class="rev-grid" style="margin-top:0.4rem">'
@@ -653,6 +687,7 @@ function submitForm() {
   panels.forEach((panel, idx) => {
     const n = idx + 1;
     const sr = document.querySelector('input[name="s'+n+'_status"]:checked');
+    if(sr && sr.value === 'Returning') return;      // returning students are handled by the family update form
     const g  = (id) => { const e = document.getElementById(id); return e ? e.value || '—' : '—'; };
     const raw = (id) => { const e = document.getElementById(id); return e ? e.value || '' : ''; };
     studentsText += '\n--- Student ' + n + ' ---\n';

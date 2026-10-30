@@ -188,21 +188,13 @@
     _add(); tune(); refreshAdd(); queueSave();
   };
 
-  /* ───────── 3. TOTALS EMPTY STATE + "ALREADY ENROLLED?" NOTE ───────── */
-  var note = document.createElement('div');
-  note.className = 'update-note';
-  note.innerHTML = '<strong>Already enrolled at AMAN and just updating your information?</strong> You do not need a new application &mdash; ' +
-    '<a href="/update/">use the quick family update form</a>.';
-  var sc = $('studentsContainer');
-  if (sc && sc.parentNode) sc.parentNode.insertBefore(note, sc.nextSibling);
-
+  /* ───────── 3. TOTALS EMPTY STATE ───────── */
   var _ut = window.updateTotals;
   window.updateTotals = function () {
     _ut();
     var box = wrap.querySelector('.totals-box');
     var ts = $('totalStudents');
     if (box && ts) box.classList.toggle('empty', ts.textContent.trim() === '0');
-    note.classList.toggle('show', !!wrap.querySelector('input[name$="_status"][value="Returning"]:checked'));
     refreshAdd(); queueSave();
   };
 
@@ -221,6 +213,7 @@
     var out = '<h4>Your application</h4><ul>';
     wrap.querySelectorAll('.student-block').forEach(function (p, i) {
       var n = i + 1, r = wrap.querySelector('input[name="s' + n + '_status"]:checked');
+      if (r && r.value === 'Returning') return;
       var name = [val('s' + n + '_fname'), val('s' + n + '_lname')].join(' ').trim();
       if (name) out += '<li><strong>' + esc(name) + '</strong>' + (r ? ' &middot; ' + esc(r.value) + ' student' : '') + '</li>';
     });
