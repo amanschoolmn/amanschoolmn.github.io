@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 83<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 84<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -4687,12 +4687,12 @@ const Rewards = {
       ${donut?'':(g.s.level==='Level 1'?`<button class="btn btn-o btn-sm no-print" data-rwpromo="${g.s.id}">Promote → Level 2</button>`:`<span class="tag tag-green no-print" title="Already promoted — just mark the party held">✓ already ${esc(g.s.level)}</span>`)}
       <button class="btn btn-p btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}">${donut?'🍩 Delivered':'🎉 Party held'}</button>
       <button class="btn btn-ghost btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}|skip" title="Not right? Dismiss without celebrating" style="padding:2px 6px">✕</button></div>`; },
-  cardHTML(){
+  cardHTML(o){ o=o||{};
     const gs=Rewards.groups(), dn=gs.filter(g=>g.type==='juz'), pt=gs.filter(g=>g.type==='greenbook'), st=Rewards.stats();
     return `<div class="card" style="margin-bottom:16px"><div class="whead" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🎉 Milestone rewards</h3>
       <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button class="btn btn-o btn-sm no-print" data-rwboard="1">🍩 Donut board</button>${st.don?`<span class="tag tag-gold">${st.don} 🍩 delivered</span>`:''}${st.par?`<span class="tag tag-gold">${st.par} 🎉 parties held</span>`:''}</span></div>
       <p style="font-size:12.5px;color:var(--ink2);margin:6px 0 8px">Every Juzʼ a Level 3 student completes earns donuts. Every Level 1 student who finishes the Green Book earns a class party. Detected automatically from progress, on top of Class Treat Goals.</p>
-      ${gs.length?`${dn.length?`<div class="notice info" style="margin:0 0 8px">🍩 <div style="flex:1"><b>${dn.length} Juzʼ milestone${dn.length>1?'s':''} — treat Level 3!</b>${dn.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-rwall="${dn.map(g=>g.s.id+'|'+g.ids.join(',')).join(';')}">🍩 Delivered to all ${dn.length}</button>`:''}${Rewards.allergyNote('Level 3')}<div class="wlist" style="margin-top:8px">${dn.map(Rewards.rowHTML).join('')}</div></div></div>`:''}
+      ${o.noPending?'':gs.length?`${dn.length?`<div class="notice info" style="margin:0 0 8px">🍩 <div style="flex:1"><b>${dn.length} Juzʼ milestone${dn.length>1?'s':''} — treat Level 3!</b>${dn.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-rwall="${dn.map(g=>g.s.id+'|'+g.ids.join(',')).join(';')}">🍩 Delivered to all ${dn.length}</button>`:''}${Rewards.allergyNote('Level 3')}<div class="wlist" style="margin-top:8px">${dn.map(Rewards.rowHTML).join('')}</div></div></div>`:''}
       ${pt.length?`<div class="notice info" style="margin:0">🎉 <div style="flex:1"><b>${pt.length} Green Book graduate${pt.length>1?'s':''} — party time for Level 1!</b>${pt.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-rwall="${pt.map(g=>g.s.id+'|'+g.ids.join(',')).join(';')}">🎉 Party held for all ${pt.length}</button>`:''}${Rewards.allergyNote('Level 1')}<div class="wlist" style="margin-top:8px">${pt.map(Rewards.rowHTML).join('')}</div></div></div>`:''}`
       :'<p style="font-size:12.5px;color:var(--ok);margin:0">Nothing waiting — the next milestone will show up here on its own.</p>'}${Rewards.ledgerHTML()}</div>`; },
   ledgerHTML(){
@@ -6250,7 +6250,8 @@ const Teacher = {
     el.innerHTML = `
     ${classDay?`<div class="notice info" style="margin-bottom:16px">🕌 <div style="flex:1"><b>${classDay} class day.</b> ${marked?present+' of '+d.students.length+' marked present.':'Attendance not taken yet.'} ${qToday.length? qToday.length+' Qur’an entries so far.':''}</div><div style="display:flex;gap:7px;flex-shrink:0" class="no-print"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-p btn-sm" id="enterClassMode">🖥 Class Mode</button></div></div>`
       :`<div class="no-print" style="margin-bottom:16px;display:flex;gap:7px"><button class="btn btn-o btn-sm" id="subPlanBtn" title="Printable handoff if someone else needs to cover class">🆘 Sub plan</button><button class="btn btn-o btn-sm" id="enterClassMode">🖥 Preview Class Mode</button></div>`}
-    ${Rewards.cardHTML()}
+    ${Teacher.todayQueueHTML()}
+    ${Rewards.cardHTML({noPending:true})}
     ${Teacher.treatGoalsRosterHTML()}
     ${Rev.dueCardHTML()}
     <div class="sect">1 · Before class<span class="rule"></span></div>
@@ -6315,7 +6316,11 @@ const Teacher = {
     wireCommon(el);
     const tgP=$('#tgRosterPrint',el); if(tgP) tgP.onclick=()=>Teacher.printTreatGoalsRoster();
     $$('[data-treatfilter]',el).forEach(b=>b.onclick=()=>{ TreatUI.filter=b.dataset.treatfilter; Router.render(); });
-    $$('[data-hzedit]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const ed=el.querySelector('[data-hzed="'+b.dataset.hzedit+'"]'); if(ed) ed.style.display=ed.style.display==='none'?'flex':'none'; });
+    $$('[data-hzedit]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); HzSheet.open(b.dataset.hzedit); });
+    $$('[data-hzopen]',el).forEach(r=>r.onclick=e=>{ if(e.target.closest('button,a,input,select')) return; HzSheet.open(r.dataset.hzopen); });
+    $$('[data-fmsg]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,k]=b.dataset.fmsg.split('|'); Teacher.hzMsg(sid,k); });
+    const brB=$('[data-bring]',el); if(brB) brB.onclick=()=>Teacher.bringList();
+    const tqa=$('[data-tqall]',el); if(tqa) tqa.onclick=()=>{ let n=0; d.students.forEach(s=>{ if(s.active===false) return; const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated); if(g){ g.celebrated=true; n++; } (s.rewards||[]).forEach(r=>{ if(!r.celebrated&&r.type==='juz'){ r.celebrated=true; r.celebratedOn=today(); n++; } }); }); DB.save(); toast('🍩 Marked '+n+' delivered'); Router.render(); };
     const ca=$('[data-celebrateall]',el); if(ca) ca.onclick=()=>{ let n=0; d.students.forEach(s=>{ const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated); if(g){ g.celebrated=true; n++; } }); DB.save(); toast('🍩 Celebrated '+n+' goals'); Router.render(); };
     $$('[data-newgoal]',el).forEach(b=>b.onclick=e=>{ e.stopPropagation(); const [sid,j]=b.dataset.newgoal.split('|'); const s=d.students.find(x=>x.id===sid); if(!s) return;
       const dl=new Date(Date.now()+28*864e5).toISOString().slice(0,10);
@@ -7004,6 +7009,75 @@ const Teacher = {
       r.closest('.card').querySelector('.bar i').style.width=r.value+'%';
       r.closest('.card').querySelector('.prog-upd').textContent='updated just now'; });
   },
+  // ---- Today's queue: everything that needs the teacher on a class day, in
+  // one place, each with a single button. Replaces the stacked notices that
+  // used to live inside the Milestone-rewards and Class-Treat-Goals cards.
+  todayQueueHTML(){
+    const d=DB.data; if(resolveAllHifzGoals(d)) DB.save();
+    const T=hzTreat(), gs=Rewards.groups(), dn=gs.filter(g=>g.type==='juz'), pt=gs.filter(g=>g.type==='greenbook');
+    const donutN=T.justMet.length+dn.length;
+    const watch=T.rows.filter(r=>['risk','miss','stale'].includes(r.fc.k)||(r.daysLeft!=null&&r.daysLeft<=7&&r.fc.k!=='done'));
+    const av=s=>avatarHTML(s,'width:28px;height:28px;border-radius:50%;font-size:10px;flex-shrink:0');
+    const streak=s=>{ const n=hzStreak(s); return n>=2?` <span class="tag tag-gold" title="${n} goals met in a row" style="padding:1px 6px">🔥${n}</span>`:''; };
+    const row=(s,sub,right)=>`<div class="wrow" data-hzopen="${s.id}" style="gap:8px;flex-wrap:wrap">${av(s)}<span class="t" style="flex:1;min-width:150px"><bdi dir="auto">${esc(s.name)}</bdi>${streak(s)}<br><span style="font-size:11px;color:var(--ink3)">${sub}</span></span>${right||''}</div>`;
+    const head=(ico,title,n,extra)=>`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 4px"><b style="font-size:13.5px">${ico} ${title}</b><span class="tag tag-dim" style="padding:1px 8px">${n}</span><span style="flex:1"></span>${extra||''}</div>`;
+    let h='';
+    if(donutN||pt.length){
+      h+=`<div style="padding:2px 0">${donutN?allergyChipsHTML('Level 3'):''}${pt.length?allergyChipsHTML('Level 1'):''}</div>`;
+    }
+    if(donutN){
+      h+=head('🍩','Bring '+donutN+' donut'+(donutN>1?'s':'')+' for Level 3',donutN,donutN>1?`<button class="btn btn-p btn-sm no-print" data-tqall="1">✅ Delivered to all ${donutN}</button>`:'')
+        +`<div class="wlist">${T.justMet.map(s=>{ const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated)||{};
+          return row(s,'Met the Juzʼ '+esc(g.juz)+' goal',`<button class="btn btn-ghost btn-sm no-print" data-fmsg="${s.id}|met" title="Tell the family">💬</button><button class="btn btn-p btn-sm no-print" data-celebrate="${s.id}">✅ Delivered</button>`); }).join('')}
+        ${dn.map(g=>row(g.s,esc(Rewards.label(g))+' · '+esc(fmtDate(g.date)),`<button class="btn btn-p btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}">✅ Delivered</button><button class="btn btn-ghost btn-sm no-print" data-rw="${g.s.id}|${g.ids.join(',')}|skip" title="Dismiss without celebrating" style="padding:2px 6px">✕</button>`)).join('')}</div>`;
+    }
+    if(pt.length){
+      h+=head('🎉','Class party — Green Book graduates',pt.length,pt.length>1?`<button class="btn btn-p btn-sm no-print" data-rwall="${pt.map(g=>g.s.id+'|'+g.ids.join(',')).join(';')}">🎉 Party held for all</button>`:'')
+        +`<div class="wlist">${pt.map(Rewards.rowHTML).join('')}</div>`;
+    }
+    if(T.recentMissed.length){
+      h+=head('🔁','Goals to reset',T.recentMissed.length)
+        +`<div class="wlist">${T.recentMissed.map(({s,h:x})=>row(s,'Juzʼ '+esc(x.juz)+' · missed '+esc(fmtDate(x.resolvedDate))+' — recorded honestly',`<button class="btn btn-ghost btn-sm no-print" data-fmsg="${s.id}|missed" title="Message the family">💬</button><button class="btn btn-o btn-sm no-print" data-newgoal="${s.id}|${x.juz}">Set new goal</button>`)).join('')}</div>`;
+    }
+    if(watch.length){
+      h+=head('⏰','Needs attention',watch.length)
+        +`<div class="wlist">${watch.map(r=>{ const rem=Math.max(0,r.jp.tot-r.jp.done), need=r.daysLeft>0?Math.ceil(rem/(r.daysLeft/7)):rem;
+          return row(r.s,'Juzʼ '+r.g.juz+' · '+r.jp.done+'/'+r.jp.tot+'p · '+(r.daysLeft==null?'no deadline':r.daysLeft<=0?'due today':r.daysLeft+'d left')+(rem?' · needs ~'+need+' p/wk':''),`<span class="tag ${r.fc.cls}">${esc(r.fc.t)}</span><button class="btn btn-o btn-sm no-print" data-hzedit="${r.s.id}">📖 Update</button>`); }).join('')}</div>`;
+    }
+    if(T.noGoal.length){
+      h+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-size:13px;font-weight:700">🎯 No goal yet <span class="tag tag-dim" style="padding:1px 8px">${T.noGoal.length}</span></summary><div class="wlist" style="margin-top:6px">${T.noGoal.map(s=>row(s,'Now on '+esc(QS[hifzStats(s).cur].name),`<button class="btn btn-o btn-sm no-print" data-newgoal="${s.id}|${hzCurJuz(s)}">Set goal</button>`)).join('')}</div></details>`;
+    }
+    const total=donutN+pt.length+T.recentMissed.length+watch.length;
+    const nextDue=T.rows.filter(r=>r.daysLeft!=null&&r.daysLeft>=0).sort((a,b)=>a.daysLeft-b.daysLeft)[0];
+    const empty=!total&&!T.noGoal.length;
+    return `<div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <div><b style="font-family:var(--f-display);font-size:18px">✅ Today’s queue</b><div class="ai-sub">${total?total+' thing'+(total>1?'s':'')+' need you':'Nothing is waiting on you'}${nextDue?' · next goal due '+esc(fmtDate(nextDue.g.deadline))+' ('+esc(nextDue.s.preferredName||nextDue.s.name)+')':''}</div></div>
+      <span class="no-print" style="display:flex;gap:6px;flex-wrap:wrap">${donutN||pt.length?'<button class="btn btn-o btn-sm" data-bring="1">📋 Bring list</button>':''}</span></div>
+      ${empty?'<p style="font-size:13px;color:var(--ok);margin:10px 0 0">All clear — no donuts, parties or goals to reset. 🌿</p>':''}${h}</div>`;
+  },
+  bringList(){
+    const d=DB.data, T=hzTreat(), gs=Rewards.groups(), dn=gs.filter(g=>g.type==='juz'), pt=gs.filter(g=>g.type==='greenbook');
+    const donutN=T.justMet.length+dn.length, names=[...T.justMet.map(s=>s.name),...dn.map(g=>g.s.name)];
+    const al=lv=>d.students.filter(s=>s.active!==false&&s.level===lv&&s.application&&isAllergyPositive(s.application.allergy)).map(s=>`<li><b>${esc(s.name)}</b> — ${esc(s.application.allergy)}</li>`).join('');
+    const a3=donutN?al('Level 3'):'', a1=pt.length?al('Level 1'):'';
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AMAN Bring List</title><style>body{font-family:Georgia,serif;max-width:640px;margin:0 auto;padding:30px;color:#111;line-height:1.5;background:#fff}h1{font-size:24px;border-bottom:3px solid #1a4a35;padding-bottom:8px;margin:0 0 4px}h2{font-size:17px;color:#1a4a35;margin:22px 0 6px}.m{font-size:12px;color:#666}.big{font-size:34px;font-weight:700;color:#1a4a35}.warn{border:2px solid #b3261e;background:#fdecea;border-radius:10px;padding:10px 14px;margin-top:14px}li{margin:3px 0}</style></head><body><h1>📋 Bring list</h1><div class="m">AMAN · prepared ${esc(fmtDate(today()))}</div>
+      ${donutN?`<h2>🍩 Level 3 donuts</h2><div class="big">${donutN}</div><div>${names.map(esc).join(' · ')}</div>`:''}
+      ${pt.length?`<h2>🎉 Level 1 class party</h2><div>${pt.map(g=>esc(g.s.name)).join(' · ')} — finished the Green Book</div>`:''}
+      ${(a3||a1)?`<div class="warn"><b>⚠ Allergy alert — bring a safe alternative</b><ul>${a3}${a1}</ul></div>`:''}
+      ${!donutN&&!pt.length?'<p>Nothing to bring today.</p>':''}</body></html>`;
+    printHTMLDocument(html);
+  },
+  hzMsg(sid,kind){
+    const s=DB.data.students.find(x=>x.id===sid); if(!s) return;
+    const par=AI2.stuParent(s), nm=CR.nm(s), hi='As-salāmu ʿalaykum'+(par?' '+par:'')+', ';
+    const sign='\n\nBarakallāhu feekum,\nAl-Madrasatu An-Nuriyyah (AMAN)\n(612) 444-2609';
+    let text;
+    if(kind==='met'){ const g=(s.hifzGoalHistory||[]).find(x=>x.status==='met'&&!x.celebrated)||(s.hifzGoalHistory||[]).find(x=>x.status==='met')||{};
+      text=hi+'māshāʾAllāh — '+nm+' has reached the Juzʼ '+(g.juz||'')+' ḥifẓ goal we set together! 🎉\n\nWe are celebrating in class. Please keep encouraging daily revision at home, in shāʾ Allāh.'+sign; }
+    else { const g=(s.hifzGoalHistory||[]).find(x=>x.status==='missed')||{};
+      text=hi+'a quick note on '+nm+'’s ḥifẓ: the Juzʼ '+(g.juz||'')+' target ('+(g.resolvedDate?fmtDate(g.resolvedDate):'this month')+') wasn’t reached yet — alḥamdulillāh for the effort so far. We are setting a fresh, realistic target this week, and a few minutes of revision each day at home would help a lot, in shāʾ Allāh. Please let us know if anything would make that easier.'+sign; }
+    FU.compose(s,text,{title:kind==='met'?'Goal met — tell the family':'Goal update — message family'});
+  },
   // ---- Class Treat Goals roster: the class-wide view of every active
   // Level 3 student's Ḥifẓ milestone goal (renderTreatGoalCard sets/shows
   // ONE student's own goal, on their own profile — this is the aggregate
@@ -7025,19 +7099,19 @@ const Teacher = {
     // real signal to surface is recently-missed goals from history — that's
     // the thing a teacher can actually act on (set a new goal).
     const cutoff30 = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
-    const recentMissed = stu.flatMap(s=>(s.hifzGoalHistory||[]).filter(h=>h.status==='missed' && h.resolvedDate>=cutoff30).map(h=>({s,h})))
+    const recentMissed = stu.flatMap(s=>s.hifzGoal?[]:(s.hifzGoalHistory||[]).filter(h=>h.status==='missed' && h.resolvedDate>=cutoff30).slice(0,1).map(h=>({s,h})))
       .sort((a,b)=>b.h.resolvedDate.localeCompare(a.h.resolvedDate));
     const rows = withGoal.map(s=>{
       const g=s.hifzGoal, jp=juzProgress(s,g.juz);
       const daysLeft = g.deadline? Math.round((new Date(g.deadline)-new Date(today()))/864e5) : null;
       const bucket = daysLeft!=null && daysLeft<=7 ? 'week' : 'ontrack';
-      return {s,g,jp,daysLeft,bucket};
+      return {s,g,jp,daysLeft,bucket,fc:hzForecast(s,g,jp,daysLeft)};
     }).sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
     const dueWeek=rows.filter(r=>r.bucket==='week'), onTrack=rows.filter(r=>r.bucket==='ontrack');
     const metAllTime = d.students.reduce((n,s)=>n+(s.hifzGoalHistory||[]).filter(h=>h.status==='met').length,0);
     const nc = nextClassDate();
     const dueByNextClass = nc? rows.filter(r=>r.g.deadline && r.g.deadline<=nc).length : 0;
-    const filt = ['all','week','ontrack'].includes(TreatUI.filter)?TreatUI.filter:'all';
+    const filt = ['all','week','ontrack','risk'].includes(TreatUI.filter)?TreatUI.filter:'all';
     // Inline "current sūrah" quick-editor — a select pre-set to the
     // student's real position (same ordering/options as the profile's own
     // Ḥifẓ picker) plus an optional page-within-sūrah number, so updating
@@ -7046,24 +7120,20 @@ const Teacher = {
     // change, exactly like the profile's own controls. Lives inside a
     // data-go row, so both controls stopPropagation on click — otherwise
     // just opening the dropdown would navigate to the profile first.
-    const hzQuickEdit = s=>{ const st=hifzStats(s);
-      return `<div data-hzed="${s.id}" style="display:none;align-items:center;gap:6px;margin-left:34px;flex-wrap:wrap" class="no-print">
-        <span style="font-size:10.5px;color:var(--ink3)">On:</span>
-        <select data-hzsur="${s.id}" style="font-size:11.5px;padding:3px 6px;max-width:168px">${st.order.map(n=>`<option value="${n}" ${n===st.cur?'selected':''}>${esc(QS[n].name)}</option>`).join('')}</select>
-        <input type="number" data-hzpage="${s.id}" min="${QS[st.cur].p}" max="604" value="${s.hifz&&s.hifz.curPage?s.hifz.curPage:''}" placeholder="p.${QS[st.cur].p}" title="Current page within this sūrah (optional)" style="width:58px;font-size:11.5px;padding:3px 4px">
-      </div>`; };
-    const rowHTML = ({s,g,jp,daysLeft})=>{
+    const hzQuickEdit = ()=>''; // replaced by the one-tap HzSheet (tap a row)
+    const rowHTML = ({s,g,jp,daysLeft,fc})=>{
       const tagCls = daysLeft!=null&&daysLeft<=2?'tag-red':daysLeft!=null&&daysLeft<=7?'tag-gold':'tag-dim';
       const tagTxt = daysLeft==null?'no deadline':daysLeft===0?'due today':daysLeft+'d left';
-      return `<div class="wrow" data-go="#/students/${s.id}" style="flex-direction:column;align-items:stretch;gap:5px">
+      return `<div class="wrow" data-hzopen="${s.id}" style="flex-direction:column;align-items:stretch;gap:5px">
         <div style="display:flex;align-items:center;gap:8px">
           ${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}
-          <span class="t">${esc(s.name)}</span>
+          <span class="t"><bdi dir="auto">${esc(s.name)}</bdi>${hzStreak(s)>=2?` <span class="tag tag-gold" style="padding:1px 6px" title="${hzStreak(s)} goals met in a row">🔥${hzStreak(s)}</span>`:''}</span>
           <span class="m">Juzʼ ${g.juz} · ${jp.done}/${jp.tot}p</span>
-          <span class="tag ${tagCls}" style="flex-shrink:0">${tagTxt}</span>
-          <button class="btn btn-ghost btn-sm no-print" data-hzedit="${s.id}" title="Update position" style="padding:2px 7px">✎</button>
+          <span class="tag ${tagCls}" style="flex-shrink:0">${tagTxt}</span><span class="tag ${fc.cls}" style="flex-shrink:0">${esc(fc.t)}</span>
+          <button class="btn btn-ghost btn-sm no-print" data-hzedit="${s.id}" title="Update Qurʼān position" style="padding:5px 10px;min-height:34px">📖</button>
         </div>
         <div class="bar" style="height:5px;margin-left:34px"><i style="width:${jp.pct}%"></i></div>
+        <div class="ai-sub" style="margin-left:34px;font-size:11px">📖 now on ${esc(QS[hifzStats(s).cur].name)}</div>
         ${(()=>{ const rem=Math.max(0,jp.tot-jp.done); if(!rem) return '<div class="ai-sub" style="margin-left:34px;font-size:11px">All pages done ✓</div>'; if(daysLeft==null) return ''; const need=daysLeft>0?rem/(daysLeft/7):rem; return `<div class="ai-sub" style="margin-left:34px;font-size:11px">${rem} page${rem===1?'':'s'} to go · needs about ${need<1?'<1':Math.ceil(need)} page${Math.ceil(need)===1?'':'s'}/week</div>`; })()}
         ${hzQuickEdit(s)}
       </div>`;
@@ -7074,35 +7144,32 @@ const Teacher = {
     </div>` : '';
     const listHTML = filt==='all'
       ? section('Due this week',dueWeek,'tag-gold') + (onTrack.length?`<details style="margin-top:12px"><summary style="cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink3)">On track · ${onTrack.length} (tap to show)</summary><div class="wlist" style="margin-top:6px">${onTrack.map(rowHTML).join('')}</div></details>`:'')
-      : `<div class="wlist" style="margin-top:10px">${(filt==='week'?dueWeek:onTrack).map(rowHTML).join('')}</div>`;
+      : `<div class="wlist" style="margin-top:10px">${(filt==='week'?dueWeek:filt==='risk'?rows.filter(r=>['risk','miss','stale'].includes(r.fc.k)):onTrack).map(rowHTML).join('')}</div>`;
+    const riskN = rows.filter(r=>['risk','miss','stale'].includes(r.fc.k)).length;
+    const cntK = ks=>rows.filter(r=>ks.includes(r.fc.k)).length;
+    const seg = [[cntK(['ahead','pace','done']),'#2d7d57','on pace'],[cntK(['risk']),'#b8872a','at risk'],[cntK(['miss']),'#b3261e','likely to miss'],[cntK(['stale','nodata']),'#9a9a9a','not updated']];
+    const metMonth = d.students.reduce((n,s)=>n+(s.hifzGoalHistory||[]).filter(h=>h.status==='met'&&h.resolvedDate>=cutoff30).length,0);
+    const paceBar = rows.length?`<div style="margin-top:10px"><div style="display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--line)">${seg.map(([n,c])=>n?`<i style="width:${n/rows.length*100}%;background:${c}"></i>`:'').join('')}</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;font-size:11.5px;color:var(--ink2)">${seg.filter(x=>x[0]).map(([n,c,l])=>`<span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:4px"></i>${n} ${l}</span>`).join('')}<span>🍩 ${metMonth} met in the last 30 days</span></div></div>`:'';
     return `<div class="card" style="margin-bottom:16px;border-top:3px solid #b8872a">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div><b style="font-family:var(--f-display);font-size:17px">🍩 Class Treat Goals</b>
         <p style="font-size:12px;color:var(--ink2);margin-top:2px">${stu.length} Level 3 students · ${withGoal.length+justMet.length} with a goal · ${onTrack.length} on track · ${dueWeek.length} due this week · ${recentMissed.length} missed · ${metAllTime} met all-time</p></div>
         ${rows.length?`<button class="btn btn-o btn-sm no-print" id="tgRosterPrint">🖨 Print</button>`:''}
       </div>
+      ${paceBar}
       ${nc && dueByNextClass?`<p style="font-size:12px;color:var(--ink2);margin-top:6px">🕌 <b>${dueByNextClass} goal${dueByNextClass>1?'s':''}</b> due by your next class (${fmtDate(nc)})</p>`:''}
       ${rows.length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
         <span class="tag tag-gold">${dueWeek.length} due this week</span>
         <span class="tag tag-dim">${onTrack.length} on track</span>
         ${recentMissed.length?`<span class="tag tag-red">${recentMissed.length} recently missed</span>`:''}
       </div>`:''}
-      ${justMet.length?`<div class="notice info" style="margin:10px 0 0">🍩 <div><b>${justMet.length} student${justMet.length>1?'s':''} just met their goal — time to treat Level 3!</b>${justMet.length>1?`<button class="btn btn-p btn-sm no-print" style="float:right" data-celebrateall="1">✅ Celebrate all ${justMet.length}</button>`:''}<div class="ai-sub" style="margin-top:2px">Bring ${justMet.length} donut${justMet.length>1?'s':''} — one per student who met their goal.</div>
-        ${allergyReminderHTML()}
-        <div class="wlist" style="margin-top:8px">${justMet.map(s=>`<div class="wrow" style="cursor:default;gap:8px">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><button class="btn btn-p btn-sm no-print" data-celebrate="${s.id}">✅ Mark celebrated</button></div>`).join('')}</div></div></div>`:''}
-      ${recentMissed.length?`<div class="notice" style="margin:10px 0 0;border-left:3px solid var(--bad)">🔁 <div><b>${recentMissed.length} goal${recentMissed.length>1?'s':''} recently missed.</b> Recorded honestly — set a fresh target right here when ready.
-        <div class="wlist" style="margin-top:8px">${recentMissed.map(({s,h})=>`<div class="wrow" data-go="#/students/${s.id}">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t" style="flex:1">${esc(s.name)}</span><span class="m">Juzʼ ${h.juz} · missed ${fmtDate(h.resolvedDate)}</span><button class="btn btn-o btn-sm no-print" data-newgoal="${s.id}|${h.juz}">Set new goal</button></div>`).join('')}</div></div></div>`:''}
       ${rows.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px" class="no-print">
         <button class="chip ${filt==='all'?'on':''}" data-treatfilter="all">All ${rows.length}</button>
         ${dueWeek.length?`<button class="chip ${filt==='week'?'on':''}" data-treatfilter="week">This week ${dueWeek.length}</button>`:''}
         ${onTrack.length?`<button class="chip ${filt==='ontrack'?'on':''}" data-treatfilter="ontrack">On track ${onTrack.length}</button>`:''}
+        ${riskN?`<button class="chip ${filt==='risk'?'on':''}" data-treatfilter="risk">Needs attention ${riskN}</button>`:''}
       </div><div style="max-height:460px;overflow-y:auto">${listHTML}</div>`
       :(justMet.length?'':`<p style="font-size:13px;color:var(--ink2);margin-top:10px">No goals set yet — open a Level 3 student's profile → Ḥifẓ section → Class Treat Goal to set one.</p>`)}
-      ${noGoal.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">${noGoal.length} student${noGoal.length>1?'s':''} without a goal yet</summary>
-        <div class="wlist" style="margin-top:6px">${noGoal.map(s=>`<div class="wrow" data-go="#/students/${s.id}" style="flex-direction:column;align-items:stretch;gap:5px">
-          <div style="display:flex;align-items:center;gap:8px">${avatarHTML(s,'width:26px;height:26px;border-radius:50%;font-size:9px;flex-shrink:0')}<span class="t">${esc(s.name)}</span></div>
-          ${hzQuickEdit(s)}
-        </div>`).join('')}</div></details>`:''}
     </div>`;
   },
   printTreatGoalsRoster(){
@@ -7328,6 +7395,95 @@ function allergyChipsHTML(level){
   if(!flagged.length) return '';
   return `<div style="margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--bad) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line))"><b class="c-bad" style="font-size:12.5px">⚠ Allergy alert — bring a safe alternative</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${flagged.map(s=>`<span class="tag tag-red" style="font-size:12px"><bdi dir="auto">${esc(ptFirst(s)||s.name)}</bdi>${s.application.allergyDetail?' — '+esc(s.application.allergyDetail):''}</span>`).join('')}</div></div>`;
 }
+/* ================= ḤIFẒ POSITION SHEET + TREAT-GOAL HELPERS =================
+   One bottom-of-the-hand place to move a student's current sūrah / āyah / page.
+   Opens from: Today queue + Class Treat Goals rows (tap the row), the long-press
+   student sheet in Class Mode, and anywhere calling openHifzSheet(id). */
+const hzNorm = t=>String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯʻ-ʿ‘’'’\-\s]/g,'');
+function hzCurJuz(s){ const st=hifzStats(s), pg=(s.hifz&&s.hifz.curPage)||QS[st.cur].p; for(let n=30;n>=1;n--){ if(JUZ_PAGE[n]<=pg) return n; } return 30; }
+function hzStreak(s){ let n=0; for(const h of (s.hifzGoalHistory||[])){ if(h.status==='met') n++; else break; } return n; }
+function hzPace(s){
+  const L=(s.hifzLog||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)); if(L.length<2) return null;
+  const last=L[L.length-1]; const cut=new Date(Date.now()-28*864e5).toISOString().slice(0,10);
+  const base=L.filter(x=>x.date<=cut).pop()||L[0]; if(base===last) return null;
+  const days=Math.max(7,(new Date(last.date)-new Date(base.date))/864e5);
+  return {perWeek:Math.max(0,(last.pages-base.pages)/(days/7)), lastDate:last.date};
+}
+// Honest on-pace read for one active goal from the student's recent logged
+// pace. If the position hasn't been touched in 2+ weeks it says so instead of
+// blaming the student for a stale record.
+function hzForecast(s,g,jp,daysLeft){
+  const rem=Math.max(0,jp.tot-jp.done);
+  if(!rem) return {k:'done',t:'✓ pages done',cls:'tag-green'};
+  const p=hzPace(s), lastU=(s.hifzLog||[]).reduce((m,x)=>x.date>m?x.date:m,'');
+  const since=lastU?Math.round((new Date(today())-new Date(lastU))/864e5):null;
+  if(since!=null&&since>14) return {k:'stale',t:'not updated in '+since+'d',cls:'tag-dim'};
+  if(!p||daysLeft==null) return {k:'nodata',t:'needs a few updates',cls:'tag-dim'};
+  const need=daysLeft>0?rem/(daysLeft/7):rem*10, ratio=need>0?p.perWeek/need:9;
+  if(ratio>=1.15) return {k:'ahead',t:'ahead',cls:'tag-green'};
+  if(ratio>=0.8) return {k:'pace',t:'on pace',cls:'tag-green'};
+  if(ratio>=0.45) return {k:'risk',t:'at risk',cls:'tag-gold'};
+  return {k:'miss',t:'likely to miss',cls:'tag-red'};
+}
+function hzTreat(){
+  const d=DB.data, stu=d.students.filter(s=>s.active!==false&&s.level==='Level 3');
+  const justMet=stu.filter(s=>(s.hifzGoalHistory||[]).some(h=>h.status==='met'&&!h.celebrated));
+  const withGoal=stu.filter(s=>s.hifzGoal&&!justMet.includes(s)), noGoal=stu.filter(s=>!s.hifzGoal&&!justMet.includes(s));
+  const cut=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+  const recentMissed=stu.flatMap(s=>s.hifzGoal?[]:(s.hifzGoalHistory||[]).filter(h=>h.status==='missed'&&h.resolvedDate>=cut).slice(0,1).map(h=>({s,h})));
+  const rows=withGoal.map(s=>{ const g=s.hifzGoal, jp=juzProgress(s,g.juz), daysLeft=g.deadline?Math.round((new Date(g.deadline)-new Date(today()))/864e5):null;
+    return {s,g,jp,daysLeft,fc:hzForecast(s,g,jp,daysLeft)}; }).sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
+  return {stu,justMet,withGoal,noGoal,recentMissed,rows};
+}
+const HzSheet = {
+  open(sid,opt){
+    const d=DB.data, s=d.students.find(x=>x.id===sid); if(!s) return; opt=opt||{};
+    if(!document.getElementById('hzs-style')){ const st=document.createElement('style'); st.id='hzs-style';
+      st.textContent='.hzs-i{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:9px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;font:inherit;font-size:14px;cursor:pointer}.hzs-i .n{min-width:28px;color:var(--ink3);font-size:12px}.hzs-i.cur{background:color-mix(in srgb,#b8872a 20%,var(--surface));font-weight:700}.hzs-i.done{opacity:.55}.hzs-i:active{background:var(--surface2)}.hzs-q{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hzs-q .btn{min-height:46px;font-size:13.5px;justify-content:center;flex-direction:column;line-height:1.25;text-align:center}.hzs-ay{display:flex;align-items:center;gap:8px;margin:8px 0}.hzs-ay .btn{min-width:46px;min-height:44px;font-size:18px}.hzs-ay input{width:80px;text-align:center;font-size:17px;padding:8px}';
+      document.head.appendChild(st); }
+    const snap=JSON.stringify([s.hifz===undefined?null:s.hifz,s.hifzLog||[],s.hifzGoal||null,s.hifzGoalHistory||[]]); let dirty=false, q='';
+    const o=overlay(`<div class="modal" style="max-width:560px;width:96vw;max-height:94vh;display:flex;flex-direction:column"><div id="hzTop"></div>
+      <input id="hzq" type="search" placeholder="Find a sūrah… (e.g. mulk, 67)" autocomplete="off" style="width:100%;margin:6px 0;padding:11px 12px;font-size:15px">
+      <div id="hzList" style="flex:1;min-height:120px;max-height:36vh;overflow-y:auto;border:1px solid var(--line);border-radius:10px;-webkit-overflow-scrolling:touch"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="u" style="display:none">↩ Undo changes</button><button class="btn btn-p" data-x="c" style="min-height:46px;min-width:110px">Done</button></div></div>`,true);
+    const top=$('#hzTop',o), list=$('#hzList',o), undoB=$('[data-x=u]',o);
+    let finished=false; const finish=()=>{ if(finished) return; finished=true; ob.disconnect(); if(dirty){ try{ Rewards.check(); }catch(e){} DB.save(); if(opt.onDone) opt.onDone(); else Router.render(); } };
+    const ob=new MutationObserver(()=>{ if(!o.isConnected) finish(); }); ob.observe(document.documentElement,{childList:true,subtree:true});
+    const commit=(msg)=>{ dirty=true; DB.log(s.name+' — Qurʼān position: '+msg); DB.save(); undoB.style.display=''; paintTop(); paintList(true); };
+    const metCount=()=>(s.hifzGoalHistory||[]).filter(h=>h.status==='met').length; let met0=metCount();
+    const afterMove=(msg)=>{ commit(msg); if(metCount()>met0){ met0=metCount(); toast('🍩 '+(s.preferredName||s.name)+' just met their goal!'); } };
+    const paintTop=()=>{
+      const st=hifzStats(s), cur=st.cur, nAy=SURAH_AYAHS[cur], page=(s.hifz&&s.hifz.curPage)||QS[cur].p, nxt=st.order[st.idx+1], g=s.hifzGoal, jp=g?juzProgress(s,g.juz):null;
+      top.innerHTML=`<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">${avatarHTML(s,'width:40px;height:40px;border-radius:50%;font-size:14px;flex-shrink:0')}<div style="flex:1;min-width:0"><b dir="auto" style="font-size:16px">${esc(s.preferredName||s.name)}</b><div class="ai-sub">Qurʼān position · ${Math.round(st.pct)}% of the Ḥifẓ path</div></div><button class="btn btn-ghost btn-sm" data-x="p">Profile →</button></div>
+        <div style="padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)"><div style="font-size:22px;font-weight:700;line-height:1.2">${cur}. ${esc(QS[cur].name)}</div>
+        <div class="ai-sub" style="margin-top:3px">${st.ayah?'āyah '+st.ayah+' of '+nAy+' · ':''}page ${page} · ${Math.round(st.surahPct)}% of this sūrah</div>
+        <div class="bar" style="height:6px;margin-top:6px"><i style="width:${Math.round(st.surahPct)}%"></i></div>
+        ${g?`<div class="ai-sub" style="margin-top:6px">🍩 Goal: Juzʼ ${g.juz} · ${jp.done}/${jp.tot} pages${g.deadline?' · due '+esc(fmtDate(g.deadline)):''}</div>`:''}</div>
+        <div class="hzs-q"><button class="btn btn-p" data-q="next" ${nxt?'':'disabled'}>✅ Finished<br><span style="font-size:11px;font-weight:500">${nxt?'→ '+esc(QS[nxt].name):'last sūrah'}</span></button><button class="btn btn-o" data-q="p1">+1 page</button><button class="btn btn-o" data-q="p5">+5 pages</button></div>
+        <div class="hzs-ay"><span class="ai-sub" style="min-width:48px">Āyah</span><button class="btn btn-o" data-q="am">−</button><input type="number" inputmode="numeric" id="hzAy" min="0" max="${nAy}" value="${st.ayah||''}" placeholder="—"><button class="btn btn-o" data-q="ap">+</button><span class="ai-sub">of ${nAy}</span></div>`;
+      $('[data-x=p]',top).onclick=()=>{ o.remove(); Router.go('#/students/'+s.id); };
+      const lastPage=cur<114?QS[cur+1].p:604;
+      $$('[data-q]',top).forEach(b=>b.onclick=()=>{ const k=b.dataset.q, h=hifzStats(s), c=h.cur;
+        if(k==='next'){ const n=h.order[h.idx+1]; if(!n) return; updateHifzPosition(s,{cur:n}); afterMove('finished '+QS[c].name+' → '+QS[n].name); }
+        else if(k==='p1'||k==='p5'){ const add=k==='p1'?1:5, base=(s.hifz&&s.hifz.curPage)||QS[c].p, np=Math.min(lastPage,base+add); if(base+add>lastPage) toast('End of this sūrah — tap ✅ Finished'); updateHifzPosition(s,{curPage:np}); afterMove(QS[c].name+' page '+np); }
+        else { const a=h.ayah||0, na=Math.max(0,Math.min(SURAH_AYAHS[c],a+(k==='ap'?1:-1))); updateHifzPosition(s,{curAyah:na}); afterMove(QS[c].name+' āyah '+na); } });
+      const ay=$('#hzAy',top); ay.onchange=()=>{ const c=hifzStats(s).cur, v=Math.max(0,Math.min(SURAH_AYAHS[c],Math.round(+ay.value||0))); updateHifzPosition(s,{curAyah:v}); afterMove(QS[c].name+' āyah '+v); };
+    };
+    const paintList=(scroll)=>{
+      const st=hifzStats(s), nq=hzNorm(q);
+      const items=st.order.map((n,i)=>({n,i})).filter(x=>!nq||hzNorm(QS[x.n].name).includes(nq)||String(x.n)===q.trim());
+      list.innerHTML=items.length?items.map(({n,i})=>`<button type="button" class="hzs-i ${i===st.idx?'cur':i<st.idx?'done':''}" data-s="${n}"><span class="n">${n}</span><span style="flex:1">${esc(QS[n].name)}</span>${i===st.idx?'<span class="tag tag-gold">now</span>':i<st.idx?'<span style="color:var(--ok)">✓</span>':''}</button>`).join(''):'<div class="ai-sub" style="padding:14px">No sūrah matches “'+esc(q)+'”.</div>';
+      $$('[data-s]',list).forEach(b=>b.onclick=()=>{ const n=+b.dataset.s, c=hifzStats(s).cur; if(n===c) return; updateHifzPosition(s,{cur:n}); afterMove(QS[c].name+' → '+QS[n].name); });
+      if(scroll||!nq){ const cu=list.querySelector('.cur'); if(cu) list.scrollTop=Math.max(0,cu.offsetTop-list.offsetTop-60); }
+    };
+    $('#hzq',o).oninput=e=>{ q=e.target.value; paintList(false); };
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    undoB.onclick=()=>{ const [h,l,g1,gh]=JSON.parse(snap); if(h==null) delete s.hifz; else s.hifz=h; s.hifzLog=l; s.hifzGoal=g1; s.hifzGoalHistory=gh; dirty=true; DB.log(s.name+' — Qurʼān position change undone'); DB.save(); undoB.style.display='none'; paintTop(); paintList(true); toast('Restored'); };
+    paintTop(); paintList(true);
+  }
+};
+function openHifzSheet(sid,opt){ HzSheet.open(sid,opt); }
+
 function allergyReminderHTML(){ return allergyChipsHTML('Level 3'); }
 /* ================= ḤIFẒ REVISION (MURĀJAʿAH) TRACKER =================
    The app already tracked NEW memorization; this tracks how fresh each
@@ -7848,11 +8004,13 @@ const Students = {
         ${dg.length>=7?`<a class="btn btn-o" href="tel:${esc(dg)}" style="text-decoration:none;text-align:center">📞 Call ${esc(AI2.stuParent(s)||'parent')}</a>`:'<div class="ai-sub">No parent phone on file.</div>'}
         <button class="btn btn-o" id="qsMsg">💬 Message parent</button>
         <button class="btn btn-o" id="qsLink">🔗 Send the family-update link</button>
+        ${s.level==='Level 3'?'<button class="btn btn-o" id="qsPos">📖 Qurʼān position (sūrah / āyah)</button>':''}
         ${opt.noProfile?'':'<button class="btn btn-o" id="qsOpen">📖 Open profile (progress, notes)</button>'}
         <div class="ai-sub" style="margin-top:4px">Mark today${att?' — now: <b>'+esc(PT_ATT_LABEL[att]||att)+'</b>':''}</div>
         <div style="display:flex;gap:6px"><button class="btn ${att==='P'?'btn-p':'btn-o'}" data-qa="P" style="flex:1">Present</button><button class="btn ${att==='L'?'btn-p':'btn-o'}" data-qa="L" style="flex:1">Late</button><button class="btn ${att==='A'?'btn-p':'btn-o'}" data-qa="A" style="flex:1">Absent</button></div>
       </div><div class="mfoot"><button class="btn btn-o" id="qsX">Close</button></div></div>`,true);
     $('#qsX',o).onclick=()=>o.remove();
+    const qp=$('#qsPos',o); if(qp) qp.onclick=()=>{ o.remove(); HzSheet.open(s.id,{onDone:opt.onDone}); };
     const qo=$('#qsOpen',o); if(qo) qo.onclick=()=>{ o.remove(); Router.go('#/students/'+s.id); };
     $('#qsLink',o).onclick=()=>{ o.remove(); Site.send('update',{student:s}); };
     $('#qsMsg',o).onclick=()=>{ o.remove(); FU.compose(s,'As-salāmu ʿalaykum,\n\n',{title:'Message to '+(AI2.stuParent(s)||'parent')}); };
