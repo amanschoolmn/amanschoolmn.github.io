@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 84<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 86<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -7044,10 +7044,16 @@ const Teacher = {
         +`<div class="wlist">${watch.map(r=>{ const rem=Math.max(0,r.jp.tot-r.jp.done), need=r.daysLeft>0?Math.ceil(rem/(r.daysLeft/7)):rem;
           return row(r.s,'Juzʼ '+r.g.juz+' · '+r.jp.done+'/'+r.jp.tot+'p · '+(r.daysLeft==null?'no deadline':r.daysLeft<=0?'due today':r.daysLeft+'d left')+(rem?' · needs ~'+need+' p/wk':''),`<span class="tag ${r.fc.cls}">${esc(r.fc.t)}</span><button class="btn btn-o btn-sm no-print" data-hzedit="${r.s.id}">📖 Update</button>`); }).join('')}</div>`;
     }
+    const wrRows=WR.rows(false), wrN=wrRows.length;
+    if(wrN){
+      const wt=wrRows.reduce((a,x)=>a+x.S.total,0);
+      h+=head('✍️','Writing owed — '+WR.pg(wt),wrN,`<button class="btn btn-o btn-sm no-print" data-wr="board">📋 Open board</button>`)
+        +`<div class="wlist">${wrRows.slice(0,6).map(({s,S})=>`<div class="wrow" data-go="#/students/${s.id}" style="gap:8px;flex-wrap:wrap">${av(s)}<span class="t" style="flex:1;min-width:150px"><bdi dir="auto">${esc(s.name)}</bdi><br><span style="font-size:11px;color:var(--ink3)">HW ${S.hw} · CW ${S.cw}</span></span><b style="font-family:var(--f-mono)">${S.total}</b><button class="btn btn-p btn-sm no-print" data-wr="full|${s.id}">✅ Paid</button></div>`).join('')}${wrN>6?`<div class="ai-sub" style="padding:6px 2px">+${wrN-6} more on the board</div>`:''}</div>`;
+    }
     if(T.noGoal.length){
       h+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-size:13px;font-weight:700">🎯 No goal yet <span class="tag tag-dim" style="padding:1px 8px">${T.noGoal.length}</span></summary><div class="wlist" style="margin-top:6px">${T.noGoal.map(s=>row(s,'Now on '+esc(QS[hifzStats(s).cur].name),`<button class="btn btn-o btn-sm no-print" data-newgoal="${s.id}|${hzCurJuz(s)}">Set goal</button>`)).join('')}</div></details>`;
     }
-    const total=donutN+pt.length+T.recentMissed.length+watch.length;
+    const total=donutN+pt.length+T.recentMissed.length+watch.length+wrN;
     const nextDue=T.rows.filter(r=>r.daysLeft!=null&&r.daysLeft>=0).sort((a,b)=>a.daysLeft-b.daysLeft)[0];
     const empty=!total&&!T.noGoal.length;
     return `<div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
@@ -7483,6 +7489,215 @@ const HzSheet = {
   }
 };
 function openHifzSheet(sid,opt){ HzSheet.open(sid,opt); }
+
+/* ================= WRITING OWED LEDGER =================
+   Homework (Saturday only): `rates.hw` pages due. Classwork (each class day): `rates.cw` pages due.
+   A page is OWED when that day's mark in the Progress Tracker is INC ("incomplete"). Excused/blank/done never
+   count. Pages handed in (s.writeLog) pay the oldest owed days first; a waived day (s.writeWaive) is forgiven.
+   Everything is derived live from the tracker, so fixing a mark there fixes the ledger. */
+const WR = {
+  rates(){ const r=(DB.data.settings||{}).writePages||{}; return {hw:+r.hw>0?+r.hw:3, cw:+r.cw>0?+r.cw:1}; },
+  since(){ return (DB.data.settings||{}).writeSince||''; },
+  items(s){
+    const d=DB.data, R=WR.rates(), since=WR.since(), waived=new Set(s.writeWaive||[]), out=[];
+    Object.keys(d.progress||{}).sort().forEach(date=>{ if(since&&date<since) return; const p=(d.progress[date]||{})[s.id]; if(!p) return;
+      if(p.hw==='INC'&&PT_isSat(date)&&!waived.has(date+'|hw')) out.push({key:date+'|hw',date,type:'hw',due:R.hw});
+      if(p.cw==='INC'&&!waived.has(date+'|cw')) out.push({key:date+'|cw',date,type:'cw',due:R.cw}); });
+    const pool={hw:0,cw:0}; (s.writeLog||[]).forEach(l=>{ if(pool[l.type]==null||(since&&l.date<since)) return; pool[l.type]+=+l.pages||0; });
+    out.forEach(it=>{ const pay=Math.min(it.due,pool[it.type]); it.paid=pay; it.left=it.due-pay; pool[it.type]-=pay; });
+    return {items:out,credit:pool.hw+pool.cw};
+  },
+  sum(s){ const {items,credit}=WR.items(s), open=items.filter(i=>i.left>0), f=t=>open.filter(i=>i.type===t).reduce((a,i)=>a+i.left,0);
+    const hw=f('hw'), cw=f('cw'); return {hw,cw,total:hw+cw,open,all:items,credit}; },
+  streak(s){ const d=DB.data; let n=0; const ds=Object.keys(d.attendance||{}).filter(k=>k<=today()).sort().reverse();
+    for(const k of ds){ const a=(d.attendance[k]||{})[s.id]; if(a!=='P'&&a!=='L') continue; const p=((d.progress||{})[k]||{})[s.id]||{};
+      if(p.cw==='INC'||(PT_isSat(k)&&p.hw==='INC')) break; if(p.cw==='DONE'||p.hw==='DONE') n++; } return n; },
+  pg:n=>n+' page'+(n===1?'':'s'),
+  nm:s=>s.preferredName||s.name,
+  cardHTML(s,o){ o=o||{}; const S=WR.sum(s), R=WR.rates(), st=WR.streak(s), cap=o.compact?4:8, log=(s.writeLog||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id)));
+    const col=S.total===0?'var(--ok)':S.total>=6?'var(--bad)':'#b8872a';
+    const lab=t=>t==='hw'?'📝 Homework':'📓 Classwork';
+    return `<div class="card no-print" style="margin:0 0 16px;border-top:3px solid ${col}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap"><div><b style="font-family:var(--f-display);font-size:17px">✍️ Writing owed</b>
+        <div class="ai-sub">Homework ${WR.pg(R.hw)} each Saturday · Classwork ${WR.pg(R.cw)} each class</div></div>
+        <button class="btn btn-ghost btn-sm" data-wr="cfg" title="Pages due & start date">⚙</button></div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px">
+        <div style="text-align:center;min-width:84px"><div style="font-size:38px;font-weight:800;line-height:1;color:${col};font-family:var(--f-mono)">${S.total}</div><div class="ai-sub">page${S.total===1?'':'s'} owed</div></div>
+        <div style="flex:1;min-width:200px;display:flex;gap:8px;flex-wrap:wrap"><span class="tag ${S.hw?'tag-gold':'tag-green'}">📝 HW ${S.hw}</span><span class="tag ${S.cw?'tag-gold':'tag-green'}">📓 CW ${S.cw}</span>${st>=2?`<span class="tag tag-green" title="class days in a row with all writing done">🔥 ${st} in a row</span>`:''}${S.credit>0?`<span class="tag tag-blue" title="handed in more than was owed">+${S.credit} ahead</span>`:''}</div></div>
+      ${S.open.length?`<div class="wlist" style="margin-top:6px">${S.open.slice(0,cap).map(i=>`<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap"><span class="t" style="flex:1;min-width:150px"><b>${lab(i.type)}</b> · ${esc(fmtDate(i.date))}<br><span style="font-size:11px;color:var(--ink3)">${i.left===i.due?WR.pg(i.left)+' owed':i.left+' of '+i.due+' pages left'}</span></span>
+        <button class="btn btn-p btn-sm" data-wr="pay|${s.id}|${i.key}">✓ Received</button><button class="btn btn-ghost btn-sm" data-wr="waive|${s.id}|${i.key}" title="Forgive this one">Waive</button></div>`).join('')}${S.open.length>cap?`<div class="ai-sub" style="padding:6px 2px">+${S.open.length-cap} older day${S.open.length-cap===1?'':'s'} — pay these and the rest appear</div>`:''}</div>`
+        :'<div style="font-size:13px;color:var(--ok);margin:6px 0 0">✅ All caught up — nothing owed.</div>'}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-o btn-sm" data-wr="add|${s.id}|hw|1">+1 HW page</button><button class="btn btn-o btn-sm" data-wr="add|${s.id}|cw|1">+1 CW page</button>
+        ${S.total?`<button class="btn btn-p btn-sm" data-wr="full|${s.id}">✅ Paid in full</button>`:''}<button class="btn btn-o btn-sm" data-wr="hand|${s.id}">✍ Custom…</button>${S.total?`<button class="btn btn-o btn-sm" data-wr="remind|${s.id}">💬 Remind family</button>`:''}<button class="btn btn-ghost btn-sm" data-wr="board">📋 Class board</button></div>
+      ${log.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--ink3)">🕘 Handed in (${log.length})</summary><div class="wlist" style="margin-top:6px">${log.slice(0,12).map(l=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400">${l.type==='hw'?'📝':'📓'} ${WR.pg(+l.pages)} · ${esc(fmtDate(l.date))}${l.note?' · '+esc(l.note):''}</span><button class="btn btn-ghost btn-sm" data-wr="del|${s.id}|${l.id}" title="Remove this entry" style="padding:2px 7px">✕</button></div>`).join('')}</div></details>`:''}
+    </div>`; },
+  mut(s,msg,fn){ const snap=JSON.stringify([s.writeLog||[],s.writeWaive||[]]); fn(); DB.log(s.name+' — writing: '+msg); DB.save();
+    toast(msg,()=>{ const [l,w]=JSON.parse(snap); s.writeLog=l; s.writeWaive=w; DB.save(); WR.after(); }); WR.after(); },
+  after(){ Router.render(); if(WR._bo&&WR._bo.isConnected&&WR._paint) WR._paint(); },
+  addLog(s,type,pages,note,date){ s.writeLog=s.writeLog||[]; s.writeLog.push({id:uid(),date:date||today(),type,pages:+pages,note:note||''}); },
+  act(str){ const [a,sid,...r]=str.split('|'), arg=r.join('|'), d=DB.data, s=sid?d.students.find(x=>x.id===sid):null;
+    if(a==='board') return WR.board(); if(a==='cfg') return WR.cfg();
+    if(!s) return; const S=WR.sum(s);
+    if(a==='hand') return WR.handIn(sid);
+    if(a==='pay'){ const it=S.open.find(i=>i.key===arg); if(!it) return; return WR.mut(s,WR.nm(s)+': '+WR.pg(it.left)+' received',()=>WR.addLog(s,it.type,it.left,'paid '+fmtDate(it.date))); }
+    if(a==='add'){ const [t,n]=arg.split('|'); return WR.mut(s,WR.nm(s)+': +'+WR.pg(+n)+' '+(t==='hw'?'homework':'classwork'),()=>WR.addLog(s,t,+n)); }
+    if(a==='full'){ if(!S.total) return; return WR.mut(s,WR.nm(s)+': paid in full ('+WR.pg(S.total)+')',()=>{ if(S.hw) WR.addLog(s,'hw',S.hw,'paid in full'); if(S.cw) WR.addLog(s,'cw',S.cw,'paid in full'); }); }
+    if(a==='waive'){ return WR.mut(s,WR.nm(s)+': waived '+arg.split('|')[0],()=>{ s.writeWaive=s.writeWaive||[]; if(!s.writeWaive.includes(arg)) s.writeWaive.push(arg); }); }
+    if(a==='del'){ return WR.mut(s,'entry removed',()=>{ s.writeLog=(s.writeLog||[]).filter(l=>l.id!==arg); }); }
+    if(a==='remind') return WR.remind(s);
+  },
+  remind(s){ const S=WR.sum(s), par=AI2.stuParent(s), nm=CR.nm(s), by=t=>S.open.filter(i=>i.type===t);
+    const line=(t,lbl)=>{ const L=by(t); if(!L.length) return ''; const n=L.reduce((a,i)=>a+i.left,0); const ds=L.slice(0,4).map(i=>fmtDate(i.date)).join(', ')+(L.length>4?' …':''); return '• '+lbl+': '+WR.pg(n)+' ('+ds+')\n'; };
+    const text='As-salāmu ʿalaykum'+(par?' '+par:'')+', a gentle reminder that '+nm+' still has writing to hand in:\n\n'+line('hw','Homework')+line('cw','Classwork')+'\nPlease have it done for the next class, in shāʾ Allāh. Jazākumullāhu khayran for your support at home.\n\nAl-Madrasatu An-Nuriyyah (AMAN)\n(612) 444-2609';
+    FU.compose(s,text,{title:'Writing reminder'}); },
+  handIn(sid){ const s=DB.data.students.find(x=>x.id===sid); if(!s) return; const S=WR.sum(s); let type=S.hw>=S.cw&&S.hw>0?'hw':S.cw>0?'cw':'hw', n=Math.max(1,type==='hw'?S.hw:S.cw);
+    const o=overlay(`<div class="modal" style="max-width:420px"><h3>✍️ Pages handed in — <bdi dir="auto">${esc(WR.nm(s))}</bdi></h3><div class="ai-sub" id="wrOwe"></div>
+      <div style="display:flex;gap:8px;margin:12px 0"><button class="btn" data-t="hw" style="flex:1;min-height:44px">📝 Homework</button><button class="btn" data-t="cw" style="flex:1;min-height:44px">📓 Classwork</button></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0"><button class="btn btn-o" data-n="-1" style="min-width:52px;min-height:48px;font-size:20px">−</button><b id="wrN" style="font-size:34px;min-width:60px;text-align:center;font-family:var(--f-mono)"></b><button class="btn btn-o" data-n="1" style="min-width:52px;min-height:48px;font-size:20px">+</button></div>
+      <div style="text-align:center"><button class="btn btn-ghost btn-sm" id="wrAll">All owed</button></div>
+      <div class="field"><label>Date</label><input type="date" id="wrD" value="${today()}"></div><div class="field"><label>Note (optional)</label><input id="wrNote" placeholder="e.g. brought it late"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+    const paint=()=>{ $$('[data-t]',o).forEach(b=>{ b.classList.toggle('btn-p',b.dataset.t===type); b.classList.toggle('btn-o',b.dataset.t!==type); }); $('#wrN',o).textContent=n; $('#wrOwe',o).textContent='Owes '+WR.pg(S.hw)+' homework · '+WR.pg(S.cw)+' classwork'; };
+    $$('[data-t]',o).forEach(b=>b.onclick=()=>{ type=b.dataset.t; const ow=type==='hw'?S.hw:S.cw; if(ow) n=ow; paint(); });
+    $$('[data-n]',o).forEach(b=>b.onclick=()=>{ n=Math.max(1,Math.min(30,n+(+b.dataset.n))); paint(); });
+    $('#wrAll',o).onclick=()=>{ n=Math.max(1,type==='hw'?S.hw:S.cw); paint(); };
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ const dt=$('#wrD',o).value||today(), note=$('#wrNote',o).value.trim(); o.remove(); WR.mut(s,WR.nm(s)+': '+WR.pg(n)+' '+(type==='hw'?'homework':'classwork')+' received',()=>WR.addLog(s,type,n,note,dt)); };
+    paint(); },
+  cfg(){ const R=WR.rates(), since=WR.since();
+    const o=overlay(`<div class="modal" style="max-width:420px"><h3>⚙ Writing rules</h3>
+      <div class="field"><label>Homework pages due (each Saturday)</label><input type="number" id="wcH" min="1" max="20" value="${R.hw}"></div>
+      <div class="field"><label>Classwork pages due (each class)</label><input type="number" id="wcC" min="1" max="20" value="${R.cw}"></div>
+      <div class="field"><label>Only count marks from this date on</label><input type="date" id="wcS" value="${esc(since)}"><div class="ai-sub">Blank = every incomplete mark ever recorded in the Progress Tracker.</div></div>
+      <div style="text-align:center;margin:6px 0"><button class="btn btn-ghost btn-sm" id="wcFresh">🧹 Fresh start — forget everything before today</button></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+    $('#wcFresh',o).onclick=()=>{ $('#wcS',o).value=today(); toast('Tap Save to apply'); };
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ const st=DB.data.settings=DB.data.settings||{}; st.writePages={hw:Math.max(1,+$('#wcH',o).value||3),cw:Math.max(1,+$('#wcC',o).value||1)}; st.writeSince=$('#wcS',o).value||''; DB.save(); o.remove(); toast('Saved'); WR.after(); }; },
+  rows(all){ return DB.data.students.filter(s=>s.active!==false).map(s=>({s,S:WR.sum(s)})).filter(x=>all||x.S.total>0).sort((a,b)=>b.S.total-a.S.total||a.s.name.localeCompare(b.s.name)); },
+  board(){ let all=false;
+    const o=overlay(`<div class="modal" style="max-width:720px;width:96vw;max-height:92vh;display:flex;flex-direction:column"><div id="wbTop"></div><div id="wbList" style="flex:1;overflow-y:auto;margin-top:8px;border:1px solid var(--line);border-radius:10px"></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="p">🖨 Collection sheet</button><button class="btn btn-o" data-x="a"></button><button class="btn btn-p" data-x="c">Close</button></div></div>`,true);
+    WR._bo=o; WR._paint=()=>{ const R=WR.rows(all), tot=R.reduce((a,x)=>a+x.S.total,0), owing=R.filter(x=>x.S.total>0).length;
+      $('#wbTop',o).innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">✍️ Writing owed — class board</h3><button class="btn btn-ghost btn-sm" data-wr="cfg">⚙ Rules</button></div><div class="ai-sub">${owing} student${owing===1?'':'s'} owe <b>${WR.pg(tot)}</b> · HW ${WR.rates().hw}p/Sat · CW ${WR.rates().cw}p/class${WR.since()?' · counting since '+esc(fmtDate(WR.since())):''}</div>`;
+      $('[data-x=a]',o).textContent=all?'Only who owes':'Show everyone';
+      $('#wbList',o).innerHTML=R.length?R.map(({s,S})=>`<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap;padding:8px 10px">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<span class="t" style="flex:1;min-width:140px"><bdi dir="auto">${esc(WR.nm(s))}</bdi><br><span style="font-size:11px;color:var(--ink3)">${S.total?'HW '+S.hw+' · CW '+S.cw:'all caught up'}</span></span>
+        <b style="font-family:var(--f-mono);font-size:18px;min-width:30px;text-align:right;color:${S.total>=6?'var(--bad)':S.total?'#b8872a':'var(--ok)'}">${S.total}</b>
+        <button class="btn btn-o btn-sm" data-wr="add|${s.id}|hw|1">+1 HW</button><button class="btn btn-o btn-sm" data-wr="add|${s.id}|cw|1">+1 CW</button>${S.total?`<button class="btn btn-p btn-sm" data-wr="full|${s.id}">✅ Paid</button>`:''}</div>`).join(''):'<div class="ai-sub" style="padding:18px;text-align:center">🎉 Nobody owes any writing.</div>'; };
+    $('[data-x=c]',o).onclick=()=>o.remove(); $('[data-x=a]',o).onclick=()=>{ all=!all; WR._paint(); }; $('[data-x=p]',o).onclick=()=>WR.printSheet(); WR._paint(); },
+  printSheet(){ const R=WR.rows(false);
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AMAN Writing Collection Sheet</title><style>body{font-family:Georgia,serif;max-width:760px;margin:0 auto;padding:28px;color:#111;background:#fff}h1{font-size:22px;border-bottom:3px solid #1a4a35;padding-bottom:6px;margin:0 0 4px}.m{font-size:12px;color:#666;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;background:#f4ead6;padding:7px 9px;border-bottom:2px solid #1a4a35;font-size:11px;text-transform:uppercase;color:#1a4a35}td{padding:9px;border-bottom:1px solid #ddd}.b{width:90px;border:1.5px solid #999;height:22px}</style></head><body><h1>✍️ Writing collection sheet</h1><div class="m">AMAN · ${esc(fmtDate(today()))} · Homework ${WR.rates().hw} pages each Saturday · Classwork ${WR.rates().cw} per class</div>
+      ${R.length?`<table><thead><tr><th>Student</th><th>HW owed</th><th>CW owed</th><th>Total</th><th>Received ✓</th></tr></thead><tbody>${R.map(({s,S})=>`<tr><td>${esc(s.name)}</td><td>${S.hw}</td><td>${S.cw}</td><td><b>${S.total}</b></td><td><div class="b"></div></td></tr>`).join('')}</tbody></table>`:'<p>Nobody owes writing. 🎉</p>'}</body></html>`;
+    printHTMLDocument(html); },
+};
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-wr]'); if(!b) return; e.stopPropagation(); e.preventDefault(); WR.act(b.dataset.wr); },true);
+
+/* ================= PROGRESS-TRACKER STUDENT PAGE ENRICHMENTS (PTX) ================= */
+const PTX = {
+  pos(s){ // one honest line about "where is this student" for any level
+    try{
+      if(s.level==='Level 3'){ const st=hifzStats(s); return {kind:'hifz',label:QS[st.cur].name,sub:(st.exactAyah?'āyah '+st.ayah+'/'+st.nAyah:'page '+(((s.hifz||{}).curPage)||QS[st.cur].p)),pct:st.pct,pctTxt:Math.round(st.pct)+'% of Ḥifẓ'}; }
+      if(s.level==='Level 2'){ const p=(s.mus&&s.mus.page)||0; return {kind:'mus',label:p?'Muṣḥaf p.'+p:'Muṣḥaf — not set',sub:'of '+MUSHAF_TOTAL,pct:p/MUSHAF_TOTAL*100,pctTxt:Math.round(p/MUSHAF_TOTAL*100)+'% of the Muṣḥaf'}; }
+      const p=(s.gb&&s.gb.page)||0; return {kind:'gb',label:'Green Book p.'+p,sub:'of '+GB_TOTAL,pct:p/GB_TOTAL*100,pctTxt:Math.round(p/GB_TOTAL*100)+'% of the Green Book'};
+    }catch(e){ return {kind:'none',label:'—',sub:'',pct:0,pctTxt:''}; } },
+  goalChip(s){ if(s.level!=='Level 3'||!s.hifzGoal) return ''; try{ const g=s.hifzGoal, jp=juzProgress(s,g.juz), dl=g.deadline?Math.round((new Date(g.deadline)-new Date(today()))/864e5):null, fc=hzForecast(s,g,jp,dl);
+    return `<span class="tag ${fc.cls}" title="Class Treat Goal">🍩 Juzʼ ${g.juz} · ${jp.done}/${jp.tot}p · ${esc(fc.t)}</span>`; }catch(e){ return ''; } },
+  keys(year){ const t=today(); return ptYearKeys(year).filter(k=>k<=t); },
+  headChips(s,year){ const ps=this.pos(s), st=ptStats(s.id,this.keys(year)), w=WR.sum(s);
+    return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+      ${s.level==='Level 3'?`<button class="tag tag-purple" style="cursor:pointer;border:0" data-ptx="pos" title="Update position">📖 ${esc(ps.label)}${ps.sub?' · '+esc(ps.sub):''}</button>`:`<span class="tag tag-dim">📖 ${esc(ps.label)}</span>`}
+      ${this.goalChip(s)}
+      <span class="tag ${st.attPct==null?'tag-dim':st.attPct>=85?'tag-green':'tag-gold'}">🕌 ${st.attPct==null?'—':Math.round(st.attPct)+'%'} attendance</span>
+      <span class="tag ${w.total?'tag-gold':'tag-green'}">${w.total?'✍ '+WR.pg(w.total)+' owed':'✍ all written'}</span></div>`; },
+  stripHTML(s,year){ const keys=this.keys(year), ents=keys.map(k=>({k,e:ptEntry(k,s.id)}));
+    const sess=ents.filter(x=>x.e.att).slice(-4), qs=ents.filter(x=>x.e.quran).slice(-3), ps=this.pos(s), w=WR.sum(s);
+    const dot=a=>a==='P'?'var(--ok)':a==='L'?'#b8872a':a==='A'?'var(--bad)':'var(--info)';
+    const sh=k=>{ const d=new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
+    const tile=(t,b,x)=>`<div class="card" style="padding:10px 12px;margin:0"><div class="ai-sub" style="text-transform:uppercase;font-size:10px;letter-spacing:.04em;font-weight:700">${t}</div>${b}${x||''}</div>`;
+    return `<div class="no-print" style="margin:0 0 14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><b style="font-family:var(--f-display);font-size:16px">⚡ Right now</b>
+      <span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-o btn-sm" data-ptx="snap">📄 Parent snapshot</button><button class="btn btn-o btn-sm" data-ptx="family">💬 Message family</button></span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+      ${tile('Last sessions',sess.length?`<div style="display:flex;gap:10px;margin-top:6px">${sess.map(x=>`<div style="text-align:center"><i style="display:block;width:16px;height:16px;border-radius:50%;margin:0 auto 2px;background:${dot(x.e.att)}"></i><span style="font-size:10px;color:var(--ink3)">${sh(x.k)}</span></div>`).join('')}</div>`:'<div class="ai-sub" style="margin-top:6px">No attendance yet</div>')}
+      ${tile('Last Qur’an marks',qs.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${qs.map(x=>`<span class="tag ${x.e.quran==='PASS'?'tag-green':x.e.quran==='FAIL'?'tag-red':'tag-dim'}" title="${esc(sh(x.k))}">${x.e.quran==='PASS'?'✓ Pass':x.e.quran==='FAIL'?'✗ Fail':'Excused'} · ${esc(sh(x.k))}</span>`).join('')}</div>`:'<div class="ai-sub" style="margin-top:6px">No marks yet</div>')}
+      ${tile('Writing owed',`<div style="display:flex;align-items:center;gap:10px;margin-top:4px"><b style="font-size:26px;font-family:var(--f-mono);color:${w.total?'#b8872a':'var(--ok)'}">${w.total}</b><span class="ai-sub">HW ${w.hw} · CW ${w.cw}</span>${w.total?`<button class="btn btn-p btn-sm" style="margin-left:auto" data-wr="full|${s.id}">✅ Paid</button>`:''}</div>`)}
+      ${tile('Position',`<div style="margin-top:4px;font-weight:700">${esc(ps.label)}</div><div class="ai-sub">${esc(ps.sub)}${ps.pctTxt?' · '+esc(ps.pctTxt):''}</div><div class="bar" style="height:5px;margin-top:5px"><i style="width:${Math.round(ps.pct)}%"></i></div>`, s.level==='Level 3'?`<button class="btn btn-ghost btn-sm" style="margin-top:6px" data-ptx="pos">📖 Update position</button>`:'')}
+      </div></div>`; },
+  posCard(s){ const ps=this.pos(s); let extra='';
+    if(s.level==='Level 3'){ try{ const st=hifzStats(s); extra=`<div class="ai-sub" style="margin-top:4px">Next: ${st.next.slice(0,3).map(n=>esc(QS[n].name)).join(' → ')||'—'} · ${Math.round(st.surahPct)}% of this sūrah${s.hifzGoal?'':' · no treat goal set'}</div>`; }catch(e){} }
+    else if(s.level==='Level 2'){ extra=`<div class="ai-sub" style="margin-top:4px">Fluency ${esc((s.mus||{}).fluency||'unrated')} · accuracy ${esc((s.mus||{}).acc||'unrated')}</div>`; }
+    else { extra=`<div class="ai-sub" style="margin-top:4px">Fluency ${esc((s.gb||{}).fluency||'unrated')}</div>`; }
+    return `<div class="card no-print" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div><div class="ai-sub" style="text-transform:uppercase;font-size:10.5px;font-weight:700;letter-spacing:.04em">Memorization / reading position</div><div style="font-size:20px;font-weight:700;margin-top:2px">${esc(ps.label)}</div><div class="ai-sub">${esc(ps.sub)} · ${esc(ps.pctTxt)}</div></div>
+      ${s.level==='Level 3'?`<button class="btn btn-p" data-ptx="pos" style="min-height:44px">📖 Update position</button>`:`<button class="btn btn-o btn-sm" data-go="#/students/${s.id}">Open profile to update →</button>`}</div>
+      <div class="bar" style="height:7px;margin-top:8px"><i style="width:${Math.round(ps.pct)}%"></i></div>${extra}</div>`; },
+  trendHTML(rows){ const pts=rows.filter(r=>r.quranPct!=null||r.hwPct!=null||r.cwPct!=null); if(pts.length<2) return '';
+    const W=640,H=170,L=34,R=12,T=12,B=26, n=pts.length, x=i=>L+(n===1?0:(W-L-R)*i/(n-1)), y=v=>T+(H-T-B)*(1-v/100);
+    const series=[['quranPct','Qur’an','#2d7d57'],['hwPct','Homework','#b8872a'],['cwPct','Classwork','#3a6ea5']];
+    const grid=[0,50,100].map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-5}" y="${y(v)+3}" text-anchor="end" font-size="10" fill="var(--ink3)">${v}</text>`).join('');
+    const lines=series.map(([k,lab,c])=>{ const p=pts.map((r,i)=>r[k]!=null?[x(i),y(r[k]),r[k]]:null); const segs=[]; let cur=[]; p.forEach(q=>{ if(q) cur.push(q); else { if(cur.length) segs.push(cur); cur=[]; } }); if(cur.length) segs.push(cur);
+      return segs.map(sg=>`<polyline fill="none" stroke="${c}" stroke-width="2.4" stroke-linejoin="round" points="${sg.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}"/>`).join('')+p.filter(Boolean).map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3.4" fill="${c}"><title>${lab} ${Math.round(q[2])}%</title></circle>`).join(''); }).join('');
+    const xl=pts.map((r,i)=>`<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10.5" fill="var(--ink3)">${esc(r.month.slice(0,3))}</text>`).join('');
+    const last=pts[pts.length-1], prev=pts[pts.length-2], dl=k=>last[k]!=null&&prev[k]!=null?Math.round(last[k]-prev[k]):null;
+    const dtag=(lab,k)=>{ const v=dl(k); return v==null?'':`<span class="tag ${v>0?'tag-green':v<0?'tag-red':'tag-dim'}">${lab} ${v>0?'▲':v<0?'▼':'■'} ${Math.abs(v)}</span>`; };
+    return `<div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><b style="font-size:13px">Trend by month</b><span style="display:flex;gap:6px;flex-wrap:wrap"><span class="ai-sub">${esc(last.month)} vs ${esc(prev.month)}:</span>${dtag('Qur’an','quranPct')}${dtag('HW','hwPct')}${dtag('CW','cwPct')}</span></div>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Monthly trend">${grid}${lines}${xl}</svg>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2)">${series.map(([,l,c])=>`<span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c};margin-right:5px"></i>${l}</span>`).join('')}</div></div>`; },
+  familyTab(s){ const gs=s.guardians||[], fk=famKey(s), sibs=DB.data.students.filter(x=>x.id!==s.id&&x.active!==false&&fk&&famKey(x)===fk), pl=(s.parentLog||[]).slice(0,6), w=WR.sum(s);
+    const digits=p=>String(p||'').replace(/[^\d+]/g,'');
+    return `<div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><b>👪 Parents &amp; guardians</b><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-p btn-sm" data-ptx="msg|progress">💬 Weekly update</button>${w.total?`<button class="btn btn-o btn-sm" data-wr="remind|${s.id}">✍ Writing reminder</button>`:''}<button class="btn btn-o btn-sm" data-ptx="msg|blank">✉ New message</button></span></div>
+      ${gs.length?gs.map(g=>`<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap"><span class="t" style="flex:1;min-width:170px"><b>${esc(g.name||'(unnamed)')}</b>${g.relation?' <span class="tag tag-dim">'+esc(g.relation)+'</span>':''}<br><span style="font-size:12px;color:var(--ink3)">${[g.phone,g.email].filter(Boolean).map(esc).join(' · ')||'no contact details'}</span></span>
+        ${digits(g.phone).length>=7?`<a class="btn btn-o btn-sm" href="tel:${esc(digits(g.phone))}" style="text-decoration:none">📞 Call</a><a class="btn btn-o btn-sm" href="sms:${esc(digits(g.phone))}" style="text-decoration:none">💬 Text</a>`:''}${g.email?`<a class="btn btn-o btn-sm" href="mailto:${esc(g.email)}" style="text-decoration:none">✉</a>`:''}</div>`).join(''):`<p class="ai-sub">No guardian on file — <a href="#/students/${s.id}">add one on the profile</a>.</p>`}
+      ${sibs.length?`<div class="ai-sub" style="margin-top:10px">Siblings at AMAN: ${sibs.map(x=>`<a href="#/students/${x.id}" style="margin-right:8px">${esc(x.preferredName||x.name)}</a>`).join('')}</div>`:''}</div>
+      <div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><b>📞 Contact log</b><button class="btn btn-o btn-sm" data-ptx="plog">+ Log a contact</button></div>
+      ${s.famSent&&s.famSent.at?`<div class="ai-sub" style="margin-bottom:6px">Last weekly update sent ${esc(fmtDate(new Date(s.famSent.at).toISOString().slice(0,10)))}</div>`:''}
+      ${pl.length?`<div class="wlist">${pl.map(x=>`<div class="wrow" style="cursor:default"><span class="t" style="font-weight:400;white-space:normal">${esc(x.text)}</span><span class="m">${esc(fmtDate(x.date))}</span></div>`).join('')}</div>`:'<p class="ai-sub">Nothing logged yet. After a call or chat, log it here so you remember what was said.</p>'}</div>`; },
+  notes(s){ const d=DB.data, I=[];
+    d.behavior.filter(b=>b.sid===s.id).forEach(b=>I.push({date:b.date,type:b.kind==='Concern'?'concern':'win',text:b.text,src:'behavior',ref:b}));
+    d.achievements.filter(a=>a.sid===s.id&&a.type!=='sotm').forEach(a=>I.push({date:a.date,type:'win',text:a.text,src:'achievements',ref:a,ach:1}));
+    (s.parentLog||[]).forEach(p=>I.push({date:p.date,type:'contact',text:p.text,src:'parentLog',ref:p}));
+    I.sort((a,b)=>String(b.date).localeCompare(String(a.date))); this._notes=I; return I; },
+  notesTab(s){ const I=this.notes(s), f=Progress._nf||'all', show=I.filter(x=>f==='all'||x.type===f);
+    const cut=new Date(Date.now()-30*864e5).toISOString().slice(0,10), conc=I.filter(x=>x.type==='concern'&&x.date>=cut).length;
+    const ico={win:'⭐',concern:'⚠️',contact:'📞'}, col={win:'var(--ok)',concern:'var(--bad)',contact:'var(--info)'};
+    return `${conc>=3?`<div class="notice" style="margin-bottom:12px;border-left:3px solid var(--bad)">⚠️ <div><b>${conc} concerns in the last 30 days.</b> That's a pattern worth a conversation with the family.</div></div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span style="display:flex;gap:6px;flex-wrap:wrap">${[['all','All'],['win','⭐ Wins'],['concern','⚠️ Concerns'],['contact','📞 Contact']].map(([k,l])=>`<button class="chip ${f===k?'on':''}" data-ptx="nf|${k}">${l} ${k==='all'?I.length:I.filter(x=>x.type===k).length}</button>`).join('')}</span><button class="btn btn-p btn-sm" data-ptx="nadd">+ Add note</button></div>
+      ${show.length?`<div class="card" style="padding:4px 14px">${show.map((x,i)=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="font-size:16px">${ico[x.type]}</span><div style="flex:1;min-width:0"><div style="white-space:pre-wrap;word-break:break-word">${esc(x.text)}</div><div class="ai-sub" style="color:${col[x.type]}">${esc(fmtDate(x.date))}</div></div><button class="btn btn-ghost btn-sm" data-ptx="ndel|${I.indexOf(x)}" title="Delete" style="padding:2px 7px;align-self:flex-start">✕</button></div>`).join('')}</div>`:'<div class="card"><p class="ai-sub">No notes here yet. Log a win, a concern or a parent conversation — dated notes make patterns visible.</p></div>'}`; },
+  snapshotHTML(s,year){ const t=today(), cut=new Date(Date.now()-84*864e5).toISOString().slice(0,10), keys=this.keys(year).filter(k=>k>=cut), st=ptStats(s.id,keys), ps=this.pos(s), w=WR.sum(s), d=DB.data;
+    const wins=d.achievements.filter(a=>a.sid===s.id&&a.date>=cut&&a.type!=='sotm').slice(0,5).map(a=>a.text), com=(d.progressComments||{})[s.id]||'';
+    const pc=v=>v==null?'—':Math.round(v)+'%'; const steps=[];
+    if(st.quranPct!=null&&st.quranPct<75) steps.push('Practise the Qur’an assignment a little every day at home before class.');
+    if(w.total) steps.push('Please help '+esc(s.preferredName||s.name)+' hand in '+WR.pg(w.total)+' of writing ('+w.hw+' homework, '+w.cw+' classwork).');
+    if(st.ua>=2) steps.push('Attendance matters — '+st.ua+' unexcused absences this term. Please let us know when a class will be missed.');
+    if(!steps.length) steps.push('Keep up the excellent routine — māshāʾAllāh.');
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AMAN Snapshot — ${esc(s.name)}</title><style>body{font-family:Georgia,serif;max-width:700px;margin:0 auto;padding:32px;color:#111;background:#fff;line-height:1.5}h1{font-size:24px;margin:0;color:#1a4a35}.sub{color:#666;font-size:13px;margin:2px 0 18px;border-bottom:3px solid #1a4a35;padding-bottom:10px}.g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.c{border:1.5px solid #d9cdb2;border-radius:10px;padding:10px;text-align:center}.c b{display:block;font-size:26px;color:#1a4a35}.c span{font-size:11px;text-transform:uppercase;color:#777;letter-spacing:.04em}h2{font-size:15px;color:#1a4a35;margin:20px 0 6px}li{margin:4px 0}.f{margin-top:26px;border-top:1px solid #ccc;padding-top:10px;font-size:12px;color:#666}</style></head><body>
+      <h1>${esc(s.name)}</h1><div class="sub">${esc(s.level)} — ${esc(LEVEL_SUB[s.level])} · Progress snapshot · last 12 weeks · ${esc(fmtDate(t))}</div>
+      <div class="g"><div class="c"><b>${pc(st.attPct)}</b><span>Attendance</span></div><div class="c"><b>${pc(st.quranPct)}</b><span>Qur’an pass rate</span></div><div class="c"><b>${pc(st.hwPct)}</b><span>Homework</span></div><div class="c"><b>${pc(st.cwPct)}</b><span>Classwork</span></div></div>
+      <h2>Where ${esc(s.preferredName||s.name)} is now</h2><p><b>${esc(ps.label)}</b> ${esc(ps.sub)} — ${esc(ps.pctTxt)}.${st.streak>=2?' Current Qur’an streak: '+st.streak+' passes in a row.':''}</p>
+      ${wins.length?`<h2>Wins this term</h2><ul>${wins.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+      ${com?`<h2>Teacher’s note</h2><p>${esc(com)}</p>`:''}
+      <h2>Next steps</h2><ul>${steps.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <div class="f">Al-Madrasatu An-Nuriyyah (AMAN) · Questions? Call or text (612) 444-2609</div></body></html>`;
+    return html; },
+  wire(v,s,year){ v._ptx={s,year}; if(v._ptxW) return; v._ptxW=1; v.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-ptx]'); if(!b) return; const {s,year}=v._ptx; const [a,arg]=b.dataset.ptx.split('|');
+    if(a==='pos') return HzSheet.open(s.id,{onDone:()=>Router.render()});
+    if(a==='snap') return printHTMLDocument(PTX.snapshotHTML(s,year));
+    if(a==='family'){ Progress._tab='family'; return Router.render(); }
+    if(a==='showall'){ Progress._showEmpty=!Progress._showEmpty; return Router.render(); }
+    if(a==='nf'){ Progress._nf=arg; return Router.render(); }
+    if(a==='msg'){ const text=arg==='progress'?AI2.msgFor('progress',s).text:'As-salāmu ʿalaykum'+(AI2.stuParent(s)?' '+AI2.stuParent(s):'')+',\n\n'; return FU.compose(s,text,{title:arg==='progress'?'Weekly update':'Message to '+(AI2.stuParent(s)||'parent')}); }
+    if(a==='plog'||a==='nadd'){ const isN=a==='nadd';
+      const o=overlay(`<div class="modal" style="max-width:440px"><h3>${isN?'Add a note':'Log a parent contact'}</h3>
+        ${isN?`<div class="field"><label>Type</label><select id="pxT"><option value="win">⭐ Win / positive</option><option value="concern">⚠️ Concern</option><option value="contact">📞 Parent contact</option></select></div>`:''}
+        <div class="field"><label>${isN?'Note':'What was communicated'}</label><textarea id="pxN" rows="4" placeholder="${isN?'What happened?':'Call / WhatsApp / in person — summary…'}"></textarea></div>
+        <div class="field"><label>Date</label><input type="date" id="pxD" value="${today()}"></div>
+        <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">Save</button></div></div>`,true);
+      $('[data-x=c]',o).onclick=()=>o.remove();
+      $('[data-x=s]',o).onclick=()=>{ const t=$('#pxN',o).value.trim(), dt=$('#pxD',o).value||today(); if(!t){ toast('Write the note'); return; } const ty=isN?$('#pxT',o).value:'contact', D=DB.data;
+        if(ty==='contact'){ s.parentLog=s.parentLog||[]; s.parentLog.unshift({date:dt,text:t}); s.parentLog.sort((a,b)=>b.date.localeCompare(a.date)); }
+        else D.behavior.push({sid:s.id,kind:ty==='concern'?'Concern':'Positive',text:t,date:dt});
+        DB.log('Note — '+s.name+': '+t.slice(0,60)); DB.save(); o.remove(); toast('Saved'); Router.render(); }; return; }
+    if(a==='ndel'){ const it=(PTX._notes||[])[+arg]; if(!it) return; const D=DB.data, arr=it.src==='parentLog'?s.parentLog:D[it.src], i=arr.indexOf(it.ref); if(i<0) return; const [rm]=arr.splice(i,1); DB.save(); Router.render();
+      toast('Note deleted',()=>{ arr.splice(Math.min(i,arr.length),0,rm); DB.save(); Router.render(); }); } }); }
+};
 
 function allergyReminderHTML(){ return allergyChipsHTML('Level 3'); }
 /* ================= ḤIFẒ REVISION (MURĀJAʿAH) TRACKER =================
@@ -8003,6 +8218,7 @@ const Students = {
       <div style="display:flex;flex-direction:column;gap:8px">
         ${dg.length>=7?`<a class="btn btn-o" href="tel:${esc(dg)}" style="text-decoration:none;text-align:center">📞 Call ${esc(AI2.stuParent(s)||'parent')}</a>`:'<div class="ai-sub">No parent phone on file.</div>'}
         <button class="btn btn-o" id="qsMsg">💬 Message parent</button>
+        ${(()=>{ const w=WR.sum(s); return `<button class="btn ${w.total?'btn-p':'btn-o'}" id="qsWr">✍️ Writing owed: ${w.total} page${w.total===1?'':'s'}${w.total?' — hand in':''}</button>`; })()}
         <button class="btn btn-o" id="qsLink">🔗 Send the family-update link</button>
         ${s.level==='Level 3'?'<button class="btn btn-o" id="qsPos">📖 Qurʼān position (sūrah / āyah)</button>':''}
         ${opt.noProfile?'':'<button class="btn btn-o" id="qsOpen">📖 Open profile (progress, notes)</button>'}
@@ -8012,6 +8228,7 @@ const Students = {
     $('#qsX',o).onclick=()=>o.remove();
     const qp=$('#qsPos',o); if(qp) qp.onclick=()=>{ o.remove(); HzSheet.open(s.id,{onDone:opt.onDone}); };
     const qo=$('#qsOpen',o); if(qo) qo.onclick=()=>{ o.remove(); Router.go('#/students/'+s.id); };
+    $('#qsWr',o).onclick=()=>{ o.remove(); WR.handIn(s.id); };
     $('#qsLink',o).onclick=()=>{ o.remove(); Site.send('update',{student:s}); };
     $('#qsMsg',o).onclick=()=>{ o.remove(); FU.compose(s,'As-salāmu ʿalaykum,\n\n',{title:'Message to '+(AI2.stuParent(s)||'parent')}); };
     $$('[data-qa]',o).forEach(b=>b.onclick=()=>{ AN.setAtt(s.id,today(),b.dataset.qa); DB.log('Quick attendance: '+s.name+' → '+b.dataset.qa); DB.save(); o.remove(); toast((s.preferredName||s.name)+' marked '+(PT_ATT_LABEL[b.dataset.qa]||b.dataset.qa)); if(opt.onDone) opt.onDone(); else Router.render(); });
@@ -8069,6 +8286,7 @@ const Students = {
     // Only exceptions get a chip — a healthy student's card stays quiet
     const exOf = (s,sg)=>{ const ex=[]; if(!sg) return ex;
       if(sg.allergy) ex.push({t:'⚠ allergy',k:'bad'});
+      { const w=WR.sum(s); if(w.total) ex.push({t:'✍ '+w.total+' page'+(w.total>1?'s':'')+' owed',k:w.total>=6?'bad':'gold'}); }
       if(sg.ready) ex.push({t:'🎓 ready for Level 2',k:'ok'});
       if(sg.abs>=1) ex.push({t:sg.abs+' absent of last '+sg.last4,k:sg.abs>=2?'bad':'gold'});
       if(sg.stale!=null&&sg.stale>=14) ex.push({t:'last update '+sg.stale+'d ago',k:sg.stale>=35?'bad':'gold'});
@@ -8921,6 +9139,7 @@ const Students = {
      <div style="display:flex;gap:16px;margin:0 0 16px" class="no-print">
        <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
        <button id="sDel" style="background:none;border:none;color:var(--bad);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">Delete</button></div>
+     ${WR.cardHTML(s)}
      <details class="no-print dtl" open style="margin-bottom:16px">
        <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px"><span class="kb-chevron">▸</span>👤 Personal information<button class="btn btn-ghost btn-sm" id="apEdit" style="margin-left:auto;font-weight:600">✎ Edit</button></summary>
        <div class="card grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
@@ -10967,7 +11186,7 @@ const Progress = {
     const yearStats=ptStats(sid, yearKeys);
     const monthlyRows=PT_MONTHS.map(m=>({month:m, ...ptStats(sid, ptMonthKeys(year,m))}));
     const age = s.dob ? Math.floor((Date.now()-new Date(s.dob+'T00:00:00'))/3.15576e10) : null;
-    const T={overview:'Overview', quran:'Qur\u2019an', attendance:'Attendance', report:'Report Card'};
+    const T={overview:'Overview', quran:'Qur\u2019an', attendance:'Attendance', family:'Family', notes:'Notes', report:'Report Card'};
 
     v.innerHTML = `<button class="btn btn-ghost btn-sm no-print" id="ptBack">← Back to Progress Tracker</button>
      <div class="card" style="display:flex;gap:14px;align-items:center;margin:12px 0 16px">
@@ -10980,8 +11199,11 @@ const Progress = {
            <span class="tag tag-dim">${year}</span>
          </div>
          <div style="font-size:12px;color:var(--ink3);font-family:var(--f-mono);margin-top:3px">${s.dob?('DOB '+fmtDob(s.dob)+(age!=null?' · '+age+'y':'')):''}</div>
+         ${PTX.headChips(s,year)}
        </div>
      </div>
+     ${PTX.stripHTML(s,year)}
+     ${WR.cardHTML(s,{compact:true})}
      <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-pttab="${k}">${n}</button>`).join('')}</div>
      <div id="ptTabBody" style="margin-top:14px"></div>`;
     wireCommon(v);
@@ -10989,8 +11211,11 @@ const Progress = {
     $$('[data-pttab]',v).forEach(b=>b.onclick=()=>{ this._tab=b.dataset.pttab; Router.render(); });
 
     const body=$('#ptTabBody',v);
-    if(tab==='overview') body.innerHTML=this._tplOverview(monthlyRows);
-    else if(tab==='quran') body.innerHTML=this._tplQuran(sid, yearKeys, yearStats, year);
+    PTX.wire(v,s,year);
+    if(tab==='overview') body.innerHTML=this._tplOverview(monthlyRows,s);
+    else if(tab==='quran') body.innerHTML=PTX.posCard(s)+this._tplQuran(sid, yearKeys, yearStats, year);
+    else if(tab==='family') body.innerHTML=PTX.familyTab(s);
+    else if(tab==='notes') body.innerHTML=PTX.notesTab(s);
     else if(tab==='attendance') body.innerHTML=this._tplAttendance(sid, yearKeys, yearStats);
     else body.innerHTML=this._tplReport(s, monthlyRows, yearStats);
 
@@ -11002,14 +11227,16 @@ const Progress = {
     }
   },
 
-  _tplOverview(monthlyRows){
+  _tplOverview(monthlyRows,s){
     const avg = k => { const vals=monthlyRows.map(r=>r[k]).filter(v=>v!=null); return vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : null; };
     const cur = ptDefaultMonthSession().month;
     const curRow = monthlyRows.find(r=>r.month===cur) || monthlyRows[0];
     const som = ptSom(curRow);
-    return `<div class="card" style="margin-bottom:14px;overflow-x:auto">
+    const hasData=r=>r.quranPct!=null||r.hwPct!=null||r.cwPct!=null||r.ua||r.late, showAll=!!Progress._showEmpty;
+    const vis=monthlyRows.filter(r=>showAll||hasData(r)||r.month===cur), hidN=monthlyRows.length-vis.length;
+    return `${s?PTX.posCard(s):''}${PTX.trendHTML(monthlyRows)}<div class="card" style="margin-bottom:14px;overflow-x:auto">
       <table class="tbl"><thead><tr><th>Month</th><th style="text-align:right">Qur'an%</th><th style="text-align:right">HW%</th><th style="text-align:right">CW%</th><th style="text-align:right">Absent</th><th style="text-align:right">Late</th></tr></thead>
-      <tbody>${monthlyRows.map(r=>`<tr><td><b>${r.month}</b></td>
+      <tbody>${vis.map(r=>`<tr><td><b>${r.month}</b></td>
         <td style="text-align:right">${r.quranPct!=null?r.quranPct.toFixed(0):'—'}</td>
         <td style="text-align:right">${r.hwPct!=null?r.hwPct.toFixed(0):'—'}</td>
         <td style="text-align:right">${r.cwPct!=null?r.cwPct.toFixed(0):'—'}</td>
@@ -11021,6 +11248,7 @@ const Progress = {
         <td style="text-align:right"><b>${monthlyRows.reduce((a,r)=>a+r.ua,0)}</b></td>
         <td style="text-align:right"><b>${monthlyRows.reduce((a,r)=>a+r.late,0)}</b></td></tr>
       </tbody></table>
+      ${(hidN>0||showAll)?`<div class="no-print" style="padding:8px 4px 0"><button class="btn btn-ghost btn-sm" data-ptx="showall">${showAll?'Hide empty months':'Show '+hidN+' empty month'+(hidN===1?'':'s')}</button></div>`:''}
     </div>
     <div class="card" style="margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:8px">${cur.toUpperCase()} — STUDENT OF THE MONTH SCORE</div>
@@ -11029,7 +11257,7 @@ const Progress = {
         <b style="font-family:var(--f-mono);font-size:18px;min-width:44px;text-align:right">${som.toFixed(1)}</b>
       </div>
     </div>
-    <div class="notice info"><span>📖</span><span>Memorization tracking (current sūrah, progress, ayāt done) lives in AMAN Central's separate ḥifẓ module — not shown here.</span></div>`;
+    `;
   },
 
   _tplQuran(sid, yearKeys, yearStats, year){
