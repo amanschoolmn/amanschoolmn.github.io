@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 86<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 87<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -7044,6 +7044,11 @@ const Teacher = {
         +`<div class="wlist">${watch.map(r=>{ const rem=Math.max(0,r.jp.tot-r.jp.done), need=r.daysLeft>0?Math.ceil(rem/(r.daysLeft/7)):rem;
           return row(r.s,'Juzʼ '+r.g.juz+' · '+r.jp.done+'/'+r.jp.tot+'p · '+(r.daysLeft==null?'no deadline':r.daysLeft<=0?'due today':r.daysLeft+'d left')+(rem?' · needs ~'+need+' p/wk':''),`<span class="tag ${r.fc.cls}">${esc(r.fc.t)}</span><button class="btn btn-o btn-sm no-print" data-hzedit="${r.s.id}">📖 Update</button>`); }).join('')}</div>`;
     }
+    const exG=EX.grouped(), exN=exG.length;
+    if(exN){
+      h+=head('🌟','Extra-mile shout-outs',exN,`<button class="btn btn-o btn-sm no-print" data-ex="poster">🖼 Poster</button><button class="btn btn-o btn-sm no-print" data-ex="shout">📣 Text</button><button class="btn btn-p btn-sm no-print" data-ex="annall|">✅ Announced</button>`)
+        +`<div class="wlist">${exG.map(({s,items})=>`<div class="wrow" data-go="#/students/${s.id}" style="gap:8px;flex-wrap:wrap">${av(s)}<span class="t" style="flex:1;min-width:150px"><bdi dir="auto">${esc(s.name)}</bdi>${EX.stats(s).streak>=2?` <span class="tag tag-green" style="padding:1px 6px">🔥${EX.stats(s).streak}w</span>`:''}<br><span style="font-size:11px;color:var(--ink3)">${items.length>1?items.length+' passes · ':''}${esc(items[0].what||'Passed Qur’an between classes')} · ${esc(fmtDate(items[0].date))}</span></span><button class="btn btn-ghost btn-sm no-print" data-ex="kudos|${s.id}" title="Tell the family">💬</button><button class="btn btn-o btn-sm no-print" data-ex="ann|${s.id}|${items[0].id}">📣 Announced</button></div>`).join('')}</div>`;
+    }
     const wrRows=WR.rows(false), wrN=wrRows.length;
     if(wrN){
       const wt=wrRows.reduce((a,x)=>a+x.S.total,0);
@@ -7053,12 +7058,12 @@ const Teacher = {
     if(T.noGoal.length){
       h+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-size:13px;font-weight:700">🎯 No goal yet <span class="tag tag-dim" style="padding:1px 8px">${T.noGoal.length}</span></summary><div class="wlist" style="margin-top:6px">${T.noGoal.map(s=>row(s,'Now on '+esc(QS[hifzStats(s).cur].name),`<button class="btn btn-o btn-sm no-print" data-newgoal="${s.id}|${hzCurJuz(s)}">Set goal</button>`)).join('')}</div></details>`;
     }
-    const total=donutN+pt.length+T.recentMissed.length+watch.length+wrN;
+    const total=donutN+pt.length+T.recentMissed.length+watch.length+wrN+exN;
     const nextDue=T.rows.filter(r=>r.daysLeft!=null&&r.daysLeft>=0).sort((a,b)=>a.daysLeft-b.daysLeft)[0];
     const empty=!total&&!T.noGoal.length;
     return `<div class="card" style="margin-bottom:16px;border-top:3px solid var(--green)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
       <div><b style="font-family:var(--f-display);font-size:18px">✅ Today’s queue</b><div class="ai-sub">${total?total+' thing'+(total>1?'s':'')+' need you':'Nothing is waiting on you'}${nextDue?' · next goal due '+esc(fmtDate(nextDue.g.deadline))+' ('+esc(nextDue.s.preferredName||nextDue.s.name)+')':''}</div></div>
-      <span class="no-print" style="display:flex;gap:6px;flex-wrap:wrap">${donutN||pt.length?'<button class="btn btn-o btn-sm" data-bring="1">📋 Bring list</button>':''}</span></div>
+      <span class="no-print" style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-o btn-sm" data-ex="log|">⭐ Log extra pass</button><button class="btn btn-o btn-sm" data-ex="board">🏆 Board</button>${donutN||pt.length?'<button class="btn btn-o btn-sm" data-bring="1">📋 Bring list</button>':''}</span></div>
       ${empty?'<p style="font-size:13px;color:var(--ok);margin:10px 0 0">All clear — no donuts, parties or goals to reset. 🌿</p>':''}${h}</div>`;
   },
   bringList(){
@@ -7441,12 +7446,15 @@ function hzTreat(){
     return {s,g,jp,daysLeft,fc:hzForecast(s,g,jp,daysLeft)}; }).sort((a,b)=>(a.g.deadline||'9999').localeCompare(b.g.deadline||'9999'));
   return {stu,justMet,withGoal,noGoal,recentMissed,rows};
 }
+function hzEnsureStyle(){
+  if(!document.getElementById('hzs-style')){ const st=document.createElement('style'); st.id='hzs-style';
+      st.textContent='.hzs-i{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:9px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;font:inherit;font-size:14px;cursor:pointer}.hzs-i .n{min-width:28px;color:var(--ink3);font-size:12px}.hzs-i.cur{background:color-mix(in srgb,#b8872a 20%,var(--surface));font-weight:700}.hzs-i.done{opacity:.55}.hzs-i:active{background:var(--surface2)}.hzs-q{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hzs-q .btn{min-height:46px;font-size:13.5px;justify-content:center;flex-direction:column;line-height:1.25;text-align:center}.hzs-ay{display:flex;align-items:center;gap:8px;margin:8px 0}.hzs-ay .btn{min-width:46px;min-height:44px;font-size:18px}.hzs-ay input{width:80px;text-align:center;font-size:17px;padding:8px}';
+      document.head.appendChild(st); }
+}
 const HzSheet = {
   open(sid,opt){
     const d=DB.data, s=d.students.find(x=>x.id===sid); if(!s) return; opt=opt||{};
-    if(!document.getElementById('hzs-style')){ const st=document.createElement('style'); st.id='hzs-style';
-      st.textContent='.hzs-i{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:9px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;font:inherit;font-size:14px;cursor:pointer}.hzs-i .n{min-width:28px;color:var(--ink3);font-size:12px}.hzs-i.cur{background:color-mix(in srgb,#b8872a 20%,var(--surface));font-weight:700}.hzs-i.done{opacity:.55}.hzs-i:active{background:var(--surface2)}.hzs-q{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hzs-q .btn{min-height:46px;font-size:13.5px;justify-content:center;flex-direction:column;line-height:1.25;text-align:center}.hzs-ay{display:flex;align-items:center;gap:8px;margin:8px 0}.hzs-ay .btn{min-width:46px;min-height:44px;font-size:18px}.hzs-ay input{width:80px;text-align:center;font-size:17px;padding:8px}';
-      document.head.appendChild(st); }
+    hzEnsureStyle();
     const snap=JSON.stringify([s.hifz===undefined?null:s.hifz,s.hifzLog||[],s.hifzGoal||null,s.hifzGoalHistory||[]]); let dirty=false, q='';
     const o=overlay(`<div class="modal" style="max-width:560px;width:96vw;max-height:94vh;display:flex;flex-direction:column"><div id="hzTop"></div>
       <input id="hzq" type="search" placeholder="Find a sūrah… (e.g. mulk, 67)" autocomplete="off" style="width:100%;margin:6px 0;padding:11px 12px;font-size:15px">
@@ -7663,6 +7671,7 @@ const PTX = {
       ${show.length?`<div class="card" style="padding:4px 14px">${show.map((x,i)=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="font-size:16px">${ico[x.type]}</span><div style="flex:1;min-width:0"><div style="white-space:pre-wrap;word-break:break-word">${esc(x.text)}</div><div class="ai-sub" style="color:${col[x.type]}">${esc(fmtDate(x.date))}</div></div><button class="btn btn-ghost btn-sm" data-ptx="ndel|${I.indexOf(x)}" title="Delete" style="padding:2px 7px;align-self:flex-start">✕</button></div>`).join('')}</div>`:'<div class="card"><p class="ai-sub">No notes here yet. Log a win, a concern or a parent conversation — dated notes make patterns visible.</p></div>'}`; },
   snapshotHTML(s,year){ const t=today(), cut=new Date(Date.now()-84*864e5).toISOString().slice(0,10), keys=this.keys(year).filter(k=>k>=cut), st=ptStats(s.id,keys), ps=this.pos(s), w=WR.sum(s), d=DB.data;
     const wins=d.achievements.filter(a=>a.sid===s.id&&a.date>=cut&&a.type!=='sotm').slice(0,5).map(a=>a.text), com=(d.progressComments||{})[s.id]||'';
+    { const n=(s.extraQ||[]).filter(x=>x.date>=cut).length; if(n) wins.unshift('Passed the Qur’an on their own initiative '+n+' time'+(n>1?'s':'')+' between classes — extra-mile effort'); }
     const pc=v=>v==null?'—':Math.round(v)+'%'; const steps=[];
     if(st.quranPct!=null&&st.quranPct<75) steps.push('Practise the Qur’an assignment a little every day at home before class.');
     if(w.total) steps.push('Please help '+esc(s.preferredName||s.name)+' hand in '+WR.pg(w.total)+' of writing ('+w.hw+' homework, '+w.cw+' classwork).');
@@ -7698,6 +7707,85 @@ const PTX = {
     if(a==='ndel'){ const it=(PTX._notes||[])[+arg]; if(!it) return; const D=DB.data, arr=it.src==='parentLog'?s.parentLog:D[it.src], i=arr.indexOf(it.ref); if(i<0) return; const [rm]=arr.splice(i,1); DB.save(); Router.render();
       toast('Note deleted',()=>{ arr.splice(Math.min(i,arr.length),0,rm); DB.save(); Router.render(); }); } }); }
 };
+
+/* ================= EXTRA MILE — Qur'an passed between classes =================
+   s.extraQ = [{id,date,what,announced}]. A weekday pass is logged in two taps, earns tiered badges and a
+   weekly streak, shows on a class board, and feeds a shout-out (queue item, WhatsApp text, poster, family note). */
+const EX_TIERS=[[1,'🌱','First extra pass'],[3,'⭐','Rising star'],[6,'🌟','Shining star'],[10,'🏅','Weekday warrior'],[20,'🏆','Extra-mile champion'],[40,'👑','Pride of AMAN']];
+const EX = {
+  mon(date){ const d=new Date(date+'T00:00:00'), k=(d.getDay()+6)%7; d.setDate(d.getDate()-k); return d.toISOString().slice(0,10); },
+  list(s){ return (s.extraQ||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id))); },
+  stats(s){ const L=EX.list(s), t=today(), ym=t.slice(0,7), wk=EX.mon(t), weeks=new Set(L.map(x=>EX.mon(x.date)));
+    let streak=0, w=wk; if(!weeks.has(w)){ const d=new Date(w+'T00:00:00'); d.setDate(d.getDate()-7); w=d.toISOString().slice(0,10); }
+    while(weeks.has(w)){ streak++; const d=new Date(w+'T00:00:00'); d.setDate(d.getDate()-7); w=d.toISOString().slice(0,10); }
+    const total=L.length, tier=[...EX_TIERS].reverse().find(x=>total>=x[0])||null, next=EX_TIERS.find(x=>total<x[0])||null;
+    return {total,week:L.filter(x=>EX.mon(x.date)===wk).length,month:L.filter(x=>x.date.startsWith(ym)).length,streak,last:L[0]||null,tier,next,pending:L.filter(x=>!x.announced),L}; },
+  nm:s=>s.preferredName||s.name,
+  cardHTML(s,o){ o=o||{}; const S=EX.stats(s), cap=o.compact?3:6;
+    return `<div class="card no-print" style="margin:0 0 16px;border-top:3px solid #c9a227">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap"><div><b style="font-family:var(--f-display);font-size:17px">🌟 Extra Mile</b><div class="ai-sub">Qur’an passed between classes — on their own initiative</div></div>
+        <button class="btn btn-p btn-sm" data-ex="log|${s.id}">⭐ Log extra pass</button></div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:10px 0 4px">
+        <div style="text-align:center;min-width:76px"><div style="font-size:38px;font-weight:800;line-height:1;color:#b8872a;font-family:var(--f-mono)">${S.total}</div><div class="ai-sub">extra passes</div></div>
+        <div style="flex:1;min-width:200px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${S.tier?`<span class="tag tag-gold" style="font-size:12.5px;padding:3px 10px">${S.tier[1]} ${esc(S.tier[2])}</span>`:'<span class="tag tag-dim">No extra passes yet</span>'}
+          ${S.streak>=1?`<span class="tag tag-green" title="consecutive weeks with at least one extra pass">🔥 ${S.streak}-week streak</span>`:''}<span class="tag tag-dim">${S.week} this week</span><span class="tag tag-dim">${S.month} this month</span></div></div>
+      ${S.next?`<div style="margin:6px 0 2px"><div class="ai-sub">${S.next[0]-S.total} more to ${S.next[1]} <b>${esc(S.next[2])}</b></div><div class="bar" style="height:6px;margin-top:4px"><i style="width:${Math.round((S.total-(S.tier?S.tier[0]:0))/(S.next[0]-(S.tier?S.tier[0]:0))*100)}%"></i></div></div>`:''}
+      ${S.L.length?`<div class="wlist" style="margin-top:8px">${S.L.slice(0,cap).map(x=>`<div class="wrow" style="cursor:default;gap:8px"><span class="t" style="font-weight:400;flex:1">⭐ ${esc(x.what||'Passed Qur’an')}<br><span style="font-size:11px;color:var(--ink3)">${esc(fmtDate(x.date))}${x.announced?' · announced':''}</span></span>
+        <button class="btn btn-ghost btn-sm" data-ex="del|${s.id}|${x.id}" title="Remove" style="padding:2px 7px">✕</button></div>`).join('')}</div>`:''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${S.total?`<button class="btn btn-o btn-sm" data-ex="kudos|${s.id}">💬 Tell the family</button>`:''}<button class="btn btn-ghost btn-sm" data-ex="board">🏆 Extra Mile board</button></div></div>`; },
+  mut(msg,fn,fx){ const snap=JSON.stringify(DB.data.students.map(s=>[s.id,s.extraQ||[]])); fn(); DB.log('Extra mile — '+msg); DB.save(); if(fx) try{ celebrate(); }catch(e){}
+    toast(msg,()=>{ const m=new Map(JSON.parse(snap)); DB.data.students.forEach(s=>{ if(m.has(s.id)) s.extraQ=m.get(s.id); }); DB.save(); EX.after(); }); EX.after(); },
+  after(){ Router.render(); if(EX._bo&&EX._bo.isConnected&&EX._paint) EX._paint(); },
+  act(str){ const [a,sid,...r]=str.split('|'), arg=r.join('|'), s=sid?DB.data.students.find(x=>x.id===sid):null;
+    if(a==='board') return EX.board(); if(a==='log') return EX.logModal(sid); if(a==='poster') return EX.poster(); if(a==='shout') return EX.shoutText();
+    if(a==='annall') return EX.mut('All shout-outs announced',()=>{ DB.data.students.forEach(t=>(t.extraQ||[]).forEach(x=>{ x.announced=true; })); });
+    if(!s) return;
+    if(a==='del') return EX.mut(EX.nm(s)+': entry removed',()=>{ s.extraQ=(s.extraQ||[]).filter(x=>x.id!==arg); });
+    if(a==='ann') return EX.mut(EX.nm(s)+': announced',()=>{ const e=(s.extraQ||[]).find(x=>x.id===arg); if(e) e.announced=true; });
+    if(a==='kudos') return EX.kudos(s); },
+  logModal(pre){ hzEnsureStyle(); const act=DB.data.students.filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name,'ar')); const sel=new Set(pre?[pre]:[]); let q='';
+    const o=overlay(`<div class="modal" style="max-width:520px;width:96vw;max-height:92vh;display:flex;flex-direction:column"><h3 style="margin-bottom:2px">⭐ Log extra Qur’an passes</h3><div class="ai-sub">Pick everyone who passed between classes — one entry each.</div>
+      <input id="exq" type="search" placeholder="Find a student…" autocomplete="off" style="width:100%;margin:8px 0;padding:10px 12px;font-size:15px">
+      <div id="exList" style="flex:1;min-height:120px;max-height:34vh;overflow-y:auto;border:1px solid var(--line);border-radius:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><div class="field" style="flex:1;margin:0"><label>Date</label><input type="date" id="exD" value="${today()}"></div><div class="field" style="flex:2;margin:0"><label>What they passed (optional)</label><input id="exW" placeholder="e.g. Sūrat al-Mulk, āyāt 1–15"></div></div>
+      <div class="mfoot"><span class="ai-sub" id="exN" style="margin-right:auto"></span><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s" style="min-height:44px">Log passes</button></div></div>`,true);
+    const paint=()=>{ const nq=hzNorm(q); const L=act.filter(s=>!nq||hzNorm(s.name+(s.preferredName||'')).includes(nq));
+      $('#exList',o).innerHTML=L.map(s=>`<button type="button" class="hzs-i ${sel.has(s.id)?'cur':''}" data-id="${s.id}">${avatarHTML(s,'width:30px;height:30px;border-radius:50%;font-size:11px;flex-shrink:0')}<span style="flex:1" dir="auto">${esc(EX.nm(s))}</span><span class="tag tag-dim">${esc(s.level.replace('Level ','L'))}</span><span>${sel.has(s.id)?'✓':''}</span></button>`).join('')||'<div class="ai-sub" style="padding:14px">No match.</div>';
+      $$('[data-id]',o).forEach(b=>b.onclick=()=>{ const id=b.dataset.id; sel.has(id)?sel.delete(id):sel.add(id); paint(); });
+      $('#exN',o).textContent=sel.size?sel.size+' selected':''; };
+    $('#exq',o).oninput=e=>{ q=e.target.value; paint(); }; $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=s]',o).onclick=()=>{ if(!sel.size){ toast('Pick at least one student'); return; } const dt=$('#exD',o).value||today(), w=$('#exW',o).value.trim(); o.remove(); const names=[...sel].map(id=>EX.nm(DB.data.students.find(s=>s.id===id)));
+      EX.mut(sel.size===1?names[0]+': extra pass logged':sel.size+' extra passes logged',()=>{ sel.forEach(id=>{ const s=DB.data.students.find(x=>x.id===id); s.extraQ=s.extraQ||[]; s.extraQ.push({id:uid(),date:dt,what:w,announced:false}); }); },true); };
+    paint(); },
+  rows(per){ const t=today(), ym=t.slice(0,7), wk=EX.mon(t);
+    return DB.data.students.filter(s=>s.active!==false).map(s=>{ const S=EX.stats(s), n=per==='week'?S.week:per==='month'?S.month:S.total; return {s,S,n}; }).filter(x=>x.n>0).sort((a,b)=>b.n-a.n||b.S.streak-a.S.streak||a.s.name.localeCompare(b.s.name)); },
+  board(){ let per='month'; const o=overlay(`<div class="modal" style="max-width:640px;width:96vw;max-height:92vh;display:flex;flex-direction:column"><div id="ebTop"></div><div id="ebList" style="flex:1;overflow-y:auto;margin-top:8px;border:1px solid var(--line);border-radius:10px"></div>
+      <div class="mfoot"><button class="btn btn-o" data-ex="poster">🖼 Shout-out poster</button><button class="btn btn-o" data-ex="shout">📣 WhatsApp text</button><button class="btn btn-p" data-x="c">Close</button></div></div>`,true);
+    EX._bo=o; EX._paint=()=>{ const R=EX.rows(per), tot=R.reduce((a,x)=>a+x.n,0);
+      $('#ebTop',o).innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">🏆 Extra Mile board</h3><button class="btn btn-p btn-sm" data-ex="log|">⭐ Log pass</button></div>
+        <div style="display:flex;gap:6px;margin:8px 0 2px">${[['week','This week'],['month','This month'],['all','All time']].map(([k,l])=>`<button class="chip ${per===k?'on':''}" data-per="${k}">${l}</button>`).join('')}</div><div class="ai-sub">${R.length} student${R.length===1?'':'s'} · ${tot} extra pass${tot===1?'':'es'}</div>`;
+      $$('[data-per]',o).forEach(b=>b.onclick=()=>{ per=b.dataset.per; EX._paint(); });
+      const medal=['🥇','🥈','🥉'];
+      $('#ebList',o).innerHTML=R.length?R.map(({s,S,n},i)=>`<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap;padding:9px 10px"><span style="width:26px;text-align:center;font-size:18px">${medal[i]||'<span class="ai-sub">'+(i+1)+'</span>'}</span>${avatarHTML(s,'width:32px;height:32px;border-radius:50%;font-size:11px;flex-shrink:0')}<span class="t" style="flex:1;min-width:130px"><bdi dir="auto">${esc(EX.nm(s))}</bdi><br><span style="font-size:11px;color:var(--ink3)">${S.tier?S.tier[1]+' '+esc(S.tier[2]):'—'}${S.streak?' · 🔥 '+S.streak+'w':''}</span></span><b style="font-family:var(--f-mono);font-size:20px;color:#b8872a">${n}</b></div>`).join(''):'<div class="ai-sub" style="padding:20px;text-align:center">No extra passes logged for this period yet.<br>Tap “Log pass” when a student passes between classes.</div>'; };
+    $('[data-x=c]',o).onclick=()=>o.remove(); EX._paint(); },
+  pendingList(){ const out=[]; DB.data.students.filter(s=>s.active!==false).forEach(s=>EX.list(s).filter(x=>!x.announced).forEach(x=>out.push({s,x}))); return out.sort((a,b)=>b.x.date.localeCompare(a.x.date)); },
+  grouped(){ const g={}; EX.pendingList().forEach(({s,x})=>{ (g[s.id]=g[s.id]||{s,items:[]}).items.push(x); }); return Object.values(g); },
+  shoutText(){ const G=EX.grouped(); if(!G.length){ toast('Nothing new to announce'); return; }
+    const lines=G.map(({s,items})=>'⭐ '+s.name+(items.length>1?' ('+items.length+' passes)':'')+(items[0].what?' — '+items[0].what:'')).join('\n');
+    const text='🌟 *Extra Mile Stars* 🌟\n\nMāshāʾAllāh! These students passed their Qur’an between classes, on their own initiative:\n\n'+lines+'\n\nMay Allah bless their effort and make it easy for all of us. Barakallāhu feekum!\n— Al-Madrasatu An-Nuriyyah (AMAN)';
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3>📣 Shout-out text</h3><textarea id="exT" rows="12" style="width:100%">${esc(text)}</textarea><p class="td-hint">Copy it into your class WhatsApp group.</p><div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" data-x="k">📋 Copy</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove(); $('[data-x=k]',o).onclick=()=>{ const t=$('#exT',o).value; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>toast('Copied')).catch(()=>toast('Select the text and copy')); else toast('Select the text and copy'); }; },
+  poster(){ let G=EX.grouped(); const week=!G.length; if(week){ const wk=EX.mon(today()); G=DB.data.students.filter(s=>s.active!==false).map(s=>({s,items:EX.list(s).filter(x=>EX.mon(x.date)===wk)})).filter(g=>g.items.length); }
+    if(!G.length){ toast('No extra passes to feature yet'); return; }
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AMAN Extra Mile Stars</title><style>body{margin:0;background:#fff;font-family:Georgia,serif;color:#1c1409}.p{max-width:720px;margin:0 auto;padding:44px 36px;text-align:center;background:linear-gradient(180deg,#faf4e8,#f4ead6);border:10px solid #1a4a35;outline:3px solid #b8872a;outline-offset:-18px}h1{font-size:34px;color:#1a4a35;margin:6px 0 2px}.ar{font-size:22px;color:#b8872a;margin-bottom:6px}.s{color:#7a5518;letter-spacing:.14em;text-transform:uppercase;font-size:12px}.st{font-size:46px;margin:6px 0}.n{margin:12px auto;padding:12px 16px;max-width:520px;border:1.5px solid #d9cdb2;border-radius:14px;background:#fff}.n b{display:block;font-size:24px;color:#1a4a35}.n span{font-size:13px;color:#6b5a3a}.d{margin-top:26px;font-size:15px;color:#3d2e18;font-style:italic}.f{margin-top:14px;font-size:11px;color:#8a7a5a;letter-spacing:.12em;text-transform:uppercase}</style></head><body><div class="p"><div class="st">🌟</div><div class="s">Al-Madrasatu An-Nuriyyah</div><h1>Extra Mile Stars</h1><div class="ar">نجوم الاجتهاد</div><div class="s">${week?'This week':'Since our last class'} · passed their Qur’an between classes</div>
+      ${G.map(({s,items})=>`<div class="n"><b dir="auto">${esc(s.name)}</b><span>${items.length>1?items.length+' extra passes':'Extra pass'}${items[0].what?' · '+esc(items[0].what):''}</span></div>`).join('')}
+      <div class="d">May Allah bless your effort and make the Qur’an easy for you.</div><div class="f">amanschoolmn.org</div></div></body></html>`;
+    printHTMLDocument(html); },
+  kudos(s){ const S=EX.stats(s), par=AI2.stuParent(s), nm=CR.nm(s), what=S.last&&S.last.what?' ('+S.last.what+')':'';
+    const text='As-salāmu ʿalaykum'+(par?' '+par:'')+', māshāʾAllāh! 🌟\n\n'+nm+' has passed their Qur’an between classes on their own initiative'+what+' — '+WR.pg(0).replace('0 pages',S.total+' time'+(S.total===1?'':'s'))+' so far'+(S.streak>=2?', and has kept it up '+S.streak+' weeks in a row':'')+'. This kind of effort is what builds a love of the Qur’an.\n\nPlease encourage them — we are very proud, in shāʾ Allāh.\n\nBarakallāhu feekum,\nAl-Madrasatu An-Nuriyyah (AMAN)\n(612) 444-2609';
+    FU.compose(s,text,{title:'Extra-mile shout-out'}); }
+};
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-ex]'); if(!b) return; e.stopPropagation(); e.preventDefault(); EX.act(b.dataset.ex); },true);
 
 function allergyReminderHTML(){ return allergyChipsHTML('Level 3'); }
 /* ================= ḤIFẒ REVISION (MURĀJAʿAH) TRACKER =================
@@ -8219,6 +8307,7 @@ const Students = {
         ${dg.length>=7?`<a class="btn btn-o" href="tel:${esc(dg)}" style="text-decoration:none;text-align:center">📞 Call ${esc(AI2.stuParent(s)||'parent')}</a>`:'<div class="ai-sub">No parent phone on file.</div>'}
         <button class="btn btn-o" id="qsMsg">💬 Message parent</button>
         ${(()=>{ const w=WR.sum(s); return `<button class="btn ${w.total?'btn-p':'btn-o'}" id="qsWr">✍️ Writing owed: ${w.total} page${w.total===1?'':'s'}${w.total?' — hand in':''}</button>`; })()}
+        <button class="btn btn-o" id="qsEx">⭐ Passed Qur’an between classes</button>
         <button class="btn btn-o" id="qsLink">🔗 Send the family-update link</button>
         ${s.level==='Level 3'?'<button class="btn btn-o" id="qsPos">📖 Qurʼān position (sūrah / āyah)</button>':''}
         ${opt.noProfile?'':'<button class="btn btn-o" id="qsOpen">📖 Open profile (progress, notes)</button>'}
@@ -8229,6 +8318,7 @@ const Students = {
     const qp=$('#qsPos',o); if(qp) qp.onclick=()=>{ o.remove(); HzSheet.open(s.id,{onDone:opt.onDone}); };
     const qo=$('#qsOpen',o); if(qo) qo.onclick=()=>{ o.remove(); Router.go('#/students/'+s.id); };
     $('#qsWr',o).onclick=()=>{ o.remove(); WR.handIn(s.id); };
+    $('#qsEx',o).onclick=()=>{ o.remove(); EX.logModal(s.id); };
     $('#qsLink',o).onclick=()=>{ o.remove(); Site.send('update',{student:s}); };
     $('#qsMsg',o).onclick=()=>{ o.remove(); FU.compose(s,'As-salāmu ʿalaykum,\n\n',{title:'Message to '+(AI2.stuParent(s)||'parent')}); };
     $$('[data-qa]',o).forEach(b=>b.onclick=()=>{ AN.setAtt(s.id,today(),b.dataset.qa); DB.log('Quick attendance: '+s.name+' → '+b.dataset.qa); DB.save(); o.remove(); toast((s.preferredName||s.name)+' marked '+(PT_ATT_LABEL[b.dataset.qa]||b.dataset.qa)); if(opt.onDone) opt.onDone(); else Router.render(); });
@@ -8286,6 +8376,7 @@ const Students = {
     // Only exceptions get a chip — a healthy student's card stays quiet
     const exOf = (s,sg)=>{ const ex=[]; if(!sg) return ex;
       if(sg.allergy) ex.push({t:'⚠ allergy',k:'bad'});
+      { const e=EX.stats(s); if(e.month) ex.push({t:'⭐ '+e.month+' extra pass'+(e.month>1?'es':'')+' this month',k:'ok'}); }
       { const w=WR.sum(s); if(w.total) ex.push({t:'✍ '+w.total+' page'+(w.total>1?'s':'')+' owed',k:w.total>=6?'bad':'gold'}); }
       if(sg.ready) ex.push({t:'🎓 ready for Level 2',k:'ok'});
       if(sg.abs>=1) ex.push({t:sg.abs+' absent of last '+sg.last4,k:sg.abs>=2?'bad':'gold'});
@@ -9139,6 +9230,7 @@ const Students = {
      <div style="display:flex;gap:16px;margin:0 0 16px" class="no-print">
        <button id="sToggleActive" style="background:none;border:none;color:var(--ink3);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">${s.active!==false?'Deactivate':'Reactivate'}</button>
        <button id="sDel" style="background:none;border:none;color:var(--bad);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline">Delete</button></div>
+     ${EX.cardHTML(s)}
      ${WR.cardHTML(s)}
      <details class="no-print dtl" open style="margin-bottom:16px">
        <summary style="cursor:pointer;font-family:var(--f-display);font-size:17px;font-weight:600;padding:2px 0 8px;display:flex;align-items:center;gap:8px"><span class="kb-chevron">▸</span>👤 Personal information<button class="btn btn-ghost btn-sm" id="apEdit" style="margin-left:auto;font-weight:600">✎ Edit</button></summary>
@@ -11203,6 +11295,7 @@ const Progress = {
        </div>
      </div>
      ${PTX.stripHTML(s,year)}
+     ${EX.cardHTML(s,{compact:true})}
      ${WR.cardHTML(s,{compact:true})}
      <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-pttab="${k}">${n}</button>`).join('')}</div>
      <div id="ptTabBody" style="margin-top:14px"></div>`;
