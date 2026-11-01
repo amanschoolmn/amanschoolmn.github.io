@@ -5057,7 +5057,7 @@ render(v){
     bdays.slice(0,2).forEach(b=>{ const turning=ageFromDob(b.s.dob)+(b.in===0?0:1);
       items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d')+(turning?' · turning '+turning:''), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days', key:'bday_'+b.s.id, photo:b.s}); });
     res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet', key:'res_'+r.id+'_planned'}));
-    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM, key:'tuition_'+f.key+'_'+nowYM}));
+    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+((fin.balance||fin.dueNow)?' · $'+(fin.balance||fin.dueNow)+(fin.balance?' balance':' due this month'):''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM, key:'tuition_'+f.key+'_'+nowYM}));
     const lastBk=d.settings.lastBackupAt;
     const bkDays=lastBk? Math.floor((Date.now()-new Date(lastBk))/864e5) : null;
     if(bkDays==null || bkDays>14)
@@ -9235,7 +9235,7 @@ const Students = {
            </div>`).join('')}</div>`
            : `<p style="color:var(--ink2);font-size:13.5px${fin?';margin-bottom:12px':''}">No siblings currently linked.</p>`}
          ${fin? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-             <span style="font-size:12.5px;color:var(--ink3)">Family tuition (${esc(fam.key)}):</span>${famStatusBadge(fin.monthStatus)}${fin.balance?`<span style="font-size:12.5px;font-weight:600;color:var(--bad)">$${fin.balance} owed</span>`:''}
+             <span style="font-size:12.5px;color:var(--ink3)">Family tuition (${esc(fam.key)}):</span>${famStatusBadge(fin.monthStatus)}${(fin.balance||fin.dueNow)?`<span style="font-size:12.5px;font-weight:600;color:var(--bad)">$${fin.balance||fin.dueNow} ${fin.balance?'owed':'due this month'}</span>`:''}
              <button class="btn btn-ghost btn-sm" data-openfamtui="${esc(fam.key)}" style="margin-left:auto">Open in Tuition →</button>
            </div>` : ''}
        </div>
@@ -11870,7 +11870,8 @@ function famEffectiveMonthly(key, activeCount){
   const p=famPlan(key);
   if(p.rateMode==='manual') return p.monthly||0;
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
-  return rate*(activeCount==null?famActiveCount(key):activeCount);
+  const _n=(activeCount==null?famActiveCount(key):activeCount);
+  return rate*_n + (_n>0 ? (+p.extra||0) : 0); // p.extra = regular add-on the family pays every month
 }
 // What a family's tuition SHOULD have been for one specific past month —
 // found while chasing down a miscalculation for أفركان: every place that
@@ -11895,7 +11896,7 @@ function famMonthlyForYm(key, ym){
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
   const cutoff=ym+'-31'; // safe sentinel: any real YYYY-MM-DD in this month sorts <= this string
   const count=DB.data.students.filter(s=>famKey(s)===key && s.active!==false && (s.startDate||(p.start?p.start+'-01':''))<=cutoff).length;
-  return rate*count;
+  return rate*count + (count>0 ? (+p.extra||0) : 0);
 }
 function monthsBetween(a, b){ // 'YYYY-MM' inclusive count
   const [ay,am]=a.split('-').map(Number), [by,bm]=b.split('-').map(Number);
@@ -11942,8 +11943,13 @@ function famFinance(key){
   const balance = Math.max(0, tuitionExpected-tuitionPaid) + Math.max(0, regExpected-regPaid);
   const paidThisMonth=pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,nowM),0);
   const excusedThisMonth=excusedMonths.has(nowM);
-  const monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
-  return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance,
+  let monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
+  // Paid ahead: if everything billed through this month is already covered by the total paid, this month is paid —
+  // otherwise a lump payment made last month shows "Due" next to a $0 balance.
+  if((monthStatus==='Due'||monthStatus==='Partial') && tuitionExpected>0 && tuitionPaid>=tuitionExpected) monthStatus='Paid';
+  // Amount to show whenever the status says Due/Partial but the running balance is $0 (nothing billed yet / not tracking)
+  const dueNow = (monthStatus==='Due'||monthStatus==='Partial') ? Math.max(0, monthly-paidThisMonth) : 0;
+  return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance, dueNow,
     monthStatus, paidThisMonth, monthly, activeCount, excusedMonths,
     tuitionExpected, tuitionPaid, regExpected, regPaid};
 }
@@ -11954,20 +11960,21 @@ function famMonthMatrix(key, year){
   const months=[];
   for(let m=1;m<=12;m++){
     const ym=year+'-'+String(m).padStart(2,'0');
-    let status;
+    let status, due=0, mo=0;
     if(p.start && ym<p.start) status='before';
     else if(ym>nowM) status='future';
     else {
       // Each cell judged against what THAT month actually owed, not
       // today's rate — see famMonthlyForYm's comment.
-      const monthly=famMonthlyForYm(key, ym);
+      const monthly=famMonthlyForYm(key, ym); mo=monthly;
       if(pays.some(x=>x.kind==='excused' && x.date.slice(0,7)===ym)) status='excused';
       else {
         const sum=pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,ym),0);
         status = monthly>0 && sum>=monthly ? 'paid' : sum>0 ? 'partial' : 'unpaid';
+        due = Math.max(0, monthly-sum);
       }
     }
-    months.push({m, label:TUITION_MONTHS[m-1], ym, status});
+    months.push({m, label:TUITION_MONTHS[m-1], ym, status, due, monthly:mo});
   }
   return months;
 }
@@ -14669,7 +14676,7 @@ function famCollectCardHTML(f, fin, rec, o){
     <div class="tcc-head" data-opfam="${esc(key)}" title="Open ${esc(key)} in Families">
       ${famAvatarHTML(key,44)}
       <div style="min-width:0;flex:1"><b style="display:block;font-family:var(--f-display);font-size:16px;overflow-wrap:anywhere">${esc(key)}</b><div style="margin-top:3px">${famStatusBadge(fin.monthStatus)}</div></div>
-      <div class="tcc-amt"><b>$${fin.balance}</b><div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">total owed</div>${owedNow&&owedNow!==fin.balance?`<div style="font-size:11px;color:var(--ink3)">$${owedNow} this month</div>`:''}</div>
+      <div class="tcc-amt"><b>$${fin.balance||fin.dueNow}</b><div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">total owed</div>${owedNow&&owedNow!==fin.balance?`<div style="font-size:11px;color:var(--ink3)">$${owedNow} this month</div>`:''}</div>
     </div>
     <div class="tcc-lines">${lines}</div>
     <div class="tcc-acts no-print">
@@ -14887,8 +14894,8 @@ const Tuition = {
             <td class="mtx-frozen" style="cursor:pointer;${zebra}" data-openfam="${esc(f.key)}">
               <div style="display:flex;align-items:center;gap:8px">${famAvatarHTML(f.key,26)}<b>${esc(f.key)}</b></div>
             </td>
-            ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'};${zebra}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}">
-              <span style="display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'20%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>
+            ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'};${zebra}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}${m.due>0?' \u00b7 $'+m.due+' due':''}">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'20%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>${(m.status==='unpaid'||m.status==='partial')&&m.due>0?`<div style="font-size:10px;line-height:1.1;margin-top:2px;font-family:var(--f-mono);font-weight:600;color:${statusColor[m.status]}">$${m.due}</div>`:''}
             </td>`).join('')}
             <td style="text-align:right;font-family:var(--f-mono);${zebra}">$${fin.paid}</td>
             <td style="text-align:right;font-family:var(--f-mono);${zebra}${fin.balance?';color:var(--bad);font-weight:700':''}">$${fin.balance}</td>
@@ -14931,7 +14938,7 @@ const Tuition = {
           </div>
           <div style="margin-top:5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
             ${fin.monthly>0? famStatusBadge(fin.monthStatus) : '<span class="tag tag-dim">no plan set</span>'}
-            ${fin.balance?`<b style="font-size:12.5px;color:var(--bad)">$${fin.balance} balance</b>`:''}
+            ${(fin.balance||fin.dueNow)?`<b style="font-size:12.5px;color:var(--bad)">$${fin.balance||fin.dueNow} ${fin.balance?'balance':'due this month'}</b>`:''}
             ${rec.sponsorName?`<span style="font-size:11.5px;color:var(--gold);font-weight:600">🤝 sponsored by ${esc(rec.sponsorName)}</span>`:''}
           </div>
         </div>
@@ -14944,8 +14951,9 @@ const Tuition = {
             ? `<div class="field"><label>Monthly tuition ($)</label><input data-pf="monthly" type="number" min="0" value="${fin.plan.monthly||''}"></div>`
             : `<div class="field"><label>Rate per student ($/mo, blank = default $${d.settings.defaultTuitionRate})</label><input data-pf="perStudentRate" type="number" min="0" value="${fin.plan.perStudentRate||''}"></div>`}
         </div>
-        ${fin.plan.rateMode!=='manual'?`<p style="font-size:12px;color:var(--ink3);margin:-2px 0 10px">Effective monthly: <b>$${fin.monthly}</b> (${activeM.length} \u00d7 $${fin.plan.perStudentRate||d.settings.defaultTuitionRate})</p>`:''}
+        ${fin.plan.rateMode!=='manual'?`<p style="font-size:12px;color:var(--ink3);margin:-2px 0 10px">Effective monthly: <b>$${fin.monthly}</b> (${activeM.length} \u00d7 $${fin.plan.perStudentRate||d.settings.defaultTuitionRate}${fin.plan.extra>0?' + $'+fin.plan.extra+' extra':''})</p>`:''}
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px">
+          ${fin.plan.rateMode!=='manual'?`<div class="field"><label>Extra per month ($)</label><input data-pf="extra" type="number" min="0" placeholder="0" value="${fin.plan.extra||''}" title="A regular amount this family pays on top of tuition every month — it is added to what they owe each month"></div>`:''}
           <div class="field"><label>Tracking since (YYYY-MM)</label><input data-pf="start" placeholder="${esc(today().slice(0,7))}" value="${esc(fin.plan.start)}"></div>
           <div class="field"><label>Registration fee ($)</label><input data-pf="regFee" type="number" min="0" value="${fin.plan.regFee||''}"></div>
           <div class="field"><label>Reg. fee paid?</label><select data-pf="regPaid"><option value="0" ${!fin.plan.regPaid?'selected':''}>Not yet</option><option value="1" ${fin.plan.regPaid?'selected':''}>Paid \u2713</option></select></div>
@@ -15022,7 +15030,7 @@ const Tuition = {
         s.family=n; DB.log(s.name+' assigned to family '+n); DB.save(); o.remove(); toast('Assigned'); Router.render(); }; });
     $('#tuReport',el).onclick=()=>{
       const rows=real.map(f=>{ const fin=famFinance(f.key);
-        return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.monthly?'$'+fin.monthly:'\u2014'}</td><td>${fin.monthStatus}</td><td>${fin.balance?'$'+fin.balance:'\u2014'}</td><td>$${fin.paid}</td></tr>`; }).join('');
+        return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.monthly?'$'+fin.monthly:'\u2014'}</td><td>${fin.monthStatus}</td><td>${(fin.balance||fin.dueNow)?'$'+(fin.balance||fin.dueNow):'\u2014'}</td><td>$${fin.paid}</td></tr>`; }).join('');
       const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>AMAN Tuition Report</title>
 <style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #ccc}th{font-size:11px;text-transform:uppercase;color:#1a4a35}
 thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
@@ -17483,7 +17491,7 @@ function aiTuitionReminderHandler(text){
   }
   const due=aiFamsDue();
   if(!due.length) return `No family owes anything this month, al-ḥamdu lillāh — nothing to remind.`;
-  const list=due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance} (${fin.monthStatus})`).join('<br>');
+  const list=due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance||fin.dueNow} (${fin.monthStatus})`).join('<br>');
   return `I need a specific family to draft a real reminder — so the amount is right, not invented. ${due.length} famil${due.length===1?'y':'ies'} currently owe:<br>${list}<br><br>Tap <b>✨ Reminder draft</b> next to any family in <b>Tuition → Who Owes Now</b> and I'll write the exact message with their real balance.`;
 }
 function aiParentUpdate(text){
@@ -17585,7 +17593,7 @@ function aiPromotions(){
 function aiTuitionFollowup(){
   const due=aiFamsDue();
   if(!due.length) return 'Every family is current this month, al-ḥamdu lillāh.';
-  return `${due.length} famil${due.length===1?'y':'ies'} owe this month:<br>`+due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance} (${fin.monthStatus})`).join('<br>')+`<br><br><button class="btn btn-o btn-sm" data-go="#/tuition/owe">Open Who Owes Now →</button>`;
+  return `${due.length} famil${due.length===1?'y':'ies'} owe this month:<br>`+due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance||fin.dueNow} (${fin.monthStatus})`).join('<br>')+`<br><br><button class="btn btn-o btn-sm" data-go="#/tuition/owe">Open Who Owes Now →</button>`;
 }
 function aiHomeworkSuggest(text){
   const lvlM=text.match(/level\s*(\d)/i);
@@ -18357,7 +18365,7 @@ render(v){
      <div id="sgSnaps" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div></div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🧑‍🏫 Substitute teacher — Level 1</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Send a cover teacher the Level 1 sub app plus a <b>class pack</b> (Level 1 students only — no tuition, admissions or other levels). When class is over, import the <b>report</b> they send back: it fills in attendance, class tracker marks and Green Book pages for Level 1. You see every change first; nothing is applied silently.</p>
-     <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sPackExp">Export class pack</button>
+     <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sPackLink">Send class link</button><button class="btn btn-o" id="sPackExp">Export class pack file</button>
       <label class="btn btn-o" style="cursor:pointer">Import sub’s report<input type="file" id="sRepImp" accept=".json" hidden></label></div>
      ${(d.settings.subImports||[]).length?`<div style="font-size:11.5px;color:var(--ink3);margin-top:10px">Last import: ${esc((d.settings.subImports.slice(-1)[0].sub||'sub'))} · ${esc(fmtDate(String(d.settings.subImports.slice(-1)[0].at).slice(0,10)))}</div>`:''}</div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🎛 Customize layout</h3>
@@ -18383,6 +18391,7 @@ render(v){
   $('#sLay',v).onclick=()=>{ Router.go('#/dashboard'); setTimeout(()=>Layout.toggle(true),50); };
   $('#sLayRst',v).onclick=()=>Layout.resetAll();
   $('#sExp',v).onclick=()=>{ DB.export(); };
+  $('#sPackLink',v).onclick=()=>SubMode.openLinkDialog();
   $('#sPackExp',v).onclick=()=>SubMode.exportPack();
   $('#sRepImp',v).onchange=e=>{ if(e.target.files[0]) SubMode.importReport(e.target.files[0]); e.target.value=''; };
   DBG.health().then(h=>{ const m=$('#sMirror',v); if(m) m.textContent=h.latest?new Date(h.latest.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ('+h.snaps.length+' daily copies)':'none yet'; });
@@ -18513,8 +18522,8 @@ const SubMode = {
     if(Array.isArray(o.guardians)) o.guardians=o.guardians.map(g=>Object.assign({},g,{email:''}));
     if(s.application){ const a=s.application; o.application={}; ['allergy','allergyDetail','healthConditions','meds'].forEach(k=>{ if(a[k]!==undefined) o.application[k]=a[k]; }); }
     return o; },
-  buildPack(){
-    const S=SubMode, d=DB.data, t=today(), cut=S.addDays(t,-150), cut2=S.addDays(t,-14);
+  buildPack(days){
+    const S=SubMode, d=DB.data, t=today(), cut=S.addDays(t,-(days||150)), cut2=S.addDays(t,-14);
     const stu=d.students.filter(s=>s.level===S.LEVEL&&s.active!==false).map(S.slim), ids=new Set(stu.map(s=>s.id));
     const dated=src=>{ const out={}; Object.keys(src||{}).forEach(k=>{ if(k<cut) return; const day=src[k]||{}, r={}; Object.keys(day).forEach(sid=>{ if(ids.has(sid)) r[sid]=S.clone(day[sid]); }); if(Object.keys(r).length) out[k]=r; }); return out; };
     const mine=a=>(a||[]).filter(x=>ids.has(x.sid)&&(!x.date||x.date>=cut)).map(x=>S.clone(x));
@@ -18528,6 +18537,49 @@ const SubMode = {
   exportPack(){ const p=SubMode.buildPack();
     if(!p.students.length){ toast('No active Level 1 students found'); return; }
     SubMode.deliver(p,'AMAN-Sub-Pack-L1-'+p.madeOn+'.json','Class pack ready · '+p.students.length+' Level 1 students'); },
+
+  /* ---- class LINK: the pack, compressed, in the part of the address after '#' (never sent to any server) ---- */
+  async enc(obj){ let bytes=new TextEncoder().encode(JSON.stringify(obj)), tag='j';
+    if(typeof CompressionStream!=='undefined'){ bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()); tag='g'; }
+    let bin=''; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+    return tag+btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); },
+  async dec(code){ code=String(code||'').trim(); const i=code.indexOf('#sp='); if(i>=0) code=code.slice(i+4); code=code.replace(/\s+/g,'');
+    const tag=code[0], bin=atob(code.slice(1).replace(/-/g,'+').replace(/_/g,'/')); let bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+    if(tag==='g') bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+    const p=JSON.parse(new TextDecoder().decode(bytes)); if(p.kind!=='aman-sub-pack'||!Array.isArray(p.students)) throw new Error('not a pack'); return p; },
+  async makeLink(base){ const p=SubMode.buildPack(60); if(!p.students.length) throw new Error('no students'); const code=await SubMode.enc(p); return {link:String(base).split('#')[0]+'#sp='+code, n:p.students.length}; },
+  openLinkDialog(){
+    const S=SubMode, st=DB.data.settings;
+    const o=overlay(`<div class="modal" style="max-width:580px"><h3 style="margin:0 0 4px">🔗 Send class data to the sub</h3>
+      <p class="ai-sub" style="margin:0 0 12px">Creates a link that carries today's Level 1 data (students, allergies, contacts, Green Book pages, recent attendance). The data sits after the # in the address, which browsers never send to a server. Text or email it; the sub taps it once.</p>
+      <div class="field"><label>Address of the sub app (where the sub file is hosted)</label><input id="sl-url" value="${esc(st.subUrl||'')}" placeholder="https://amanschoolmn.org/sub/" inputmode="url" autocapitalize="off"></div>
+      <div class="field"><label>Class link</label><textarea id="sl-link" readonly style="min-height:92px;font-family:var(--f-mono);font-size:11px" placeholder="Press Create link"></textarea><div class="ai-sub" id="sl-info" style="margin-top:4px"></div></div>
+      <div class="mfoot" style="flex-wrap:wrap"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" data-x="g">Create link</button><button class="btn btn-p" data-x="cp" disabled>Copy</button><button class="btn btn-p" data-x="sh" disabled>Share…</button></div></div>`,true);
+    const ta=$('#sl-link',o), info=$('#sl-info',o), cp=$('[data-x=cp]',o), sh=$('[data-x=sh]',o);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=g]',o).onclick=async()=>{ const u=$('#sl-url',o).value.trim();
+      if(!/^(https?|file):\/\/[^\s]+$/i.test(u)){ toast('Type the full address of the sub app, starting with https://'); $('#sl-url',o).focus(); return; }
+      st.subUrl=u; DB.save(); info.textContent='Creating…';
+      try{ const r=await S.makeLink(u); ta.value=r.link; cp.disabled=false; sh.disabled=false;
+        info.textContent=r.n+' students · link is '+(r.link.length/1024).toFixed(1)+' KB'+(r.link.length>20000?' — long; if it will not open for the sub, use “Export class pack file” instead.':'.'); ta.select(); }
+      catch(e){ info.textContent=''; toast('Could not create the link'+(e&&e.message==='no students'?' — no active Level 1 students':'')); } };
+    cp.onclick=()=>{ ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} if(!ok&&navigator.clipboard) navigator.clipboard.writeText(ta.value).then(()=>toast('Link copied'),()=>toast('Press and hold the link to copy it')); else toast(ok?'Link copied':'Press and hold the link to copy it'); };
+    sh.onclick=()=>{ if(navigator.share) navigator.share({title:'AMAN Level 1 class data',text:'Tap to open today’s Level 1 class on the class device:',url:ta.value}).catch(()=>{}); else cp.onclick(); }; },
+  consumeIncoming(){ const code=SubMode._incoming; if(!code) return; SubMode._incoming=null; let tries=0;
+    const run=async()=>{ if(!DB.data){ if(++tries<60) setTimeout(run,150); return; }
+      try{ const p=await SubMode.dec(code), m=SubMode.meta();
+        if(m.source==='pack'&&m.madeAt===p.madeAt){ toast('Class data is already loaded — you are up to date'); return; }
+        const go=()=>SubMode.applyPack(p);
+        if(SubMode.pending().unsent) confirmBox('You have entries that have not been sent to Ustadh yet. Loading this class data replaces everything in this app. Load it anyway?',go); else go(); }
+      catch(e){ toast('⚠ That class link could not be read — ask Ustadh to send it again'); } };
+    run(); },
+  pasteLink(){ const S=SubMode;
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3 style="margin:0 0 4px">📋 Paste the class link</h3><p class="ai-sub" style="margin:0 0 10px">Paste the whole link Ustadh sent you.</p>
+      <div class="field"><textarea id="pl-t" style="min-height:110px;font-family:var(--f-mono);font-size:11px" placeholder="https://…#sp=…"></textarea></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="l">Load class data</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=l]',o).onclick=async()=>{ try{ const p=await S.dec($('#pl-t',o).value); o.remove(); const go=()=>S.applyPack(p); if(S.pending().unsent) confirmBox('You have entries that have not been sent yet. Loading replaces everything in this app. Load it anyway?',go); else go(); }
+      catch(e){ toast('⚠ That does not look like a class link'); } }; },
 
   /* ================= SUB: scrub, load pack ================= */
   scrub(d){ const S=SubMode;
@@ -18698,7 +18750,7 @@ const SubMode = {
     const pending=pend.unsent?`<div class="notice warn" style="margin-bottom:14px">📤 <div style="flex:1"><b>You have ${pend.n.total} entr${pend.n.total===1?'y':'ies'} that ${m.lastSentAt?'changed since you last sent':'have not been sent'}.</b> When class is over, send the report to Ustadh.</div><button class="btn btn-p btn-sm" id="shSend">Send report</button></div>`:(m.lastSentAt?`<div class="notice info" style="margin-bottom:14px">✅ <div style="flex:1">Report last sent ${esc(new Date(m.lastSentAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'}))}. Nothing new to send.</div></div>`:'');
     v.innerHTML=`${moduleHeroHTML('Level 1','Substitute Teacher','Take attendance, hear the Green Book, then send Ustadh the day’s report.','📋')}
       ${window.__memStorage?'<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>This browser is blocking storage.</b> Nothing you enter will be kept if you close the page — send the report before you leave.</div></div>':''}
-      ${pk?'':`<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>No class pack loaded.</b> This is the built-in roster with no progress history. Ask Ustadh for today’s class pack file and load it so Green Book pages and contacts are current.</div><button class="btn btn-p btn-sm" id="shPack">Load class pack</button></div>`}
+      ${pk?'':`<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>No class data yet.</b> This is only the built-in roster, with no progress, contacts or allergies. Ask Ustadh to send you the class link, tap it, and everything loads. Or paste the link here.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-p btn-sm" id="shPaste">Paste class link</button><button class="btn btn-o btn-sm" id="shPack">Load class file</button></div></div>`}
       ${pending}
       <div class="grid g2" style="margin-bottom:14px">
         <div class="card"><div class="eyebrow">${esc(fmtDate(t))}</div><h3 style="font-family:var(--f-display);font-size:19px;margin:2px 0 10px">Today’s class</h3>
@@ -18712,10 +18764,10 @@ const SubMode = {
         <button class="card" data-go="#/students/progress" style="text-align:left;cursor:pointer"><div style="font-size:24px">📊</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Class tracker</h3><div class="ai-sub">Qur’an, homework and classwork — tap to mark.</div></button>
         <button class="card" data-go="#/roster" style="text-align:left;cursor:pointer"><div style="font-size:24px">🎓</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">My students</h3><div class="ai-sub">Photos, allergies, parent and emergency phone numbers.</div></button>
         <button class="card" id="shSend2" style="text-align:left;cursor:pointer"><div style="font-size:24px">📤</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Send report to Ustadh</h3><div class="ai-sub">Do this at the end of class. Includes your note.</div></button></div>
-      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPack2">load a newer class pack</a></p>`;
+      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPaste2">paste a class link</a> · <a href="#" id="shPack2">load a class file</a></p>`;
     $$('[data-go]',v).forEach(b=>b.onclick=()=>Router.go(b.dataset.go));
     const bind=(sel,fn)=>{ const b=$(sel,v); if(b) b.onclick=e=>{ e.preventDefault(); fn(); }; };
-    bind('#shClass',()=>Teacher.openClassMode()); bind('#shSend',()=>S.openReport()); bind('#shSend2',()=>S.openReport()); bind('#shPack',()=>S.pickPack()); bind('#shPack2',()=>S.pickPack()); },
+    bind('#shClass',()=>Teacher.openClassMode()); bind('#shSend',()=>S.openReport()); bind('#shSend2',()=>S.openReport()); bind('#shPack',()=>S.pickPack()); bind('#shPack2',()=>S.pickPack()); bind('#shPaste',()=>S.pasteLink()); bind('#shPaste2',()=>S.pasteLink()); },
   roster(v,param){
     const S=SubMode, d=DB.data, t=today(), rec=d.attendance[t]||{};
     const stu=d.students.filter(s=>s.active!==false).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
@@ -18745,6 +18797,9 @@ const SubMode = {
 };
 
 if(SUB_MODE){
+  // a class link (#sp=...) is read once, then removed from the address bar so the data never lingers in history/bookmarks
+  SubMode._incoming=null; try{ if(location.hash.indexOf('#sp=')===0){ SubMode._incoming=location.hash.slice(4); history.replaceState(null,'',location.pathname+location.search); } }catch(e){}
+  setTimeout(()=>SubMode.consumeIncoming(),0);
   // ---- storage/identity: the sub copy never touches master data, even on the same domain (own keys set above) ----
   const _load=DB.load; DB.load=function(){ _load.call(this); SubMode.afterLoad(); };
   DB.import=function(f){ SubMode.loadPack(f); };          // the only "import" a sub has is a class pack
