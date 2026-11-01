@@ -11954,7 +11954,7 @@ function famEffectiveMonthly(key, activeCount){
   if(p.rateMode==='manual') return p.monthly||0;
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
   const _n=(activeCount==null?famActiveCount(key):activeCount);
-  return rate*_n + (_n>0 ? (+p.extra||0) : 0); // p.extra = regular add-on the family pays every month
+  return rate*_n + (_n>0 && (!p.extraFrom||today().slice(0,7)>=p.extraFrom) ? (+p.extra||0) : 0); // p.extra = regular add-on the family pays every month
 }
 // What a family's tuition SHOULD have been for one specific past month —
 // found while chasing down a miscalculation for أفركان: every place that
@@ -11979,7 +11979,7 @@ function famMonthlyForYm(key, ym){
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
   const cutoff=ym+'-31'; // safe sentinel: any real YYYY-MM-DD in this month sorts <= this string
   const count=DB.data.students.filter(s=>famKey(s)===key && s.active!==false && (s.startDate||(p.start?p.start+'-01':''))<=cutoff).length;
-  return rate*count + (count>0 ? (+p.extra||0) : 0);
+  return rate*count + (count>0 && (!p.extraFrom||ym>=p.extraFrom) ? (+p.extra||0) : 0);
 }
 function monthsBetween(a, b){ // 'YYYY-MM' inclusive count
   const [ay,am]=a.split('-').map(Number), [by,bm]=b.split('-').map(Number);
@@ -12023,13 +12023,23 @@ function famFinance(key){
   const regPaid = pays.filter(x=>x.kind==='registration').reduce((a,x)=>a+(+x.amount||0),0);
   const expected = tuitionExpected + regExpected;
   const paid = tuitionPaid + regPaid; // combined total collected, fine for display — the buckets stay separate for balance
-  const balance = Math.max(0, tuitionExpected-tuitionPaid) + Math.max(0, regExpected-regPaid);
+  // Month-based: each billed month is settled by the payments attributed to THAT month (payInYm), exactly like the Matrix.
+  let tuitionDue = 0;
+  if(p.start){
+    const [sy2,sm2]=p.start.split('-').map(Number), [ny2,nm2]=nowM.split('-').map(Number);
+    for(let idx=sy2*12+sm2; idx<=ny2*12+nm2; idx++){
+      const y=Math.floor((idx-1)/12), m=((idx-1)%12)+1, ym=y+'-'+String(m).padStart(2,'0');
+      if(excusedMonths.has(ym)) continue;
+      const exp=famMonthlyForYm(key, ym); if(exp<=0) continue;
+      const got=pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,ym),0);
+      tuitionDue += Math.max(0, exp-got);
+    }
+  }
+  const balance = tuitionDue + Math.max(0, regExpected-regPaid);
   const paidThisMonth=pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,nowM),0);
   const excusedThisMonth=excusedMonths.has(nowM);
   let monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
-  // Paid ahead: if everything billed through this month is already covered by the total paid, this month is paid —
-  // otherwise a lump payment made last month shows "Due" next to a $0 balance.
-  if((monthStatus==='Due'||monthStatus==='Partial') && tuitionExpected>0 && tuitionPaid>=tuitionExpected) monthStatus='Paid';
+  // Balance is month-based (same rule as the Payment Matrix) so status, balance and Matrix always agree.
   // Amount to show whenever the status says Due/Partial but the running balance is $0 (nothing billed yet / not tracking)
   const dueNow = (monthStatus==='Due'||monthStatus==='Partial') ? Math.max(0, monthly-paidThisMonth) : 0;
   return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance, dueNow,
@@ -14687,13 +14697,14 @@ function famDebt(key){
   const p=famPlan(key), fin=famFinance(key), nowM=today().slice(0,7);
   const out={months:[], total:0, oldestYm:null, ageDays:0};
   if(!p.start) return out;
-  let paid=fin.tuitionPaid;
+  let paid=0;
   const [sy,sm]=p.start.split('-').map(Number), [ny,nm]=nowM.split('-').map(Number);
   for(let idx=sy*12+sm; idx<=ny*12+nm; idx++){
     const y=Math.floor((idx-1)/12), m=((idx-1)%12)+1, ym=y+'-'+String(m).padStart(2,'0');
     if(fin.excusedMonths.has(ym)) continue;
     const exp=famMonthlyForYm(key,ym); if(exp<=0) continue;
-    const applied=Math.min(paid,exp); paid-=applied;
+    paid=fin.pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,ym),0);
+    const applied=Math.min(paid,exp);
     if(exp-applied>0) out.months.push({ym, owed:exp-applied});
   }
   out.total=out.months.reduce((a,x)=>a+x.owed,0);
@@ -15036,7 +15047,7 @@ const Tuition = {
         </div>
         ${fin.plan.rateMode!=='manual'?`<p style="font-size:12px;color:var(--ink3);margin:-2px 0 10px">Effective monthly: <b>$${fin.monthly}</b> (${activeM.length} \u00d7 $${fin.plan.perStudentRate||d.settings.defaultTuitionRate}${fin.plan.extra>0?' + $'+fin.plan.extra+' extra':''})</p>`:''}
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px">
-          ${fin.plan.rateMode!=='manual'?`<div class="field"><label>Extra per month ($)</label><input data-pf="extra" type="number" min="0" placeholder="0" value="${fin.plan.extra||''}" title="A regular amount this family pays on top of tuition every month — it is added to what they owe each month"></div>`:''}
+          ${fin.plan.rateMode!=='manual'?`<div class="field"><label>Extra per month ($)</label><input data-pf="extra" type="number" min="0" placeholder="0" value="${fin.plan.extra||''}" title="A regular amount this family pays on top of tuition every month — it is added to what they owe each month"></div><div class="field"><label>Extra starts (YYYY-MM, blank = always)</label><input data-pf="extraFrom" placeholder="e.g. 2026-10" value="${esc(fin.plan.extraFrom||'')}"></div>`:''}
           <div class="field"><label>Tracking since (YYYY-MM)</label><input data-pf="start" placeholder="${esc(today().slice(0,7))}" value="${esc(fin.plan.start)}"></div>
           <div class="field"><label>Registration fee ($)</label><input data-pf="regFee" type="number" min="0" value="${fin.plan.regFee||''}"></div>
           <div class="field"><label>Reg. fee paid?</label><select data-pf="regPaid"><option value="0" ${!fin.plan.regPaid?'selected':''}>Not yet</option><option value="1" ${fin.plan.regPaid?'selected':''}>Paid \u2713</option></select></div>
@@ -15077,7 +15088,7 @@ const Tuition = {
     $$('[data-pf]',el).forEach(inp=>inp.onchange=()=>{ const p=famPlan(openKey);
       const k=inp.dataset.pf;
       if(k==='regPaid') p[k]=inp.value==='1';
-      else if(k==='start'||k==='rateMode') p[k]=inp.value.trim();
+      else if(k==='start'||k==='rateMode'||k==='extraFrom') p[k]=inp.value.trim();
       else p[k]= inp.value===''? (k==='perStudentRate'?null:0) : +inp.value;
       DB.log('Tuition plan updated \u2014 family '+openKey); DB.save(); Router.render(); });
     $$('[data-ff]',el).forEach(inp=>inp.onchange=()=>{ famRec(openKey)[inp.dataset.ff]=inp.value.trim(); DB.save(); });
@@ -18448,7 +18459,7 @@ render(v){
      <div id="sgSnaps" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div></div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🧑‍🏫 Substitute teacher — Level 1</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Send a cover teacher the Level 1 sub app plus a <b>class pack</b> (Level 1 students only — no tuition, admissions or other levels). When class is over, import the <b>report</b> they send back: it fills in attendance, class tracker marks and Green Book pages for Level 1. You see every change first; nothing is applied silently.</p>
-     <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sPackExp">Export class pack</button>
+     <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sPackLink">Send class link</button><button class="btn btn-o" id="sPackExp">Export class pack file</button>
       <label class="btn btn-o" style="cursor:pointer">Import sub’s report<input type="file" id="sRepImp" accept=".json" hidden></label></div>
      ${(d.settings.subImports||[]).length?`<div style="font-size:11.5px;color:var(--ink3);margin-top:10px">Last import: ${esc((d.settings.subImports.slice(-1)[0].sub||'sub'))} · ${esc(fmtDate(String(d.settings.subImports.slice(-1)[0].at).slice(0,10)))}</div>`:''}</div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🎛 Customize layout</h3>
@@ -18474,6 +18485,7 @@ render(v){
   $('#sLay',v).onclick=()=>{ Router.go('#/dashboard'); setTimeout(()=>Layout.toggle(true),50); };
   $('#sLayRst',v).onclick=()=>Layout.resetAll();
   $('#sExp',v).onclick=()=>{ DB.export(); };
+  $('#sPackLink',v).onclick=()=>SubMode.openLinkDialog();
   $('#sPackExp',v).onclick=()=>SubMode.exportPack();
   $('#sRepImp',v).onchange=e=>{ if(e.target.files[0]) SubMode.importReport(e.target.files[0]); e.target.value=''; };
   DBG.health().then(h=>{ const m=$('#sMirror',v); if(m) m.textContent=h.latest?new Date(h.latest.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ('+h.snaps.length+' daily copies)':'none yet'; });
@@ -18604,8 +18616,8 @@ const SubMode = {
     if(Array.isArray(o.guardians)) o.guardians=o.guardians.map(g=>Object.assign({},g,{email:''}));
     if(s.application){ const a=s.application; o.application={}; ['allergy','allergyDetail','healthConditions','meds'].forEach(k=>{ if(a[k]!==undefined) o.application[k]=a[k]; }); }
     return o; },
-  buildPack(){
-    const S=SubMode, d=DB.data, t=today(), cut=S.addDays(t,-150), cut2=S.addDays(t,-14);
+  buildPack(days){
+    const S=SubMode, d=DB.data, t=today(), cut=S.addDays(t,-(days||150)), cut2=S.addDays(t,-14);
     const stu=d.students.filter(s=>s.level===S.LEVEL&&s.active!==false).map(S.slim), ids=new Set(stu.map(s=>s.id));
     const dated=src=>{ const out={}; Object.keys(src||{}).forEach(k=>{ if(k<cut) return; const day=src[k]||{}, r={}; Object.keys(day).forEach(sid=>{ if(ids.has(sid)) r[sid]=S.clone(day[sid]); }); if(Object.keys(r).length) out[k]=r; }); return out; };
     const mine=a=>(a||[]).filter(x=>ids.has(x.sid)&&(!x.date||x.date>=cut)).map(x=>S.clone(x));
@@ -18619,6 +18631,49 @@ const SubMode = {
   exportPack(){ const p=SubMode.buildPack();
     if(!p.students.length){ toast('No active Level 1 students found'); return; }
     SubMode.deliver(p,'AMAN-Sub-Pack-L1-'+p.madeOn+'.json','Class pack ready · '+p.students.length+' Level 1 students'); },
+
+  /* ---- class LINK: the pack, compressed, in the part of the address after '#' (never sent to any server) ---- */
+  async enc(obj){ let bytes=new TextEncoder().encode(JSON.stringify(obj)), tag='j';
+    if(typeof CompressionStream!=='undefined'){ bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()); tag='g'; }
+    let bin=''; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+    return tag+btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); },
+  async dec(code){ code=String(code||'').trim(); const i=code.indexOf('#sp='); if(i>=0) code=code.slice(i+4); code=code.replace(/\s+/g,'');
+    const tag=code[0], bin=atob(code.slice(1).replace(/-/g,'+').replace(/_/g,'/')); let bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+    if(tag==='g') bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+    const p=JSON.parse(new TextDecoder().decode(bytes)); if(p.kind!=='aman-sub-pack'||!Array.isArray(p.students)) throw new Error('not a pack'); return p; },
+  async makeLink(base){ const p=SubMode.buildPack(60); if(!p.students.length) throw new Error('no students'); const code=await SubMode.enc(p); return {link:String(base).split('#')[0]+'#sp='+code, n:p.students.length}; },
+  openLinkDialog(){
+    const S=SubMode, st=DB.data.settings;
+    const o=overlay(`<div class="modal" style="max-width:580px"><h3 style="margin:0 0 4px">🔗 Send class data to the sub</h3>
+      <p class="ai-sub" style="margin:0 0 12px">Creates a link that carries today's Level 1 data (students, allergies, contacts, Green Book pages, recent attendance). The data sits after the # in the address, which browsers never send to a server. Text or email it; the sub taps it once.</p>
+      <div class="field"><label>Address of the sub app (where the sub file is hosted)</label><input id="sl-url" value="${esc(st.subUrl||'')}" placeholder="https://amanschoolmn.org/sub/" inputmode="url" autocapitalize="off"></div>
+      <div class="field"><label>Class link</label><textarea id="sl-link" readonly style="min-height:92px;font-family:var(--f-mono);font-size:11px" placeholder="Press Create link"></textarea><div class="ai-sub" id="sl-info" style="margin-top:4px"></div></div>
+      <div class="mfoot" style="flex-wrap:wrap"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-o" data-x="g">Create link</button><button class="btn btn-p" data-x="cp" disabled>Copy</button><button class="btn btn-p" data-x="sh" disabled>Share…</button></div></div>`,true);
+    const ta=$('#sl-link',o), info=$('#sl-info',o), cp=$('[data-x=cp]',o), sh=$('[data-x=sh]',o);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=g]',o).onclick=async()=>{ const u=$('#sl-url',o).value.trim();
+      if(!/^(https?|file):\/\/[^\s]+$/i.test(u)){ toast('Type the full address of the sub app, starting with https://'); $('#sl-url',o).focus(); return; }
+      st.subUrl=u; DB.save(); info.textContent='Creating…';
+      try{ const r=await S.makeLink(u); ta.value=r.link; cp.disabled=false; sh.disabled=false;
+        info.textContent=r.n+' students · link is '+(r.link.length/1024).toFixed(1)+' KB'+(r.link.length>20000?' — long; if it will not open for the sub, use “Export class pack file” instead.':'.'); ta.select(); }
+      catch(e){ info.textContent=''; toast('Could not create the link'+(e&&e.message==='no students'?' — no active Level 1 students':'')); } };
+    cp.onclick=()=>{ ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} if(!ok&&navigator.clipboard) navigator.clipboard.writeText(ta.value).then(()=>toast('Link copied'),()=>toast('Press and hold the link to copy it')); else toast(ok?'Link copied':'Press and hold the link to copy it'); };
+    sh.onclick=()=>{ if(navigator.share) navigator.share({title:'AMAN Level 1 class data',text:'Tap to open today’s Level 1 class on the class device:',url:ta.value}).catch(()=>{}); else cp.onclick(); }; },
+  consumeIncoming(){ const code=SubMode._incoming; if(!code) return; SubMode._incoming=null; let tries=0;
+    const run=async()=>{ if(!DB.data){ if(++tries<60) setTimeout(run,150); return; }
+      try{ const p=await SubMode.dec(code), m=SubMode.meta();
+        if(m.source==='pack'&&m.madeAt===p.madeAt){ toast('Class data is already loaded — you are up to date'); return; }
+        const go=()=>SubMode.applyPack(p);
+        if(SubMode.pending().unsent) confirmBox('You have entries that have not been sent to Ustadh yet. Loading this class data replaces everything in this app. Load it anyway?',go); else go(); }
+      catch(e){ toast('⚠ That class link could not be read — ask Ustadh to send it again'); } };
+    run(); },
+  pasteLink(){ const S=SubMode;
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3 style="margin:0 0 4px">📋 Paste the class link</h3><p class="ai-sub" style="margin:0 0 10px">Paste the whole link Ustadh sent you.</p>
+      <div class="field"><textarea id="pl-t" style="min-height:110px;font-family:var(--f-mono);font-size:11px" placeholder="https://…#sp=…"></textarea></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="l">Load class data</button></div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('[data-x=l]',o).onclick=async()=>{ try{ const p=await S.dec($('#pl-t',o).value); o.remove(); const go=()=>S.applyPack(p); if(S.pending().unsent) confirmBox('You have entries that have not been sent yet. Loading replaces everything in this app. Load it anyway?',go); else go(); }
+      catch(e){ toast('⚠ That does not look like a class link'); } }; },
 
   /* ================= SUB: scrub, load pack ================= */
   scrub(d){ const S=SubMode;
@@ -18777,7 +18832,7 @@ const SubMode = {
 
   /* ================= SUB: guard, home, roster ================= */
   guard(id,param){
-    if(id==='dashboard'||id==='hifz'||id==='today'||id==='roster') return null;
+    if(id==='dashboard'||id==='hifz'||id==='today'||id==='roster'||id==='settings') return null;
     if(id==='students'){ if(param==='attendance'||param==='progress') return null; if(param&&param!=='cleaning'&&param!=='fieldtrip'&&param!=='gradebook'&&DB.data.students.some(s=>s.id===param)) return '#/roster/'+param; return '#/roster'; }
     if(id==='teacher') return (param==='planner'||param==='lessons')?null:'#/teacher/planner';
     return '#/dashboard'; },
@@ -18789,7 +18844,7 @@ const SubMode = {
     const pending=pend.unsent?`<div class="notice warn" style="margin-bottom:14px">📤 <div style="flex:1"><b>You have ${pend.n.total} entr${pend.n.total===1?'y':'ies'} that ${m.lastSentAt?'changed since you last sent':'have not been sent'}.</b> When class is over, send the report to Ustadh.</div><button class="btn btn-p btn-sm" id="shSend">Send report</button></div>`:(m.lastSentAt?`<div class="notice info" style="margin-bottom:14px">✅ <div style="flex:1">Report last sent ${esc(new Date(m.lastSentAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'}))}. Nothing new to send.</div></div>`:'');
     v.innerHTML=`${moduleHeroHTML('Level 1','Substitute Teacher','Take attendance, hear the Green Book, then send Ustadh the day’s report.','📋')}
       ${window.__memStorage?'<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>This browser is blocking storage.</b> Nothing you enter will be kept if you close the page — send the report before you leave.</div></div>':''}
-      ${pk?'':`<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>No class pack loaded.</b> This is the built-in roster with no progress history. Ask Ustadh for today’s class pack file and load it so Green Book pages and contacts are current.</div><button class="btn btn-p btn-sm" id="shPack">Load class pack</button></div>`}
+      ${pk?'':`<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>No class data yet.</b> This is only the built-in roster, with no progress, contacts or allergies. Ask Ustadh to send you the class link, tap it, and everything loads. Or paste the link here.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-p btn-sm" id="shPaste">Paste class link</button><button class="btn btn-o btn-sm" id="shPack">Load class file</button></div></div>`}
       ${pending}
       <div class="grid g2" style="margin-bottom:14px">
         <div class="card"><div class="eyebrow">${esc(fmtDate(t))}</div><h3 style="font-family:var(--f-display);font-size:19px;margin:2px 0 10px">Today’s class</h3>
@@ -18803,10 +18858,29 @@ const SubMode = {
         <button class="card" data-go="#/students/progress" style="text-align:left;cursor:pointer"><div style="font-size:24px">📊</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Class tracker</h3><div class="ai-sub">Qur’an, homework and classwork — tap to mark.</div></button>
         <button class="card" data-go="#/roster" style="text-align:left;cursor:pointer"><div style="font-size:24px">🎓</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">My students</h3><div class="ai-sub">Photos, allergies, parent and emergency phone numbers.</div></button>
         <button class="card" id="shSend2" style="text-align:left;cursor:pointer"><div style="font-size:24px">📤</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Send report to Ustadh</h3><div class="ai-sub">Do this at the end of class. Includes your note.</div></button></div>
-      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPack2">load a newer class pack</a></p>`;
+      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPaste2">paste a class link</a> · <a href="#" id="shPack2">load a class file</a></p>`;
     $$('[data-go]',v).forEach(b=>b.onclick=()=>Router.go(b.dataset.go));
     const bind=(sel,fn)=>{ const b=$(sel,v); if(b) b.onclick=e=>{ e.preventDefault(); fn(); }; };
-    bind('#shClass',()=>Teacher.openClassMode()); bind('#shSend',()=>S.openReport()); bind('#shSend2',()=>S.openReport()); bind('#shPack',()=>S.pickPack()); bind('#shPack2',()=>S.pickPack()); },
+    bind('#shClass',()=>Teacher.openClassMode()); bind('#shSend',()=>S.openReport()); bind('#shSend2',()=>S.openReport()); bind('#shPack',()=>S.pickPack()); bind('#shPack2',()=>S.pickPack()); bind('#shPaste',()=>S.pasteLink()); bind('#shPaste2',()=>S.pasteLink()); },
+  settings(v){
+    const S=SubMode, d=DB.data, m=S.meta(), p=S.pending(), pk=m.source==='pack';
+    const card=(t,body)=>`<div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">${t}</h3>${body}</div>`;
+    v.innerHTML=`${moduleHeroHTML('Level 1','Settings','Load class data from Ustadh, and send your report back.','⚙️')}
+      <div class="grid g2">
+       ${card('📥 Import class data',`<p style="font-size:13.5px;color:var(--ink2);margin-bottom:6px"><b>${pk?'Class data from '+esc(fmtDate(m.madeOn))+' · '+d.students.length+' students':'Built-in roster only — no class data loaded'}</b></p>
+         <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Ustadh sends you a link — tap it and it loads by itself. You can also paste the link, or open a class file he sends.</p>
+         <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="stPaste">Paste class link</button><button class="btn btn-o" id="stFile">Load class file</button></div>`)}
+       ${card('📤 Export report',`<p style="font-size:13.5px;color:var(--ink2);margin-bottom:6px"><b>${p.n.total} entr${p.n.total===1?'y':'ies'} ${p.unsent?'not sent yet':(m.lastSentAt?'— all sent':'so far')}</b>${m.lastSentAt?' · last sent '+esc(new Date(m.lastSentAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})):''}</p>
+         <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Sends Ustadh the attendance, tracker marks, Green Book pages and your note.</p>
+         <button class="btn btn-p" id="stSend">Send report to Ustadh</button>`)}
+       ${card('🎨 Appearance','<button class="btn btn-o" id="stTheme">Toggle light / dark</button>')}
+       ${card('🧹 Clear this device',`<p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Removes all class data and entries from this device. Send your report first.</p><button class="btn btn-danger" id="stClear">Clear this device</button>`)}
+      </div>`;
+    $('#stPaste',v).onclick=()=>S.pasteLink(); $('#stFile',v).onclick=()=>S.pickPack(); $('#stSend',v).onclick=()=>S.openReport(); $('#stTheme',v).onclick=()=>Theme.toggle();
+    $('#stClear',v).onclick=()=>confirmBox((S.pending().unsent?'You have entries that were NOT sent to Ustadh yet — they will be lost. ':'')+'Remove all class data from this device?',()=>{
+      DB.saveNow=function(){}; DBG.mirror=function(){}; DBG.flush=async function(){};   // stop the page from re-saving on its way out
+      try{ localStorage.removeItem(DB.KEY); localStorage.removeItem(DB.KEY+'_at'); localStorage.removeItem(S.BK); localStorage.removeItem(S.RK); }catch(e){}
+      Promise.resolve().then(()=>DBG.del('latest')).catch(()=>{}).then(()=>{ location.href=location.pathname; }); }); },
   roster(v,param){
     const S=SubMode, d=DB.data, t=today(), rec=d.attendance[t]||{};
     const stu=d.students.filter(s=>s.active!==false).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
