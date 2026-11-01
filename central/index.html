@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 88<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 90<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -1265,7 +1265,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
 <div id="toasts" aria-live="polite"></div>
 <script>
 /* Storage shim: if the browser blocks localStorage/sessionStorage (in-chat previews, some private/sandboxed frames), fall back to in-memory so the app still opens and logs in. Data then lasts only until the page closes. */
-(function(){ ['localStorage','sessionStorage'].forEach(function(n){ var ok=true; try{ var s=window[n]; s.setItem('__t','1'); s.removeItem('__t'); }catch(e){ ok=false; }
+(function(){ ['localStorage','sessionStorage'].forEach(function(n){ var ok=true; try{ var s=window[n]; s.setItem('__t','1'); s.removeItem('__t'); }catch(e){ ok=false; try{ if(e&&(e.name==='QuotaExceededError'||e.code===22||e.code===1014||/quota/i.test(String(e.message)))){ window[n].getItem('aman_central_v1'); ok=true; window.__lsFull=true; } }catch(e2){ ok=false; } }
  if(ok) return; var m={}; var st={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null;},setItem:function(k,v){m[k]=String(v);},removeItem:function(k){delete m[k];},clear:function(){m={};},key:function(i){return Object.keys(m)[i]||null;},get length(){return Object.keys(m).length;}};
  try{ Object.defineProperty(window,n,{value:st,configurable:true}); }catch(e){} window.__memStorage=true; }); })();
 </script>
@@ -4082,12 +4082,12 @@ const DB = {
   },
   load(){
     try{
-      const raw = localStorage.getItem(this.KEY);
+      const raw = this._idbRaw || localStorage.getItem(this.KEY); this._raw=raw;
       if(!raw){ this._fresh='empty'; this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); this.log('AMAN Central initialized with the recovered resource catalog'); this.saveNow(); return; }
       const d = JSON.parse(raw);
       if(!d || typeof d!=='object' || !Array.isArray(d.resources)) throw 0;
       this.data = this.migrate(d);
-    }catch(e){ this._fresh='unreadable'; this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); toast('Stored data unreadable — started fresh'); }
+    }catch(e){ try{ if(this._raw) DBG.put('rescue',{at:Date.now(),n:0,js:this._raw}); }catch(e3){} this._fresh='unreadable'; this.data = this.defaults(); sotmLinkPhotos(this.data); migrateStudentContacts(this.data); toast('Stored data unreadable — started fresh'); }
   },
   migrate(d){
     // future schema bumps slot in here; never destructive
@@ -4339,19 +4339,30 @@ const DB = {
     return d;
   },
   save(){ clearTimeout(this._t); this._t = setTimeout(()=>this.saveNow(), 350); },
-  saveNow(){ try{ const js=JSON.stringify(this.data); localStorage.setItem(this.KEY, js); this.savedAt=Date.now(); this.saveErr=''; try{ const b=document.getElementById('saveWarn'); if(b) b.remove(); }catch(e){}
-      try{ if(typeof DBG!=='undefined') DBG.mirror(); }catch(e){} }
-    catch(e){ this.saveErr=String(e&&e.message||e); toast('⚠ Save failed — storage may be full'); try{ DBG.warn(); }catch(e2){} } },
+  // Two stores: localStorage (fast, but only ~5 MB on iPad) AND IndexedDB (hundreds of MB). A save only fails loudly if BOTH fail.
+  saveNow(){ const at=Date.now(); let js; try{ js=JSON.stringify(this.data); }catch(e){ this.saveErr=String(e); toast('⚠ Save failed'); return; }
+    let lsOk=true; try{ localStorage.setItem(this.KEY, js); localStorage.setItem(this.KEY+'_at', String(at)); }catch(e){ lsOk=false; this.saveErr=String(e&&e.message||e); }
+    this.savedAt=at; this._lsOk=lsOk; if(lsOk){ this.saveErr=''; try{ const b=document.getElementById('saveWarn'); if(b) b.remove(); }catch(e){} }
+    try{ if(typeof DBG!=='undefined') DBG.mirror(js,at,!lsOk); else if(!lsOk) throw 0; }catch(e){ if(!lsOk){ toast('⚠ Save failed — storage may be full'); try{ DBG.warn(); }catch(e2){} } } },
   log(text){ this.data.activity.unshift({t:new Date().toISOString(), text}); this.data.activity = this.data.activity.slice(0,80); },
   export(){
     // Stamp the backup time BEFORE serializing, so the file itself carries it — otherwise a restored backup always says "Backup never".
     this.data.settings.lastBackupAt = new Date().toISOString();
-    const blob = new Blob([JSON.stringify(this.data,null,1)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'AMAN-Central-Backup-'+today()+'.json'; a.click(); URL.revokeObjectURL(a.href);
-    this.saveNow(); try{ footStatus(); }catch(e){}
-    toast('Backup downloaded');
+    const name='AMAN-Central-Backup-'+today()+'.json', blob = new Blob([JSON.stringify(this.data,null,1)], {type:'application/json'});
+    const prevAt=this._bkPrev;
+    const done=msg=>{ this.saveNow(); try{ footStatus(); }catch(e){} try{ const b=document.getElementById('bkBanner'); if(b) b.remove(); }catch(e){} toast(msg); };
+    const dl=()=>{ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); done('Backup downloaded'); };
+    // On iPad the share sheet lets you tap "Save to Files" (iCloud Drive) — a copy that survives anything that happens to the app.
+    try{ const f=new File([blob],name,{type:'application/json'});
+      if(navigator.canShare && navigator.canShare({files:[f]})){ navigator.share({files:[f],title:name}).then(()=>done('Backup saved'),e=>{ if(e&&e.name==='AbortError'){ toast('Backup cancelled — not saved'); } else dl(); }); return; } }catch(e){}
+    dl();
   },
+  // Gentle nudge on app open: one tap to save a copy to Files when the last backup is more than 3 days old.
+  backupNudge(){ try{ const bk=this.data.settings.lastBackupAt, age=bk?(Date.now()-new Date(bk))/864e5:99; if(age<3||this._fresh||window.__memStorage||document.getElementById('bkBanner')) return;
+    const day=today(); if(this.data.settings.bkNudgeDay===day) return; this.data.settings.bkNudgeDay=day;
+    const b=document.createElement('div'); b.id='bkBanner'; b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:9000;background:#1a4a35;color:#fff;padding:10px 14px;border-radius:14px;font:600 13px system-ui;display:flex;gap:10px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.3);max-width:94vw';
+    b.innerHTML='<span>🛟 '+(bk?'Last backup '+Math.floor(age)+' days ago':'No backup yet')+' — save a copy to Files?</span><button id="bkGo" style="padding:7px 12px;border:0;border-radius:9px;font-weight:700;background:#e8c068;color:#222">Back up now</button><button id="bkNo" style="padding:7px 9px;border:0;border-radius:9px;background:transparent;color:#fff;opacity:.8">Later</button>';
+    document.body.appendChild(b); b.querySelector('#bkGo').onclick=()=>{ b.remove(); DB.export(); }; b.querySelector('#bkNo').onclick=()=>b.remove(); }catch(e){} },
   import(file){
     const rd = new FileReader();
     rd.onload = ()=>{ try{
@@ -4366,7 +4377,8 @@ const DB = {
   },
   res(id){ return this.data.resources.find(r=>r.id===id); }
 };
-window.addEventListener('pagehide', ()=>DB.saveNow());
+window.addEventListener('pagehide', ()=>{ DB.saveNow(); try{ DBG.flush(); }catch(e){} });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ DB.saveNow(); try{ DBG.flush(); }catch(e){} } });
 
 /* ---------- UI primitives ---------- */
 function toast(msg,undo){ const t=document.createElement('div'); t.className='toast'; const sp=document.createElement('span'); sp.textContent=msg; t.append(sp); $('#toasts').append(t); const kill=()=>{t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),320)}; if(undo){ const b=document.createElement('button'); b.className='toast-undo'; b.textContent='Undo'; b.onclick=()=>{ b.disabled=true; try{ undo(); }catch(e){} sp.textContent='Undone'; b.remove(); setTimeout(kill,900); }; t.append(b); setTimeout(kill,6500); } else setTimeout(kill,2600); }
@@ -7508,9 +7520,16 @@ const WR = {
   since(){ return (DB.data.settings||{}).writeSince||''; },
   items(s){
     const d=DB.data, R=WR.rates(), since=WR.since(), waived=new Set(s.writeWaive||[]), out=[];
-    Object.keys(d.progress||{}).sort().forEach(date=>{ if(since&&date<since) return; const p=(d.progress[date]||{})[s.id]; if(!p) return;
-      if(p.hw==='INC'&&PT_isSat(date)&&!waived.has(date+'|hw')) out.push({key:date+'|hw',date,type:'hw',due:R.hw});
-      if(p.cw==='INC'&&!waived.has(date+'|cw')) out.push({key:date+'|cw',date,type:'cw',due:R.cw}); });
+    // Owed = marked incomplete, PLUS a make-up for any class the student was absent / excused (attendance A or E,
+    // or HW/CW marked excused) — they still have to do that day's writing, as soon as possible.
+    const dates=new Set([...Object.keys(d.progress||{}),...Object.keys(d.attendance||{})]);
+    [...dates].filter(x=>x<=today()).sort().forEach(date=>{ if(since&&date<since) return; const p=(d.progress[date]||{})[s.id]||{}, at=(d.attendance[date]||{})[s.id];
+      const away=at==='A'||at==='E';
+      if(!Object.keys(p).length && !away) return;
+      const hwOwe = PT_isSat(date) && (p.hw==='INC' || ((away||p.hw==='EXC') && p.hw!=='DONE'));
+      const cwOwe = p.cw==='INC' || ((away||p.cw==='EXC') && p.cw!=='DONE');
+      if(hwOwe&&!waived.has(date+'|hw')) out.push({key:date+'|hw',date,type:'hw',due:R.hw,makeup:p.hw!=='INC'});
+      if(cwOwe&&!waived.has(date+'|cw')) out.push({key:date+'|cw',date,type:'cw',due:R.cw,makeup:p.cw!=='INC'}); });
     const pool={hw:0,cw:0}; (s.writeLog||[]).forEach(l=>{ if(pool[l.type]==null||(since&&l.date<since)) return; pool[l.type]+=+l.pages||0; });
     out.forEach(it=>{ const pay=Math.min(it.due,pool[it.type]); it.paid=pay; it.left=it.due-pay; pool[it.type]-=pay; });
     return {items:out,credit:pool.hw+pool.cw};
@@ -7527,12 +7546,12 @@ const WR = {
     const lab=t=>t==='hw'?'📝 Homework':'📓 Classwork';
     return `<div class="card no-print" style="margin:0 0 16px;border-top:3px solid ${col}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap"><div><b style="font-family:var(--f-display);font-size:17px">✍️ Writing owed</b>
-        <div class="ai-sub">Homework ${WR.pg(R.hw)} each Saturday · Classwork ${WR.pg(R.cw)} each class</div></div>
+        <div class="ai-sub">Homework ${WR.pg(R.hw)} each Saturday · Classwork ${WR.pg(R.cw)} each class · missed classes (absent/excused) are owed as make-up</div></div>
         <button class="btn btn-ghost btn-sm" data-wr="cfg" title="Pages due & start date">⚙</button></div>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px">
         <div style="text-align:center;min-width:84px"><div style="font-size:38px;font-weight:800;line-height:1;color:${col};font-family:var(--f-mono)">${S.total}</div><div class="ai-sub">page${S.total===1?'':'s'} owed</div></div>
         <div style="flex:1;min-width:200px;display:flex;gap:8px;flex-wrap:wrap"><span class="tag ${S.hw?'tag-gold':'tag-green'}">📝 HW ${S.hw}</span><span class="tag ${S.cw?'tag-gold':'tag-green'}">📓 CW ${S.cw}</span>${st>=2?`<span class="tag tag-green" title="class days in a row with all writing done">🔥 ${st} in a row</span>`:''}${S.credit>0?`<span class="tag tag-blue" title="handed in more than was owed">+${S.credit} ahead</span>`:''}</div></div>
-      ${S.open.length?`<div class="wlist" style="margin-top:6px">${S.open.slice(0,cap).map(i=>`<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap"><span class="t" style="flex:1;min-width:150px"><b>${lab(i.type)}</b> · ${esc(fmtDate(i.date))}<br><span style="font-size:11px;color:var(--ink3)">${i.left===i.due?WR.pg(i.left)+' owed':i.left+' of '+i.due+' pages left'}</span></span>
+      ${S.open.length?`<div class="wlist" style="margin-top:6px">${S.open.slice(0,cap).map(i=>`<div class="wrow" style="cursor:default;gap:8px;flex-wrap:wrap"><span class="t" style="flex:1;min-width:150px"><b>${lab(i.type)}</b> · ${esc(fmtDate(i.date))}${i.makeup?' <span class="tag tag-red" title="Missed class (absent / excused) — make up as soon as possible">make-up · ASAP</span>':''}<br><span style="font-size:11px;color:var(--ink3)">${i.left===i.due?WR.pg(i.left)+' owed':i.left+' of '+i.due+' pages left'}</span></span>
         <button class="btn btn-p btn-sm" data-wr="pay|${s.id}|${i.key}">✓ Received</button><button class="btn btn-ghost btn-sm" data-wr="waive|${s.id}|${i.key}" title="Forgive this one">Waive</button></div>`).join('')}${S.open.length>cap?`<div class="ai-sub" style="padding:6px 2px">+${S.open.length-cap} older day${S.open.length-cap===1?'':'s'} — pay these and the rest appear</div>`:''}</div>`
         :'<div style="font-size:13px;color:var(--ok);margin:6px 0 0">✅ All caught up — nothing owed.</div>'}
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-o btn-sm" data-wr="add|${s.id}|hw|1">+1 HW page</button><button class="btn btn-o btn-sm" data-wr="add|${s.id}|cw|1">+1 CW page</button>
@@ -7555,7 +7574,7 @@ const WR = {
     if(a==='remind') return WR.remind(s);
   },
   remind(s){ const S=WR.sum(s), par=AI2.stuParent(s), nm=CR.nm(s), by=t=>S.open.filter(i=>i.type===t);
-    const line=(t,lbl)=>{ const L=by(t); if(!L.length) return ''; const n=L.reduce((a,i)=>a+i.left,0); const ds=L.slice(0,4).map(i=>fmtDate(i.date)).join(', ')+(L.length>4?' …':''); return '• '+lbl+': '+WR.pg(n)+' ('+ds+')\n'; };
+    const line=(t,lbl)=>{ const L=by(t); if(!L.length) return ''; const n=L.reduce((a,i)=>a+i.left,0); const ds=L.slice(0,4).map(i=>fmtDate(i.date)).join(', ')+(L.length>4?' …':''); const mk=L.filter(i=>i.makeup).length; return '• '+lbl+': '+WR.pg(n)+' ('+ds+')'+(mk?' — includes '+mk+' make-up from a missed class':'')+'\n'; };
     const text='As-salāmu ʿalaykum'+(par?' '+par:'')+', a gentle reminder that '+nm+' still has writing to hand in:\n\n'+line('hw','Homework')+line('cw','Classwork')+'\nPlease have it done for the next class, in shāʾ Allāh. Jazākumullāhu khayran for your support at home.\n\nAl-Madrasatu An-Nuriyyah (AMAN)\n(612) 444-2609';
     FU.compose(s,text,{title:'Writing reminder'}); },
   handIn(sid){ const s=DB.data.students.find(x=>x.id===sid); if(!s) return; const S=WR.sum(s); let type=S.hw>=S.cw&&S.hw>0?'hw':S.cw>0?'cw':'hw', n=Math.max(1,type==='hw'?S.hw:S.cw);
@@ -18388,7 +18407,7 @@ Registry.register({ id:'website', name:'School website', icon:'globe', group:'Sy
 Registry.register({ id:'settings', name:'Settings', icon:'gear', group:'System',
 render(v){
   const d=DB.data;
-  const bytes = new Blob([JSON.stringify(d)]).size;
+  const bytes = JSON.stringify(d).length*2; // Safari counts localStorage as UTF-16
   const pctUsed = Math.min(100, Math.round(bytes/(5*1024*1024)*100));
   const lastBackup = d.settings.lastBackupAt;
   const daysSince = lastBackup? Math.floor((Date.now()-new Date(lastBackup))/864e5) : null;
@@ -18404,7 +18423,8 @@ render(v){
      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
        <span style="width:9px;height:9px;border-radius:50%;background:${backupTone};flex-shrink:0"></span>
        <span style="font-size:13px;font-weight:600">${esc(backupMsg)}</span></div>
-     <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:12px">Storage used: ${(bytes/1024).toFixed(0)} KB of ~5 MB (${pctUsed}%)</div>
+     <div style="font-size:11.5px;color:var(--ink3);font-family:var(--f-mono);margin-bottom:12px">Storage used: ${(bytes/1024).toFixed(0)} KB of ~5 MB (${pctUsed}%)${pctUsed>=80?' — nearly full; the larger safe store is carrying the data':''}${DB._lsOk===false?' — <b style="color:var(--bad)">browser storage is FULL</b>':''}</div>
+     <div style="font-size:11.5px;color:var(--ink3);margin:-6px 0 12px;overflow-wrap:anywhere">Saved under: <b>${esc(location.origin+location.pathname)}</b><br>Protected from auto-clean: <b>${DBG.persisted===true?'yes':DBG.persisted===false?'no — back up often':'checking…'}</b> · Automatic in-browser copy: <b id="sMirror">checking…</b></div>
      <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sExp">Export backup</button>
       <label class="btn btn-o" style="cursor:pointer">Import backup<input type="file" id="sImp" accept=".json" hidden></label></div></div>
     <div class="card" id="sGuard"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🔒 Storage health</h3>
@@ -18436,13 +18456,14 @@ render(v){
   $('#sTheme',v).onclick=()=>Theme.toggle();
   $('#sLay',v).onclick=()=>{ Router.go('#/dashboard'); setTimeout(()=>Layout.toggle(true),50); };
   $('#sLayRst',v).onclick=()=>Layout.resetAll();
-  $('#sExp',v).onclick=()=>{ DB.export(); Router.render(); };
+  $('#sExp',v).onclick=()=>{ DB.export(); };
+  DBG.health().then(h=>{ const m=$('#sMirror',v); if(m) m.textContent=h.latest?new Date(h.latest.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ('+h.snaps.length+' daily copies)':'none yet'; });
   $('#sImp',v).onchange=e=>{ if(e.target.files[0]) DB.import(e.target.files[0]); };
   $('#sColAdd',v).onclick=()=>{ const c=$('#sCol',v).value.trim(); if(!c)return;
     if(DB.data.collections.includes(c)){toast('Collection exists');return;}
     DB.data.collections.push(c); DB.log('Collection added: '+c); DB.save(); toast('Added'); $('#sCol',v).value=''; };
   $('#sReset',v).onclick=()=>confirmBox('Erase ALL AMAN Central data in this browser and restore the seed catalog?',()=>{
-    localStorage.removeItem(DB.KEY); DB.load(); Router.go('#/dashboard'); toast('Reset complete'); });
+    localStorage.removeItem(DB.KEY); try{ localStorage.removeItem(DB.KEY+'_at'); DBG.del('latest'); }catch(e){} DB._idbRaw=null; DB.load(); Router.go('#/dashboard'); toast('Reset complete'); });
 }});
 
 /* ---------- navigation + boot ---------- */
@@ -18498,8 +18519,16 @@ const DBG={
   open(){ return new Promise((res,rej)=>{ try{ const r=indexedDB.open('aman-central-mirror',1); r.onupgradeneeded=()=>r.result.createObjectStore('snap'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); },
   async tx(mode,fn){ const db=await DBG.open(); return new Promise((res,rej)=>{ const t=db.transaction('snap',mode), st=t.objectStore('snap'); let out; const r=fn(st); if(r) r.onsuccess=()=>{ out=r.result; }; t.oncomplete=()=>{ db.close(); res(out); }; t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); },
   put(k,v){ return DBG.tx('readwrite',s=>s.put(v,k)); }, get(k){ return DBG.tx('readonly',s=>s.get(k)); }, del(k){ return DBG.tx('readwrite',s=>s.delete(k)); }, keys(){ return DBG.tx('readonly',s=>s.getAllKeys()); },
-  mirror(){ if(DB._fresh||window.__memStorage) return; clearTimeout(DBG._t); DBG._t=setTimeout(async()=>{ try{ const m={at:Date.now(),n:(DB.data.students||[]).length,js:JSON.stringify(DB.data)}; await DBG.put('latest',m); DBG.lastMirror=m.at;
-      const dk='d-'+today(); if(!(await DBG.get(dk))) await DBG.put(dk,m); const ks=(await DBG.keys()||[]).filter(k=>/^d-/.test(k)).sort(); while(ks.length>7) await DBG.del(ks.shift()); DBG.err=''; }catch(e){ DBG.err=String(e&&e.message||e); } },2500); },
+  mirror(js,at,lsFailed){ if(DB._fresh||window.__memStorage) return; clearTimeout(DBG._t); DBG._pend=[js,at,lsFailed]; DBG._t=setTimeout(()=>DBG.flush(),lsFailed?0:400); },
+  async flush(){ clearTimeout(DBG._t); const p=DBG._pend; if(!p) return; DBG._pend=null; const [js,at,lsFailed]=p; try{ const m={at:at||Date.now(),n:(DB.data.students||[]).length,js:js||JSON.stringify(DB.data)}; await DBG.put('latest',m); DBG.lastMirror=m.at;
+      const dk='d-'+today(); if(!(await DBG.get(dk))) await DBG.put(dk,m); const ks=(await DBG.keys()||[]).filter(k=>/^d-/.test(k)).sort(); while(ks.length>7) await DBG.del(ks.shift()); DBG.err=''; if(lsFailed&&!DBG._toldFull){ DBG._toldFull=1; toast('Browser storage is full — your data is being kept in the larger safe store'); } }catch(e){ DBG.err=String(e&&e.message||e); if(lsFailed){ toast('⚠ Save failed — storage may be full'); DBG.warn(); } } },
+  // Runs before the app loads: if browser storage lost/damaged the data (or is older than the safe copy), start from the safe copy.
+  async pick(){ try{ if(navigator.storage&&navigator.storage.persist) DBG.persisted=await navigator.storage.persist(); }catch(e){}
+    try{ const m=await Promise.race([DBG.get('latest'),new Promise(r=>setTimeout(()=>r(null),2500))]); if(!m||!m.js) return;
+      let lsRaw=null, lsAt=0; try{ lsRaw=localStorage.getItem(DB.KEY); lsAt=+localStorage.getItem(DB.KEY+'_at')||0; }catch(e){}
+      let lsOk=false; if(lsRaw){ try{ const d=JSON.parse(lsRaw); lsOk=!!(d&&Array.isArray(d.resources)); }catch(e){} }
+      let idbOk=false; try{ const d=JSON.parse(m.js); idbOk=!!(d&&Array.isArray(d.resources)&&(d.students||[]).length>0); }catch(e){}
+      if(idbOk && (!lsOk || (lsAt && m.at>lsAt+1500))){ DB._idbRaw=m.js; DB._restoredFrom=lsOk?'newer':'missing'; } }catch(e){} },
   warn(){ if(document.getElementById('saveWarn')) return; const b=document.createElement('div'); b.id='saveWarn'; b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;background:#b3261e;color:#fff;padding:10px 16px;font:600 13.5px system-ui;text-align:center';
     b.innerHTML='⚠ Your latest changes could NOT be saved on this device. Export a backup now. <button style="margin-left:8px;padding:3px 10px;border-radius:8px;border:0;font-weight:700" id="swExp">Export backup</button>'; document.body.appendChild(b); b.querySelector('#swExp').onclick=()=>DB.export(); },
   async check(){
@@ -18521,8 +18550,10 @@ const DBG={
   async health(){ let snaps=[],latest=null; try{ snaps=(await DBG.keys()||[]).filter(k=>/^d-/.test(k)).sort().reverse(); latest=await DBG.get('latest'); }catch(e){} return {snaps,latest}; }
 };
 const AUTH_USER = 'Admin', AUTH_PASS = 'Aman@2020', AUTH_KEY = 'aman_central_auth';
-function bootApp(){
+function bootApp(){ DBG.pick().then(bootApp2,bootApp2); }
+function bootApp2(){
   DB.load();
+  if(DB._restoredFrom){ DB._idbRaw=null; DB.saveNow(); setTimeout(()=>toast('Restored your latest data from the safe copy'),800); }
   Theme.apply(DB.data.settings.theme||'light');
   buildNav();
   $('#openPalette').onclick=()=>Palette.open();
@@ -18537,6 +18568,7 @@ function bootApp(){
   document.addEventListener('click', e=>{ if((window.innerWidth<=900||matchMedia('(orientation:landscape) and (max-height:520px)').matches) && !e.target.closest('#sidebar') && !e.target.closest('#hambBtn')) $('#sidebar').classList.remove('open'); });
   Router.render();
   try{ DBG.check(); }catch(e){}
+  setTimeout(()=>{ try{ DB.backupNudge(); }catch(e){} },2500);
 }
 function showApp(){
   $('#loginScreen').style.display='none';
