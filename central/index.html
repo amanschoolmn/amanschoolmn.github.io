@@ -18692,8 +18692,10 @@ const SubMode = {
     DB.save(); },
   loadPack(file,after){
     const rd=new FileReader();
-    rd.onload=()=>{ try{ const p=JSON.parse(rd.result); if(p.kind!=='aman-sub-pack'||!Array.isArray(p.students)) throw 0; SubMode.applyPack(p); if(after) after(); }
-      catch(e){ toast('⚠ That is not a class pack file — ask Ustadh for the “AMAN-Sub-Pack” file'); } };
+    rd.onload=()=>{ try{ const p=JSON.parse(rd.result);
+        if(p.kind==='aman-sub-backup'&&p.data&&Array.isArray(p.data.students)){ SubMode.restoreBackup(p); if(after) after(); return; }
+        if(p.kind!=='aman-sub-pack'||!Array.isArray(p.students)) throw 0; SubMode.applyPack(p); if(after) after(); }
+      catch(e){ toast('⚠ That is not a class file — ask Ustadh for the “AMAN-Sub-Pack” file'); } };
     rd.readAsText(file); },
   applyPack(p){ const S=SubMode, d=DB.defaults();
     d.students=p.students.map(x=>S.clone(x));
@@ -18703,6 +18705,11 @@ const SubMode = {
     DB.data=DB.migrate(d); S.scrub(DB.data); DB._fresh=null; DB.log('Class pack loaded ('+p.madeOn+')');
     S.setMeta({source:'pack',madeAt:p.madeAt,madeOn:p.madeOn,loadedAt:new Date().toISOString(),subName:S.meta().subName||''});
     S.saveBase(); DB.saveNow(); buildNav(); Router.go('#/dashboard'); toast('Class pack loaded · '+DB.data.students.length+' students'); },
+  exportBackup(){ const S=SubMode, p={kind:'aman-sub-backup',v:1,madeAt:new Date().toISOString(),data:S.clone(DB.data),meta:S.meta(),base:S.base(),report:S.report('',S.meta().subName||'')};
+    S.deliver(p,'AMAN-Sub-Backup-'+today()+'.json','Backup ready — keep it or send it to Ustadh'); },
+  restoreBackup(p){ const S=SubMode; DB.data=DB.migrate(S.clone(p.data)); S.scrub(DB.data); DB._fresh=null;
+    S.setMeta(Object.assign({},p.meta||{},{loadedAt:new Date().toISOString()})); if(p.base){ try{ localStorage.setItem(S.BK,JSON.stringify(p.base)); }catch(e){} } else S.saveBase();
+    DB.log('Backup imported ('+(p.madeAt||'')+')'); DB.saveNow(); buildNav(); Router.go('#/dashboard'); toast('Backup imported · '+DB.data.students.length+' students'); },
   pickPack(){ const i=document.createElement('input'); i.type='file'; i.accept='.json,application/json'; i.onchange=()=>{ const f=i.files[0]; if(!f) return;
       const d=DB.data, S=SubMode, r=S.report('',''), n=S.count(r);
       const go=()=>S.loadPack(f);
@@ -18766,7 +18773,7 @@ const SubMode = {
   /* ================= MASTER: import a sub's report (previewed merge) ================= */
   importReport(file){
     const rd=new FileReader();
-    rd.onload=()=>{ let r; try{ r=JSON.parse(rd.result); if(r.kind!=='aman-sub-report'||!r.dated||!Array.isArray(r.students)) throw 0; }catch(e){ toast('⚠ That is not a substitute report file'); return; }
+    rd.onload=()=>{ let r; try{ r=JSON.parse(rd.result); if(r.kind==='aman-sub-backup'&&r.report) r=r.report; if(r.kind!=='aman-sub-report'||!r.dated||!Array.isArray(r.students)) throw 0; }catch(e){ toast('⚠ That is not a substitute report file'); return; }
       SubMode.preview(r); };
     rd.readAsText(file); },
   plan(r){
@@ -18842,7 +18849,7 @@ const SubMode = {
     const pend=S.pending(), pk=m.source==='pack';
     const lessons=(d.lessons||[]).filter(l=>l.date===t);
     const pending=pend.unsent?`<div class="notice warn" style="margin-bottom:14px">📤 <div style="flex:1"><b>You have ${pend.n.total} entr${pend.n.total===1?'y':'ies'} that ${m.lastSentAt?'changed since you last sent':'have not been sent'}.</b> When class is over, send the report to Ustadh.</div><button class="btn btn-p btn-sm" id="shSend">Send report</button></div>`:(m.lastSentAt?`<div class="notice info" style="margin-bottom:14px">✅ <div style="flex:1">Report last sent ${esc(new Date(m.lastSentAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'}))}. Nothing new to send.</div></div>`:'');
-    v.innerHTML=`${moduleHeroHTML('Level 1','Substitute Teacher','Take attendance, hear the Green Book, then send Ustadh the day’s report.','📋')}
+    v.innerHTML=`${moduleHeroHTML('Ustathah · Level 1','السلام عليكم ورحمة الله وبركاته','Welcome, Ustathah. Take attendance, hear the Green Book, then send Ustadh the day’s report.','')}
       ${window.__memStorage?'<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>This browser is blocking storage.</b> Nothing you enter will be kept if you close the page — send the report before you leave.</div></div>':''}
       ${pk?'':`<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>No class data yet.</b> This is only the built-in roster, with no progress, contacts or allergies. Ask Ustadh to send you the class link, tap it, and everything loads. Or paste the link here.</div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-p btn-sm" id="shPaste">Paste class link</button><button class="btn btn-o btn-sm" id="shPack">Load class file</button></div></div>`}
       ${pending}
@@ -18858,7 +18865,7 @@ const SubMode = {
         <button class="card" data-go="#/students/progress" style="text-align:left;cursor:pointer"><div style="font-size:24px">📊</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Class tracker</h3><div class="ai-sub">Qur’an, homework and classwork — tap to mark.</div></button>
         <button class="card" data-go="#/roster" style="text-align:left;cursor:pointer"><div style="font-size:24px">🎓</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">My students</h3><div class="ai-sub">Photos, allergies, parent and emergency phone numbers.</div></button>
         <button class="card" id="shSend2" style="text-align:left;cursor:pointer"><div style="font-size:24px">📤</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Send report to Ustadh</h3><div class="ai-sub">Do this at the end of class. Includes your note.</div></button></div>
-      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPaste2">paste a class link</a> · <a href="#" id="shPack2">load a class file</a></p>`;
+      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPaste2">paste a class link</a> · <a href="#" id="shPack2">import backup file</a></p>`;
     $$('[data-go]',v).forEach(b=>b.onclick=()=>Router.go(b.dataset.go));
     const bind=(sel,fn)=>{ const b=$(sel,v); if(b) b.onclick=e=>{ e.preventDefault(); fn(); }; };
     bind('#shClass',()=>Teacher.openClassMode()); bind('#shSend',()=>S.openReport()); bind('#shSend2',()=>S.openReport()); bind('#shPack',()=>S.pickPack()); bind('#shPack2',()=>S.pickPack()); bind('#shPaste',()=>S.pasteLink()); bind('#shPaste2',()=>S.pasteLink()); },
@@ -18868,15 +18875,17 @@ const SubMode = {
     v.innerHTML=`${moduleHeroHTML('Level 1','Settings','Load class data from Ustadh, and send your report back.','⚙️')}
       <div class="grid g2">
        ${card('📥 Import class data',`<p style="font-size:13.5px;color:var(--ink2);margin-bottom:6px"><b>${pk?'Class data from '+esc(fmtDate(m.madeOn))+' · '+d.students.length+' students':'Built-in roster only — no class data loaded'}</b></p>
-         <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Ustadh sends you a link — tap it and it loads by itself. You can also paste the link, or open a class file he sends.</p>
-         <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="stPaste">Paste class link</button><button class="btn btn-o" id="stFile">Load class file</button></div>`)}
+         <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Ustadh sends you a link — tap it and it loads by itself. If the link does not work, use Import backup below with the file he sends.</p>
+         <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="stPaste">Paste class link</button></div>`)}
+       ${card('💾 Backup',`<p style="font-size:13px;color:var(--ink2);margin-bottom:12px">If the class link does not work, Ustadh can send you the data as a file — tap <b>Import backup</b> and choose it. <b>Export backup</b> saves everything on this device to a file.</p>
+         <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="stExp">Export backup</button><button class="btn btn-o" id="stImp">Import backup</button></div>`)}
        ${card('📤 Export report',`<p style="font-size:13.5px;color:var(--ink2);margin-bottom:6px"><b>${p.n.total} entr${p.n.total===1?'y':'ies'} ${p.unsent?'not sent yet':(m.lastSentAt?'— all sent':'so far')}</b>${m.lastSentAt?' · last sent '+esc(new Date(m.lastSentAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})):''}</p>
          <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Sends Ustadh the attendance, tracker marks, Green Book pages and your note.</p>
          <button class="btn btn-p" id="stSend">Send report to Ustadh</button>`)}
        ${card('🎨 Appearance','<button class="btn btn-o" id="stTheme">Toggle light / dark</button>')}
        ${card('🧹 Clear this device',`<p style="font-size:13px;color:var(--ink2);margin-bottom:12px">Removes all class data and entries from this device. Send your report first.</p><button class="btn btn-danger" id="stClear">Clear this device</button>`)}
       </div>`;
-    $('#stPaste',v).onclick=()=>S.pasteLink(); $('#stFile',v).onclick=()=>S.pickPack(); $('#stSend',v).onclick=()=>S.openReport(); $('#stTheme',v).onclick=()=>Theme.toggle();
+    $('#stPaste',v).onclick=()=>S.pasteLink(); $('#stImp',v).onclick=()=>S.pickPack(); $('#stExp',v).onclick=()=>S.exportBackup(); $('#stSend',v).onclick=()=>S.openReport(); $('#stTheme',v).onclick=()=>Theme.toggle();
     $('#stClear',v).onclick=()=>confirmBox((S.pending().unsent?'You have entries that were NOT sent to Ustadh yet — they will be lost. ':'')+'Remove all class data from this device?',()=>{
       DB.saveNow=function(){}; DBG.mirror=function(){}; DBG.flush=async function(){};   // stop the page from re-saving on its way out
       try{ localStorage.removeItem(DB.KEY); localStorage.removeItem(DB.KEY+'_at'); localStorage.removeItem(S.BK); localStorage.removeItem(S.RK); }catch(e){}
