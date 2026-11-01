@@ -1239,7 +1239,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 90<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 91<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -4022,6 +4022,7 @@ const TAWHID_SEED_ITEMS = [
   {type:'ex', title:'Tawḥīd Cumulative Mastery Exam — Application & Scenario-Based · Capstone', pts:104},
 ];
 
+const SUB_MODE = false; // true only in the substitute-teacher copy
 const DB = {
   // SCHEMA was found stuck at 13 while wiring up this fix — several schema
   // bumps (14-17) had shipped without anyone updating this constant. It's
@@ -4031,7 +4032,7 @@ const DB = {
   // and skipped every seed a real migrate() run would have added — this
   // Tawḥīd content included. Kept in sync with the highest schema<N check
   // in migrate() below.
-  KEY:'aman_central_v1', SCHEMA:20, data:null, _t:null,
+  KEY:SUB_MODE?'aman_sub_l1_v1':'aman_central_v1', SCHEMA:20, data:null, _t:null,
   defaults(){
     return {
       schema:this.SCHEMA,
@@ -4764,6 +4765,7 @@ const Router = {
   parse(){ const h=((this.current!==null?this.current:location.hash)||'#/').slice(2); const [id,param]=h.split('/'); return {id:id||'dashboard', param:param?decodeURIComponent(param):null}; },
   render(){
     const {id,param} = this.parse();
+    if(SUB_MODE){ const g=SubMode.guard(id,param); if(g){ this.current=g; try{ history.replaceState(null,'',g); }catch(e){} return this.render(); } }
     const m = Registry.get(id) || Registry.get('dashboard');
     try{ Rewards.check(); }catch(e){ console.error('rewards',e); }
     const v = $('#view'); v.innerHTML='';
@@ -4870,6 +4872,8 @@ const PALETTE_ACTIONS = [
   {t:'Add a student', i:'👤', run:()=>{Router.go('#/students'); setTimeout(()=>Students.form(),80);}},
   {t:'Toggle dark mode', i:'🌙', run:()=>Theme.toggle()},
   {t:'Export backup (JSON)', i:'💾', run:()=>DB.export()},
+  {t:'Export Level 1 class pack for a substitute', i:'🧑‍🏫', run:()=>SubMode.exportPack()},
+  {t:'Import a substitute’s report', i:'📥', run:()=>SubMode.pickReport()},
   {t:'Open Settings', i:'⚙️', run:()=>Router.go('#/settings')},
   {t:'Keyboard shortcuts', i:'⌨️', run:()=>Shortcuts.open()},
 ];
@@ -5136,7 +5140,7 @@ render(v){
     bdays.slice(0,2).forEach(b=>{ const turning=ageFromDob(b.s.dob)+(b.in===0?0:1);
       items.push({i:'🎂',t:b.s.name+(b.in===0?' — birthday today!':' — birthday in '+b.in+'d')+(turning?' · turning '+turning:''), go:'#/students/'+b.s.id, tag:'🎉', why:'date of birth on file is within the next 14 days', key:'bday_'+b.s.id, photo:b.s}); });
     res.filter(r=>r.status==='Planned').slice(0,2).forEach(r=>items.push({i:'🧩',t:'Curriculum gap: '+r.title, go:'#/resource/'+r.id, tag:'planned', why:'resource status = "Planned" — not built yet', key:'res_'+r.id+'_planned'}));
-    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+(fin.balance?' · $'+fin.balance+' balance':''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM, key:'tuition_'+f.key+'_'+nowYM}));
+    overdueFamsNow.slice(0,3).forEach(({f,fin})=>items.push({i:'💵',t:'Family '+f.key+' — '+fin.monthStatus.toLowerCase()+' this month'+((fin.balance||fin.dueNow)?' · $'+(fin.balance||fin.dueNow)+(fin.balance?' balance':' due this month'):''), go:'#/tuition/owe', tag:'tuition', why:'month status = "'+fin.monthStatus+'" for '+nowYM, key:'tuition_'+f.key+'_'+nowYM}));
     const lastBk=d.settings.lastBackupAt;
     const bkDays=lastBk? Math.floor((Date.now()-new Date(lastBk))/864e5) : null;
     if(bkDays==null || bkDays>14)
@@ -6191,8 +6195,8 @@ const ResourceForm = {
 /* ================= MODULE: TEACHER WORKSPACE — TEACHING COCKPIT ================= */
 Registry.register({ id:'teacher', name:'Teacher Workspace', icon:'pen', group:'Workspaces',
 render(v,param){
-  const tab = param||'cockpit';
-  const T = {cockpit:'🎛 Class Day', planner:'Weekly Planner', lessons:'Lesson Plans', quiz:'Quizzes', homework:'Homework', notes:'Teaching Notes', reflect:'Reflections', curriculum:'Curriculum'};
+  const tab = param||(SUB_MODE?'planner':'cockpit');
+  const T = SUB_MODE?{planner:'Weekly Planner', lessons:'Lesson Plans'}:{cockpit:'🎛 Class Day', planner:'Weekly Planner', lessons:'Lesson Plans', quiz:'Quizzes', homework:'Homework', notes:'Teaching Notes', reflect:'Reflections', curriculum:'Curriculum'};
   v.innerHTML = `${moduleHeroHTML('Teacher Workspace', 'Teaching', 'Your weekend cockpit — prepare, teach, review.', '📝')}
    <div class="tabs no-print">${Object.entries(T).map(([k,n])=>`<button class="${k===tab?'on':''}" data-tab="${k}">${n}</button>`).join('')}</div>
    <div id="tt"></div>`;
@@ -9314,7 +9318,7 @@ const Students = {
            </div>`).join('')}</div>`
            : `<p style="color:var(--ink2);font-size:13.5px${fin?';margin-bottom:12px':''}">No siblings currently linked.</p>`}
          ${fin? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-             <span style="font-size:12.5px;color:var(--ink3)">Family tuition (${esc(fam.key)}):</span>${famStatusBadge(fin.monthStatus)}${fin.balance?`<span style="font-size:12.5px;font-weight:600;color:var(--bad)">$${fin.balance} owed</span>`:''}
+             <span style="font-size:12.5px;color:var(--ink3)">Family tuition (${esc(fam.key)}):</span>${famStatusBadge(fin.monthStatus)}${(fin.balance||fin.dueNow)?`<span style="font-size:12.5px;font-weight:600;color:var(--bad)">$${fin.balance||fin.dueNow} ${fin.balance?'owed':'due this month'}</span>`:''}
              <button class="btn btn-ghost btn-sm" data-openfamtui="${esc(fam.key)}" style="margin-left:auto">Open in Tuition →</button>
            </div>` : ''}
        </div>
@@ -11949,7 +11953,8 @@ function famEffectiveMonthly(key, activeCount){
   const p=famPlan(key);
   if(p.rateMode==='manual') return p.monthly||0;
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
-  return rate*(activeCount==null?famActiveCount(key):activeCount);
+  const _n=(activeCount==null?famActiveCount(key):activeCount);
+  return rate*_n + (_n>0 ? (+p.extra||0) : 0); // p.extra = regular add-on the family pays every month
 }
 // What a family's tuition SHOULD have been for one specific past month —
 // found while chasing down a miscalculation for أفركان: every place that
@@ -11974,7 +11979,7 @@ function famMonthlyForYm(key, ym){
   const rate=(p.perStudentRate!=null && p.perStudentRate>0)? p.perStudentRate : (DB.data.settings.defaultTuitionRate||0);
   const cutoff=ym+'-31'; // safe sentinel: any real YYYY-MM-DD in this month sorts <= this string
   const count=DB.data.students.filter(s=>famKey(s)===key && s.active!==false && (s.startDate||(p.start?p.start+'-01':''))<=cutoff).length;
-  return rate*count;
+  return rate*count + (count>0 ? (+p.extra||0) : 0);
 }
 function monthsBetween(a, b){ // 'YYYY-MM' inclusive count
   const [ay,am]=a.split('-').map(Number), [by,bm]=b.split('-').map(Number);
@@ -12021,8 +12026,13 @@ function famFinance(key){
   const balance = Math.max(0, tuitionExpected-tuitionPaid) + Math.max(0, regExpected-regPaid);
   const paidThisMonth=pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,nowM),0);
   const excusedThisMonth=excusedMonths.has(nowM);
-  const monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
-  return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance,
+  let monthStatus = excusedThisMonth?'Excused' : monthly>0? (paidThisMonth>=monthly?'Paid':paidThisMonth>0?'Partial':'Due') : '—';
+  // Paid ahead: if everything billed through this month is already covered by the total paid, this month is paid —
+  // otherwise a lump payment made last month shows "Due" next to a $0 balance.
+  if((monthStatus==='Due'||monthStatus==='Partial') && tuitionExpected>0 && tuitionPaid>=tuitionExpected) monthStatus='Paid';
+  // Amount to show whenever the status says Due/Partial but the running balance is $0 (nothing billed yet / not tracking)
+  const dueNow = (monthStatus==='Due'||monthStatus==='Partial') ? Math.max(0, monthly-paidThisMonth) : 0;
+  return {plan:p, pays:pays.sort((a,b)=>b.date.localeCompare(a.date)), paid, expected, balance, dueNow,
     monthStatus, paidThisMonth, monthly, activeCount, excusedMonths,
     tuitionExpected, tuitionPaid, regExpected, regPaid};
 }
@@ -12033,20 +12043,21 @@ function famMonthMatrix(key, year){
   const months=[];
   for(let m=1;m<=12;m++){
     const ym=year+'-'+String(m).padStart(2,'0');
-    let status;
+    let status, due=0, mo=0;
     if(p.start && ym<p.start) status='before';
     else if(ym>nowM) status='future';
     else {
       // Each cell judged against what THAT month actually owed, not
       // today's rate — see famMonthlyForYm's comment.
-      const monthly=famMonthlyForYm(key, ym);
+      const monthly=famMonthlyForYm(key, ym); mo=monthly;
       if(pays.some(x=>x.kind==='excused' && x.date.slice(0,7)===ym)) status='excused';
       else {
         const sum=pays.filter(x=>x.kind!=='registration' && x.kind!=='excused').reduce((a,x)=>a+payInYm(x,ym),0);
         status = monthly>0 && sum>=monthly ? 'paid' : sum>0 ? 'partial' : 'unpaid';
+        due = Math.max(0, monthly-sum);
       }
     }
-    months.push({m, label:TUITION_MONTHS[m-1], ym, status});
+    months.push({m, label:TUITION_MONTHS[m-1], ym, status, due, monthly:mo});
   }
   return months;
 }
@@ -13210,7 +13221,7 @@ const TD = {
     const l3=all.filter(r=>r.L===3&&!r.absent), nHear=l3.reduce((n,r)=>n+r.ready.length+r.due.length,0), nPoem=l3.reduce((n,r)=>n+r.poem.length,0), nPos=all.filter(r=>r.L<3&&!r.absent&&!r.doneToday).length, nNeed=all.filter(r=>inLv(r)&&r.need).length;
     const kpi=(n,l,c)=>`<div class="rp-kpi" style="--k:${c}"><b>${n}</b><span>${l}</span></div>`;
     const dt=new Date(), cnt=L=>all.filter(r=>(L==='all'||String(r.L)===L)&&(TD.gen==='all'||genOf(r.s)===TD.gen)&&r.need).length;
-    v.innerHTML=`<div class="page-wm"><div class="eyebrow">${TD.isClass()?'Class day':'Prep'} · all levels</div><h2 class="page-title">Today</h2>
+    v.innerHTML=`<div class="page-wm"><div class="eyebrow">${TD.isClass()?'Class day':'Prep'} · ${SUB_MODE?'Level 1':'all levels'}</div><h2 class="page-title">Today</h2>
       <p class="page-sub">${esc(dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))} — mark who is here, then work down the list. One tap rates it, and every tap has an Undo.</p>
       <div class="no-print" style="margin:0 0 12px"><button class="btn btn-p btn-sm" id="tdCm">▶ Class mode</button> <span class="td-hint">One student at a time, big buttons — for hearing in class.</span></div>
       <div class="card td-att no-print"><div class="td-atthead"><b>① Attendance</b><span class="tag tag-green">${nP} here</span>${nA?`<span class="tag tag-red">${nA} absent</span>`:''}${nU?`<span class="tag tag-dim">${nU} not marked</span>`:''}<span style="margin-left:auto;display:flex;gap:6px"><button class="btn btn-o btn-sm" id="tdAllP" ${nU?'':'disabled'}>Mark the rest present</button><button class="btn btn-ghost btn-sm" id="tdAttT">${TD.attOpen?'Hide ▴':'Edit ▾'}</button></span></div>
@@ -14748,7 +14759,7 @@ function famCollectCardHTML(f, fin, rec, o){
     <div class="tcc-head" data-opfam="${esc(key)}" title="Open ${esc(key)} in Families">
       ${famAvatarHTML(key,44)}
       <div style="min-width:0;flex:1"><b style="display:block;font-family:var(--f-display);font-size:16px;overflow-wrap:anywhere">${esc(key)}</b><div style="margin-top:3px">${famStatusBadge(fin.monthStatus)}</div></div>
-      <div class="tcc-amt"><b>$${fin.balance}</b><div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">total owed</div>${owedNow&&owedNow!==fin.balance?`<div style="font-size:11px;color:var(--ink3)">$${owedNow} this month</div>`:''}</div>
+      <div class="tcc-amt"><b>$${fin.balance||fin.dueNow}</b><div style="font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">total owed</div>${owedNow&&owedNow!==fin.balance?`<div style="font-size:11px;color:var(--ink3)">$${owedNow} this month</div>`:''}</div>
     </div>
     <div class="tcc-lines">${lines}</div>
     <div class="tcc-acts no-print">
@@ -14966,8 +14977,8 @@ const Tuition = {
             <td class="mtx-frozen" style="cursor:pointer;${zebra}" data-openfam="${esc(f.key)}">
               <div style="display:flex;align-items:center;gap:8px">${famAvatarHTML(f.key,26)}<b>${esc(f.key)}</b></div>
             </td>
-            ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'};${zebra}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}">
-              <span style="display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'20%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>
+            ${months.map(m=>`<td style="text-align:center;cursor:${(m.status==='future'||m.status==='before')?'default':'pointer'};${zebra}" ${(m.status==='future'||m.status==='before')?'':`data-mtxcell="${esc(f.key)}" data-mtxym="${m.ym}"`} title="${m.label} ${year} \u2014 ${m.status}${m.due>0?' \u00b7 $'+m.due+' due':''}">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;font-size:12px;font-weight:700;background:color-mix(in srgb,${statusColor[m.status]} ${(m.status==='future'||m.status==='before')?'0%':'20%'},transparent);color:${statusColor[m.status]}">${statusSym[m.status]}</span>${(m.status==='unpaid'||m.status==='partial')&&m.due>0?`<div style="font-size:10px;line-height:1.1;margin-top:2px;font-family:var(--f-mono);font-weight:600;color:${statusColor[m.status]}">$${m.due}</div>`:''}
             </td>`).join('')}
             <td style="text-align:right;font-family:var(--f-mono);${zebra}">$${fin.paid}</td>
             <td style="text-align:right;font-family:var(--f-mono);${zebra}${fin.balance?';color:var(--bad);font-weight:700':''}">$${fin.balance}</td>
@@ -15010,7 +15021,7 @@ const Tuition = {
           </div>
           <div style="margin-top:5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
             ${fin.monthly>0? famStatusBadge(fin.monthStatus) : '<span class="tag tag-dim">no plan set</span>'}
-            ${fin.balance?`<b style="font-size:12.5px;color:var(--bad)">$${fin.balance} balance</b>`:''}
+            ${(fin.balance||fin.dueNow)?`<b style="font-size:12.5px;color:var(--bad)">$${fin.balance||fin.dueNow} ${fin.balance?'balance':'due this month'}</b>`:''}
             ${rec.sponsorName?`<span style="font-size:11.5px;color:var(--gold);font-weight:600">🤝 sponsored by ${esc(rec.sponsorName)}</span>`:''}
           </div>
         </div>
@@ -15023,8 +15034,9 @@ const Tuition = {
             ? `<div class="field"><label>Monthly tuition ($)</label><input data-pf="monthly" type="number" min="0" value="${fin.plan.monthly||''}"></div>`
             : `<div class="field"><label>Rate per student ($/mo, blank = default $${d.settings.defaultTuitionRate})</label><input data-pf="perStudentRate" type="number" min="0" value="${fin.plan.perStudentRate||''}"></div>`}
         </div>
-        ${fin.plan.rateMode!=='manual'?`<p style="font-size:12px;color:var(--ink3);margin:-2px 0 10px">Effective monthly: <b>$${fin.monthly}</b> (${activeM.length} \u00d7 $${fin.plan.perStudentRate||d.settings.defaultTuitionRate})</p>`:''}
+        ${fin.plan.rateMode!=='manual'?`<p style="font-size:12px;color:var(--ink3);margin:-2px 0 10px">Effective monthly: <b>$${fin.monthly}</b> (${activeM.length} \u00d7 $${fin.plan.perStudentRate||d.settings.defaultTuitionRate}${fin.plan.extra>0?' + $'+fin.plan.extra+' extra':''})</p>`:''}
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px">
+          ${fin.plan.rateMode!=='manual'?`<div class="field"><label>Extra per month ($)</label><input data-pf="extra" type="number" min="0" placeholder="0" value="${fin.plan.extra||''}" title="A regular amount this family pays on top of tuition every month — it is added to what they owe each month"></div>`:''}
           <div class="field"><label>Tracking since (YYYY-MM)</label><input data-pf="start" placeholder="${esc(today().slice(0,7))}" value="${esc(fin.plan.start)}"></div>
           <div class="field"><label>Registration fee ($)</label><input data-pf="regFee" type="number" min="0" value="${fin.plan.regFee||''}"></div>
           <div class="field"><label>Reg. fee paid?</label><select data-pf="regPaid"><option value="0" ${!fin.plan.regPaid?'selected':''}>Not yet</option><option value="1" ${fin.plan.regPaid?'selected':''}>Paid \u2713</option></select></div>
@@ -15101,7 +15113,7 @@ const Tuition = {
         s.family=n; DB.log(s.name+' assigned to family '+n); DB.save(); o.remove(); toast('Assigned'); Router.render(); }; });
     $('#tuReport',el).onclick=()=>{
       const rows=real.map(f=>{ const fin=famFinance(f.key);
-        return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.monthly?'$'+fin.monthly:'\u2014'}</td><td>${fin.monthStatus}</td><td>${fin.balance?'$'+fin.balance:'\u2014'}</td><td>$${fin.paid}</td></tr>`; }).join('');
+        return `<tr><td>${esc(f.key)}</td><td>${f.members.filter(s=>s.active!==false).length}</td><td>${fin.monthly?'$'+fin.monthly:'\u2014'}</td><td>${fin.monthStatus}</td><td>${(fin.balance||fin.dueNow)?'$'+(fin.balance||fin.dueNow):'\u2014'}</td><td>$${fin.paid}</td></tr>`; }).join('');
       const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>AMAN Tuition Report</title>
 <style>body{font-family:Georgia,serif;max-width:740px;margin:34px auto;padding:0 20px;color:#111}h1{font-size:20px;border-bottom:2px solid #1a4a35;padding-bottom:8px}.meta{font-size:12px;color:#555}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}th,td{text-align:left;padding:7px 9px;border-bottom:1px solid #ccc}th{font-size:11px;text-transform:uppercase;color:#1a4a35}
 thead{display:table-header-group}tr{page-break-inside:avoid;break-inside:avoid}
@@ -17562,7 +17574,7 @@ function aiTuitionReminderHandler(text){
   }
   const due=aiFamsDue();
   if(!due.length) return `No family owes anything this month, al-ḥamdu lillāh — nothing to remind.`;
-  const list=due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance} (${fin.monthStatus})`).join('<br>');
+  const list=due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance||fin.dueNow} (${fin.monthStatus})`).join('<br>');
   return `I need a specific family to draft a real reminder — so the amount is right, not invented. ${due.length} famil${due.length===1?'y':'ies'} currently owe:<br>${list}<br><br>Tap <b>✨ Reminder draft</b> next to any family in <b>Tuition → Who Owes Now</b> and I'll write the exact message with their real balance.`;
 }
 function aiParentUpdate(text){
@@ -17664,7 +17676,7 @@ function aiPromotions(){
 function aiTuitionFollowup(){
   const due=aiFamsDue();
   if(!due.length) return 'Every family is current this month, al-ḥamdu lillāh.';
-  return `${due.length} famil${due.length===1?'y':'ies'} owe this month:<br>`+due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance} (${fin.monthStatus})`).join('<br>')+`<br><br><button class="btn btn-o btn-sm" data-go="#/tuition/owe">Open Who Owes Now →</button>`;
+  return `${due.length} famil${due.length===1?'y':'ies'} owe this month:<br>`+due.slice(0,8).map(({f,fin})=>`<b>${esc(f.key)}</b> — $${fin.balance||fin.dueNow} (${fin.monthStatus})`).join('<br>')+`<br><br><button class="btn btn-o btn-sm" data-go="#/tuition/owe">Open Who Owes Now →</button>`;
 }
 function aiHomeworkSuggest(text){
   const lvlM=text.match(/level\s*(\d)/i);
@@ -18434,6 +18446,11 @@ render(v){
        <div class="wrow" style="cursor:default"><span class="t">Automatic copy</span><span class="m" id="sgMirror">checking…</span></div></div>
      ${window.__memStorage?'<p style="color:var(--bad);font-size:13px;margin:8px 0 0">⚠ This browser is blocking storage — nothing is being kept.</p>':''}${DB.saveErr?`<p style="color:var(--bad);font-size:13px;margin:8px 0 0">⚠ Last save failed: ${esc(DB.saveErr)}</p>`:''}
      <div id="sgSnaps" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div></div>
+    <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🧑‍🏫 Substitute teacher — Level 1</h3>
+     <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Send a cover teacher the Level 1 sub app plus a <b>class pack</b> (Level 1 students only — no tuition, admissions or other levels). When class is over, import the <b>report</b> they send back: it fills in attendance, class tracker marks and Green Book pages for Level 1. You see every change first; nothing is applied silently.</p>
+     <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sPackExp">Export class pack</button>
+      <label class="btn btn-o" style="cursor:pointer">Import sub’s report<input type="file" id="sRepImp" accept=".json" hidden></label></div>
+     ${(d.settings.subImports||[]).length?`<div style="font-size:11.5px;color:var(--ink3);margin-top:10px">Last import: ${esc((d.settings.subImports.slice(-1)[0].sub||'sub'))} · ${esc(fmtDate(String(d.settings.subImports.slice(-1)[0].at).slice(0,10)))}</div>`:''}</div>
     <div class="card"><h3 style="font-family:var(--f-display);font-size:17px;margin-bottom:10px">🎛 Customize layout</h3>
      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:10px">Reorder or hide sidebar modules, tabs, and the cards on any page. Saved on this device and included in your backups. You can also tap the sliders icon at the top of any page.</p>
      <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn btn-p" id="sLay">Start customizing</button><button class="btn btn-o" id="sLayRst">Reset layout</button></div></div>
@@ -18457,6 +18474,8 @@ render(v){
   $('#sLay',v).onclick=()=>{ Router.go('#/dashboard'); setTimeout(()=>Layout.toggle(true),50); };
   $('#sLayRst',v).onclick=()=>Layout.resetAll();
   $('#sExp',v).onclick=()=>{ DB.export(); };
+  $('#sPackExp',v).onclick=()=>SubMode.exportPack();
+  $('#sRepImp',v).onchange=e=>{ if(e.target.files[0]) SubMode.importReport(e.target.files[0]); e.target.value=''; };
   DBG.health().then(h=>{ const m=$('#sMirror',v); if(m) m.textContent=h.latest?new Date(h.latest.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' ('+h.snaps.length+' daily copies)':'none yet'; });
   $('#sImp',v).onchange=e=>{ if(e.target.files[0]) DB.import(e.target.files[0]); };
   $('#sColAdd',v).onclick=()=>{ const c=$('#sCol',v).value.trim(); if(!c)return;
@@ -18501,7 +18520,7 @@ function navMark(nv){ const cur=nv||navId(), h=location.hash; $$('#nav a').forEa
 function footStatus(){ const f=$('#footbk'); if(!f) return; const bk=DB.data.settings.lastBackupAt, dd=bk?Math.floor((Date.now()-new Date(bk))/864e5):null; const col=dd==null||dd>14?'#e86a5e':dd>7?'#e8b84f':'#7fcf9c'; f.innerHTML=`<a href="#/settings" style="color:${col};text-decoration:none">● Backup ${dd==null?'never':dd===0?'today':dd+'d ago'}</a>`; }
 function buildNav(){
   $('#nav').innerHTML = Layout.navMarkup();
-  $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); if(a.dataset.mod==='classmode'){ $('#sidebar').classList.remove('open'); Teacher.openClassMode(); return; } Router.go('#/'+a.dataset.mod); Router.stack=[]; Router.updBack(); }));
+  $$('#nav a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); if(a.dataset.mod==='subreport'){ $('#sidebar').classList.remove('open'); SubMode.openReport(); return; } if(a.dataset.mod==='classmode'){ $('#sidebar').classList.remove('open'); Teacher.openClassMode(); return; } Router.go('#/'+a.dataset.mod); Router.stack=[]; Router.updBack(); }));
   navMark(); footStatus();
   Layout.wireNav();
 }
@@ -18516,7 +18535,7 @@ document.addEventListener('click',e=>{ $$('details.st-more[open]').forEach(d=>{ 
    Everything normally lives in localStorage. If the device ever clears it, or a save fails, this tells you straight away
    and can bring the data back from the automatic copy. It is NOT a replacement for exporting a backup file. */
 const DBG={
-  open(){ return new Promise((res,rej)=>{ try{ const r=indexedDB.open('aman-central-mirror',1); r.onupgradeneeded=()=>r.result.createObjectStore('snap'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); },
+  open(){ return new Promise((res,rej)=>{ try{ const r=indexedDB.open(SUB_MODE?'aman-sub-mirror':'aman-central-mirror',1); r.onupgradeneeded=()=>r.result.createObjectStore('snap'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); },
   async tx(mode,fn){ const db=await DBG.open(); return new Promise((res,rej)=>{ const t=db.transaction('snap',mode), st=t.objectStore('snap'); let out; const r=fn(st); if(r) r.onsuccess=()=>{ out=r.result; }; t.oncomplete=()=>{ db.close(); res(out); }; t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); },
   put(k,v){ return DBG.tx('readwrite',s=>s.put(v,k)); }, get(k){ return DBG.tx('readonly',s=>s.get(k)); }, del(k){ return DBG.tx('readwrite',s=>s.delete(k)); }, keys(){ return DBG.tx('readonly',s=>s.getAllKeys()); },
   mirror(js,at,lsFailed){ if(DB._fresh||window.__memStorage) return; clearTimeout(DBG._t); DBG._pend=[js,at,lsFailed]; DBG._t=setTimeout(()=>DBG.flush(),lsFailed?0:400); },
@@ -18549,6 +18568,272 @@ const DBG={
     $('[data-x=k]',o).onclick=done; },
   async health(){ let snaps=[],latest=null; try{ snaps=(await DBG.keys()||[]).filter(k=>/^d-/.test(k)).sort().reverse(); latest=await DBG.get('latest'); }catch(e){} return {snaps,latest}; }
 };
+/* ================= SUBSTITUTE-TEACHER MODE (Level 1) =================
+   Same code ships in the master and in the sub copy; SUB_MODE decides which half is active.
+   MASTER : Settings → "Export class pack" (Level 1 only, no tuition/admissions/other levels)
+            Settings → "Import sub's report"  (previewed merge into Level 1 students; never silent)
+   SUB    : opens straight in (no login), Level-1-only navigation, loads a class pack,
+            and "Send report" exports ONLY what changed since the pack was loaded. */
+const SubMode = {
+  on: SUB_MODE, LEVEL:'Level 1', BK:'aman_sub_baseline_v1', RK:'aman_sub_meta_v1',
+  // identity / contact fields are never part of a report — a sub's day can't edit who a student is
+  SKIP:['photo','application','rewards','hifzGoalHistory','notes','guardians','guardian','guardianRelation','phone','emergency','medical','name','preferredName','level','active','dob','gender','family','startDate','id','studentNo','gbEnrolled'],
+  ATT:{P:'Present',L:'Late',A:'Absent',E:'Excused'},
+  eq(a,b){ return JSON.stringify(a===undefined?null:a)===JSON.stringify(b===undefined?null:b); },
+  clone(x){ return x===undefined?undefined:JSON.parse(JSON.stringify(x)); },
+  addDays(iso,n){ const t=new Date(iso+'T12:00:00'); t.setDate(t.getDate()+n); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); },
+  meta(){ try{ return JSON.parse(localStorage.getItem(SubMode.RK)||'{}')||{}; }catch(e){ return {}; } },
+  setMeta(m){ try{ localStorage.setItem(SubMode.RK, JSON.stringify(m)); }catch(e){} },
+  base(){ try{ return JSON.parse(localStorage.getItem(SubMode.BK)||'null'); }catch(e){ return null; } },
+  snap(d){ const S=SubMode, o={};
+    o.students=(d.students||[]).map(s=>{ const c=S.clone(s); delete c.photo; delete c.application; return c; });
+    ['attendance','attendanceReasons','progress','quran','behavior','achievements'].forEach(k=>o[k]=S.clone(d[k]||(Array.isArray(d[k])?[]:{})));
+    return o; },
+  saveBase(){ try{ localStorage.setItem(SubMode.BK, JSON.stringify(SubMode.snap(DB.data))); }catch(e){} },
+
+  /* ---------- hand a JSON file to the person (share sheet on iPad, download elsewhere) ---------- */
+  deliver(obj,name,msg){
+    const blob=new Blob([JSON.stringify(obj)],{type:'application/json'});
+    const dl=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); toast(msg); };
+    try{ const f=new File([blob],name,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f],title:name}).then(()=>toast(msg),e=>{ if(e&&e.name==='AbortError') toast('Cancelled — nothing was sent'); else dl(); }); return; } }catch(e){}
+    dl(); },
+
+  /* ================= MASTER: class pack ================= */
+  slim(s){ const S=SubMode, o=S.clone(s); delete o.notes;
+    if(Array.isArray(o.guardians)) o.guardians=o.guardians.map(g=>Object.assign({},g,{email:''}));
+    if(s.application){ const a=s.application; o.application={}; ['allergy','allergyDetail','healthConditions','meds'].forEach(k=>{ if(a[k]!==undefined) o.application[k]=a[k]; }); }
+    return o; },
+  buildPack(){
+    const S=SubMode, d=DB.data, t=today(), cut=S.addDays(t,-150), cut2=S.addDays(t,-14);
+    const stu=d.students.filter(s=>s.level===S.LEVEL&&s.active!==false).map(S.slim), ids=new Set(stu.map(s=>s.id));
+    const dated=src=>{ const out={}; Object.keys(src||{}).forEach(k=>{ if(k<cut) return; const day=src[k]||{}, r={}; Object.keys(day).forEach(sid=>{ if(ids.has(sid)) r[sid]=S.clone(day[sid]); }); if(Object.keys(r).length) out[k]=r; }); return out; };
+    const mine=a=>(a||[]).filter(x=>ids.has(x.sid)&&(!x.date||x.date>=cut)).map(x=>S.clone(x));
+    const planner={}; Object.keys(d.planner||{}).forEach(k=>{ if(!/^\d{4}-\d{2}-\d{2}/.test(k)||k>=cut2) planner[k]=S.clone(d.planner[k]); });
+    return {kind:'aman-sub-pack', v:1, level:S.LEVEL, madeAt:new Date().toISOString(), madeOn:t, schema:d.schema, students:stu,
+      attendance:dated(d.attendance), attendanceReasons:dated(d.attendanceReasons), progress:dated(d.progress),
+      quran:mine(d.quran), behavior:mine(d.behavior), achievements:mine(d.achievements),
+      lessons:(d.lessons||[]).filter(l=>!l.date||l.date>=cut2).map(x=>S.clone(x)), planner,
+      events:(d.events||[]).filter(e=>!e.date||e.date>=cut2).map(x=>S.clone(x)), closures:S.clone(d.closures||[]),
+      settings:{writePages:S.clone((d.settings||{}).writePages), writeSince:(d.settings||{}).writeSince||''} }; },
+  exportPack(){ const p=SubMode.buildPack();
+    if(!p.students.length){ toast('No active Level 1 students found'); return; }
+    SubMode.deliver(p,'AMAN-Sub-Pack-L1-'+p.madeOn+'.json','Class pack ready · '+p.students.length+' Level 1 students'); },
+
+  /* ================= SUB: scrub, load pack ================= */
+  scrub(d){ const S=SubMode;
+    d.students=(d.students||[]).filter(s=>s.level===S.LEVEL&&s.active!==false);
+    const ids=new Set(d.students.map(s=>s.id));
+    d.students.forEach(s=>{ delete s.notes; });
+    ['quran','behavior','achievements'].forEach(k=>{ d[k]=(d[k]||[]).filter(x=>ids.has(x.sid)); });
+    ['attendance','attendanceReasons','progress'].forEach(k=>{ const o=d[k]=d[k]||{}; Object.keys(o).forEach(date=>{ Object.keys(o[date]||{}).forEach(sid=>{ if(!ids.has(sid)) delete o[date][sid]; }); }); });
+    d.admissions=[]; d.amaanahApplications=[]; d.finance={plans:{},payments:[]}; d.families={}; d.unmatchedAgreements=[]; d.pendingUpdates=[]; d.resolvedUpdateIds=[];
+    d.meetings=[]; d.tasks=[]; d.staff=[]; d.activity=[]; d.cleaning={pairsByMonth:{}};
+    (d.gbAssignments||[]).forEach(a=>{ if(a.scores) Object.keys(a.scores).forEach(k=>{ if(!ids.has(k)) delete a.scores[k]; }); });
+    const st=d.settings=d.settings||{}; Object.keys(st).forEach(k=>{ if(/url/i.test(k)) st[k]=''; }); st.tuitionNote=''; },
+  afterLoad(){ const S=SubMode, m=S.meta(); S.scrub(DB.data);
+    if(!m.source){ m.source='builtin'; m.madeAt=''; m.madeOn=''; S.setMeta(m); S.saveBase(); }
+    else if(!S.base()) S.saveBase();
+    DB.save(); },
+  loadPack(file,after){
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ const p=JSON.parse(rd.result); if(p.kind!=='aman-sub-pack'||!Array.isArray(p.students)) throw 0; SubMode.applyPack(p); if(after) after(); }
+      catch(e){ toast('⚠ That is not a class pack file — ask Ustadh for the “AMAN-Sub-Pack” file'); } };
+    rd.readAsText(file); },
+  applyPack(p){ const S=SubMode, d=DB.defaults();
+    d.students=p.students.map(x=>S.clone(x));
+    ['attendance','attendanceReasons','progress','quran','behavior','achievements','lessons','planner','events','closures'].forEach(k=>{ if(p[k]!==undefined) d[k]=S.clone(p[k]); });
+    Object.assign(d.settings,Object.fromEntries(Object.entries(p.settings||{}).filter(([k,v])=>v!==undefined)));
+    d.settings.theme=(DB.data&&DB.data.settings&&DB.data.settings.theme)||'light';
+    DB.data=DB.migrate(d); S.scrub(DB.data); DB._fresh=null; DB.log('Class pack loaded ('+p.madeOn+')');
+    S.setMeta({source:'pack',madeAt:p.madeAt,madeOn:p.madeOn,loadedAt:new Date().toISOString(),subName:S.meta().subName||''});
+    S.saveBase(); DB.saveNow(); buildNav(); Router.go('#/dashboard'); toast('Class pack loaded · '+DB.data.students.length+' students'); },
+  pickPack(){ const i=document.createElement('input'); i.type='file'; i.accept='.json,application/json'; i.onchange=()=>{ const f=i.files[0]; if(!f) return;
+      const d=DB.data, S=SubMode, r=S.report('',''), n=S.count(r);
+      const go=()=>S.loadPack(f);
+      if(n.total>0&&S.sig(r)!==S.meta().lastSig) confirmBox('You have changes that have not been sent yet. Loading a new class pack replaces everything in this app. Load it anyway?',go); else go(); };
+    i.click(); },
+
+  /* ================= SUB: build the day report (diff vs. the pack as loaded) ================= */
+  report(note,name){
+    const S=SubMode, d=DB.data, t=today(), b=S.base(), nb=!b, m=S.meta();
+    const B=b||{students:[],attendance:{},attendanceReasons:{},progress:{},quran:[],behavior:[],achievements:[]};
+    const ids=new Set(d.students.map(s=>s.id)), names={};
+    d.students.forEach(s=>names[s.id]=s.name);
+    const out={kind:'aman-sub-report',v:1,rid:uid(),level:S.LEVEL,sub:name||'',note:note||'',exportedAt:new Date().toISOString(),
+      source:m.source||'pack',packMadeAt:m.madeAt||'',noBaseline:nb,names,
+      dated:{attendance:{},attendanceReasons:{},progress:{}},students:[],arrays:{quran:[],behavior:[],achievements:[]}};
+    ['attendance','attendanceReasons','progress'].forEach(k=>{ const A=d[k]||{}, Bk=B[k]||{};
+      new Set([...Object.keys(A),...Object.keys(Bk)]).forEach(date=>{ if(nb&&date!==t) return;
+        new Set([...Object.keys(A[date]||{}),...Object.keys(Bk[date]||{})]).forEach(sid=>{ if(!ids.has(sid)) return;
+          const to=(A[date]||{})[sid], from=(Bk[date]||{})[sid]; if(S.eq(from,to)) return;
+          (out.dated[k][date]=out.dated[k][date]||{})[sid]={from:from===undefined?null:S.clone(from),to:to===undefined?null:S.clone(to)}; }); }); });
+    const bm=new Map((B.students||[]).map(s=>[s.id,s]));
+    d.students.forEach(s=>{ const bs=bm.get(s.id)||{}, ch=[];
+      new Set([...Object.keys(s),...Object.keys(bs)]).forEach(f=>{ if(S.SKIP.includes(f)) return; const a=s[f], b2=bs[f]; if(S.eq(a,b2)) return;
+        if(Array.isArray(a)&&(Array.isArray(b2)||b2==null)){ const have=new Set((b2||[]).map(x=>JSON.stringify(x))); let add=a.filter(x=>!have.has(JSON.stringify(x))); if(nb) add=add.filter(x=>x&&x.date===t); if(add.length) ch.push({f,add:S.clone(add)}); }
+        else if(!nb||f==='gb'){ ch.push({f,from:b2===undefined?null:S.clone(b2),to:a===undefined?null:S.clone(a)}); } });
+      if(ch.length) out.students.push({id:s.id,name:s.name,ch}); });
+    ['quran','behavior','achievements'].forEach(k=>{ const have=new Set((B[k]||[]).map(x=>JSON.stringify(x)));
+      out.arrays[k]=(d[k]||[]).filter(x=>ids.has(x.sid)&&!have.has(JSON.stringify(x))&&(!nb||x.date===t)).map(x=>S.clone(x)); });
+    return out; },
+  count(r){ const n={att:0,prog:0,gb:0,notes:0,dates:new Set()};
+    Object.keys(r.dated.attendance).forEach(dt=>{ n.att+=Object.keys(r.dated.attendance[dt]).length; n.dates.add(dt); });
+    Object.keys(r.dated.progress).forEach(dt=>{ n.prog+=Object.keys(r.dated.progress[dt]).length; n.dates.add(dt); });
+    r.students.forEach(s=>s.ch.forEach(c=>{ if(c.f==='gb'||c.f==='gbLog') n.gb++; else n.notes++; }));
+    n.notes+=r.arrays.quran.length+r.arrays.behavior.length+r.arrays.achievements.length;
+    n.total=n.att+n.prog+n.gb+n.notes; n.dates=[...n.dates].sort(); return n; },
+  sig(r){ const c=SubMode.clone(r); delete c.rid; delete c.exportedAt; delete c.note; delete c.sub; return JSON.stringify(c); },
+  pending(){ try{ const r=SubMode.report('',''), n=SubMode.count(r); return {n, unsent:n.total>0&&SubMode.sig(r)!==SubMode.meta().lastSig}; }catch(e){ return {n:{total:0,att:0,prog:0,gb:0,notes:0,dates:[]},unsent:false}; } },
+  openReport(){
+    const S=SubMode, m=S.meta(), r0=S.report('',''), n=S.count(r0), esc2=esc;
+    const o=overlay(`<div class="modal" style="max-width:520px"><h3 style="margin:0 0 4px">📤 Send today's report to Ustadh</h3>
+      <p class="ai-sub" style="margin:0 0 12px">This sends only what you entered — attendance, class tracker marks, Green Book pages and notes for Level 1.</p>
+      <div class="card" style="padding:12px 14px;margin-bottom:12px;background:var(--surface2,var(--surface))">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
+          <div><b style="font-size:20px">${n.att}</b><div class="ai-sub">attendance</div></div><div><b style="font-size:20px">${n.prog}</b><div class="ai-sub">tracker marks</div></div>
+          <div><b style="font-size:20px">${n.gb}</b><div class="ai-sub">Green Book</div></div><div><b style="font-size:20px">${n.notes}</b><div class="ai-sub">notes / other</div></div></div>
+        ${n.dates.length?`<div class="ai-sub" style="margin-top:8px;text-align:center">Class date${n.dates.length>1?'s':''}: ${n.dates.map(x=>esc2(fmtDate(x))).join(' · ')}</div>`:''}</div>
+      ${n.total===0?'<div class="notice warn" style="margin-bottom:12px">Nothing has been entered yet. Take attendance in Class Mode first.</div>':''}
+      <div class="field"><label>Your name</label><input id="sr-name" value="${esc2(m.subName||'')}" placeholder="e.g., Br. Ahmad"></div>
+      <div class="field"><label>Note for Ustadh (anything he should know — behavior, who was struggling, what you covered)</label><textarea id="sr-note" style="min-height:96px" placeholder="Optional">${esc2(m.note||'')}</textarea></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><button class="btn btn-p" data-x="s">Send report</button></div></div>`,true);
+    const save=()=>{ const mm=S.meta(); mm.subName=$('#sr-name',o).value.trim(); mm.note=$('#sr-note',o).value; S.setMeta(mm); };
+    $('#sr-name',o).oninput=save; $('#sr-note',o).oninput=save;
+    $('[data-x=c]',o).onclick=()=>{ save(); o.remove(); };
+    $('[data-x=s]',o).onclick=()=>{ save(); const nm=$('#sr-name',o).value.trim(), nt=$('#sr-note',o).value.trim();
+      if(!nm){ toast('Please type your name first'); $('#sr-name',o).focus(); return; }
+      const r=S.report(nt,nm), c=S.count(r); if(c.total===0&&!nt){ toast('Nothing to send yet'); return; }
+      const mm=S.meta(); mm.lastSig=S.sig(r); mm.lastSentAt=new Date().toISOString(); S.setMeta(mm);
+      const day=c.dates.length?c.dates[c.dates.length-1]:today();
+      S.deliver(r,'AMAN-Sub-Report-L1-'+day+'.json','Report ready — send it to Ustadh'); o.remove(); try{ Router.render(); }catch(e){} }; },
+
+  /* ================= MASTER: import a sub's report (previewed merge) ================= */
+  importReport(file){
+    const rd=new FileReader();
+    rd.onload=()=>{ let r; try{ r=JSON.parse(rd.result); if(r.kind!=='aman-sub-report'||!r.dated||!Array.isArray(r.students)) throw 0; }catch(e){ toast('⚠ That is not a substitute report file'); return; }
+      SubMode.preview(r); };
+    rd.readAsText(file); },
+  plan(r){
+    const S=SubMode, d=DB.data, ops=[], skipped=[], L=S.LEVEL, nm=r.names||{};
+    const find=(id,name)=>d.students.find(s=>s.id===id)||d.students.find(s=>s.name===(name||nm[id])&&s.level===L);
+    const lvlOk=s=>s&&s.level===L;
+    const add=(s,o)=>ops.push(Object.assign({sid:s.id},o));
+    const NAMES={P:'PASS',F:'FAIL'};
+    ['attendance','attendanceReasons','progress'].forEach(k=>{
+      Object.keys(r.dated[k]||{}).forEach(date=>{ Object.keys(r.dated[k][date]).forEach(rsid=>{
+        const c=r.dated[k][date][rsid], s=find(rsid); if(!s||!lvlOk(s)){ skipped.push((nm[rsid]||rsid)+' — not a Level 1 student here'); return; }
+        const cur=((d[k]||{})[date]||{})[s.id]; if(S.eq(cur,c.to)) return;
+        const conflict=!S.eq(cur,c.from)&&cur!==undefined;
+        let txt;
+        if(k==='attendance') txt=fmtDate(date)+' · attendance → '+(S.ATT[c.to]||'cleared')+(conflict?' (you have: '+(S.ATT[cur]||cur)+')':'');
+        else if(k==='attendanceReasons') txt=fmtDate(date)+' · absence reason → '+(c.to||'cleared');
+        else { const p=c.to||{}, lab=v=>v?String(v).toLowerCase():'—'; txt=fmtDate(date)+' · tracker → Qur’an '+lab(p.quran)+' · homework '+lab(p.hw)+' · classwork '+lab(p.cw)+(conflict?' (you have different marks)':''); }
+        add(s,{k:k==='progress'?'prog':'att',date,text:txt,conflict,run:()=>{ d[k]=d[k]||{}; const day=d[k][date]=d[k][date]||{}; if(c.to==null) delete day[s.id]; else day[s.id]=S.clone(c.to); }}); }); });
+    });
+    r.students.forEach(rs=>{ const s=find(rs.id,rs.name); if(!s||!lvlOk(s)){ skipped.push((rs.name||rs.id)+' — not a Level 1 student here'); return; }
+      rs.ch.forEach(c=>{
+        if(c.add){ c.add.forEach(item=>{ const arr=s[c.f]||[], isLog=/Log$/.test(c.f)&&item&&typeof item.date==='string';
+            const same=arr.find(x=>S.eq(x,item)); if(same) return;
+            const ex=isLog?arr.find(x=>x&&x.date===item.date):null;
+            let txt=c.f==='gbLog'?'Green Book log · '+fmtDate(item.date)+' · page '+item.page+(item.fluency?' · '+item.fluency:''):c.f+' · '+(item.date?fmtDate(item.date)+' · ':'')+JSON.stringify(item).slice(0,80);
+            add(s,{k:'gb',text:txt+(ex?' (replaces your entry for that day)':''),conflict:!!ex,run:()=>{ const a=s[c.f]=s[c.f]||[]; if(ex){ const i=a.indexOf(ex); if(i>=0) a.splice(i,1); } a.push(S.clone(item)); }}); }); }
+        else { const cur=s[c.f]; if(S.eq(cur,c.to)) return; const conflict=!S.eq(cur,c.from);
+          const txt=c.f==='gb'?'Green Book: page '+((c.from||{}).page||0)+' → '+((c.to||{}).page||0)+(((c.to||{}).fluency)?' · '+c.to.fluency:'')+(conflict?' (you have page '+((cur||{}).page||0)+')':''):c.f+' updated'+(conflict?' (you have a different value)':'');
+          add(s,{k:'gb',text:txt,conflict,run:()=>{ if(c.to==null) delete s[c.f]; else s[c.f]=S.clone(c.to); }}); } }); });
+    const LAB={quran:'Qur’an log',behavior:'Note',achievements:'Achievement'};
+    ['quran','behavior','achievements'].forEach(k=>{ (r.arrays[k]||[]).forEach(item=>{ const s=find(item.sid); if(!s||!lvlOk(s)){ skipped.push((nm[item.sid]||item.sid)+' — '+LAB[k].toLowerCase()+' skipped'); return; }
+        if((d[k]||[]).some(x=>S.eq(x,item))) return;
+        const body=item.what||item.text||''; add(s,{k:'note',text:LAB[k]+(item.kind?' ('+item.kind+')':'')+(item.date?' · '+fmtDate(item.date):'')+' · '+String(body).slice(0,90)+(item.grade?' · '+item.grade:''),conflict:false,run:()=>{ (d[k]=d[k]||[]).push(S.clone(item)); }}); }); });
+    return {ops,skipped,find}; },
+  preview(r){
+    const S=SubMode, d=DB.data, {ops,skipped,find}=S.plan(r), imp=(d.settings.subImports||[]), seen=imp.find(x=>x.rid===r.rid);
+    const by=new Map(); ops.forEach(o=>{ (by.get(o.sid)||by.set(o.sid,[]).get(o.sid)).push(o); });
+    const nConf=ops.filter(o=>o.conflict).length;
+    const warn=[]; if(seen) warn.push('This exact report was already imported on '+fmtDate(String(seen.at).slice(0,10))+'. Importing again changes nothing that is already identical.');
+    if(r.source==='builtin') warn.push('The sub used the built-in roster instead of a class pack, so Green Book pages may have started from old values. Check each page change below.');
+    if(r.noBaseline) warn.push('The sub’s app lost its starting snapshot, so only today’s entries were included.');
+    const rows=[...by.entries()].map(([sid,list])=>{ const s=d.students.find(x=>x.id===sid), cf=list.some(o=>o.conflict);
+      return `<div class="card" style="padding:10px 12px;margin-bottom:8px"><label style="display:flex;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" data-sub="${esc(sid)}" checked style="width:17px;height:17px;flex-shrink:0">${avatarHTML(s,'width:34px;height:34px;border-radius:50%;font-size:13px;flex-shrink:0')}<b dir="auto" style="flex:1">${esc(s.preferredName||s.name)}</b>${cf?'<span class="tag tag-red">⚠ differs</span>':''}<span class="ai-sub">${list.length} change${list.length===1?'':'s'}</span></label>
+        <ul style="margin:8px 0 0 44px;padding:0;list-style:none;font-size:12.5px;color:var(--ink2)">${list.map(o=>`<li style="padding:2px 0;${o.conflict?'color:var(--bad);font-weight:600':''}">${o.conflict?'⚠ ':'• '}${esc(o.text)}</li>`).join('')}</ul></div>`; }).join('');
+    const o=overlay(`<div class="modal" style="max-width:640px;max-height:90vh;overflow:auto"><h3 style="margin:0 0 4px">📥 Substitute report${r.sub?' — '+esc(r.sub):''}</h3>
+      <p class="ai-sub" style="margin:0 0 10px">Level 1 · sent ${esc(new Date(r.exportedAt).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}. Nothing is saved until you press Apply.</p>
+      ${r.note?`<div class="notice info" style="margin-bottom:10px">📝 <div style="flex:1"><b>Note from ${esc(r.sub||'the sub')}:</b><br>${esc(r.note).replace(/\n/g,'<br>')}</div></div>`:''}
+      ${warn.map(w=>`<div class="notice warn" style="margin-bottom:8px">⚠ <div style="flex:1">${esc(w)}</div></div>`).join('')}
+      ${ops.length?rows:'<div class="empty" style="padding:18px"><h3>Nothing new to apply</h3><p>Everything in this report already matches your records.</p></div>'}
+      ${skipped.length?`<details style="margin:6px 0 10px"><summary class="ai-sub" style="cursor:pointer">${skipped.length} item${skipped.length===1?'':'s'} skipped</summary><ul style="font-size:12px;color:var(--ink3)">${[...new Set(skipped)].map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>`:''}
+      ${nConf?`<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:8px 0;cursor:pointer"><input type="checkbox" id="sr-ow" style="margin-top:2px;width:17px;height:17px;flex:none"><span><b>Replace my values where they differ</b> (${nConf} ⚠ item${nConf===1?'':'s'}). Left unchecked, those items are skipped and your data stays as is.</span></label>`:''}
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button>${ops.length?`<button class="btn btn-p" data-x="a">Apply to Level 1</button>`:''}</div></div>`,true);
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    const ab=$('[data-x=a]',o); if(ab) ab.onclick=()=>{
+      const ow=$('#sr-ow',o)&&$('#sr-ow',o).checked, on=new Set($$('[data-sub]',o).filter(x=>x.checked).map(x=>x.dataset.sub));
+      let applied=0, held=0; ops.forEach(op=>{ if(!on.has(op.sid)) return; if(op.conflict&&!ow){ held++; return; } op.run(); applied++; });
+      const c=S.count(r); (d.settings.subImports=d.settings.subImports||[]).push({rid:r.rid,at:new Date().toISOString(),sub:r.sub||'',dates:c.dates,applied});
+      d.settings.subImports=d.settings.subImports.slice(-30);
+      DB.log('Substitute report imported — '+(r.sub||'sub')+' · '+applied+' change'+(applied===1?'':'s')+(c.dates.length?' · '+c.dates.join(', '):''));
+      DB.saveNow(); try{ Rewards.check(); }catch(e){} o.remove(); Router.render();
+      toast('Imported '+applied+' change'+(applied===1?'':'s')+(held?' · '+held+' held back (differ from your data)':'')); }; },
+  pickReport(){ const i=document.createElement('input'); i.type='file'; i.accept='.json,application/json'; i.onchange=()=>{ if(i.files[0]) SubMode.importReport(i.files[0]); }; i.click(); },
+
+  /* ================= SUB: guard, home, roster ================= */
+  guard(id,param){
+    if(id==='dashboard'||id==='hifz'||id==='today'||id==='roster') return null;
+    if(id==='students'){ if(param==='attendance'||param==='progress') return null; if(param&&param!=='cleaning'&&param!=='fieldtrip'&&param!=='gradebook'&&DB.data.students.some(s=>s.id===param)) return '#/roster/'+param; return '#/roster'; }
+    if(id==='teacher') return (param==='planner'||param==='lessons')?null:'#/teacher/planner';
+    return '#/dashboard'; },
+  home(v){
+    const S=SubMode, d=DB.data, t=today(), m=S.meta(), rec=d.attendance[t]||{}, all=d.students.filter(s=>s.active!==false);
+    const cnt=k=>all.filter(s=>rec[s.id]===k).length, here=cnt('P')+cnt('L'), unm=all.filter(s=>!rec[s.id]).length;
+    const pend=S.pending(), pk=m.source==='pack';
+    const lessons=(d.lessons||[]).filter(l=>l.date===t);
+    const pending=pend.unsent?`<div class="notice warn" style="margin-bottom:14px">📤 <div style="flex:1"><b>You have ${pend.n.total} entr${pend.n.total===1?'y':'ies'} that ${m.lastSentAt?'changed since you last sent':'have not been sent'}.</b> When class is over, send the report to Ustadh.</div><button class="btn btn-p btn-sm" id="shSend">Send report</button></div>`:(m.lastSentAt?`<div class="notice info" style="margin-bottom:14px">✅ <div style="flex:1">Report last sent ${esc(new Date(m.lastSentAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'}))}. Nothing new to send.</div></div>`:'');
+    v.innerHTML=`${moduleHeroHTML('Level 1','Substitute Teacher','Take attendance, hear the Green Book, then send Ustadh the day’s report.','📋')}
+      ${window.__memStorage?'<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>This browser is blocking storage.</b> Nothing you enter will be kept if you close the page — send the report before you leave.</div></div>':''}
+      ${pk?'':`<div class="notice warn" style="margin-bottom:14px">⚠ <div style="flex:1"><b>No class pack loaded.</b> This is the built-in roster with no progress history. Ask Ustadh for today’s class pack file and load it so Green Book pages and contacts are current.</div><button class="btn btn-p btn-sm" id="shPack">Load class pack</button></div>`}
+      ${pending}
+      <div class="grid g2" style="margin-bottom:14px">
+        <div class="card"><div class="eyebrow">${esc(fmtDate(t))}</div><h3 style="font-family:var(--f-display);font-size:19px;margin:2px 0 10px">Today’s class</h3>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px"><div><b style="font-size:26px">${here}</b><span class="ai-sub"> / ${all.length} here</span></div><div><b style="font-size:26px">${cnt('A')+cnt('E')}</b><span class="ai-sub"> absent</span></div><div><b style="font-size:26px;${unm?'color:var(--warn)':''}">${unm}</b><span class="ai-sub"> not marked</span></div></div>
+          <button class="btn btn-p" id="shClass" style="width:100%">🖥 Open Class Mode — take attendance</button></div>
+        <div class="card"><div class="eyebrow">Lesson</div><h3 style="font-family:var(--f-display);font-size:19px;margin:2px 0 10px">What to teach</h3>
+          ${lessons.length?lessons.map(l=>`<div style="margin-bottom:8px"><b>${esc(l.title)}</b><div class="ai-sub">${esc(l.subject||'')}${l.est?' · '+l.est+' min':''}</div>${l.objective?`<div style="font-size:13px;margin-top:2px">${esc(l.objective)}</div>`:''}</div>`).join(''):'<p class="ai-sub" style="margin:0 0 10px">No lesson plan is dated today. Level 1 is the Green Book — hear each student read from their current page.</p>'}
+          <button class="btn btn-o" data-go="#/teacher/lessons">Open lesson plans</button></div></div>
+      <div class="grid g2" style="margin-bottom:14px">
+        <button class="card" data-go="#/today" style="text-align:left;cursor:pointer"><div style="font-size:24px">📗</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Green Book today</h3><div class="ai-sub">Each student’s page — tap +1 / +2 and rate fluency.</div></button>
+        <button class="card" data-go="#/students/progress" style="text-align:left;cursor:pointer"><div style="font-size:24px">📊</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Class tracker</h3><div class="ai-sub">Qur’an, homework and classwork — tap to mark.</div></button>
+        <button class="card" data-go="#/roster" style="text-align:left;cursor:pointer"><div style="font-size:24px">🎓</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">My students</h3><div class="ai-sub">Photos, allergies, parent and emergency phone numbers.</div></button>
+        <button class="card" id="shSend2" style="text-align:left;cursor:pointer"><div style="font-size:24px">📤</div><h3 style="font-family:var(--f-display);font-size:17px;margin:4px 0">Send report to Ustadh</h3><div class="ai-sub">Do this at the end of class. Includes your note.</div></button></div>
+      <p class="ai-sub" style="text-align:center">${pk?'Class pack from '+esc(fmtDate(m.madeOn))+' · ':''}${all.length} Level 1 students · <a href="#" id="shPack2">load a newer class pack</a></p>`;
+    $$('[data-go]',v).forEach(b=>b.onclick=()=>Router.go(b.dataset.go));
+    const bind=(sel,fn)=>{ const b=$(sel,v); if(b) b.onclick=e=>{ e.preventDefault(); fn(); }; };
+    bind('#shClass',()=>Teacher.openClassMode()); bind('#shSend',()=>S.openReport()); bind('#shSend2',()=>S.openReport()); bind('#shPack',()=>S.pickPack()); bind('#shPack2',()=>S.pickPack()); },
+  roster(v,param){
+    const S=SubMode, d=DB.data, t=today(), rec=d.attendance[t]||{};
+    const stu=d.students.filter(s=>s.active!==false).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+    const safe=(fn,def)=>{ try{ const x=fn(); return x==null?def:x; }catch(e){ return def; } };
+    const flags=s=>{ const a=s.application||{}, al=safe(()=>isAllergyPositive(a.allergy),false), med=safe(()=>hasRealAnswer(s.medical)||hasRealAnswer(a.healthConditions)||hasRealAnswer(a.meds),false);
+      return {al,med,detail:[al?('Allergy: '+(a.allergyDetail||a.allergy||'yes')):'',hasRealAnswer(a.healthConditions)?'Health: '+a.healthConditions:'',hasRealAnswer(a.meds)?'Medication: '+a.meds:'',hasRealAnswer(s.medical)?'Medical: '+s.medical:''].filter(Boolean)}; };
+    const phones=s=>{ const out=[]; (s.guardians||[]).forEach(g=>{ if(g&&(g.phone||g.name)) out.push({n:(g.name||'Guardian')+(g.relation?' ('+g.relation+')':''),p:g.phone||''}); });
+      const p=safe(()=>AI2.stuPhone(s),''); if(p&&!out.some(x=>x.p===p)) out.push({n:safe(()=>AI2.stuParent(s),'')||'Parent',p});
+      if(s.phone&&!out.some(x=>x.p===s.phone)) out.push({n:'Phone',p:s.phone}); if(s.emergency) out.push({n:'Emergency contact',p:s.emergency,raw:true}); return out; };
+    const tel=p=>String(p||'').replace(/[^\d+]/g,'');
+    if(param){ const s=stu.find(x=>x.id===param); if(!s){ Router.go('#/roster'); return; }
+      const f=flags(s), age=safe(()=>Math.floor(ptAgeYears(s)),null), pg=((s.gb||{}).page)||0, w=safe(()=>WR.sum(s).total,0), st=rec[s.id];
+      const sess=Object.keys(d.attendance).filter(k=>Object.values(d.attendance[k]||{}).some(x=>x==='P'||x==='L')&&k<t).sort().slice(-6);
+      v.innerHTML=`<button class="btn btn-ghost btn-sm" data-go="#/roster" style="margin-bottom:10px">← All students</button>
+        <div class="card" style="padding:18px"><div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">${avatarHTML(s,'width:72px;height:72px;border-radius:50%;font-size:24px;flex-shrink:0')}<div style="min-width:0"><h2 dir="auto" style="margin:0;font-family:var(--f-display);font-size:22px">${esc(s.preferredName||s.name)}</h2><div class="ai-sub">${age!=null?age+' years · ':''}${esc(s.gender||'')} · Level 1</div></div></div>
+          ${f.detail.length?`<div class="notice warn" style="margin-bottom:12px">⚠ <div style="flex:1">${f.detail.map(x=>`<div><b>${esc(x)}</b></div>`).join('')}</div></div>`:'<div class="ai-sub" style="margin-bottom:12px">No allergies or medical notes on file.</div>'}
+          <div class="eyebrow">Call</div>${phones(s).length?phones(s).map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><div><b>${esc(x.n)}</b><div class="ai-sub" dir="ltr">${esc(x.p||'no number on file')}</div></div>${tel(x.p).length>=7?`<a class="btn btn-p btn-sm" href="tel:${esc(tel(x.p))}" style="text-decoration:none">📞 Call</a>`:''}</div>`).join(''):'<div class="ai-sub" style="padding:8px 0">No phone numbers on file — ask Ustadh.</div>'}
+          <div class="eyebrow" style="margin-top:14px">Progress</div><div style="margin:6px 0 4px"><b>Green Book page ${pg} of ${GB_TOTAL}</b>${(s.gb||{}).fluency?' · '+esc(s.gb.fluency)+' fluency':''}</div><div class="bar" style="height:8px"><i style="width:${Math.min(100,pg/GB_TOTAL*100)}%"></i></div>
+          <div style="margin-top:10px;font-size:13px">Today: <b>${st?esc(S.ATT[st]||st):'not marked'}</b>${w?` · writing owed: <b>${w} page${w===1?'':'s'}</b>`:''}</div>
+          ${sess.length?`<div class="ai-sub" style="margin-top:6px">Last ${sess.length} classes: ${sess.map(k=>esc(S.ATT[(d.attendance[k]||{})[s.id]]||'—')).join(' · ')}</div>`:''}</div>`;
+      $$('[data-go]',v).forEach(b=>b.onclick=()=>Router.go(b.dataset.go)); return; }
+    v.innerHTML=`${moduleHeroHTML('Level 1','My Students','Photos, allergies and who to call. Tap a student for details.','🎓')}
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">${stu.map(s=>{ const f=flags(s), pg=((s.gb||{}).page)||0, st=rec[s.id];
+        return `<button class="card" data-go="#/roster/${esc(s.id)}" style="display:flex;gap:12px;align-items:center;text-align:left;cursor:pointer;padding:12px">${avatarHTML(s,'width:52px;height:52px;border-radius:50%;font-size:17px;flex-shrink:0')}<div style="min-width:0;flex:1"><b dir="auto" style="display:block;font-size:15px">${esc(s.preferredName||s.name)}</b><div class="ai-sub">Green Book p.${pg}${st?' · '+esc(S.ATT[st]||st):''}</div>${f.al?'<span class="tag tag-red">⚠ Allergy</span> ':''}${f.med&&!f.al?'<span class="tag tag-red">⚠ Medical</span>':''}</div></button>`; }).join('')}</div>
+      ${stu.length?'':'<div class="empty"><h3>No students loaded</h3><p>Load the class pack from Ustadh.</p></div>'}`;
+    $$('[data-go]',v).forEach(b=>b.onclick=()=>Router.go(b.dataset.go)); }
+};
 const AUTH_USER = 'Admin', AUTH_PASS = 'Aman@2020', AUTH_KEY = 'aman_central_auth';
 function bootApp(){ DBG.pick().then(bootApp2,bootApp2); }
 function bootApp2(){
@@ -18560,7 +18845,7 @@ function bootApp2(){
   $('#quickAdd').onclick=()=>ResourceForm.open();
   $('#themeBtn').onclick=()=>Theme.toggle();
   $('#layBtn').onclick=()=>Layout.toggle();
-  $('#logoutBtn').onclick=()=>confirmBox('Log out of AMAN Central?', doLogout);
+  $('#logoutBtn').onclick=()=>SUB_MODE?SubMode.openReport():confirmBox('Log out of AMAN Central?', doLogout);
   $('#hambBtn').onclick=()=>$('#sidebar').classList.toggle('open');
   $('#backBtn').onclick=()=>Router.back();
   const tbc=$('#tbClass'); if(tbc) tbc.onclick=e=>{ e.preventDefault(); e.stopPropagation(); Teacher.openClassMode(); };
