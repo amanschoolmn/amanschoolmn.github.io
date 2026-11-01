@@ -18622,7 +18622,7 @@ const SubMode = {
     DB.data=DB.migrate(d); S.scrub(DB.data); DB._fresh=null; DB.log('Class pack loaded ('+p.madeOn+')');
     S.setMeta({source:'pack',madeAt:p.madeAt,madeOn:p.madeOn,loadedAt:new Date().toISOString(),subName:S.meta().subName||''});
     S.saveBase(); DB.saveNow(); buildNav(); Router.go('#/dashboard'); toast('Class pack loaded · '+DB.data.students.length+' students'); },
-  exportBackup(){ const S=SubMode, p={kind:'aman-sub-backup',v:1,madeAt:new Date().toISOString(),data:S.clone(DB.data),meta:S.meta(),base:S.base()};
+  exportBackup(){ const S=SubMode, p={kind:'aman-sub-backup',v:1,madeAt:new Date().toISOString(),data:S.clone(DB.data),meta:S.meta(),base:S.base(),report:S.report('',S.meta().subName||'')};
     S.deliver(p,'AMAN-Sub-Backup-'+today()+'.json','Backup ready — keep it or send it to Ustadh'); },
   restoreBackup(p){ const S=SubMode; DB.data=DB.migrate(S.clone(p.data)); S.scrub(DB.data); DB._fresh=null;
     S.setMeta(Object.assign({},p.meta||{},{loadedAt:new Date().toISOString()})); if(p.base){ try{ localStorage.setItem(S.BK,JSON.stringify(p.base)); }catch(e){} } else S.saveBase();
@@ -18690,7 +18690,7 @@ const SubMode = {
   /* ================= MASTER: import a sub's report (previewed merge) ================= */
   importReport(file){
     const rd=new FileReader();
-    rd.onload=()=>{ let r; try{ r=JSON.parse(rd.result); if(r.kind!=='aman-sub-report'||!r.dated||!Array.isArray(r.students)) throw 0; }catch(e){ toast('⚠ That is not a substitute report file'); return; }
+    rd.onload=()=>{ let r; try{ r=JSON.parse(rd.result); if(r.kind==='aman-sub-backup'&&r.report) r=r.report; if(r.kind!=='aman-sub-report'||!r.dated||!Array.isArray(r.students)) throw 0; }catch(e){ toast('⚠ That is not a substitute report file'); return; }
       SubMode.preview(r); };
     rd.readAsText(file); },
   plan(r){
