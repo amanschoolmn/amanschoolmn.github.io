@@ -1213,6 +1213,117 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
 .rc-tile b{font-size:15px;text-align:center;line-height:1.25;overflow-wrap:anywhere}.rc-tile.on{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
 .rc-ck{position:absolute;top:8px;right:10px;font-size:20px;font-weight:700;color:var(--ok)}.rc-tile .tag{font-size:11px;white-space:normal;text-align:center}
 </style>
+<style id="ns-css">
+:root{--stage-noresponse:#7a8088}
+.sect-dot[data-phase="noresponse"]{background:var(--stage-noresponse);color:var(--stage-noresponse)}
+.card[data-phase="noresponse"]{border-left-color:var(--stage-noresponse);background:color-mix(in srgb,var(--stage-noresponse) 6%,var(--surface))}
+.ph-seg[data-phase="noresponse"]{background:var(--stage-noresponse)}
+.ph-item i[data-phase="noresponse"],.apc-chip i[data-phase="noresponse"]{background:var(--stage-noresponse)}
+.adm-avatar[data-phase="noresponse"]{background:linear-gradient(155deg,var(--stage-noresponse),color-mix(in srgb,var(--stage-noresponse) 70%,#000))}
+.adm-fu{margin:10px 0 2px;padding:10px 12px;border-radius:12px;border:1px solid var(--line,#ddd);border-left:4px solid #6a7f95;background:color-mix(in srgb,#6a7f95 8%,var(--surface))}
+.adm-fu.warn{border-left-color:#b8872a;background:color-mix(in srgb,#b8872a 10%,var(--surface))}
+.adm-fu.bad{border-left-color:#a13a2e;background:color-mix(in srgb,#a13a2e 8%,var(--surface))}
+.adm-fu-msg{font-size:13.5px;font-weight:600;margin-bottom:8px}
+.adm-fu-btns{display:flex;gap:6px;flex-wrap:wrap}
+.adm-fubanner{margin:0 0 14px;border-left:4px solid #b8872a}
+.adm-fb-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line,#e4dfd2);font-size:14px;flex-wrap:wrap}
+</style>
+<style id="ns-css2">
+.adm-fu{margin:2px 0 0;padding:12px;border-radius:14px;border:1px solid var(--line2,#e0d8c4);border-left:4px solid #6a7f95;background:color-mix(in srgb,#6a7f95 8%,var(--surface));display:flex;flex-direction:column;gap:10px}
+.adm-fu.warn{border-left-color:#b8872a;background:color-mix(in srgb,#b8872a 11%,var(--surface))}
+.adm-fu.bad{border-left-color:#a13a2e;background:color-mix(in srgb,#a13a2e 8%,var(--surface))}
+.adm-fu-head{display:flex;gap:10px;align-items:flex-start}
+.adm-fu-ico{font-size:20px;line-height:1.2}
+.adm-fu-t{font-weight:700;font-size:15px;line-height:1.25}
+.adm-fu-s{font-size:12.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+.adm-fu-bar{height:6px;border-radius:99px;background:color-mix(in srgb,var(--ink) 10%,transparent);overflow:hidden}
+.adm-fu-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#b8872a,#a13a2e)}
+.adm-fu-btns{display:flex;gap:6px;flex-wrap:wrap}
+.adm-fu-btns .btn{flex:1 1 calc(50% - 6px);justify-content:center;min-height:38px}
+.adm-fu-btns .btn-p{flex-basis:100%}
+.adm-fu-btns .btn:not(.btn-p){flex:1 1 0;min-width:0;padding-left:8px;padding-right:8px;white-space:nowrap}
+.adm-more{margin-top:4px}
+.adm-more>summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2);padding:6px 2px;list-style:none}
+.adm-more>summary::-webkit-details-marker{display:none}
+.adm-more>summary::before{content:'▸ ';color:var(--ink3)}
+.adm-more[open]>summary::before{content:'▾ '}
+.adm-more .adm-actions{margin-top:6px}
+.adm-fubanner{padding:14px 16px}
+.adm-fb-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line,#e4dfd2);flex-wrap:nowrap}
+.adm-fb-n{font-weight:700;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-fb-h{font-size:12.5px;color:var(--ink3);margin-top:1px}
+.adm-fb-row .btn{flex-shrink:0}
+.ns-nrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line,#e4dfd2);border-radius:12px;margin-bottom:8px;background:var(--surface2,transparent)}
+.ns-nrow select{flex:1 1 100%}
+.ns-foot{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.ns-foot>.btn-p{width:100%;justify-content:center;min-height:46px;font-size:15px;text-decoration:none}
+.ns-foot-row{display:flex;gap:8px}
+.ns-foot-row .btn{flex:1;justify-content:center}
+.ns-sheet{max-height:92vh;overflow:auto;-webkit-overflow-scrolling:touch}
+.ns-sheet .mfoot{position:sticky;bottom:0;background:var(--surface,#fffdf6);padding:12px 0 max(12px,env(safe-area-inset-bottom));margin-top:8px;z-index:2;border-top:1px solid var(--line,#e4dfd2)}
+.ns-sheet textarea{font-size:16px}
+.ns-sheet input,.ns-sheet select{font-size:16px}
+@media(max-width:560px){
+  .ovl:has(.ns-sheet){align-items:flex-end!important;padding:0!important}
+  .ovl .ns-sheet{width:100%!important;max-width:none!important;margin:0!important;border-radius:22px 22px 0 0;padding-bottom:0}
+  .ama-hero{flex-direction:row;text-align:left;align-items:center;padding:14px 16px;gap:14px;margin-bottom:12px}
+  .ama-hero .logo-tile{padding:5px;border-radius:14px}
+  .ama-hero .logo-tile img,.aman-hero .logo-tile img{height:64px;width:auto;max-width:64px}
+  .ama-hero h2{font-size:22px;margin:0 0 2px}
+  .ama-hero .ama-tag{display:none}
+  .ama-hero p{font-size:13.5px}
+  .ama-hero .eyebrow{font-size:10.5px}
+  .adm-fu-btns .btn{min-height:42px}
+}
+</style>
+<style id="m-css">
+a,button,input,select,textarea,[data-go],label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@keyframes sheetin{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+@media(max-width:640px){
+  html{overflow-x:clip}
+  /* top bar: always fits, search shrinks first */
+  .topbar{padding-left:10px;padding-right:10px;gap:4px}
+  .topbar .searchbtn{flex:1 1 0;min-width:0;padding:9px 10px;overflow:hidden;white-space:nowrap}
+  .top-acts{gap:0;flex-shrink:0;margin-left:0}
+  .iconbtn{padding:11px;min-width:40px;min-height:40px;align-items:center;justify-content:center}
+  .content{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  /* fingers, not cursors: comfortable tap targets */
+  .btn{min-height:42px;align-self:flex-start}
+  .btn-sm{min-height:38px;padding:6px 12px;font-size:13px}
+  button.chip,a.chip{min-height:32px;padding:5px 12px;font-size:12.5px}
+  .hub-tab{min-height:40px;font-size:13px}
+  .tabs button{min-height:42px}
+  .apc-chip{min-height:36px}
+  .rstar{min-width:38px;min-height:38px}
+  .pt-bname{min-height:34px}
+  .ns-foot .btn,.adm-fu-btns .btn{align-self:stretch}
+  .mfoot{flex-wrap:wrap}
+  /* iOS zooms into any field under 16px */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px}
+  /* nothing smaller than 11px */
+  small,.tag,.grp,.td-st,.qmap-juz,.eyebrow,.ai-sub,.hd,.eb,.pal-grp{font-size:11.5px}
+  #tabbar a{font-size:11px}
+  .ai-sub{white-space:normal;overflow-wrap:anywhere}
+}
+/* every pop-up becomes a bottom sheet on a phone */
+@media(max-width:560px){
+  .ovl.center{align-items:flex-end;padding:0}
+  .ovl.center .modal{width:100%;max-width:none!important;margin:0;max-height:92vh;border-radius:22px 22px 0 0;padding:18px 18px 0;animation:sheetin .24s cubic-bezier(.2,.8,.2,1)}
+  .ovl.center .modal::before{content:'';display:block;width:42px;height:4px;border-radius:4px;background:var(--line2);margin:0 auto 12px}
+  .ovl.center .modal .mfoot{background:var(--surface);padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  .ovl.center .modal.ns-sheet{padding-top:18px}
+  .pal{max-width:calc(100vw - 24px)}
+}
+</style>
+<style id="m-css2">
+@media(max-width:640px){
+  small,.grp,.qmap-juz,.hd,.pt-bp{font-size:11.5px!important}
+  .pt-nm{min-height:32px;padding:4px 10px}
+  .kpi-why{display:inline-block;padding:8px 6px;font-size:12px}
+  .view-toggle button,.vt button,[data-view],[data-vt]{min-height:34px}
+}
+@media(max-width:640px){[style*="font-size:8.5px"],[style*="font-size:9px"],[style*="font-size:9.5px"],[style*="font-size:10px"],[style*="font-size:10.5px"]{font-size:11px!important}}
+</style>
 </head>
 <body>
 <div class="login-screen" id="loginScreen">
@@ -1239,7 +1350,7 @@ bdi,[dir=auto],.nm,.pp-names b,.td-lab b{letter-spacing:0!important;text-transfo
       <h1>AMAN Central<span class="ar">المدرسة النورية</span></h1>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot"><span id="footbk"></span><br>v1.0 · build 91<span id="foot-count" hidden>0</span></div>
+    <div class="side-foot"><span id="footbk"></span><br>v1.2 · build 102<span id="foot-count" hidden>0</span></div>
   </aside>
   <nav id="tabbar" aria-label="Quick navigation"><a href="#/dashboard" data-tb="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Home</a><a href="#/students" data-tb="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.5-6 7-6s6.2 2 7 6"/></svg>Students</a><a href="#" data-tb="classmode" id="tbClass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/></svg>Class Mode</a><a href="#/teacher" data-tb="teacher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5L8 21H3v-5Z"/></svg>Teach</a><a href="#" data-tb="more" id="tbMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</a></nav>
 
@@ -2369,7 +2480,8 @@ function renderConditionalLetterBody(d){
   </div>
 
   <div class="cta">\u2705 <strong>Please confirm your appointment</strong> by replying to this email or texting
-  <strong>(612)&nbsp;444-2609</strong>. If this date or time doesn\u2019t work, let us know and we\u2019ll gladly find another.</div>`;
+  <strong>(612)&nbsp;444-2609</strong>. If this date or time doesn\u2019t work, let us know and we\u2019ll gladly find another.</div>
+  ${d.expires?`<p style="margin-top:12px">\u23F3 <strong>We\u2019re holding this spot for you until ${esc(d.expires)}.</strong> If we haven\u2019t heard from you by then, we\u2019ll offer the spot to the next family on our list \u2014 and you\u2019re always welcome to reach out to pick things back up.</p>`:''}`;
 }
 function money(n){ return '$'+n.toLocaleString('en-US'); }
 function renderClassroomChecklist(){
@@ -3877,12 +3989,12 @@ async function ppDeliverPdf(blob, name){
     <div class="mfoot"><button class="btn btn-o" data-x="c">Close</button><a class="btn btn-p" href="${url}" download="${esc(name)}.pdf" target="_blank" style="text-decoration:none">Open / Download PDF</a></div></div>`, true);
   $('[data-x=c]',o).onclick=()=>o.remove();
 }
-function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, interviewDate, interviewTime){
+function buildInterviewMailto(parentEmail, parentFirst, students, isPlural, interviewDate, interviewTime, expires){
   const subject = 'AMAN \u2014 '+students+' Conditionally Accepted (One Step Left)';
   const lines = [
     'Assal\u0101mu \u02BFalaykum '+parentFirst+',',
     '',
-    'Good news \u2014 '+students+' '+(isPlural?'have been':'has been')+' conditionally accepted to Al-Madrasatu An-Nuriyyah (AMAN). One step remains: a short in-person Parent Interview (about 30 minutes) on '+interviewDate+' at '+interviewTime+'. The attached letter has the full details.',
+    'Good news \u2014 '+students+' '+(isPlural?'have been':'has been')+' conditionally accepted to Al-Madrasatu An-Nuriyyah (AMAN). One step remains: a short in-person Parent Interview (about 30 minutes) on '+interviewDate+' at '+interviewTime+'. The attached letter has the full details.'+(expires?' We\u2019re holding your spot until '+expires+'.':''),
     '',
     'Please reply or text (612) 444-2609 to confirm, or let us know if that time doesn\u2019t work.',
     '',
@@ -3915,8 +4027,8 @@ function buildAgreementMailto(parentEmail, parentFirst, students, isPlural, agre
   ];
   return 'mailto:'+encodeURIComponent(parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
 }
-function buildInterviewSms(parentFirst, students, isPlural, interviewDate, interviewTime){
-  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', '+students+' '+(isPlural?'have been':'has been')+' conditionally accepted to AMAN! One step left: a Parent Interview on '+interviewDate+' at '+interviewTime+' (~30 min). Reply here or call (612) 444-2609 to confirm. \u2014 AMAN';
+function buildInterviewSms(parentFirst, students, isPlural, interviewDate, interviewTime, expires){
+  return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', '+students+' '+(isPlural?'have been':'has been')+' conditionally accepted to AMAN! One step left: a Parent Interview on '+interviewDate+' at '+interviewTime+' (~30 min).'+(expires?' Spot held until '+expires+'.':'')+' Reply here or call (612) 444-2609 to confirm. \u2014 AMAN';
 }
 function buildAgreementSms(parentFirst, students, agreementUrl){
   return 'As-sal\u0101mu \u02BFalaykum '+parentFirst+', thanks for meeting with us! Next step for '+students+': complete the Parent Agreement Form \u2014 '+agreementUrl+' \u2014 Questions? Call/text (612) 444-2609. \u2014 AMAN';
@@ -15716,6 +15828,7 @@ function admWaitlistPos(a){
 function admStageDisplay(a){
   if(a.stage==='waitlist') return 'Waiting List';
   if(a.stage==='notfit') return 'Not a Fit Right Now';
+  if(a.stage==='noresponse') return 'No Response — On File';
   if(a.stage==='enrolled') return 'Enrolled';
   if(a.stage==='enrollment') return a.decision==='accepted' ? 'Accepted — Ready to Enroll' : ADM_STAGE_LABEL.enrollment;
   return ADM_STAGE_LABEL[a.stage] || a.stage;
@@ -15723,6 +15836,7 @@ function admStageDisplay(a){
 function admStageTagClass(a){
   if(a.stage==='waitlist') return 'tag-gold';
   if(a.stage==='notfit') return 'tag-red';
+  if(a.stage==='noresponse') return 'tag-dim';
   if(a.stage==='enrolled' || a.stage==='enrollment') return 'tag-green';
   if(a.stage==='decision') return 'tag-stage-decision';
   if(a.stage==='interview') return 'tag-stage-interview';
@@ -15732,6 +15846,7 @@ function admStageTagClass(a){
 function admPhaseKey(a){
   if(a.stage==='waitlist') return 'waitlist';
   if(a.stage==='notfit') return 'notfit';
+  if(a.stage==='noresponse') return 'noresponse';
   if(a.stage==='enrolled' || a.stage==='enrollment') return 'accepted';
   if(a.stage==='decision') return 'decision';
   if(a.stage==='interview') return 'interview';
@@ -15742,6 +15857,108 @@ let AMAN_LOGO='', AMAANAH_LOGO='';
 function admSectHeader(phaseKey, label, count){
   return `<div class="sect" id="sect-${phaseKey}"><span class="sect-dot" data-phase="${phaseKey}"></span>${esc(label)}<span class="rule"></span><span style="font-family:var(--f-mono);font-size:12px;color:var(--ink3);font-weight:400">${count}</span></div>`;
 }
+
+/* ===================== NO-SHOW FOLLOW-UP ===================== */
+const NS_TONES = [['warm','Warm & friendly'],['formal','Polite & formal'],['brief','Short & simple'],['firm','Direct — clear deadline']];
+const NS_DEFAULTS = {nudges:[{days:3,tone:'warm'}], cutoffDays:8, cutoffTo:'noresponse', reschedTone:'warm', closeTone:'warm', remind:true, remindDays:1, remindTone:'warm', expiryDays:14};
+function nsCfg(){
+  const s=(DB.data.settings.noShow||{}); const c=Object.assign({},NS_DEFAULTS,s);
+  const seen={}; c.nudges=(Array.isArray(s.nudges)?s.nudges:NS_DEFAULTS.nudges).map(n=>({days:Math.max(1,parseInt(n.days)||1),tone:n.tone||'warm'}))
+    .filter(n=>seen[n.days]?false:(seen[n.days]=1)).sort((a,b)=>a.days-b.days);
+  c.cutoffDays=Math.max(1,parseInt(c.cutoffDays)||8); c.expiryDays=Math.max(0,parseInt(c.expiryDays)||0); c.remindDays=Math.max(1,parseInt(c.remindDays)||1);
+  return c;
+}
+function nsDaysBetween(a,b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5); }
+function nsAddDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function nsLongDate(iso){ return parseLocalDate(iso).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); }
+function nsSlotLabel(d,t){ return nsLongDate(d)+(t?' at '+fmtTime(t):''); }
+// everyone sharing this application + stage moves together (siblings share one interview)
+function nsGroup(a){ return DB.data.admissions.filter(x=>x.id===a.id || (a.appId && x.appId===a.appId && x.stage===a.stage)); }
+function nsStatus(a){
+  if(!a || a.stage!=='interview') return null;
+  const c=nsCfg(), t=today();
+  if(a.fu){
+    const since=nsDaysBetween(a.fu.start,t), sent=a.fu.sent||[], cutAt=nsAddDays(a.fu.start,c.cutoffDays);
+    if(since>=c.cutoffDays) return {k:'cutoff',since,cutAt};
+    const idx=c.nudges.findIndex(n=>!sent.includes(n.days));
+    if(idx>=0){ const due=nsAddDays(a.fu.start,c.nudges[idx].days); return t>=due?{k:'nudge',idx,since,cutAt,due}:{k:'wait',idx,since,cutAt,due}; }
+    return {k:'wait',idx:-1,since,cutAt};
+  }
+  if(a.interviewDate){
+    const left=nsDaysBetween(t,a.interviewDate);
+    if(left<0) return {k:'passed',left};
+    if(c.remind && left<=c.remindDays && a.remindSent!==a.interviewDate) return {k:'remind',left};
+  }
+  return null;
+}
+function admNsTags(a){
+  let h='';
+  if(a.noShowCount) h+=`<span class="tag ${a.noShowCount>1?'tag-red':'tag-gold'}" title="Missed the Parent Interview ${a.noShowCount} time${a.noShowCount===1?'':'s'}">⚠ No-show${a.noShowCount>1?' ×'+a.noShowCount:''}</span>`;
+  if(a.stage==='interview' && a.condExpires){ const left=nsDaysBetween(today(),a.condExpires);
+    h+=`<span class="tag ${left<0?'tag-red':left<=3?'tag-gold':'tag-dim'}" title="The conditional offer is held until ${esc(fmtDate(a.condExpires))}">${left<0?'⏳ offer expired':'⏳ held until '+esc(fmtDate(a.condExpires))}</span>`; }
+  return h;
+}
+function nsShort(iso){ return parseLocalDate(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function admFuStrip(a){
+  const s=nsStatus(a); if(!s) return '';
+  const c=nsCfg(), B=(l,act,p)=>`<button class="btn ${p?'btn-p':'btn-o'} btn-sm" data-adm="${a.id}" data-act="${act}">${l}</button>`;
+  let lvl='info', ico='', head='', sub='', btns='', bar='';
+  const prog=()=>`<div class="adm-fu-bar" title="Day ${s.since} of ${c.cutoffDays}"><i style="width:${Math.min(100,Math.round(s.since/c.cutoffDays*100))}%"></i></div>`;
+  if(s.k==='passed'){ lvl='warn'; ico='📅'; head='Interview time passed'; sub='Did they come? Interview was '+nsShort(a.interviewDate)+'.'; btns=B('⚠ No-show','noshow',1)+B('↻ Moved it','resched'); }
+  else if(s.k==='remind'){ ico='⏰'; head='Interview '+(s.left===0?'today':s.left===1?'tomorrow':'in '+s.left+' days'); sub='Reminder not sent yet.'; btns=B('⏰ Send reminder','nsremind',1); }
+  else if(s.k==='nudge'){ lvl='warn'; ico='💬'; head='Nudge due'; sub='Day '+s.since+' of '+c.cutoffDays+' · closes '+nsShort(s.cutAt); bar=prog(); btns=B('💬 Send nudge','nsnudge',1)+B('↻ Reschedule','resched')+B('✓ They replied','nsreplied'); }
+  else if(s.k==='cutoff'){ lvl='bad'; ico='📥'; head='No reply — time to close out'; sub='No answer in '+s.since+' days. Close gently; the application stays on file.'; bar=prog(); btns=B('📥 Close out','nsclose',1)+B('↻ Reschedule','resched')+B('✓ They replied','nsreplied'); }
+  else { ico='⏳'; head='Waiting for a reply'; sub='Day '+s.since+' of '+c.cutoffDays+' · '+(s.idx>=0?'next nudge '+nsShort(s.due):'all nudges sent')+' · closes '+nsShort(s.cutAt); bar=prog(); btns=B('💬 Nudge now','nsnudge')+B('↻ Reschedule','resched')+B('✓ Replied','nsreplied'); }
+  return `<div class="adm-fu ${lvl} no-print"><div class="adm-fu-head"><span class="adm-fu-ico" aria-hidden="true">${ico}</span><div style="min-width:0"><div class="adm-fu-t">${head}</div><div class="adm-fu-s">${esc(sub)}</div></div></div>${bar}<div class="adm-fu-btns">${btns}</div></div>`;
+}
+function admNsHistory(a){
+  const L=(a.log||[]).filter(x=>/no-show|nudge|reminder|rescheduled|follow-up|No response/i.test(x.text));
+  if(!a.noShowCount && !L.length) return '';
+  return `<div class="card" style="margin-top:14px"><b>⚠ Interview follow-up</b>${a.noShowCount?` <span class="tag ${a.noShowCount>1?'tag-red':'tag-gold'}">missed ${a.noShowCount}×</span>`:''}
+    <div style="margin-top:8px;font-size:13.5px;color:var(--ink2)">${L.slice(0,8).map(x=>`<div>• ${esc(fmtDate(x.date))} — ${esc(x.text)}</div>`).join('')||'No follow-up logged yet.'}</div></div>`;
+}
+function admFuBanner(){
+  const seen={}, rows=[];
+  DB.data.admissions.forEach(a=>{ const s=nsStatus(a); if(!s||s.k==='wait') return; const key=(a.appId||a.id)+s.k; if(seen[key]) return; seen[key]=1; rows.push([a,s]); });
+  if(!rows.length) return '';
+  const lab={passed:['⚠ No-show?','noshow','interview time passed — did they come?'],remind:['⏰ Send reminder','nsremind','interview soon — remind them'],nudge:['💬 Send nudge','nsnudge','nudge due'],cutoff:['📥 Close out','nsclose','no reply — close out']};
+  return `<div class="card adm-fubanner no-print"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>📬 Follow-ups to do (${rows.length})</b><span class="sp" style="flex:1"></span><button class="btn btn-ghost btn-sm" data-fucfg="1">⚙ Schedule &amp; tone</button></div>
+    ${rows.map(([a,s])=>{ const l=lab[s.k]; return `<div class="adm-fb-row"><div style="min-width:0"><div class="adm-fb-n">${esc(admJoinNames(nsGroup(a).map(x=>x.studentName)))}</div><div class="adm-fb-h">${l[2]}</div></div><button class="btn btn-o btn-sm" data-adm="${a.id}" data-act="${l[1]}">${l[0]}</button></div>`; }).join('')}</div>`;
+}
+
+/* ---- message library: kind × tone ---- */
+const nsG = x => 'As-salāmu ʿalaykum '+x.first+',';
+const nsSign = 'Barakallāhu feekum,\nBr. Abdallah bin Abdirahman\nAl-Madrasatu An-Nuriyyah (AMAN)';
+const nsList = x => x.slots.length ? x.slots.map(s=>'• '+s).join('\n') : '(Reply with a day and time that work for you.)';
+const nsInline = x => x.slots.length ? x.slots.join(' / ') : 'a day and time that work for you';
+const nsPack = (x,paras,sms) => ({email:nsG(x)+'\n\n'+paras.join('\n\n')+'\n\n'+nsSign, sms:sms});
+const NS_MSG = {
+  resched:{
+    warm:x=>({subject:'AMAN — Let’s find another time for '+x.students, ...nsPack(x,['We missed you at the Parent Interview for '+x.students+' '+x.when+' — no worries at all, I know life gets busy. I’d still love to meet you. Here are a few times that could work:',nsList(x),'Just reply with the one that suits you best, or text (612) 444-2609 with another time, and I’ll hold it for you.'],nsG(x)+' we missed you '+x.when+' for '+x.students+'’s interview — no worries at all! Would any of these work instead? '+nsInline(x)+'. Just reply with one and I’ll hold it. — AMAN')}),
+    formal:x=>({subject:'AMAN — Rescheduling the Parent Interview for '+x.students, ...nsPack(x,['We did not see you at the scheduled Parent Interview for '+x.students+' '+x.when+'. We would be glad to reschedule, and the conditional acceptance remains in place. The following times are available:',nsList(x),'Please reply to confirm the time that suits you best.'],nsG(x)+' we did not see you at the Parent Interview for '+x.students+' '+x.when+'. We can reschedule: '+nsInline(x)+'. Please reply with your choice. — AMAN')}),
+    brief:x=>({subject:'AMAN — Interview for '+x.students, ...nsPack(x,['We missed you '+x.when+'. Can we do one of these for '+x.students+'’s interview?',nsList(x),'Reply with one and it’s yours.'],nsG(x)+' we missed you '+x.when+'. Can we do '+nsInline(x)+' for '+x.students+'’s interview? Reply with one. — AMAN')}),
+    firm:x=>({subject:'AMAN — Please confirm a new interview time for '+x.students, ...nsPack(x,['The Parent Interview for '+x.students+' was scheduled '+x.when+' and we didn’t hear from you. The interview is required to finish enrollment, so please confirm one of these times'+(x.deadline?' by '+x.deadline:'')+':',nsList(x),'If we don’t hear back'+(x.deadline?' by then':'')+', we’ll need to release the spot to the next family on our list.'],nsG(x)+' we missed the interview for '+x.students+' '+x.when+'. Please confirm one of these'+(x.deadline?' by '+x.deadline:'')+': '+nsInline(x)+'. Otherwise we’ll need to release the spot. — AMAN')}),
+  },
+  nudge:{
+    warm:x=>({subject:'AMAN — Still holding '+x.students+'’s spot', ...nsPack(x,['Just checking in about the Parent Interview for '+x.students+'. We’d still love to meet you, and we’re holding your spot'+(x.deadline?' until '+x.deadline:'')+'.','Reply with a time that works and I’ll confirm it right away — or text (612) 444-2609 if that’s easier.'],nsG(x)+' just checking in about '+x.students+'’s interview — we’re still holding your spot'+(x.deadline?' until '+x.deadline:'')+'. Reply with a time that works and I’ll confirm. — AMAN')}),
+    formal:x=>({subject:'AMAN — Follow-up: Parent Interview for '+x.students, ...nsPack(x,['We are following up regarding the Parent Interview for '+x.students+'. Your conditional acceptance is being held'+(x.deadline?' until '+x.deadline:'')+'. Please reply with a time that suits you so that we can schedule the interview.'],nsG(x)+' following up on the Parent Interview for '+x.students+'. Your spot is held'+(x.deadline?' until '+x.deadline:'')+'. Please reply with a time that suits you. — AMAN')}),
+    brief:x=>({subject:'AMAN — Interview for '+x.students, ...nsPack(x,['Still holding '+x.students+'’s spot'+(x.deadline?' until '+x.deadline:'')+'. What time works for the interview?'],nsG(x)+' still holding '+x.students+'’s spot'+(x.deadline?' until '+x.deadline:'')+'. What time works for the interview? — AMAN')}),
+    firm:x=>({subject:'AMAN — Last call to keep '+x.students+'’s spot'+(x.deadline?' ('+x.deadline+')':''), ...nsPack(x,['We haven’t heard back about the Parent Interview for '+x.students+'. We can hold the spot only until '+(x.deadline||'the end of this week')+'.','Please reply with a time by then to keep it. After that, we’ll offer it to the next family on our list.'],nsG(x)+' we can hold '+x.students+'’s spot only until '+(x.deadline||'the end of this week')+'. Please reply with an interview time by then. — AMAN')}),
+  },
+  close:{
+    warm:x=>({subject:'AMAN — '+x.students+'’s application is still on file', ...nsPack(x,['We haven’t been able to connect about the Parent Interview, so I’m going to step back for now so that we don’t keep your spot in limbo. There’s no pressure at all.','Your application is still on file — whenever you’re ready, just reach out ((612) 444-2609) and we’ll find a time. May Allah make things easy for you.'],nsG(x)+' we haven’t been able to connect about '+x.students+'’s interview, so I’m stepping back for now. Your application is still on file — reach out any time you’re ready. — AMAN')}),
+    formal:x=>({subject:'AMAN — Application status for '+x.students, ...nsPack(x,['As we have not been able to schedule the Parent Interview for '+x.students+', we are closing the active follow-up for now and releasing the held spot.','Your application remains on file. Should you wish to proceed in the future, please contact us at (612) 444-2609 and we will gladly arrange an interview.'],nsG(x)+' as we could not schedule the interview for '+x.students+', we are releasing the held spot for now. Your application remains on file; contact us any time to proceed. — AMAN')}),
+    brief:x=>({subject:'AMAN — '+x.students+'’s application', ...nsPack(x,['We’re closing the follow-up for now. Your application is still on file — reach out whenever you’re ready.'],nsG(x)+' closing the follow-up for now. '+x.students+'’s application is still on file — reach out whenever you’re ready. — AMAN')}),
+    firm:x=>({subject:'AMAN — Spot released for '+x.students, ...nsPack(x,['Since we haven’t heard back, we’ve released the held spot for '+x.students+' so we can offer it to another family.','Your application is still on file. If you’d like to continue, contact us at (612) 444-2609 and we’ll schedule an interview as space allows.'],nsG(x)+' we haven’t heard back, so we’ve released the held spot for '+x.students+'. Your application is still on file — contact us if you’d like to continue. — AMAN')}),
+  },
+  remind:{
+    warm:x=>({subject:'AMAN — Reminder: '+x.students+'’s interview '+x.dayWord, ...nsPack(x,['A quick reminder about the Parent Interview for '+x.students+' '+x.dayWord+', '+x.date+' at '+x.time+'. We’re looking forward to meeting you.','Please reply to confirm — and if anything has changed, tell us now and we’ll gladly move it.'],nsG(x)+' reminder: the interview for '+x.students+' is '+x.dayWord+' ('+x.date+') at '+x.time+'. Reply to confirm — or tell us if we need to move it. — AMAN')}),
+    formal:x=>({subject:'AMAN — Parent Interview reminder for '+x.students, ...nsPack(x,['This is a reminder of the Parent Interview for '+x.students+' on '+x.date+' at '+x.time+'. Kindly reply to confirm your attendance, or let us know if you need to reschedule.'],nsG(x)+' reminder of the Parent Interview for '+x.students+' on '+x.date+' at '+x.time+'. Please confirm, or let us know if you need to reschedule. — AMAN')}),
+    brief:x=>({subject:'AMAN — Interview '+x.dayWord, ...nsPack(x,['Reminder: '+x.students+'’s interview is '+x.dayWord+' at '+x.time+'. Reply to confirm.'],nsG(x)+' reminder: '+x.students+'’s interview is '+x.dayWord+' at '+x.time+'. Reply to confirm. — AMAN')}),
+    firm:x=>({subject:'AMAN — Please confirm '+x.dayWord+'’s interview', ...nsPack(x,['The Parent Interview for '+x.students+' is '+x.dayWord+', '+x.date+' at '+x.time+'. Please reply to confirm today. If we don’t hear from you, we’ll assume you can’t make it and may need to release the time.'],nsG(x)+' the interview for '+x.students+' is '+x.dayWord+' at '+x.time+'. Please confirm today, or we may need to release the time. — AMAN')}),
+  }
+};
+
 let admLastMoved = null;
 function admSetStage(a, stage, note){
   a.stage = stage;
@@ -15760,7 +15977,8 @@ function admSaveLetter(group,kind,html){ group.forEach(x=>{ (x.letters=x.letters
 function admProfileActions(a){ return admProfileActions0(a)+admLetterBtns(a); }
 function admProfileActions0(a){
   if(a.stage==='review')     return admBtnRow(a,[['✓ Advance to Interview','adv'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
-  if(a.stage==='interview')  return admBtnRow(a,[['✓ Interview Done → Agreement','adv'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
+  if(a.stage==='interview')  return admBtnRow(a,[['✓ Interview Done → Agreement','adv'],...(((nsStatus(a)||{}).k&&(nsStatus(a)||{}).k!=='remind')?[]:[a.fu?['↻ Reschedule','resched']:['⚠ No-show','noshow']]),['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
+  if(a.stage==='noresponse') return admBtnRow(a,[['↩ Schedule a new interview','nrint'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
   if(a.stage==='agreement')  return admBtnRow(a,[['✓ Agreement Signed → Decision','adv'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
   if(a.stage==='decision')   return admBtnRow(a,[['✓ Accept','accept'],['🕒 Waitlist','wl'],['✕ Not a Fit','nf']]);
   if(a.stage==='enrollment') return admBtnRow(a,[['🎓 Enroll Student','enroll'],['💳 Payment Received','paid']]);
@@ -15811,7 +16029,7 @@ function admCard(a){
   const siblings = all.filter(x=>x.appId && x.appId===a.appId && x.id!==a.id);
   const lastLog = (a.log&&a.log[0]) || null;
   const wlPos = a.stage==='waitlist'? admWaitlistPos(a) : null;
-  const closed = ['notfit','enrolled'].includes(a.stage);
+  const closed = ['notfit','enrolled','noresponse'].includes(a.stage);
   const idle = closed? null : admAgeDays(a);
   const justMoved = a.id===admLastMoved;
   if(justMoved) admLastMoved = null;
@@ -15825,11 +16043,11 @@ function admCard(a){
   if(a.stage==='waitlist' && a.waitlistSince){
     const wd = Math.max(0, Math.round((new Date(today())-new Date(a.waitlistSince))/864e5));
     waitTag = `<span class="tag ${wd>=45?'tag-red':wd>=21?'tag-gold':'tag-dim'}" title="On the waiting list since ${esc(fmtDate(a.waitlistSince))}">⏳ waiting ${wd}d</span>`;
-  } else if(idle!=null){
+  } else if(idle!=null && !a.fu){
     waitTag = `<span class="tag ${idle>=8?'tag-red':idle>=4?'tag-gold':'tag-dim'}" title="${idle} day${idle===1?'':'s'} since the last stage change — nothing has moved on this application">⏱ idle ${idle}d</span>`;
   }
   const fitTag = fit ? (fit.fits ? `<span class="tag tag-green" title="An open seat exists for this whole family (${fit.need} needed)">✓ fits open seats</span>` : `<span class="tag tag-dim" title="This family needs ${fit.need} seat${fit.need===1?'':'s'} — not enough open right now">needs ${fit.need} seat${fit.need===1?'':'s'}</span>`) : '';
-  const tags = `<span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlPos?' #'+wlPos:''}</span>${waitTag}${fitTag}${healthFlagText?`<span class="adm-healthflag" title="${esc(healthFlagText)}" aria-label="Health or allergy note on file: ${esc(healthFlagText)}">⚕</span>`:''}`;
+  const tags = `<span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlPos?' #'+wlPos:''}</span>${waitTag}${fitTag}${admNsTags(a)}${healthFlagText?`<span class="adm-healthflag" title="${esc(healthFlagText)}" aria-label="Health or allergy note on file: ${esc(healthFlagText)}">⚕</span>`:''}`;
   // 5-step stepper for the live pipeline stages
   const si = ADM_STAGE_ORDER.indexOf(a.stage);
   const stepper = si>=0 ? `<div><div class="adm-steps" style="--sc:var(--stage-${phase})" aria-hidden="true">${ADM_STAGE_ORDER.map((_,i)=>`<i class="${i<=si?'on':''}${i===si?' cur':''}"></i>`).join('')}</div><div class="adm-steplbl">Step ${si+1} of ${ADM_STAGE_ORDER.length} · ${esc(ADM_STAGE_LABEL[a.stage])}</div></div>` : '';
@@ -15855,12 +16073,13 @@ function admCard(a){
         </div>
       </div>
       <div class="adm-tags">${tags}</div>
+      ${admFuStrip(a)}
       ${stepper}
       ${rows?`<div class="adm-details">${rows}</div>`:''}
     </div>
-    <div class="adm-actions">${admProfileActions(a)}
+    ${(()=>{ const inner=`<div class="adm-actions">${admProfileActions(a)}
       <button class="btn btn-ghost btn-sm" data-adm="${a.id}" data-act="note" title="Add note">📝</button>
-    </div>
+    </div>`; return nsStatus(a)?`<details class="adm-more no-print"><summary>More actions</summary>${inner}</details>`:inner; })()}
     ${contact}
   </div>`;
 }
@@ -15880,18 +16099,19 @@ const Admissions = {
     const flt = Admissions._flt||'all', compact = Admissions._view==='compact';
     const sibCount = a => d.admissions.filter(x=>x.appId && x.appId===a.appId && x.id!==a.id).length;
     const fmatch = a => flt==='all'
-      || (flt==='stale' && !['notfit','enrolled'].includes(a.stage) && admAgeDays(a)>=8)
+      || (flt==='stale' && !['notfit','enrolled','noresponse'].includes(a.stage) && admAgeDays(a)>=8)
       || (flt==='health' && !!admHealthText(a))
       || (flt==='sib' && sibCount(a)>0)
       || (flt==='fits' && a.stage==='waitlist' && (Admissions._fit[a.id]||{}).fits);
     const pool = d.admissions.filter(match);
     const fcount = {all:pool.length,
-      stale:pool.filter(a=>!['notfit','enrolled'].includes(a.stage)&&admAgeDays(a)>=8).length,
+      stale:pool.filter(a=>!['notfit','enrolled','noresponse'].includes(a.stage)&&admAgeDays(a)>=8).length,
       health:pool.filter(a=>!!admHealthText(a)).length,
       sib:pool.filter(a=>sibCount(a)>0).length,
       fits:pool.filter(a=>a.stage==='waitlist'&&(Admissions._fit[a.id]||{}).fits).length};
-    const active = d.admissions.filter(a=>!['notfit','enrolled'].includes(a.stage) && match(a));
+    const active = d.admissions.filter(a=>!['notfit','enrolled','noresponse'].includes(a.stage) && match(a));
     const notfit = d.admissions.filter(a=>a.stage==='notfit' && match(a));
+    const noresp = d.admissions.filter(a=>a.stage==='noresponse' && match(a));
     const enrolled = d.admissions.filter(a=>a.stage==='enrolled' && match(a));
     const counts = {}; ADM_STAGES.forEach(s=>counts[s.id]=active.filter(a=>a.stage===s.id).length);
     counts.waitlist = active.filter(a=>a.stage==='waitlist').length;
@@ -15910,6 +16130,7 @@ const Admissions = {
       ['agreement','Agreement',counts.agreement],
       ['decision','Decision',counts.decision],
       ['accepted','Accepted',counts.enrollment + enrolled.length],
+      ['noresponse','No Response',noresp.length],
       ['notfit','Not a Fit',notfit.length],
     ];
     const healthTotal = healthSegs.reduce((s,[,,n])=>s+n,0);
@@ -15930,8 +16151,9 @@ const Admissions = {
       </div>`;
     v.innerHTML = `<div class="page-wm"><div class="ama-hero aman-hero"><div class="logo-tile" title="Al-Madrasatu An-Nuriyyah"><img src="${AMAN_LOGO}" alt="AMAN logo"></div><div style="min-width:0"><div class="eyebrow">AMAN Admissions Pipeline</div><h2 class="page-title">AMAN Admissions</h2>
      <div class="ama-tag">Youth Educated… Family Cultivated… World Illuminated</div><p>${esc(summary)}</p></div></div>
+     ${admFuBanner()}
      ${(()=>{ const st=admSeats(), wlN=counts.waitlist, pct=Math.min(100,st.filled/Math.max(1,st.cap)*100);
-        const chipDefs=[['review','Review',counts.review,1],['interview','Interview',counts.interview,1],['agreement','Agreement',counts.agreement,1],['decision','Decision',counts.decision,1],['accepted','Ready to enroll',counts.enrollment,1],['waitlist','Waiting list',wlN,0],['notfit','Not a fit',notfit.length,0]];
+        const chipDefs=[['review','Review',counts.review,1],['interview','Interview',counts.interview,1],['agreement','Agreement',counts.agreement,1],['decision','Decision',counts.decision,1],['accepted','Ready to enroll',counts.enrollment,1],['waitlist','Waiting list',wlN,0],['noresponse','No response',noresp.length,0],['notfit','Not a fit',notfit.length,0]];
         const chip=([k,l,n,always])=>(n||always)?`<button class="apc-chip${n?'':' zero'}" data-phase="${k}" ${n?`data-jump="${k}"`:'disabled'}><i data-phase="${k}"></i><b>${n}</b><span>${l}</span></button>`:'';
         return `<div class="card apc no-print">
           <div class="apc-top"><div class="apc-seat"><b>${st.filled}</b><span>of ${st.cap} seats</span><em class="${st.open?'ok':'bad'}">${st.open} open</em></div>
@@ -15945,6 +16167,7 @@ const Admissions = {
        <button class="btn btn-o btn-sm" id="admLink" title="Send the application link or show its QR code">🔗 Application link</button>
        <details class="st-more"><summary class="btn btn-o btn-sm" aria-label="More">⋯</summary><div class="pop">
          <button class="btn btn-sm" id="admSyncAgr">✅ Check signed agreements</button>
+         <button class="btn btn-sm" id="admFuCfg">⚙ Follow-up settings</button>
          <button class="btn btn-sm" id="admCfg">⚙ Sync settings</button></div></details>
        ${d.admissions.length?`<input type="search" id="admFind" placeholder="Find applicant or parent…" value="${esc(Admissions._find||'')}">`:''}
        <span class="sp"></span><span class="apc-meta">${d.settings.admissionsLastSync?'Synced '+rel(d.settings.admissionsLastSync):'Never synced'}</span></div>
@@ -15972,6 +16195,8 @@ const Admissions = {
         if(!wl.length) return '';
         return `${admSectHeader('waitlist','Waiting List',wl.length)}
          <div class="adm-grid${compact?' adm-compact':''}">${wl.map(admCard).join('')}</div>`; })()}
+     ${noresp.filter(fmatch).length?`${admSectHeader('noresponse','No Response — still on file, welcome back any time',noresp.filter(fmatch).length)}
+      <div class="adm-grid${compact?' adm-compact':''}">${noresp.filter(fmatch).map(admCard).join('')}</div>`:''}
      ${notfit.filter(fmatch).length?`${admSectHeader('notfit','Not a Fit Right Now — welcome to reapply',notfit.filter(fmatch).length)}
       <div class="adm-grid${compact?' adm-compact':''}">${notfit.filter(fmatch).map(admCard).join('')}</div>`:''}
      ${enrolled.length?`<div class="sect" id="sect-accepted-roster"><span class="sect-dot" data-phase="accepted"></span>Recently Enrolled<span class="rule"></span></div>
@@ -15988,6 +16213,8 @@ const Admissions = {
     $('#admAdd',v)&&($('#admAdd',v).onclick=add); $('#admAdd2',v)&&($('#admAdd2',v).onclick=add);
     $('#admCfg',v)&&($('#admCfg',v).onclick=()=>Admissions.settingsForm());
     $('#admSeatCfg',v)&&($('#admSeatCfg',v).onclick=()=>Admissions.capacityForm());
+    $('#admFuCfg',v)&&($('#admFuCfg',v).onclick=()=>Admissions.fuSettings());
+    $$('[data-fucfg]',v).forEach(b=>b.onclick=()=>Admissions.fuSettings());
     $$('[data-admflt]',v).forEach(b=>b.onclick=()=>{ Admissions._flt=b.dataset.admflt; Router.render(); });
     $$('[data-admview]',v).forEach(b=>b.onclick=()=>{ Admissions._view=b.dataset.admview; Router.render(); });
     $$('[data-sibgo]',v).forEach(b=>{ const go=e=>{ e.stopPropagation(); Router.go('#/admissions/'+b.dataset.sibgo); };
@@ -15999,6 +16226,98 @@ const Admissions = {
       confirmBox('Dismiss this submission? It won\u2019t be matched to any applicant, and won\u2019t show up again on future syncs.', ()=>{
         DB.data.unmatchedAgreements[i].dismissed = true; DB.save(); toast('Dismissed'); Router.render(); }); });
     const f=$('#admFind',v); if(f){ f.oninput=()=>{ Admissions._find=f.value; clearTimeout(Admissions._ft); Admissions._ft=setTimeout(()=>{Router.render(); const nf=$('#admFind'); if(nf){nf.focus(); nf.setSelectionRange(nf.value.length,nf.value.length);}},250); }; }
+  },
+
+  fuCompose(a,kind,opts){
+    const c=nsCfg(), g=nsGroup(a), names=admJoinNames(g.map(x=>x.studentName)), plural=g.length>1, st=nsStatus(a)||{};
+    const pref=admContactPref(a), hasTel=!!admPhoneDigits(a.parentPhone), hasMail=!!a.parentEmail, t0=today();
+    let chan = ((pref==='email'&&hasMail)||!hasTel) ? 'email' : 'sms';
+    let tone = (kind==='nudge'? (c.nudges[st.idx]||{}).tone : kind==='close'? c.closeTone : kind==='remind'? c.remindTone : c.reschedTone) || 'warm';
+    const missed = (a.fu&&a.fu.missed) || a.interviewDate || '';
+    const dlDefault = nsAddDays((a.fu&&a.fu.start)||t0, c.cutoffDays);
+    const titles={resched:'Log no-show · offer new times',nudge:'Send follow-up nudge',close:'Close out — no response',remind:'Interview reminder'};
+    // default reschedule slots: next Saturday, next Sunday, the Saturday after
+    const nextDow=(dow,after)=>{ let d=nsAddDays(after,1); while(parseLocalDate(d).getDay()!==dow) d=nsAddDays(d,1); return d; };
+    const sat1=nextDow(6,t0), sun1=nextDow(0,t0), sat2=nextDow(6,sat1), tm=(a.interviewTime||'10:00');
+    const slotRows = kind==='resched' ? [sat1,sun1,sat2].map(d=>`<div class="fc-slot" style="display:flex;gap:8px;margin-bottom:6px"><input type="date" class="d" value="${d}" style="flex:1.3"><input type="time" class="t" value="${esc(tm)}" style="flex:1"></div>`).join('') : '';
+    const showDl = kind==='nudge' || kind==='resched';
+    const o=overlay(`<div class="modal ns-sheet" style="max-width:560px"><h3>${titles[kind]}</h3>
+      <p style="font-size:13px;color:var(--ink2);margin:0 0 10px">For <b>${esc(names)}</b>${a.parentName?' · '+esc(a.parentName):''}</p>
+      ${kind==='resched'?`<div class="field"><label>Offer these times</label>${slotRows}</div>`:''}
+      ${showDl?`<div class="field"><label>${kind==='nudge'?'Holding the spot until':'Reply-by date (used in the Direct tone)'}</label><input type="date" id="fc-dl" value="${dlDefault}"></div>`:''}
+      <div class="field"><label>Tone</label><select id="fc-tone">${NS_TONES.map(([k,l])=>`<option value="${k}"${k===tone?' selected':''}>${l}</option>`).join('')}</select></div>
+      <div class="field"><label style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">Message <span style="flex:1"></span>
+        <span class="seg" style="display:inline-flex;gap:4px"><button type="button" class="btn btn-sm ${chan==='sms'?'btn-p':'btn-o'}" id="fc-c-sms"${hasTel?'':' disabled'}>💬 Text</button><button type="button" class="btn btn-sm ${chan==='email'?'btn-p':'btn-o'}" id="fc-c-email"${hasMail?'':' disabled'}>✉️ Email</button></span></label>
+        <textarea id="fc-body" style="min-height:150px"></textarea>
+        <div style="font-size:12px;color:var(--ink3);margin-top:3px">Edit freely — changing the tone or times rewrites it.</div></div>
+      <p style="font-size:12px;color:var(--ink3);margin:0 0 4px">${kind==='resched'?'Sending, copying or “Mark done” will log the no-show on the card.':kind==='close'?'Sending, copying or “Mark done” will move the card to '+(c.cutoffTo==='waitlist'?'the Waiting List':'No Response')+'.':'Sending, copying or “Mark done” logs this on the card.'}</p>
+      <div class="mfoot ns-foot"><a class="btn btn-p" id="fc-send" target="_blank" rel="noopener">Open</a><div class="ns-foot-row"><button class="btn btn-o" id="fc-copy">📋 Copy</button><button class="btn btn-o" id="fc-done" title="Log it without opening a message (you sent it another way)">✓ Mark done</button><button class="btn btn-ghost" data-x="c">Cancel</button></div></div></div>`, true);
+    let txt={sms:'',email:''}, subject='', done=false;
+    const body=$('#fc-body',o), send=$('#fc-send',o);
+    const gen=()=>{
+      const slots=[...o.querySelectorAll('.fc-slot')].map(r=>({d:$('.d',r).value,t:$('.t',r).value})).filter(s=>s.d).map(s=>nsSlotLabel(s.d,s.t));
+      const dl=$('#fc-dl',o)?$('#fc-dl',o).value:''; const left=a.interviewDate?nsDaysBetween(t0,a.interviewDate):0;
+      const x={first:admFirstName(a.parentName), students:names, plural, slots, deadline:dl?nsLongDate(dl):'',
+        when:(!missed||missed===t0)?'today':'on '+nsLongDate(missed), date:a.interviewDate?nsLongDate(a.interviewDate):'', time:a.interviewTime?fmtTime(a.interviewTime):'',
+        dayWord:left<=0?'today':left===1?'tomorrow':'on '+(a.interviewDate?nsLongDate(a.interviewDate):'')};
+      const m=NS_MSG[kind][tone](x); txt={sms:m.sms,email:m.email}; subject=m.subject; show();
+    };
+    const link=()=>chan==='sms' ? smsHref(a.parentPhone, txt.sms) : 'mailto:'+encodeURIComponent(a.parentEmail||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(txt.email);
+    const show=()=>{ body.value=txt[chan]; send.textContent=chan==='sms'?'💬 Open Text':'✉️ Open Email'; send.href=link();
+      $('#fc-c-sms',o).className='btn btn-sm '+(chan==='sms'?'btn-p':'btn-o'); $('#fc-c-email',o).className='btn btn-sm '+(chan==='email'?'btn-p':'btn-o'); };
+    body.oninput=()=>{ txt[chan]=body.value; send.href=link(); };
+    $('#fc-tone',o).onchange=e=>{ tone=e.target.value; gen(); };
+    o.querySelectorAll('.fc-slot input,#fc-dl').forEach(i=>i.onchange=gen);
+    $('#fc-c-sms',o).onclick=()=>{ chan='sms'; show(); }; $('#fc-c-email',o).onclick=()=>{ chan='email'; show(); };
+    const apply=()=>{ if(done) return; done=true; const t=today();
+      g.forEach(x=>{
+        if(kind==='resched'){ x.noShowCount=(x.noShowCount||0)+1; x.fu={start:t,missed:x.interviewDate||t,sent:[]}; admLog(x,'No-show — missed interview'+(x.interviewDate?' on '+fmtDate(x.interviewDate):'')+'; new times offered'); }
+        else if(kind==='nudge'){ x.fu=x.fu||{start:t,missed:x.interviewDate||t,sent:[]}; x.fu.sent=x.fu.sent||[]; x.fu.sent.push(st.idx>=0?c.nudges[st.idx].days:'x'+t); admLog(x,'Follow-up nudge sent'+(st.since!=null?' (day '+st.since+')':'')); }
+        else if(kind==='remind'){ x.remindSent=x.interviewDate; admLog(x,'Interview reminder sent'); }
+        else if(kind==='close'){ x.fu=null; admSetStage(x, c.cutoffTo==='waitlist'?'waitlist':'noresponse', c.cutoffTo==='waitlist'?'No response after missed interview — moved to Waiting List':'No response after missed interview — closed, application stays on file'); }
+      });
+      DB.log('Admissions: '+names+' — '+kind); DB.save();
+      toast(kind==='resched'?'No-show logged':kind==='nudge'?'Nudge logged':kind==='remind'?'Reminder logged':'Closed out — on file');
+      setTimeout(()=>{ o.remove(); Router.render(); },350);
+    };
+    send.onclick=()=>{ send.href=link(); apply(); };
+    $('#fc-copy',o).onclick=async()=>{ try{ await navigator.clipboard.writeText(chan==='email'?subject+'\n\n'+txt.email:txt.sms); toast('Copied'); }catch(e){ body.select(); toast('Select and copy the text'); } apply(); };
+    $('#fc-done',o).onclick=apply;
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    gen();
+  },
+  fuSettings(){
+    const c=nsCfg(); let rows=c.nudges.map(n=>({days:n.days,tone:n.tone}));
+    const toneSel=(id,v)=>`<select id="${id}">${NS_TONES.map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('')}</select>`;
+    const o=overlay(`<div class="modal ns-sheet" style="max-width:520px"><h3>Follow-up settings</h3>
+      <p style="font-size:13px;color:var(--ink2);margin:0 0 10px">How AMAN follows up when a family misses the Parent Interview. Day 0 = the day you log the no-show.</p>
+      <div class="field"><label>Nudges</label><div id="ns-rows"></div><button class="btn btn-o btn-sm" id="ns-add" type="button">＋ Add a nudge</button>
+        <div style="font-size:12px;color:var(--ink3);margin-top:4px">Want just one nudge after 1 day? Keep a single row set to 1. Each nudge can have its own tone.</div></div>
+      <div class="grid tw-modal-grid" style="gap:12px">
+        <div class="field"><label>Close out after (days)</label><input id="ns-cut" type="number" min="1" max="60" value="${c.cutoffDays}"></div>
+        <div class="field"><label>Then move the card to</label><select id="ns-to"><option value="noresponse"${c.cutoffTo==='noresponse'?' selected':''}>No Response (stays on file)</option><option value="waitlist"${c.cutoffTo==='waitlist'?' selected':''}>Waiting List</option></select></div>
+        <div class="field"><label>Reschedule message tone</label>${toneSel('ns-t-re',c.reschedTone)}</div>
+        <div class="field"><label>Closing message tone</label>${toneSel('ns-t-cl',c.closeTone)}</div>
+      </div>
+      <div class="field"><label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="ns-rem" style="width:auto"${c.remind?' checked':''}> Prompt me to send an interview reminder</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap"><input id="ns-rd" type="number" min="1" max="7" value="${c.remindDays}" style="width:70px"> <span style="font-size:13px">day(s) before · tone</span> ${toneSel('ns-t-rm',c.remindTone)}</div></div>
+      <div class="field"><label>Conditional offer holds for (days)</label><input id="ns-exp" type="number" min="0" max="90" value="${c.expiryDays}"><div style="font-size:12px;color:var(--ink3);margin-top:3px">Printed on the conditional letter and messages. 0 = no expiry. You can change it per family when you schedule the interview.</div></div>
+      <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-o" id="ns-reset">Reset</button><button class="btn btn-p" id="ns-save">Save</button></div></div>`, true);
+    const draw=()=>{ $('#ns-rows',o).innerHTML=rows.map((r,i)=>`<div class="ns-nrow"><span style="font-size:13.5px;font-weight:600">Nudge ${i+1} \u00B7 after</span><input type="number" min="1" max="60" value="${r.days}" data-nd="${i}" style="width:72px"><span style="font-size:13.5px">day(s)</span><span style="flex:1"></span><button class="btn btn-ghost btn-sm" data-nx="${i}" type="button" title="Remove" aria-label="Remove this nudge">\u2715</button><select data-nt="${i}">${NS_TONES.map(([k,l])=>`<option value="${k}"${k===r.tone?' selected':''}>${l}</option>`).join('')}</select></div>`).join('')||'<div style="font-size:13px;color:var(--ink3);margin-bottom:6px">No nudges \u2014 you\u2019ll only get the cutoff prompt.</div>';
+      o.querySelectorAll('[data-nd]').forEach(i=>i.onchange=()=>{ rows[+i.dataset.nd].days=Math.max(1,parseInt(i.value)||1); });
+      o.querySelectorAll('[data-nt]').forEach(i=>i.onchange=()=>{ rows[+i.dataset.nt].tone=i.value; });
+      o.querySelectorAll('[data-nx]').forEach(i=>i.onclick=()=>{ rows.splice(+i.dataset.nx,1); draw(); }); };
+    draw();
+    $('#ns-add',o).onclick=()=>{ const last=rows.length?Math.max(...rows.map(r=>r.days)):0; rows.push({days:last+3,tone:'warm'}); draw(); };
+    $('[data-x=c]',o).onclick=()=>o.remove();
+    $('#ns-reset',o).onclick=()=>{ DB.data.settings.noShow=null; DB.save(); o.remove(); toast('Back to defaults'); Router.render(); };
+    $('#ns-save',o).onclick=()=>{
+      const seen={}; const nudges=rows.filter(r=>seen[r.days]?false:(seen[r.days]=1)).sort((a,b)=>a.days-b.days);
+      let cut=Math.max(1,parseInt($('#ns-cut',o).value)||8); const mx=nudges.length?nudges[nudges.length-1].days:0; let fixed=false;
+      if(cut<=mx){ cut=mx+1; fixed=true; }
+      DB.data.settings.noShow={nudges, cutoffDays:cut, cutoffTo:$('#ns-to',o).value, reschedTone:$('#ns-t-re',o).value, closeTone:$('#ns-t-cl',o).value,
+        remind:$('#ns-rem',o).checked, remindDays:Math.max(1,parseInt($('#ns-rd',o).value)||1), remindTone:$('#ns-t-rm',o).value, expiryDays:Math.max(0,parseInt($('#ns-exp',o).value)||0)};
+      DB.save(); o.remove(); toast(fixed?'Saved — close-out moved to day '+cut+' (after your last nudge)':'Follow-up settings saved'); Router.render(); };
   },
   capacityForm(){
     const st = admSeats();
@@ -16039,6 +16358,13 @@ const Admissions = {
     } else if(act==='enroll'){ Admissions.enrollForm(a); }
     else if(act==='paid'){ Admissions.paymentReceivedForm(a); }
     else if(act==='note'){ Admissions.noteForm(a); }
+    else if(act==='noshow'){ Admissions.fuCompose(a,'resched'); }
+    else if(act==='nsnudge'){ Admissions.fuCompose(a,'nudge'); }
+    else if(act==='nsremind'){ Admissions.fuCompose(a,'remind'); }
+    else if(act==='nsclose'){ Admissions.fuCompose(a,'close'); }
+    else if(act==='nsreplied'){ nsGroup(a).forEach(x=>{ x.fu=null; admLog(x,'Family replied — follow-up cleared'); }); DB.log('Admissions: '+a.studentName+' replied'); DB.save(); toast('Follow-up cleared'); Router.render(); }
+    else if(act==='resched'){ Admissions.interviewLetterForm(a,{only:true,resched:true}); }
+    else if(act==='nrint'){ Admissions.interviewLetterForm(a); }
   },
   agreementLetterForm(a){
     const siblings = DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && x.stage==='interview');
@@ -16070,8 +16396,9 @@ const Admissions = {
   },
   interviewLetterForm(a,opt){
     const only=!!(opt&&opt.only);
-    const siblings = only?[]:DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && (x.stage==='review'||x.stage===a.stage));
-    const o = overlay(`<div class="modal" style="max-width:480px"><h3>${only?'Conditional Acceptance Letter':'Advance to Parent Interview'}</h3>
+    const rs=!!(opt&&opt.resched);
+    const siblings = (only&&!rs)?[]:DB.data.admissions.filter(x=>x.appId===a.appId && x.id!==a.id && (x.stage==='review'||x.stage===a.stage));
+    const o = overlay(`<div class="modal" style="max-width:480px"><h3>${rs?'Reschedule Parent Interview':only?'Conditional Acceptance Letter':'Advance to Parent Interview'}</h3>
       ${siblings.length?`<div class="field"><label>Include siblings in this same interview?</label>
         ${siblings.map(s=>`<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:4px;font-weight:400"><input type="checkbox" class="sib-cb" data-sid="${s.id}" checked style="width:auto"> ${esc(s.studentName)}</label>`).join('')}
         </div>`:''}
@@ -16081,6 +16408,7 @@ const Admissions = {
       </div>
       <div class="field"><label>Interview location</label><input id="il-loc" value="${esc(AMAN_ADDRESS)}"></div>
       <div class="field"><label>Program</label><select id="il-prog"><option>In-Person</option><option>Online</option></select></div>
+      <div class="field"><label>Hold this offer for (days)</label><input id="il-exp" type="number" min="0" max="90" value="${nsCfg().expiryDays}"><div style="font-size:12px;color:var(--ink3);margin-top:3px">The letter and message will say the spot is held until that date. 0 = no expiry.</div></div>
       <p style="font-size:12.5px;color:var(--ink3);margin-top:-4px">Confirming this generates the Conditional Acceptance letter — ready to print/save as PDF and a companion email draft, both opened in a new tab for you to review before sending.</p>
       <div class="mfoot"><button class="btn btn-o" data-x="c">Cancel</button><button class="btn btn-p" data-x="s">${only?'Generate Letter':'Advance &amp; Generate Letter'}</button></div></div>`, true);
     $('[data-x=c]',o).onclick=()=>o.remove();
@@ -16096,16 +16424,17 @@ const Admissions = {
       const interviewDateFmt = fmtDate(dateVal);
       const interviewTimeFmt = fmtTime(timeVal);
       const note = 'Interview scheduled for '+interviewDateFmt+' at '+interviewTimeFmt;
-      group.forEach(x=>{ x.interviewDate=dateVal; x.interviewTime=timeVal; x.interviewLoc=loc; if(!only) admSetStage(x, 'interview', note); });
+      const expDays = Math.max(0, parseInt($('#il-exp',o).value)||0), expIso = expDays? nsAddDays(today(), expDays) : '', expFmt = expIso? nsLongDate(expIso) : '';
+      group.forEach(x=>{ x.interviewDate=dateVal; x.interviewTime=timeVal; x.interviewLoc=loc; x.condExpires=expIso; x.remindSent=''; x.fu=null; if(!only) admSetStage(x, 'interview', note); else if(rs){ admLog(x,'Interview rescheduled to '+interviewDateFmt+' at '+interviewTimeFmt); DB.log('Admissions: '+x.studentName+' interview rescheduled'); DB.save(); } });
       const studentsJoined = admJoinNames(group.map(x=>x.studentName));
       const addr = admSplitAddress(a.address);
-      const mailto = buildInterviewMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt);
-      const sms = smsHref(a.parentPhone, buildInterviewSms(admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt));
+      const mailto = buildInterviewMailto(a.parentEmail, admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt, expFmt);
+      const sms = smsHref(a.parentPhone, buildInterviewSms(admFirstName(a.parentName), studentsJoined, group.length>1, interviewDateFmt, interviewTimeFmt, expFmt));
       const calEv = buildCalendarEvent(dateVal, timeVal, 30, 'AMAN Parent Interview — '+studentsJoined, loc,
         'Parent Interview for '+studentsJoined+' at Al-Madrasatu An-Nuriyyah (AMAN). Bring any remaining enrollment questions — this completes the Parental Agreement Form together.');
       const html = renderLetterDocument('conditional', {
         students: studentsJoined, program: prog,
-        interviewDate: interviewDateFmt, interviewTime: interviewTimeFmt, interviewLoc: loc,
+        interviewDate: interviewDateFmt, interviewTime: interviewTimeFmt, interviewLoc: loc, expires: expFmt,
         parentFull: a.parentName, parentFirst: admFirstName(a.parentName),
         street: addr.street, citystate: addr.citystate,
         letterDate: fmtDate(today()), mailto: mailto, sms: sms,
@@ -16615,6 +16944,8 @@ const Admissions = {
           </div></div></div>`;
      })():''}
      ${a.agreementSubmitted?`<div class="notice info" style="margin-top:14px;background:color-mix(in srgb,var(--ok) 10%,var(--surface));border-color:var(--ok)">✅ <div>Parental Agreement Form submitted${a.agreementSubmittedDate?' on '+fmtDate(a.agreementSubmittedDate):''}.</div></div>`:a.stage==='agreement'?`<div class="notice warn" style="margin-top:14px">⏳ <div>Waiting on the Parental Agreement Form. Tap "Check Signed Agreements" on the Admissions list once the family has submitted it.</div></div>`:''}
+     ${admFuStrip(a)}
+     ${admNsHistory(a)}
      <div class="sect">Actions<span class="rule"></span></div>
      <div class="card no-print" style="display:flex;gap:8px;flex-wrap:wrap">${admProfileActions(a)}</div>
      <div class="sect">Student<span class="rule"></span></div>
@@ -18396,7 +18727,7 @@ const Site={
     return (m[lk.id]||`{hi}\n\n${lk.t}:\n${lk.url}`)+sign; },
   recipients(){ const out=[], seen=new Set();
     FU.fams().forEach(f=>{ const first=String(f.parent||'').trim().split(/\s+/)[0]||''; out.push({k:'f'+f.key,name:f.parent||f.members[0].preferredName||f.members[0].name,sub:f.members.map(s=>ptFirst(s)).join(', '),first,phone:f.phone||'',email:f.email||'',members:f.members.map(s=>s.id)}); (f.phone?[f.phone]:[]).forEach(p=>seen.add(AI2.digits(p))); });
-    (DB.data.admissions||[]).filter(a=>!['enrolled','notfit'].includes(a.stage)).forEach(a=>{ const dg=AI2.digits(a.parentPhone||''); const key=dg||String(a.parentEmail||'').toLowerCase()||a.id; if(seen.has(key)) return; seen.add(key); out.push({k:'a'+a.id,name:a.parentName||'(no name)',sub:'Applicant · '+a.studentName,first:admFirstName(a.parentName||''),phone:a.parentPhone||'',email:a.parentEmail||'',members:[]}); });
+    (DB.data.admissions||[]).filter(a=>!['enrolled','notfit','noresponse'].includes(a.stage)).forEach(a=>{ const dg=AI2.digits(a.parentPhone||''); const key=dg||String(a.parentEmail||'').toLowerCase()||a.id; if(seen.has(key)) return; seen.add(key); out.push({k:'a'+a.id,name:a.parentName||'(no name)',sub:'Applicant · '+a.studentName,first:admFirstName(a.parentName||''),phone:a.parentPhone||'',email:a.parentEmail||'',members:[]}); });
     return out; },
   send(id,opt){ opt=opt||{}; const lk=Site.get(id); if(!lk){ toast('That link was removed — add it back on the School website page'); Router.go('#/website'); return; } const R=Site.recipients(); let sel=null, dirty=false, q='';
     if(opt.student) sel=R.find(r=>r.members.includes(opt.student.id))||null;
@@ -18557,7 +18888,7 @@ const NAV_ICONS = {
 // Live counts for the sidebar — only shown when above zero. Cheap, derived from data already in the app.
 function navBadges(){
   const o={att:false,rew:0,trip:0,mod:{}}; try{ const d=DB.data, tdy=today();
-    const open=(d.admissions||[]).filter(x=>x&&x.stage&&x.stage!=='enrollment'&&x.stage!=='waitlist'&&x.stage!=='declined'&&x.decision!=='declined'&&x.decision!=='withdrawn').length; if(open) o.mod.admissions=open;
+    const open=(d.admissions||[]).filter(x=>x&&x.stage&&x.stage!=='enrollment'&&x.stage!=='waitlist'&&x.stage!=='noresponse'&&x.stage!=='declined'&&x.decision!=='declined'&&x.decision!=='withdrawn').length; if(open) o.mod.admissions=open;
     const unpaid=famList().filter(f=>!f.solo&&f.members.some(s=>s.active!==false)).filter(f=>{ const fin=famFinance(f.key); return fin.monthly>0&&fin.monthStatus!=='Paid'&&fin.monthStatus!=='Excused'; }).length; if(unpaid) o.mod.admin=unpaid;
     const pend=(d.pendingUpdates||[]).length; if(pend) o.mod.students=pend;
     const rec=d.attendance[tdy]||{}; const wkd=[0,6].includes(new Date().getDay()); o.att=wkd&&!Object.keys(rec).length&&!closureFor(tdy);
