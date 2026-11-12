@@ -15825,11 +15825,11 @@ const AX_CSS = `
 .ax-hdr{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 20px;background:var(--axg);color:#fff;border-radius:var(--r);border-bottom:3px solid var(--gold-bright,#d4a84b)}
 .ax-logo{width:46px;height:56px;object-fit:cover;border-radius:10px;flex:0 0 46px;background:#fff}
 .ax-t1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.ax-t1 .serif{font-size:25px;font-weight:700;line-height:1.1}
+.ax-t1 .serif{font-size:23px;font-weight:700;line-height:1.1}
 .ax-t1 .ar{font-family:var(--f-display);font-weight:700;font-size:26px;color:var(--gold-soft,#e7cf9b);line-height:1.25}
 .ax-tag{font-size:13px;color:var(--gold-soft,#e7cf9b);font-style:italic}
 .ax-sp{flex:1}
-.ax-hbtn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 15px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;font:600 14px var(--f-ui);cursor:pointer;text-decoration:none;list-style:none}
+.ax-hbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;font:600 14px var(--f-ui);cursor:pointer;text-decoration:none;list-style:none}
 .ax-hbtn:hover{background:rgba(255,255,255,.18)}
 .ax-hbtn.gold{background:var(--gold-bright,#d4a84b);border-color:var(--gold-bright,#d4a84b);color:#2a1e03}
 .ax-hbtn em{font-style:normal;font-weight:500;font-size:12.5px;opacity:.8}
@@ -15890,6 +15890,7 @@ const AX_CSS = `
 .ax-hist div{padding:2px 0 14px 18px;position:relative;font-size:15px}
 .ax-hist div::before{content:"";position:absolute;left:-10px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--gold-bright,#d4a84b);border:2px solid var(--surface)}
 .ax-hist small{display:block;color:var(--ink2);font-size:13.5px}
+.ax a.btn{text-decoration:none}
 .ax-mount .modal{box-shadow:none;border:0;padding:0;max-width:none;width:auto;background:transparent;position:static;transform:none}
 .ax-mount h3,.ax-mount [data-x=c]{display:none}
 .ax-more>summary{cursor:pointer;font-weight:600;font-size:14.5px;padding:10px 0;color:var(--ink2)}
@@ -16193,6 +16194,25 @@ render(v,param){
 const Admissions = {
   list(v){ if(Admissions._classic) return Admissions.listClassic(v); return Admissions.listS(v); },
   /* ===== v106: inbox layout — Today list, seat planner, family list + detail ===== */
+  axNames(m){ const n=m.map(x=>(x.studentName||'').trim()).filter(Boolean); if(n.length<2) return n[0]||'';
+    const sur=n.map(x=>x.split(/\s+/).slice(1).join(' ')); const same=sur[0]&&sur.every(x=>x===sur[0]);
+    if(!same) return admJoinNames(n); const f=n.map(x=>x.split(/\s+/)[0]); return f.slice(0,-1).join(', ')+' & '+f[f.length-1]+' '+sur[0]; },
+  axDur(d){ return d<14?d+' days':Math.round(d/7)+' weeks'; },
+  axMsg(mt,a,text,logText){ const hasTel=!!admPhoneDigits(a.parentPhone), hasMail=!!a.parentEmail, pref=admContactPref(a);
+    let chan=((pref==='email'&&hasMail)||!hasTel)?'email':'sms', body=text;
+    mt.innerHTML=`<div class="field"><label style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">Message <span style="flex:1"></span><span class="seg" style="display:inline-flex;gap:4px"><button type="button" class="btn btn-sm" id="am-sms"${hasTel?'':' disabled'}>💬 Text</button><button type="button" class="btn btn-sm" id="am-email"${hasMail?'':' disabled'}>✉️ Email</button></span></label>
+      <textarea id="am-body" style="min-height:170px"></textarea><div class="ax-sub" style="margin-top:4px">Edit freely. It is only logged when you tap Open, Copy or Mark done.</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-p" id="am-open" target="_blank" rel="noopener">Open</a><button class="btn btn-o" id="am-copy">📋 Copy</button><button class="btn btn-o" id="am-done">✓ Mark done</button></div>`;
+    const ta=$('#am-body',mt), op=$('#am-open',mt);
+    const subj='AMAN — '+(a.studentName||'');
+    const link=()=>chan==='sms'?smsHref(a.parentPhone,ta.value):'mailto:'+encodeURIComponent(a.parentEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(ta.value);
+    const show=()=>{ ta.value=body; op.textContent=chan==='sms'?'💬 Open Text':'✉️ Open Email'; op.href=link(); $('#am-sms',mt).className='btn btn-sm '+(chan==='sms'?'btn-p':'btn-o'); $('#am-email',mt).className='btn btn-sm '+(chan==='email'?'btn-p':'btn-o'); };
+    let logged=false; const log=()=>{ if(logged) return; logged=true; nsGroup(a).forEach(x=>admLog(x,logText)); DB.save(); toast('Logged'); };
+    ta.oninput=()=>{ body=ta.value; op.href=link(); };
+    $('#am-sms',mt).onclick=()=>{ chan='sms'; show(); }; $('#am-email',mt).onclick=()=>{ chan='email'; show(); };
+    op.onclick=()=>{ op.href=link(); log(); }; $('#am-copy',mt).onclick=async()=>{ try{ await navigator.clipboard.writeText(ta.value); toast('Copied'); }catch(e){ ta.select(); } log(); };
+    $('#am-done',mt).onclick=()=>{ log(); };
+    show(); },
   listS(v){
     const d=DB.data, seats=admSeats();
     Admissions._fit=admWaitlistFit();
@@ -16203,7 +16223,9 @@ const Admissions = {
     // families = same application + same stage (the same grouping the follow-up logic uses)
     const byKey={}, groups=[];
     d.admissions.forEach(a=>{ const k=(a.appId||a.id)+'|'+a.stage; let g=byKey[k]; if(!g){ g=byKey[k]={key:k,stage:a.stage,m:[]}; groups.push(g); } g.m.push(a); });
-    groups.forEach(g=>{ g.m.sort((x,y)=>(x.studentIdx||0)-(y.studentIdx||0)); g.a=g.m[0]; g.id=g.a.id; g.names=admJoinNames(g.m.map(x=>x.studentName)); });
+    groups.forEach(g=>{ g.m.sort((x,y)=>(x.studentIdx||0)-(y.studentIdx||0)); g.a=g.m[0]; g.id=g.a.id; g.names=Admissions.axNames(g.m); });
+    const wlList=groups.filter(g=>g.stage==='waitlist').sort((x,y)=>(x.a.waitlistSince||'').localeCompare(y.a.waitlistSince||''));
+    const wlPos=g=>{ const i=wlList.indexOf(g); return i<0?null:i+1; };
     const fitOf=g=>g.stage==='waitlist'?((Admissions._fit||{})[g.a.id]||null):null;
     const nsk=g=>{ const s=nsStatus(g.a); return (s&&s.k!=='wait')?s:null; };
     const needs=g=>!!nsk(g)||['review','decision','enrollment'].includes(g.stage)||(g.stage==='waitlist'&&!!(fitOf(g)||{}).fits);
@@ -16219,16 +16241,16 @@ const Admissions = {
     const tcls={a:'tag-gold',v:'tag-stage-interview',g:'tag-green',r:'tag-red','':'tag-dim'};
     const rowTag=g=>{ const a=g.a, s=nsStatus(a), f=fitOf(g);
       if(g.stage==='review') return ['New','v'];
-      if(g.stage==='interview'){ if(s&&s.k==='nudge') return ['Nudge due','a']; if(s&&s.k==='passed') return ['Did they come?','a']; if(s&&s.k==='remind') return ['Remind','a']; if(s&&s.k==='cutoff') return ['Close out','r']; if(a.fu) return ['Waiting','']; return a.interviewDate?[nsShort(a.interviewDate),'v']:['Interview','v']; }
+      if(g.stage==='interview'){ if(s&&s.k==='nudge') return ['Nudge due','a']; if(s&&s.k==='passed') return ['Did they come?','a']; if(s&&s.k==='remind') return ['Remind','a']; if(s&&s.k==='cutoff') return ['Close out','r']; if(a.fu) return ['Waiting','']; if(a.interviewDate){ const dl=nsDaysBetween(today(),a.interviewDate); return [dl===0?'Today':dl===1?'Tomorrow':dl>1&&dl<7?'In '+dl+' days':nsShort(a.interviewDate),'v']; } return ['Interview','v']; }
       if(g.stage==='agreement') return ['Agreement','v'];
       if(g.stage==='decision') return ['Decide','a'];
       if(g.stage==='enrollment') return ['Enroll','g'];
-      if(g.stage==='waitlist'){ if(f&&f.fits) return ['Fits','g']; const p=admWaitlistPos(a); return ['#'+(p||'?'),'']; }
+      if(g.stage==='waitlist'){ if(f&&f.fits) return ['Fits','g']; const p=wlPos(g); return ['#'+(p||'?'),'']; }
       if(g.stage==='notfit') return ['Not a fit','r']; if(g.stage==='noresponse') return ['On file','']; if(g.stage==='enrolled') return ['Enrolled','g']; return ['','']; };
     const rowLine=g=>{ const a=g.a;
       const sub=g.m.length===1?[a.studentAge?a.studentAge+' yrs':'',a.studentGrade||''].filter(Boolean).join(' · '):g.m.length+' children';
-      let extra=''; if(g.stage==='waitlist'&&a.waitlistSince) extra=' · waiting '+Math.max(0,Math.round((new Date(today())-new Date(a.waitlistSince))/864e5))+'d';
-      else if(!['notfit','enrolled','noresponse'].includes(g.stage)&&!a.fu) extra=' · idle '+admAgeDays(a)+'d';
+      let extra=''; if(g.stage==='waitlist'&&a.waitlistSince) extra=' · waiting '+Admissions.axDur(Math.max(0,Math.round((new Date(today())-new Date(a.waitlistSince))/864e5)));
+      else if(!['notfit','enrolled','noresponse'].includes(g.stage)&&!a.fu&&admAgeDays(a)>=2) extra=' · '+admAgeDays(a)+' days quiet';
       return sub+extra; };
     // selection
     let selG=groups.find(g=>g.m.some(x=>x.id===Admissions._sel));
@@ -16241,7 +16263,7 @@ const Admissions = {
       const L={passed:['Interview time passed. Did they come?','No-show','noshow'],remind:['Interview is coming up','Send reminder','nsremind'],nudge:['Nudge due · day '+s.since+(s.cutAt?' · closes '+nsShort(s.cutAt):''),'Send nudge','nsnudge'],cutoff:['No reply in '+s.since+' days','Close out','nsclose']}[s.k];
       tod.push({dot:s.k==='cutoff'?'r':'',title:g.names,sub:L[0],btn:`<button class="btn btn-p btn-sm" data-adm="${g.a.id}" data-act="${L[2]}">${L[1]}</button>`}); });
     const fitG=ordered.filter(g=>g.stage==='waitlist'&&(fitOf(g)||{}).fits);
-    if(seats.open>0&&fitG.length) tod.push({dot:'g',title:seats.open+(seats.open===1?' seat is open':' seats are open'),sub:admJoinNames(fitG.slice(0,3).map(g=>g.names))+' fit'+(fitG.length===1&&fitG[0].m.length===1?'s':''),btn:`<button class="btn btn-o btn-sm" data-axplan="fill">Plan the seats</button>`});
+    if(seats.open>0&&fitG.length) tod.push({dot:'g',title:seats.open+(seats.open===1?' seat is open':' seats are open'),sub:admJoinNames(fitG.slice(0,3).map(g=>g.names))+' fit'+(fitG.length===1&&fitG[0].m.length===1?'s':''),btn:`<button class="btn btn-p btn-sm" data-axgo="${fitG[0].id}" data-axtabgo="msg">Offer a seat</button>`});
     const revG=ordered.filter(g=>g.stage==='review');
     if(revG.length) tod.push({dot:'v',title:revG.length+(revG.length===1?' new application':' new applications'),sub:revG.slice(0,2).map(g=>g.names).join(' · ')+(revG.length>2?' …':''),btn:`<button class="btn btn-o btn-sm" data-axgo="${revG[0].id}">Review</button>`});
     const decG=ordered.filter(g=>g.stage==='decision'), enrG=ordered.filter(g=>g.stage==='enrollment');
@@ -16250,7 +16272,7 @@ const Admissions = {
     const ls=d.settings.admissionsLastSync, lsDays=ls?Math.floor((Date.now()-new Date(ls).getTime())/864e5):null;
     if(d.admissions.length&&(lsDays===null||lsDays>=7)) tod.push({dot:'r',title:lsDays===null?'The website has never been synced':'Website not synced in '+lsDays+' days',sub:'New applications may be waiting',btn:`<button class="btn btn-o btn-sm" data-axsync="1">Sync now</button>`});
     const todShown=tod.slice(0,5);
-    const todayHTML=`<section class="ax-card ax-only-list"><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="ax-h2">Today</span><span class="ax-sub">${esc(new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}))}</span></div>
+    const todayHTML=`<section class="ax-card ax-only-list"><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="ax-h2">Today</span><span class="ax-sub">${esc(new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}))}${d.settings.admissionsLastSync?' · Synced '+esc(rel(d.settings.admissionsLastSync)):''}</span></div>
       <div style="margin-top:6px">${todShown.map(r=>`<div class="ax-trow"><span class="ax-dot ${r.dot}"></span><div style="flex:1;min-width:0"><b dir="auto">${esc(r.title)}</b><span class="ax-sub ax-hide-m">${esc(r.sub)}</span></div>${r.btn}</div>`).join('')||'<div class="ax-sub" style="padding:10px 0 14px">All caught up. Nothing needs you today.</div>'}
       ${tod.length>5?`<div class="ax-sub" style="padding-top:8px">+ ${tod.length-5} more in the list below.</div>`:''}</div></section>`;
 
@@ -16259,8 +16281,8 @@ const Admissions = {
       <img class="ax-logo" src="${AMAN_LOGO}" alt="AMAN logo">
       <div style="min-width:0"><div class="ax-t1"><span class="serif">AMAN Admissions</span><span class="ar" lang="ar" dir="rtl">المدرسة النورية</span></div><div class="ax-tag">Youth Educated… Family Cultivated… World Illuminated</div></div>
       <span class="ax-sp"></span>
-      <button class="ax-hbtn" id="axSeatBtn" aria-expanded="${Admissions._plan?'true':'false'}" title="Plan the seats">▦ ${seats.open} ${seats.open===1?'seat':'seats'} open</button>
-      <button class="ax-hbtn gold" id="admSync" title="Sync new applications from the website">⇪ Sync new <em>${esc(lastSyncTxt)}</em></button>
+      <button class="ax-hbtn" id="axSeatBtn" aria-expanded="${Admissions._plan?'true':'false'}" title="Plan the seats">▦ ${seats.open} open</button>
+      <button class="ax-hbtn gold" id="admSync" title="Sync new applications from the website. ${esc(lastSyncTxt)}">⇪ Sync</button>
       <button class="ax-hbtn" id="admAdd">＋ Add</button>
       <details class="st-more"><summary class="ax-hbtn" aria-label="More">⋯</summary><div class="pop">
         <button class="btn btn-sm" id="admSyncAgr">✅ Check signed agreements</button>
@@ -16336,34 +16358,38 @@ const Admissions = {
         else if(st==='agreement'){ head='Waiting on the Parental Agreement'; sub='Signed agreements sync from the website.'; btns=B('Agreement signed → Decision','adv',1)+`<button class="btn btn-o" data-axagr="1">Check signed agreements</button>`; }
         else if(st==='decision'){ cls='warn'; head='Ready for your decision'; sub='Accepting makes the official acceptance letter.'; btns=B('Accept','accept',1)+B('Waitlist','wl'); }
         else if(st==='enrollment'){ cls='ok'; head=a.decision==='accepted'?'Accepted — ready to enroll':ADM_STAGE_LABEL.enrollment; sub='Confirm payment, then enroll.'; btns=B('Enroll student','enroll',1)+B('Payment received','paid'); }
-        else if(st==='waitlist'){ if(fit&&fit.fits){ cls='ok'; head='Fits an open seat'; sub='Waiting #'+(pos||'?')+' · needs '+fit.need+(fit.need===1?' seat':' seats'); btns=B('Offer the seat','resume',1); }
-          else { head='On the waiting list, #'+(pos||'?'); sub=(fit?'Needs '+fit.need+(fit.need===1?' seat':' seats')+' and '+seats.open+' open. ':'')+'Families wait together.'; btns=''; } }
+        else if(st==='waitlist'){ const p=wlPos(g), n=wlList.length; if(fit&&fit.fits){ cls='ok'; head='Fits an open seat'; sub='#'+(p||'?')+' of '+n+' in line · needs '+fit.need+(fit.need===1?' seat':' seats'); btns=B('Offer the seat','resume',1); }
+          else { const short=fit?Math.max(0,fit.need-seats.open):0; head='On the waiting list, #'+(p||'?')+' of '+n; sub=(short?short+(short===1?' more seat':' more seats')+' must open first ('+fit.need+' needed, '+seats.open+' open). ':'')+'Siblings wait together, so one child is never offered a seat alone.'; btns=''; } }
         else if(st==='noresponse'){ head='No response — on file'; sub='Welcome back any time.'; btns=B('Schedule a new interview','nrint',1); }
         else if(st==='notfit'){ cls='bad'; head='Not a fit right now'; sub='Kept on file. Welcome to reapply.'; btns=B('Reopen (reapply)','reopen',1); }
         else if(st==='enrolled'){ cls='ok'; head='Enrolled'; sub=''; btns=`<button class="btn btn-p" data-go="#/students/${esc(a.enrolledStudentId)}">View in roster</button>`; }
         strip=`<div class="ax-strip ${cls}"><div class="grow"><b>${esc(head)}</b>${sub?`<span class="ax-sub">${esc(sub)}</span>`:''}</div>${btns}</div>`;
       }
-      const si=ADM_STAGE_ORDER.indexOf(st);
-      const track=si>=0?`<div><div class="ax-stg"><span>Review</span><span>Interview</span><span>Agreement</span><span>Decision</span><span>Enroll</span></div>
+      const si=ADM_STAGE_ORDER.indexOf(st); const wlp=st==='waitlist'?wlPos(g):null;
+      const track=st==='waitlist'&&wlp?`<div><div class="ax-lab" style="margin-bottom:6px">Place in line</div><div style="display:flex;gap:6px;flex-wrap:wrap">${wlList.map((x,i)=>`<span title="${esc(x.names)}" style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;border:2px solid ${i+1===wlp?'var(--gold)':'var(--line2)'};background:${i+1===wlp?'var(--gold-soft)':'transparent'};color:var(--ink)">${i+1}</span>`).join('')}</div></div>`:si>=0?`<div><div class="ax-stg"><span>Review</span><span>Interview</span><span>Agreement</span><span>Decision</span><span>Enroll</span></div>
         <div class="ax-trk"><i class="l"></i><i class="f" style="width:${(si/4*80).toFixed(0)}%"></i>${[0,1,2,3,4].map(i=>`<i class="ax-nd ${i<si?'done':i===si?'now':''}"></i>`).join('')}</div>
         ${g.m.length>1?`<div class="ax-sub">Applying together: ${esc(g.names)}. Moving the family moves everyone you tick in the pop-up.</div>`:''}</div>`:'';
       const tg=rowTag(g);
       const head=`<div class="ax-mbar"><button class="btn btn-o btn-sm" data-axback="1">Back</button><b dir="auto" style="flex:1;min-width:0;font-size:18px">${esc(g.names)}</b>${tg[0]?`<span class="tag ${tcls[tg[1]]}">${esc(tg[0])}</span>`:''}</div>
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px"><div class="adm-avatar lg" data-phase="${admPhaseKey(a)}">${esc(((a.studentName||'?').trim().charAt(0)||'?').toUpperCase())}</div>
           <div style="flex:1 1 220px;min-width:0"><div class="ax-h2" dir="auto" style="font-size:28px;line-height:1.15;overflow-wrap:anywhere">${esc(g.names)}</div><div class="ax-sub" style="margin-top:3px">${esc(g.m.map(k=>[admFirstName(k.studentName),k.studentAge?k.studentAge+' yrs':'',k.studentGrade||''].filter(Boolean).join(', ')).join('  ·  '))}</div></div>
-          <span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${pos?' #'+pos:''}</span>${admNsTags(a)}</div>`;
+          <span class="tag ${admStageTagClass(a)}">${esc(admStageDisplay(a))}${wlp?' #'+wlp:''}</span>${admNsTags(a)}</div>`;
       const tabs=`<div class="ax-tabs" role="tablist" aria-label="Family sections">${[['msg','Message'],['det','Family details'],['hist','History']].map(([k,l])=>`<button type="button" role="tab" class="ax-chip${tab()===k?' on':''}" aria-selected="${tab()===k}" data-axtab="${k}">${l}</button>`).join('')}</div>`;
       let body='';
       if(tab()==='msg'){
         const pref=admContactPref(a), tel=admPhoneDigits(a.parentPhone);
         const cb=(kind,label,href)=>`<a class="btn ${pref===kind?'btn-p':'btn-o'} btn-sm" href="${href}">${label}</a>`;
-        const contact=(tel||a.parentEmail)?`<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="ax-sub">To <b dir="auto">${esc(a.parentName||'parent')}</b>${pref?' · prefers '+(pref==='text'?'text':pref==='call'?'a call':'email'):''}</span><span class="ax-sp"></span>${tel?cb('call','📞 Call','tel:'+tel):''}${tel?cb('text','💬 Text','sms:'+tel):''}${a.parentEmail?cb('email','✉️ Email','mailto:'+esc(a.parentEmail)):''}</div>`:'<div class="ax-sub">No phone or email on file yet.</div>';
+        const contact=(tel||a.parentEmail)?`<div style="display:flex;flex-direction:column;gap:8px"><span class="ax-sub">To <b dir="auto">${esc(a.parentName||'parent')}</b>${pref?' · prefers '+(pref==='text'?'text':pref==='call'?'a call':'email'):''}</span><div style="display:flex;gap:8px;flex-wrap:nowrap">${tel?cb('call','📞 Call','tel:'+tel):''}${tel?cb('text','💬 Text','sms:'+tel):''}${a.parentEmail?cb('email','✉️ Email','mailto:'+esc(a.parentEmail)):''}</div></div>`:'<div class="ax-sub">No phone or email on file yet.</div>';
         let compose='';
         if(st==='interview'){
           const dk=(s&&{passed:'resched',remind:'remind',nudge:'nudge',cutoff:'close'}[s.k])||(a.interviewDate?'remind':'nudge');
           const kind=(Admissions._kind=Admissions._kind||{})[a.id]||dk;
           compose=`<div class="ax-chips">${[['nudge','Nudge'],['remind','Reminder'],['resched','Log no-show · new time'],['close','Close out']].map(([k,l])=>`<button class="ax-chip${kind===k?' on':''}" data-axkind="${k}" aria-pressed="${kind===k}">${l}</button>`).join('')}</div><div class="ax-mount" id="axMount"></div>`;
-        } else compose=`<div class="ax-sub">Messages for this step are written when you use the button above, which opens the letter or message for you to review before it goes out. You can also call, text or email directly.</div>`;
+        } else if(st==='review'||st==='agreement'||(st==='waitlist'&&!(fit&&fit.fits))){ compose=`<div class="ax-mount" id="axMount"></div>`; }
+        else if(st==='waitlist'){ compose=`<div class="ax-sub">Tap “Offer the seat” above. It writes the offer and holds the seat for you to review before anything is sent.</div>`; }
+        else if(st==='decision') compose=`<div class="ax-sub">Decide first. Accepting makes the official acceptance letter for you to send.</div>`;
+        else if(st==='enrollment') compose=`<div class="ax-sub">Confirm payment, then enroll. The welcome packet is made when you enroll.</div>`;
+        else compose='';
         body=`${contact}${compose}`;
       } else if(tab()==='det'){
         const F=[['Parent / guardian',a.parentName],['Phone',a.parentPhone],['Email',a.parentEmail],['Contact preference',a.contactPref],['Home address',a.address],['Heard about us',a.heard],['Authorized pickup',a.pickup],['Emergency contact',a.emergency]];
@@ -16387,14 +16413,20 @@ const Admissions = {
       $$('[data-axkind]',det).forEach(b=>b.onclick=()=>{ (Admissions._kind=Admissions._kind||{})[g.a.id]=b.dataset.axkind; drawDetail(); });
       $$('[data-axback]',det).forEach(b=>b.onclick=()=>{ Admissions._scr='list'; root.dataset.scr='list'; window.scrollTo(0,0); });
       $$('[data-axagr]',det).forEach(b=>b.onclick=()=>Admissions.syncAgreements());
-      const mt=$('#axMount',det); if(mt&&g){ const k=(Admissions._kind||{})[g.a.id]||((nsStatus(g.a)&&{passed:'resched',remind:'remind',nudge:'nudge',cutoff:'close'}[nsStatus(g.a).k])||(g.a.interviewDate?'remind':'nudge')); Admissions.fuCompose(g.a,k,{mount:mt}); } };
+      const mt=$('#axMount',det); if(mt&&g&&g.stage!=='interview'){ const a=g.a, first=admFirstName(a.parentName)||'', nm=g.names, G='As-salāmu ʿalaykum '+first+',', sg='\n\nBarakallāhu feekum,\nBr. Abdallah bin Abdirahman\nAl-Madrasatu An-Nuriyyah (AMAN)', plural=g.m.length>1;
+        let t='',lg='';
+        if(g.stage==='review'){ t=G+'\n\nJazākum Allāhu khayran for applying to Al-Madrasatu An-Nuriyyah for '+nm+'. We have received the application and will be in touch soon with an interview date and time.'+sg; lg='Application receipt message sent'; }
+        else if(g.stage==='agreement'){ t=G+'\n\nThank you for meeting with us about '+nm+'. The next step is the Parental Agreement. Please complete and sign it here when you can: https://amanschoolmn.org/agreement/\n\nLet us know if anything is unclear.'+sg; lg='Agreement reminder sent'; }
+        else { const p=wlPos(g); t=G+'\n\nA quick update on '+nm+': you are #'+p+' on our waiting list. We will contact you as soon as '+(plural?'seats for all '+g.m.length+' children':'a seat')+' open'+(plural?'':'s')+'. Please let us know if your plans change.'+sg; lg='Waiting-list update sent'; }
+        Admissions.axMsg(mt,a,t,lg); }
+      else if(mt&&g){ const k=(Admissions._kind||{})[g.a.id]||((nsStatus(g.a)&&{passed:'resched',remind:'remind',nudge:'nudge',cutoff:'close'}[nsStatus(g.a).k])||(g.a.interviewDate?'remind':'nudge')); Admissions.fuCompose(g.a,k,{mount:mt}); } };
 
     // ---------- wiring ----------
     const select=id=>{ Admissions._sel=id; Admissions._selPinned=true; Admissions._scr='detail'; root.dataset.scr='detail';
       $$('.ax-fam',v).forEach(b=>{ const on=b.dataset.axsel===id; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
       drawDetail(); window.scrollTo(0,0); };
     $$('[data-axsel]',v).forEach(b=>b.onclick=()=>select(b.dataset.axsel));
-    $$('[data-axgo]',v).forEach(b=>b.onclick=()=>{ Admissions._tab='det'; select(b.dataset.axgo); });
+    $$('[data-axgo]',v).forEach(b=>b.onclick=()=>{ Admissions._tab=b.dataset.axtabgo||'det'; select(b.dataset.axgo); });
     $$('[data-axf]',v).forEach(b=>b.onclick=()=>{ Admissions._axf=b.dataset.axf; Admissions._selPinned=false; Router.render(); });
     $$('[data-axplan]',v).forEach(b=>b.onclick=()=>{ const m=b.dataset.axplan;
       if(m==='close') Admissions._plan=false; else { Admissions._plan=true; if(m==='fill'){ Admissions._pick={}; ordered.filter(g=>g.stage==='waitlist'&&(fitOf(g)||{}).fits).forEach(g=>{ Admissions._pick[g.key]=true; }); } else if(m==='clear') Admissions._pick={}; }
