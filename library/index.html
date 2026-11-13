@@ -458,7 +458,7 @@ async function openItem(it){
     body.innerHTML=`<div class="v-msg"><h4>This file isn’t in the library folder yet</h4><span>Upload it next to <code>index.html</code> with exactly this name:</span><code>${esc(it.href)}</code></div>`;
     $('vPrint').style.display='none'; return;
   }
-  const f=document.createElement('iframe'); f.title=it.title;
+  const f=document.createElement('iframe'); f.title=it.title; f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
   f.addEventListener('load',()=>{const m=body.querySelector('.v-msg'); if(m) m.remove();});
   f.src=it.href; body.appendChild(f);
   $('vPrint').addEventListener('click',()=>{try{f.contentWindow.focus();f.contentWindow.print();}catch(e){window.open(it.href,'_blank','noopener');}});
