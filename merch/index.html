@@ -5,7 +5,7 @@
 <style>
 :root{--bg:#0d2418;--bg2:#0a1c13;--panel:#13301f;--panel2:#1a3d29;--ink:#f4ead6;--mut:#a9b3a2;--line:#24523a;--acc:#f8c020;--onacc:#201820;--chip:#173626;--shadow:0 14px 40px #0006;--serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--stage1:#e9e3d2;--stage2:#cfc8b4}
 :root[data-theme=light]{--bg:#f4ead6;--bg2:#efe3c8;--panel:#fffaf0;--panel2:#f8f0dc;--ink:#201820;--mut:#5f584b;--line:#ddd0b3;--acc:#1a4a35;--onacc:#fff;--chip:#efe5cc;--shadow:0 14px 40px #20182026}
-*{box-sizing:border-box}html{scroll-behavior:smooth}
+*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
@@ -133,7 +133,7 @@ pre{white-space:pre-wrap;font:12.5px/1.55 ui-monospace,Menlo,monospace;backgroun
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,40px);opacity:0;background:#201820;color:#f8c020;border-radius:12px;padding:11px 18px;font-weight:600;z-index:90;transition:.2s;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 footer{border-top:1px solid var(--line);padding:30px 28px 60px;color:var(--mut);font-size:13px;text-align:center}
-@media(max-width:900px){.hero{grid-template-columns:1fr;gap:24px;padding-top:26px}.hrow{padding:10px 16px;flex-wrap:wrap}.wrap{padding:0 16px}.search{order:5;flex-basis:100%;max-width:none;margin:0}.logo small{display:none}.btn .lbtn{display:none}.dod{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:24px;padding-top:26px}.hrow{padding:10px 16px;flex-wrap:wrap}.wrap{padding:0 16px}.search{order:5;flex-basis:100%;max-width:none;margin:0}.logo small{display:none}.btn .lbtn{display:none}#showb{display:none}.dod{grid-template-columns:1fr 1fr}}
 @media(min-width:1200px){
 body.dock-on{padding-right:440px}body.dock-on .ann{margin-right:-440px}body.dock-on .hero h1{font-size:52px}body.dock-on .hero{gap:28px}body.dock-on .hero p{font-size:16px}
 body.dock-on #insp{top:var(--hh,72px);width:440px;box-shadow:none;z-index:25;transform:none}
@@ -149,6 +149,7 @@ body.dock-on .hrow{max-width:none}body.dock-on .logo small{display:none}body.doc
 <div class="logo">AMAN<small>Studio</small></div>
 <label class="search"><span class="sr">Search designs</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="q" placeholder="Search designs, phrases, batches…" autocomplete="off"><kbd>/</kbd></label>
 <div class="sp"></div>
+<a class="btn" id="showb" href="showroom.html?from=studio">Customer Showroom <span aria-hidden="true">↗</span></a>
 <button class="btn" id="favb" aria-pressed="false">♥ <span class="lbtn">Saved</span><span class="cnt" id="favc">0</span></button>
 <button class="btn" id="themeb" aria-label="Toggle light and dark">Theme</button>
 <button class="btn pri" id="sheetb">Order sheet<span class="cnt" id="sheetc">0</span></button>
@@ -407,7 +408,8 @@ document.addEventListener('keydown',e=>{const tag=(e.target.tagName||'').toLower
   else if(e.key==='g'||e.key==='G'){const k=GAR.findIndex(g=>g[0]===ms.gar);ms.gar=GAR[(k+1)%GAR.length][0];upd()}
   else if(e.key==='c'||e.key==='C'){const o=[...document.querySelectorAll('#iink button')].map(b=>b.dataset.k);const k=o.indexOf(ms.ink);ms.ink=o[(k+1)%o.length];upd()}});
 /* ---------- boot ---------- */
-(function(){const th=store.get('theme',null);if(th)document.documentElement.dataset.theme=th;
+const SHOWROOM_FILE='showroom.html'; // file name of the customer Showroom in the same GitHub folder
+(function(){const th=store.get('theme',null);$('showb').href=SHOWROOM_FILE+'?from=studio';if(th)document.documentElement.dataset.theme=th;
   $('hn').textContent=DATA.length;$('s1').textContent=DATA.length;$('hb').textContent=BATCHES.length;
   const newest=BATCHES[BATCHES.length-1];$('ann').innerHTML='New · '+esc(lab(newest.id)+(newest.t?' — '+newest.t:''))+' · '+newest.k+' designs <button id="annb">See it</button>';
   $('annb').onclick=()=>{clearAllQuiet();st.batch=newest.id;render();$('grid-top').scrollIntoView({block:'start'})};
