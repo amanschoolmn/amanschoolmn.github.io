@@ -119,7 +119,8 @@ footer{border-top:1px solid var(--line);padding:26px 28px 60px;color:var(--mut);
 <div>
 <div class="blk"><span class="lbl">1 · Choose your apparel</span><div class="apparel" id="vap"></div></div>
 <div class="blk"><span class="lbl">2 · Choose a colour · <b id="vgn" style="color:var(--ink)"></b></span><div class="sw" id="vsw"></div><div class="hint">Colours crossed out make this design harder to read. Tap one to preview it anyway.</div></div>
-<div class="blk" id="inkblk"><span class="lbl">3 · Print colour</span><div class="scroll" id="vink" style="flex-wrap:wrap"></div></div>
+<div class="blk" id="posblk"><span class="lbl">3 · Placement</span><div class="scroll" id="vpos" style="flex-wrap:wrap"></div></div>
+<div class="blk" id="inkblk"><span class="lbl">4 · Print colour</span><div class="scroll" id="vink" style="flex-wrap:wrap"></div></div>
 <div class="blk acts"><button class="btn pri full" id="vadd2">Add to My picks</button><button class="btn" id="vshare">Copy link to this design</button><button class="btn" id="vdl">Save preview image</button></div>
 <div class="note" id="vnote">Tip: use the arrow keys to move between designs.</div>
 </div></div></section>
@@ -162,32 +163,43 @@ const SIL={
  poster:{body:P('M105,60 H495 V540 H105 Z'),box:[140,100,320,400]},
  sticker:{body:P('M300,70 Q520,70 530,300 Q520,530 300,530 Q80,530 70,300 Q80,70 300,70 Z'),box:[120,120,360,360]}
 };
+SIL.tee.detB=[P('M255,52 Q300,74 345,52')];SIL.hoodie.detB=[P('M262,70 Q300,120 338,70')];
+const PLACE={
+ tee:[{k:'front',l:'Front · full'},{k:'cc',l:'Centre chest',box:[230,128,140,140]},{k:'lc',l:'Left chest',box:[312,128,70,70]},{k:'rc',l:'Right chest',box:[218,128,70,70]},{k:'back',l:'Back · full',v:'back',box:[200,125,200,300]},{k:'ub',l:'Upper back',v:'back',box:[225,100,150,95]},{k:'ls',l:'Left sleeve',box:[412,132,84,56],rot:27},{k:'rs',l:'Right sleeve',box:[104,132,84,56],rot:-27}],
+ hoodie:[{k:'front',l:'Front · full'},{k:'cc',l:'Centre chest',box:[236,150,128,110]},{k:'lc',l:'Left chest',box:[316,158,62,62]},{k:'rc',l:'Right chest',box:[222,158,62,62]},{k:'back',l:'Back · full',v:'back',box:[212,130,176,290]},{k:'ub',l:'Upper back',v:'back',box:[235,150,130,90]},{k:'ls',l:'Left sleeve',box:[403,277,200,46],rot:79.5},{k:'rs',l:'Right sleeve',box:[-3,277,200,46],rot:100.5}],
+ pants:[{k:'rleg',l:'Right leg'},{k:'lleg',l:'Left leg',box:[322,230,106,290]},{k:'rlegv',l:'Right leg · vertical',box:[100,355,250,64],rot:90},{k:'llegv',l:'Left leg · vertical',box:[250,355,250,64],rot:90},{k:'wb',l:'Waistband',box:[215,96,170,36]}],
+ cap:[{k:'front',l:'Front'},{k:'ls',l:'Left side',box:[405,232,70,60]},{k:'rs',l:'Right side',box:[125,232,70,60]},{k:'back',l:'Back',v:'back',box:[225,170,150,100]}],
+ tote:[{k:'front',l:'Front · large'},{k:'up',l:'Front · small',box:[225,250,150,110]},{k:'back',l:'Back',v:'back'}]
+};
+const defPos=(d,prod)=>{const L=PLACE[prod];if(!L)return null;return(d.b==='B37'&&(prod==='tee'||prod==='hoodie'))?'lc':L[0].k};
+function placeOf(d,prod,pos){const L=PLACE[prod];if(!L)return{k:'front'};const k=pos||defPos(d,prod);return L.find(x=>x.k===k)||L[0]}
 const imgCache=new Map();
 function loadImg(src){return new Promise(res=>{if(!src)return res(null);if(imgCache.has(src))return res(imgCache.get(src));const i=new Image();i.onload=()=>{imgCache.set(src,i);res(i)};i.onerror=()=>res(null);i.src=src})}
 const mime=(d,k)=>k==='a'?'data:image/jpeg;base64,'+d.a:'data:image/webp;base64,'+d[k];
 function shade(h,f){const c=hex(h).map(v=>Math.max(0,Math.min(255,Math.round(v*f))));return 'rgb('+c.join(',')+')'}
-async function draw(cv,d,prod,gh,ink){
+async function draw(cv,d,prod,gh,ink,pos){
   const S=cv.width,k=S/600,ctx=cv.getContext('2d');ctx.setTransform(k,0,0,k,0,0);ctx.clearRect(0,0,600,600);
   const bg=ctx.createLinearGradient(0,0,0,600);bg.addColorStop(0,'#e9e3d2');bg.addColorStop(1,'#cfc8b4');ctx.fillStyle=bg;ctx.fillRect(0,0,600,600);
-  const s=SIL[prod]||SIL.tee;const edge=shade(gh,.72);
+  const s=SIL[prod]||SIL.tee;const edge=shade(gh,.72);const pl=placeOf(d,prod,pos);const back=pl.v==='back';
   ctx.save();ctx.shadowColor='#0004';ctx.shadowBlur=22;ctx.shadowOffsetY=10;ctx.fillStyle=gh;ctx.strokeStyle=edge;ctx.lineWidth=3;ctx.lineJoin='round';
   if(s.handle){ctx.save();ctx.lineWidth=14;ctx.strokeStyle=shade(gh,.85);ctx.stroke(s.handle);ctx.restore()}
   if(s.extra){ctx.fill(s.extra);ctx.stroke(s.extra)}
   ctx.fill(s.body);ctx.restore();ctx.stroke(s.body);
   if(s.pom){ctx.beginPath();ctx.arc(s.pom[0],s.pom[1],s.pom[2],0,7);ctx.fillStyle=shade(gh,.92);ctx.fill();ctx.stroke()}
   ctx.save();ctx.clip(s.body);const g=ctx.createLinearGradient(0,0,600,0);g.addColorStop(0,'#0000002a');g.addColorStop(.3,'#ffffff12');g.addColorStop(.7,'#ffffff08');g.addColorStop(1,'#00000033');ctx.fillStyle=g;ctx.fillRect(0,0,600,600);ctx.restore();
-  ctx.strokeStyle=shade(gh,.82);ctx.lineWidth=2;(s.det||[]).forEach(p=>ctx.stroke(p));
+  ctx.strokeStyle=shade(gh,.82);ctx.lineWidth=2;((back&&s.detB)?s.detB:(s.det||[])).forEach(p=>ctx.stroke(p));
   let img;
   if(ink==='Full-Color'&&d.f)img=await loadImg(mime(d,useLight(d,gh)?'fl':'f'));
   else if(d.m&&ink!=='Panel'){const m=await loadImg(mime(d,'m'));if(m){const o=document.createElement('canvas');o.width=m.naturalWidth;o.height=m.naturalHeight;const c2=o.getContext('2d');c2.drawImage(m,0,0);c2.globalCompositeOperation='source-in';c2.fillStyle=INK[ink]||'#fff';c2.fillRect(0,0,o.width,o.height);img=o}}
   let panel=false;if(!img){img=await loadImg(mime(d,'a'));panel=true}
   if(!img)return;
-  let [bx,by,bw,bh]=s.box;let w=img.width||img.naturalWidth,h=img.height||img.naturalHeight;
-  if(prod==='pants'&&w/h>0.8){bx=185;bw=95}
+  let [bx,by,bw,bh]=pl.box||s.box;let w=img.width||img.naturalWidth,h=img.height||img.naturalHeight;
+  if(prod==='pants'&&pl.k==='rleg'&&w/h>0.8){bx=185;bw=95}
   const sc=Math.min(bw/w,bh/h);const pw=w*sc,ph=h*sc;const px=bx+(bw-pw)/2,py=by+(bh-ph)/2;
-  ctx.save();ctx.globalAlpha=.97;
+  ctx.save();ctx.globalAlpha=.97;if(pl.rot){const cx0=bx+bw/2,cy0=by+bh/2;ctx.translate(cx0,cy0);ctx.rotate(pl.rot*Math.PI/180);ctx.translate(-cx0,-cy0)}
   if(panel){ctx.beginPath();ctx.roundRect?ctx.roundRect(px,py,pw,ph,6):ctx.rect(px,py,pw,ph);ctx.clip()}
   ctx.drawImage(img,px,py,pw,ph);ctx.restore();
+  if(back){ctx.save();ctx.fillStyle='#0008';ctx.font='700 15px system-ui,sans-serif';ctx.fillText('BACK VIEW',18,32);ctx.restore()}
 }
 
 const lab=b=>'Batch '+b;
@@ -195,7 +207,7 @@ const key=b=>{const m=b.match(/B(\d+)([ab]?)/);return [+m[1],m[2]]};
 const bord=b=>{const k=key(b);return k[0]*10+(k[1]==='b'?1:0)};
 const st={q:'',cat:'',brand:'',col:'',sort:'top'};
 let picks=store.get('picks',[]),view=[],cur=-1,showArt=false;
-const ms={prod:'tee',gar:'Black',ink:'auto'};
+const ms={prod:'tee',gar:'Black',ink:'auto',pos:null};
 const PLAN={"drops": [{"id": "L"}, {"id": "RAM"}, {"id": "EID"}, {"id": "SPR"}, {"id": "SUM"}, {"id": "BTS"}, {"id": "WIN"}]};
 const dix=id=>PLAN.drops.findIndex(x=>x.id===id);
 const COLS=[
@@ -244,35 +256,36 @@ function render(){view=filt();facets();const g=$('grid');g.innerHTML='';$('stat'
     b.innerHTML=(d.top?'<span class="badge">★ Staff pick</span>':'')+(inP?'<span class="picked" aria-label="In My picks">✓</span>':'')+'<div class="a"><img loading="lazy" alt=""></div><div class="m">'+esc(d.n)+'</div>';
     b.querySelector('img').src=mime(d,'a');b.querySelector('img').alt=d.n;fr.appendChild(b)});g.appendChild(fr)}
 /* ---------- viewer ---------- */
-function openD(i,push){cur=i;const d=DATA[i];ms.prod=d.p;ms.gar=dflt(d);ms.ink='auto';showArt=false;
+function openD(i,push){cur=i;const d=DATA[i];ms.prod=d.p;ms.gar=dflt(d);ms.ink='auto';ms.pos=null;showArt=false;
   $('vt').textContent=d.n;$('vart').src=mime(d,'a');$('vart').alt=d.n;
-  const ap=$('vap');ap.innerHTML='';Object.keys(PRODS).forEach(k=>{const b=document.createElement('button');b.className='ap';b.dataset.k=k;b.innerHTML='<canvas width="160" height="160"></canvas>'+PRODS[k];b.onclick=()=>{ms.prod=k;upd()};ap.appendChild(b)});
+  const ap=$('vap');ap.innerHTML='';Object.keys(PRODS).forEach(k=>{const b=document.createElement('button');b.className='ap';b.dataset.k=k;b.innerHTML='<canvas width="160" height="160"></canvas>'+PRODS[k];b.onclick=()=>{ms.prod=k;ms.pos=null;upd()};ap.appendChild(b)});
   const sw=$('vsw');sw.innerHTML='';GAR.forEach(([n,h])=>{const b=document.createElement('button');b.style.background=h;b.dataset.k=n;b.setAttribute('aria-label',n.replace('-',' '));b.title=n.replace('-',' ');b.onclick=()=>{ms.gar=n;upd()};sw.appendChild(b)});
   const ik=$('vink');ik.innerHTML='';const opts=['auto'];if(d.f)opts.push('Full-Color');if(d.m)Object.keys(INK).forEach(k=>opts.push(k));$('inkblk').hidden=opts.length<2&&!d.f&&!d.m;
   opts.forEach(k=>{const b=document.createElement('button');b.className='pill';b.textContent=k==='auto'?'Best match':k==='Full-Color'?'Full colour':k;b.dataset.k=k;if(INK[k])b.style.borderLeft='10px solid '+INK[k];b.onclick=()=>{ms.ink=k;upd()};ik.appendChild(b)});
   $('viewer').classList.add('on');document.body.style.overflow='hidden';$('viewer').scrollTop=0;upd();
   if(push!==false)try{history.replaceState(null,'','#d='+encodeURIComponent(d.pt))}catch(e){}}
 function curInk(){const d=DATA[cur],h=gh(ms.gar);return ms.ink==='auto'?best(d,h).ink:ms.ink}
-function upd(){const d=DATA[cur],h=gh(ms.gar),ink=curInk();
+function buildPos(d){const L=PLACE[ms.prod]||[];const box=$('vpos');$('posblk').hidden=L.length<2;box.innerHTML='';const cur0=ms.pos||defPos(d,ms.prod);L.forEach(o=>{const b=document.createElement('button');b.className='pill'+(o.k===cur0?' on':'');b.textContent=o.l;b.onclick=()=>{ms.pos=o.k;upd()};box.appendChild(b)})}
+function upd(){const d=DATA[cur],h=gh(ms.gar),ink=curInk();buildPos(d);
   document.querySelectorAll('#vap .ap').forEach(b=>{b.classList.toggle('on',b.dataset.k===ms.prod);const c=b.querySelector('canvas');draw(c,d,b.dataset.k,h,best(d,h).ink)});
   document.querySelectorAll('#vsw button').forEach(b=>{b.classList.toggle('on',b.dataset.k===ms.gar);b.classList.toggle('low',best(d,gh(b.dataset.k)).r<3)});
   document.querySelectorAll('#vink button').forEach(b=>b.classList.toggle('on',b.dataset.k===ms.ink));
   $('vgn').textContent=ms.gar.replace('-',' ');$('stage').classList.toggle('showart',showArt);$('vtog').textContent=showArt?'View on apparel':'View artwork only';
   const inP=picks.some(p=>p.pt===d.pt);$('vadd').textContent=$('vadd2').textContent=inP?'✓ In My picks · update':'Add to My picks';
-  $('vhint').textContent=PRODS[ms.prod]+' · '+ms.gar.replace('-',' ');
-  draw($('vc'),d,ms.prod,h,ink)}
+  $('vhint').textContent=PRODS[ms.prod]+' · '+ms.gar.replace('-',' ')+(PLACE[ms.prod]?' · '+placeOf(d,ms.prod,ms.pos).l:'');
+  draw($('vc'),d,ms.prod,h,ink,ms.pos)}
 function step(n){const L=view.length?view:DATA;const p=L.findIndex(d=>d._i===cur);openD(L[(p+n+L.length)%L.length]._i)}
 function closeViewer(){$('viewer').classList.remove('on');document.body.style.overflow='';cur=-1;try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
 /* ---------- picks ---------- */
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1900)}
 function savePicks(){store.set('picks',picks);$('pickc').textContent=picks.length;renderPicks()}
-function addPick(){const d=DATA[cur];const s={pt:d.pt,n:d.n,prod:ms.prod,gar:ms.gar,ink:curInk(),qty:1,i:d._i};const k=picks.findIndex(x=>x.pt===d.pt);if(k>=0){s.qty=picks[k].qty;picks[k]=s}else picks.push(s);savePicks();toast('Added to My picks');upd();render0()}
+function addPick(){const d=DATA[cur];const s={pt:d.pt,n:d.n,prod:ms.prod,gar:ms.gar,ink:curInk(),pos:ms.pos||defPos(d,ms.prod),qty:1,i:d._i};const k=picks.findIndex(x=>x.pt===d.pt);if(k>=0){s.qty=picks[k].qty;picks[k]=s}else picks.push(s);savePicks();toast('Added to My picks');upd();render0()}
 function render0(){document.querySelectorAll('.tile').forEach(t=>{const d=DATA[+t.dataset.open];const on=picks.some(p=>p.pt===d.pt);let m=t.querySelector('.picked');if(on&&!m){t.insertAdjacentHTML('afterbegin','<span class="picked" aria-label="In My picks">✓</span>')}else if(!on&&m)m.remove()})}
-function listText(){const n=$('pnote').value.trim();return 'My AMAN picks:\n'+picks.map((p,k)=>(k+1)+'. '+p.n+' — '+PRODS[p.prod]+', '+p.gar.replace('-',' ')+', '+(p.ink==='Full-Color'?'full colour':p.ink)+' × '+p.qty).join('\n')+(n?'\n\nNotes: '+n:'')}
+function listText(){const n=$('pnote').value.trim();return 'My AMAN picks:\n'+picks.map((p,k)=>(k+1)+'. '+p.n+' — '+PRODS[p.prod]+(PLACE[p.prod]?' ('+placeOf(DATA[p.i]||{},p.prod,p.pos).l+')':'')+', '+p.gar.replace('-',' ')+', '+(p.ink==='Full-Color'?'full colour':p.ink)+' × '+p.qty).join('\n')+(n?'\n\nNotes: '+n:'')}
 function renderPicks(){const el=$('pl');if(!picks.length){el.innerHTML='<div class="note">Nothing here yet. Open a design, choose your apparel and colour, then tap <b>Add to My picks</b>.</div>';$('pmail').hidden=true;return}
-  el.innerHTML='';picks.forEach((p,k)=>{const r=document.createElement('div');r.className='si';r.innerHTML='<canvas width="144" height="144"></canvas><div><b>'+esc(p.n)+'</b><span>'+PRODS[p.prod]+' · '+p.gar.replace('-',' ')+' · '+(p.ink==='Full-Color'?'full colour':p.ink)+'</span></div><div class="row" style="flex-direction:column;align-items:end"><label style="font-size:12px;color:var(--mut)">Qty <input type="number" min="1" value="'+p.qty+'" aria-label="Quantity"></label><button class="btn sm noprint">Remove</button></div>';
+  el.innerHTML='';picks.forEach((p,k)=>{const r=document.createElement('div');r.className='si';r.innerHTML='<canvas width="144" height="144"></canvas><div><b>'+esc(p.n)+'</b><span>'+PRODS[p.prod]+(PLACE[p.prod]?' · '+placeOf(DATA[p.i]||{},p.prod,p.pos).l:'')+' · '+p.gar.replace('-',' ')+' · '+(p.ink==='Full-Color'?'full colour':p.ink)+'</span></div><div class="row" style="flex-direction:column;align-items:end"><label style="font-size:12px;color:var(--mut)">Qty <input type="number" min="1" value="'+p.qty+'" aria-label="Quantity"></label><button class="btn sm noprint">Remove</button></div>';
     r.querySelector('input').onchange=e=>{p.qty=Math.max(1,+e.target.value||1);store.set('picks',picks)};r.querySelector('button').onclick=()=>{picks.splice(k,1);savePicks();render0()};el.appendChild(r);
-    const d=DATA[p.i];if(d)draw(r.querySelector('canvas'),d,p.prod,gh(p.gar),p.ink)});
+    const d=DATA[p.i];if(d)draw(r.querySelector('canvas'),d,p.prod,gh(p.gar),p.ink,p.pos)});
   const m=$('pmail');if(CONTACT_EMAIL){m.hidden=false;m.href='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('My AMAN picks')+'&body='+encodeURIComponent(listText())}}
 function openPicks(){renderPicks();$('picks').classList.add('on');$('picks').setAttribute('aria-hidden','false');$('scrim').classList.add('on')}
 function closePicks(){$('picks').classList.remove('on');$('picks').setAttribute('aria-hidden','true');$('scrim').classList.remove('on')}
