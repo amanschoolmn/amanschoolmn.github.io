@@ -85,6 +85,12 @@ footer{border-top:1px solid var(--line);padding:26px 28px 60px;color:var(--mut);
 @media(max-width:900px){.hrow{padding:10px 16px;flex-wrap:wrap}.wrap{padding:0 16px}.search{order:5;flex-basis:100%;max-width:none;margin:0}.logo small{display:none}.vbody{grid-template-columns:1fr;gap:18px;padding:16px}.stage{width:min(100%,50vh);margin:0 auto}.vtop{padding:10px 14px}}
 @media print{header.top,.intro,.fbar,.grid,.stat,footer,.scrim,.viewer{display:none!important}#picks{position:static;transform:none;width:100%;box-shadow:none;border:0}#picks .x,#picks .noprint{display:none}body{background:#fff;color:#000}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.heart{position:absolute;right:10px;top:10px;z-index:3;width:38px;height:38px;border-radius:50%;background:#fffffff0;border:1px solid #0d241826;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.heart:hover{transform:scale(1.12)}.heart svg{width:20px;height:20px;fill:none;stroke:var(--ink);stroke-width:2;transition:.15s}.heart.on svg{fill:var(--t);stroke:var(--t)}
+.tile .picked{top:56px}
+#vheart{flex:none}#vheart svg{width:20px;height:20px;fill:none;stroke:var(--ink);stroke-width:2}#vheart.on svg{fill:var(--t);stroke:var(--t)}
+.favbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--chip);border-radius:16px;padding:12px 16px;margin-bottom:14px}.favbar b{font:600 18px var(--serif);flex:1;min-width:160px}
+@keyframes pop{50%{transform:scale(1.35)}}.heart.pop svg{animation:pop .3s}
 </style>
 <style id="sf">
 :root,:root[data-theme]{--bg:#F4EAD6;--panel:#FBF5E8;--ink:#0D2418;--mut:#5b6a5e;--line:#0d241822;--acc:#0D2418;--onacc:#F4EAD6;--chip:#EDE2C8;--shadow:0 18px 40px #0d241826;--serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;--stage1:#E9E3D2;--stage2:#CFC8B4;--t:#B4472A}
@@ -133,7 +139,7 @@ footer{text-align:left;display:flex;justify-content:space-between;flex-wrap:wrap
 <header class="top"><div class="hrow">
 <nav><a data-nav="">Shop</a><a data-nav="sis">Sisters &amp; Family</a><a data-nav="slogan">Slogans</a><a data-nav="mug">Gifts</a></nav>
 <div class="logo">AMAN</div>
-<nav class="r"><a class="btn" id="studio" href="index.html" hidden>← Studio</a><button class="btn" id="themeb" hidden>Theme</button><button class="btn pri" id="pickb">Bag<span class="cnt" id="pickc">0</span></button></nav>
+<nav class="r"><a class="btn" id="studio" href="index.html" hidden>← Studio</a><button class="btn" id="themeb" hidden>Theme</button><button class="btn" id="favb" aria-pressed="false">♥ Favourites<span class="cnt" id="favc">0</span></button><button class="btn pri" id="pickb">Bag<span class="cnt" id="pickc">0</span></button></nav>
 </div></header>
 <section class="hero"><div><h1>Wear what <em>moves</em> your heart.</h1><p>Short lines and quiet pictures with real meaning: for mornings, mothers, sisters, classrooms and the long road. Pick the piece, the colour and exactly where it sits.</p><a class="btn pri" id="shopnow">Shop everything</a><a class="btn o" data-nav="slogan">New slogans</a></div>
 <div class="arch"><div class="big"><canvas id="h1c" width="900" height="900"></canvas></div><div class="s1"><canvas id="h2c" width="420" height="420"></canvas></div><div class="s2"><canvas id="h3c" width="420" height="420"></canvas></div><div class="tag" id="htag">new</div></div></section>
@@ -150,6 +156,7 @@ footer{text-align:left;display:flex;justify-content:space-between;flex-wrap:wrap
 <h4>Line</h4><select id="brand" aria-label="Line"><option value="">AMAN + The Amaanah</option></select>
 </aside>
 <div><div class="toolbar"><div class="stat" id="stat" aria-live="polite"></div><button class="btn sm" id="ftog">Filters</button><label>Sort <select id="sort" aria-label="Sort"><option value="top">Featured</option><option value="new">Newest first</option><option value="az">A to Z</option></select></label><label>Size <input type="range" id="zoom" min="170" max="400" value="250" aria-label="Tile size" style="accent-color:var(--t)"></label></div>
+<div class="favbar" id="favbar" hidden><b id="favt"></b><button class="btn sm" id="favcopy">Copy list</button><button class="btn sm" id="favcsv">Download CSV</button><button class="btn sm" id="favclr">Clear favourites</button></div>
 <div class="frow" id="active" hidden></div>
 <div class="grid" id="grid"></div></div></div></section>
 <section class="story"><div><q>Words people actually want to wear.</q><p>Every design starts with a line worth saying and a picture simple enough to remember. Born in a weekend school classroom, made for everyone.</p></div><div class="im"><canvas id="stc" width="900" height="900"></canvas></div></section>
@@ -157,7 +164,7 @@ footer{text-align:left;display:flex;justify-content:space-between;flex-wrap:wrap
 
 <div class="scrim" id="scrim"></div>
 <section class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Design details">
-<div class="vtop"><h2 id="vt"></h2><button class="btn pri" id="vadd">Add to bag</button><button class="x" id="vx" aria-label="Close">✕</button></div>
+<div class="vtop"><h2 id="vt"></h2><button class="x" id="vheart" aria-label="Save to favourites" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 2.8 4.5 6.5 4.5c2 0 3.5 1 5.5 3.3 2-2.3 3.5-3.3 5.5-3.3 3.7 0 5.6 3.8 4.1 7.2C19.5 16.4 12 21 12 21z"/></svg></button><button class="btn pri" id="vadd">Add to bag</button><button class="x" id="vx" aria-label="Close">✕</button></div>
 <div class="vbody">
 <div><div class="stage" id="stage"><canvas id="vc" width="1000" height="1000"></canvas><div class="art"><img id="vart" alt=""></div><button class="nav l" id="vp" aria-label="Previous design">‹</button><button class="nav r" id="vn" aria-label="Next design">›</button><button class="tog" id="vtog">View artwork only</button></div>
 <div class="hint" id="vhint"></div></div>
@@ -167,7 +174,7 @@ footer{text-align:left;display:flex;justify-content:space-between;flex-wrap:wrap
 <div class="blk" id="posblk"><span class="lbl">3 · Placement</span><div class="scroll" id="vpos" style="flex-wrap:wrap"></div></div>
 <div class="blk" id="inkblk"><span class="lbl">4 · Print colour</span><div class="scroll" id="vink" style="flex-wrap:wrap"></div></div>
 <div class="blk acts"><button class="btn pri full" id="vadd2">Add to bag</button><button class="btn" id="vshare">Copy link to this design</button><button class="btn" id="vdl">Save preview image</button></div>
-<div class="note" id="vnote">Tip: use the arrow keys to move between designs.</div>
+<div class="note" id="vnote">Tip: arrow keys move between designs. Press F to save a favourite.</div>
 </div></div></section>
 
 <aside class="drawer" id="picks" aria-label="Your bag" aria-hidden="true">
@@ -255,6 +262,8 @@ const key=b=>{const m=b.match(/B(\d+)([ab]?)/);return [+m[1],m[2]]};
 const bord=b=>{const k=key(b);return k[0]*10+(k[1]==='b'?1:0)};
 const st={q:'',cat:'',brand:'',col:'',prod:'',sort:'top'};
 let gcol='';const cardCol={};
+let favs=new Set(store.get('favs',[]));st.fav=false;
+const HEART='<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 2.8 4.5 6.5 4.5c2 0 3.5 1 5.5 3.3 2-2.3 3.5-3.3 5.5-3.3 3.7 0 5.6 3.8 4.1 7.2C19.5 16.4 12 21 12 21z"/></svg>';
 let picks=store.get('picks',[]),view=[],cur=-1,showArt=false;
 const ms={prod:'tee',gar:'Black',ink:'auto',pos:null};
 const PLAN={"drops": [{"id": "L"}, {"id": "RAM"}, {"id": "EID"}, {"id": "SPR"}, {"id": "SUM"}, {"id": "BTS"}, {"id": "WIN"}]};
@@ -284,10 +293,10 @@ DATA.sort((a,b)=>bord(a.b)-bord(b.b)||a.pt.localeCompare(b.pt));DATA.forEach((d,
 const gh=n=>GAR.find(g=>g[0]===n)[1];
 function dflt(d){const pri=['Forest-Green','Black','Navy','Charcoal','Maroon','White','Natural-Cream','Heather-Gray'];const rot=pri.slice(d._i%3).concat(pri.slice(0,d._i%3));if(d.p==='mug'||d.p==='poster'||d.p==='sticker')rot.unshift('White');for(const n of rot){if(best(d,gh(n)).r>=3)return n}return 'Black'}
 function matches(d,omit){const q=st.q.toLowerCase().trim();const c=COLS.find(x=>x.id===st.col);
-  return (omit==='prod'||!st.prod||d.p===st.prod)&&(omit==='cat'||!st.cat||d.c===st.cat)&&(omit==='brand'||!st.brand||d.br===st.brand)&&(omit==='col'||!c||c.f(d))&&(!q||(d.n+' '+d.c+' '+(PRODS[d.p]||'')).toLowerCase().includes(q))}
+  return (!st.fav||favs.has(d.pt))&&(omit==='prod'||!st.prod||d.p===st.prod)&&(omit==='cat'||!st.cat||d.c===st.cat)&&(omit==='brand'||!st.brand||d.br===st.brand)&&(omit==='col'||!c||c.f(d))&&(!q||(d.n+' '+d.c+' '+(PRODS[d.p]||'')).toLowerCase().includes(q))}
 function filt(){let L=DATA.filter(d=>matches(d,null));if(st.sort==='top'&&isPlanCol())L=L.slice().sort((a,b)=>(dix(a.dr)-dix(b.dr))||(a.do-b.do));else if(st.sort==='top')L=L.slice().sort((a,b)=>b.top-a.top||a._i-b._i);else if(st.sort==='new')L=L.slice().reverse();else L=L.slice().sort((a,b)=>a.n.localeCompare(b.n));return L}
-function anyFilter(){return !!(st.q.trim()||st.cat||st.brand||st.col||st.prod)}
-function clearAll(){st.q='';$('q').value='';st.cat=st.brand=st.col=st.prod='';render();$('grid-top').scrollIntoView({block:'start'})}
+function anyFilter(){return !!(st.fav||st.q.trim()||st.cat||st.brand||st.col||st.prod)}
+function clearAll(){st.q='';$('q').value='';st.cat=st.brand=st.col=st.prod='';st.fav=false;render();$('grid-top').scrollIntoView({block:'start'})}
 function fillSel(id,items,allLabel,curv){const el=$(id);el.innerHTML='';el.add(new Option(allLabel,''));items.forEach(([v,l,n])=>{const o=new Option(l+' ('+n+')',v);if(!n&&v!==curv)o.disabled=true;el.add(o)});el.value=curv}
 function facets(){
   const cb=DATA.filter(d=>matches(d,'col')),cs=$('cols');cs.innerHTML='';
@@ -299,15 +308,16 @@ function facets(){
   mkp('','All products',Object.values(pcn).reduce((a,b)=>a+b,0));Object.keys(PRODS).forEach(k=>mkp(k,PRODS[k]+(k==='pants'||k==='tote'?'':'s'),pcn[k]||0));pr.firstChild.className='pill'+(!st.prod?' on':'');pr.firstChild.onclick=()=>{st.prod='';render()};
   const cc={};DATA.filter(d=>matches(d,'cat')).forEach(d=>cc[d.c]=(cc[d.c]||0)+1);fillSel('cat',[...new Set(DATA.map(d=>d.c))].sort().map(c=>[c,c,cc[c]||0]),'All types',st.cat);
   const bc={};DATA.filter(d=>matches(d,'brand')).forEach(d=>bc[d.br]=(bc[d.br]||0)+1);fillSel('brand',['AMAN','The-Amaanah'].map(b=>[b,b.replace('-',' '),bc[b]||0]),'AMAN + The Amaanah',st.brand);
-  const ac=$('active'),ch=[];if(st.q.trim())ch.push(['q','Search: "'+st.q.trim()+'"']);if(st.cat)ch.push(['cat',st.cat]);if(st.prod)ch.push(['prod',PRODS[st.prod]]);if(st.brand)ch.push(['brand',st.brand.replace('-',' ')]);if(st.col)ch.push(['col',COLS.find(c=>c.id===st.col).t]);
-  ac.hidden=!ch.length;ac.innerHTML='<span class="lbl">Filters</span>';ch.forEach(([k,t])=>{const b=document.createElement('button');b.className='pill on';b.innerHTML=esc(t)+' ✕';b.setAttribute('aria-label','Remove filter '+t);b.onclick=()=>{if(k==='q'){st.q='';$('q').value=''}else st[k]='';render()};ac.appendChild(b)});
+  const ac=$('active'),ch=[];if(st.q.trim())ch.push(['q','Search: "'+st.q.trim()+'"']);if(st.cat)ch.push(['cat',st.cat]);if(st.prod)ch.push(['prod',PRODS[st.prod]]);if(st.fav)ch.push(['fav','♥ Favourites only']);if(st.brand)ch.push(['brand',st.brand.replace('-',' ')]);if(st.col)ch.push(['col',COLS.find(c=>c.id===st.col).t]);
+  ac.hidden=!ch.length;ac.innerHTML='<span class="lbl">Filters</span>';ch.forEach(([k,t])=>{const b=document.createElement('button');b.className='pill on';b.innerHTML=esc(t)+' ✕';b.setAttribute('aria-label','Remove filter '+t);b.onclick=()=>{if(k==='q'){st.q='';$('q').value=''}else if(k==='fav')st.fav=false;else st[k]='';render()};ac.appendChild(b)});
   if(ch.length){const b=document.createElement('button');b.className='btn sm';b.textContent='Clear all';b.onclick=clearAll;ac.appendChild(b)}}
-function render(){view=filt();facets();const g=$('grid');g.innerHTML='';$('stat').textContent=view.length+' design'+(view.length===1?'':'s');
-  if(!view.length){g.innerHTML='<div class="empty"><b>No designs match.</b><div style="margin:8px 0 16px">Try removing a filter.</div><button class="btn pri" data-clear>Clear all filters</button></div>';return}
+function render(){view=filt();facets();favUI();const g=$('grid');g.innerHTML='';$('stat').textContent=view.length+' design'+(view.length===1?'':'s');
+  if(!view.length){g.innerHTML='<div class="empty"><b>'+(st.fav&&!favs.size?'No favourites yet.':'No designs match.')+'</b><div style="margin:8px 0 16px">'+(st.fav&&!favs.size?'Tap the heart on any design to save it here.':'Try removing a filter.')+'</div><button class="btn pri" data-clear>Clear all filters</button></div>';return}
   const fr=document.createDocumentFragment();
   view.forEach(d=>{const b=document.createElement('div');b.className='tile';b.tabIndex=0;b.setAttribute('role','button');b.dataset.open=d._i;const inP=picks.some(p=>p.pt===d.pt);const nw=key(d.b)[0]>=35;const cc=cardCol[d._i]||gcol||'';
-    b.innerHTML=(nw?'<span class="badge">New</span>':(d.top?'<span class="badge">★ Staff pick</span>':''))+(inP?'<span class="picked" aria-label="In bag">✓</span>':'')+'<div class="a"><canvas width="460" height="460" aria-label="'+esc(d.n)+'"></canvas></div><div class="m"><h3>'+esc(nm(d))+'</h3><div class="r"><span class="dots">'+DOTS.map(n=>'<button data-dot="'+n+'" aria-label="'+n.replace('-',' ')+'" title="'+n.replace('-',' ')+'" style="background:'+gh(n)+'"'+(n===cc?' class="on"':'')+'></button>').join('')+'</span>'+(SHOW_PRICES?'<b>$'+PRICES[d.p]+'</b>':'')+'</div></div>';
+    b.innerHTML='<button class="heart'+(favs.has(d.pt)?' on':'')+'" data-heart aria-pressed="'+favs.has(d.pt)+'" aria-label="Save '+esc(nm(d))+' to favourites">'+HEART+'</button>'+(nw?'<span class="badge">New</span>':(d.top?'<span class="badge">★ Staff pick</span>':''))+(inP?'<span class="picked" aria-label="In bag">✓</span>':'')+'<div class="a"><canvas width="460" height="460" aria-label="'+esc(d.n)+'"></canvas></div><div class="m"><h3>'+esc(nm(d))+'</h3><div class="r"><span class="dots">'+DOTS.map(n=>'<button data-dot="'+n+'" aria-label="'+n.replace('-',' ')+'" title="'+n.replace('-',' ')+'" style="background:'+gh(n)+'"'+(n===cc?' class="on"':'')+'></button>').join('')+'</span>'+(SHOW_PRICES?'<b>$'+PRICES[d.p]+'</b>':'')+'</div></div>';
     fr.appendChild(b);io.observe(b)});g.appendChild(fr)}
+function favUI(){$('favc').textContent=favs.size;$('favb').setAttribute('aria-pressed',st.fav);$('favb').classList.toggle('pri',st.fav);$('favbar').hidden=!st.fav;$('favt').textContent=favs.size+' favourite'+(favs.size===1?'':'s')+(st.fav?' · showing '+view.length:'')}
 const nm=d=>d.n.replace(/^(Kids Tee|Tee|Mug|Tote|Hoodie Back|Hoodie|Cap Front|Beanie)\s+/i,'');
 const DOTS=['Forest-Green','Black','Natural-Cream','Sand-Khaki'];
 const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){io.unobserve(en.target);paintTile(en.target)}}),{rootMargin:'500px'});
@@ -325,7 +335,7 @@ function openD(i,push){cur=i;const d=DATA[i];ms.prod=d.p;ms.gar=cardCol[d._i]||g
   if(push!==false)try{history.replaceState(null,'','#d='+encodeURIComponent(d.pt))}catch(e){}}
 function curInk(){const d=DATA[cur],h=gh(ms.gar);return ms.ink==='auto'?best(d,h).ink:ms.ink}
 function buildPos(d){const L=PLACE[ms.prod]||[];const box=$('vpos');$('posblk').hidden=L.length<2;box.innerHTML='';const cur0=ms.pos||defPos(d,ms.prod);L.forEach(o=>{const b=document.createElement('button');b.className='pill'+(o.k===cur0?' on':'');b.textContent=o.l;b.onclick=()=>{ms.pos=o.k;upd()};box.appendChild(b)})}
-function upd(){const d=DATA[cur],h=gh(ms.gar),ink=curInk();buildPos(d);
+function upd(){const d=DATA[cur],h=gh(ms.gar),ink=curInk();favView();buildPos(d);
   document.querySelectorAll('#vap .ap').forEach(b=>{b.classList.toggle('on',b.dataset.k===ms.prod);const c=b.querySelector('canvas');draw(c,d,b.dataset.k,h,best(d,h).ink)});
   document.querySelectorAll('#vsw button').forEach(b=>{b.classList.toggle('on',b.dataset.k===ms.gar);b.classList.toggle('low',best(d,gh(b.dataset.k)).r<3)});
   document.querySelectorAll('#vink button').forEach(b=>b.classList.toggle('on',b.dataset.k===ms.ink));
@@ -349,8 +359,13 @@ function renderPicks(){const el=$('pl');if(!picks.length){el.innerHTML='<div cla
 function openPicks(){renderPicks();$('picks').classList.add('on');$('picks').setAttribute('aria-hidden','false');$('scrim').classList.add('on')}
 function closePicks(){$('picks').classList.remove('on');$('picks').setAttribute('aria-hidden','true');$('scrim').classList.remove('on')}
 /* ---------- wiring ---------- */
-function goCol(c){st.q='';$('q').value='';st.cat=st.brand=st.prod='';st.col=c;render();$('grid-top').scrollIntoView({block:'start'})}
-document.addEventListener('click',e=>{const dt=e.target.closest('[data-dot]');if(dt){e.stopPropagation();const tl=dt.closest('.tile');cardCol[+tl.dataset.open]=dt.dataset.dot;tl.querySelectorAll('[data-dot]').forEach(x=>x.classList.toggle('on',x===dt));paintTile(tl);return}
+function toggleFav(i){const d=DATA[i];if(!d)return;const on=!favs.has(d.pt);on?favs.add(d.pt):favs.delete(d.pt);store.set('favs',[...favs]);
+  document.querySelectorAll('.tile[data-open="'+i+'"] .heart').forEach(h=>{h.classList.toggle('on',on);h.setAttribute('aria-pressed',on);if(on){h.classList.remove('pop');void h.offsetWidth;h.classList.add('pop')}});
+  if(cur===i)favView();favUI();if(!on&&st.fav&&!$('viewer').classList.contains('on'))render();toast(on?'Saved to favourites ('+favs.size+')':'Removed from favourites')}
+function favView(){const d=DATA[cur];if(!d)return;const on=favs.has(d.pt);$('vheart').classList.toggle('on',on);$('vheart').setAttribute('aria-pressed',on);$('vheart').setAttribute('aria-label',on?'Remove from favourites':'Save to favourites')}
+function favRows(){return DATA.filter(d=>favs.has(d.pt))}
+function goCol(c){st.fav=false;st.q='';$('q').value='';st.cat=st.brand=st.prod='';st.col=c;render();$('grid-top').scrollIntoView({block:'start'})}
+document.addEventListener('click',e=>{const ht=e.target.closest('[data-heart]');if(ht){e.stopPropagation();toggleFav(+ht.closest('.tile').dataset.open);return}const dt=e.target.closest('[data-dot]');if(dt){e.stopPropagation();const tl=dt.closest('.tile');cardCol[+tl.dataset.open]=dt.dataset.dot;tl.querySelectorAll('[data-dot]').forEach(x=>x.classList.toggle('on',x===dt));paintTile(tl);return}
   const nv=e.target.closest('[data-nav]');if(nv){goCol(nv.dataset.nav);return}
   if(e.target.closest('[data-clear]')){clearAll();return}const t=e.target.closest('[data-open]');if(t)openD(+t.dataset.open)});
 let qt;$('q').oninput=e=>{clearTimeout(qt);qt=setTimeout(()=>{st.q=e.target.value;render()},120)};
@@ -367,13 +382,18 @@ $('pprint').onclick=()=>window.print();$('pclear').onclick=()=>{if(picks.length&
 $('pnote').value=store.get('note','');$('pnote').oninput=e=>{store.set('note',e.target.value);if(CONTACT_EMAIL)renderPicks()};
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('tile')){e.preventDefault();openD(+e.target.dataset.open);return}const tag=(e.target.tagName||'').toLowerCase();const typing=tag==='input'||tag==='textarea'||tag==='select';
   if(e.key==='Escape'){if($('picks').classList.contains('on'))closePicks();else if($('viewer').classList.contains('on'))closeViewer();else if(e.target===$('q')&&$('q').value){$('q').value='';st.q='';render()}return}
-  if(typing||cur<0)return;if(e.key==='ArrowRight')step(1);else if(e.key==='ArrowLeft')step(-1)});
+  if(typing||cur<0)return;if(e.key==='f'||e.key==='F'){toggleFav(cur);return}if(e.key==='ArrowRight')step(1);else if(e.key==='ArrowLeft')step(-1)});
 (function(){const th=store.get('theme',null);if(th)document.documentElement.dataset.theme=th;
   const sa=$('studio');sa.href=STUDIO_FILE;if(/[?&]from=studio/.test(location.search))sa.hidden=false;
   $('pickc').textContent=picks.length;picks.forEach(p=>{const d=DATA.find(x=>x.pt===p.pt);p.i=d?d._i:-1});picks=picks.filter(p=>p.i>=0);
   $('ann').textContent=ANNOUNCE;$('ann').hidden=!ANNOUNCE;
   $('mq').textContent=('Pray on it  ✦  In my sabr era  ✦  Plot twist: Qadr  ✦  Dua delivered  ✦  Barakah mode: on  ✦  Salah break  ✦  Wudu glow-up  ✦  ').repeat(4);
   $('shopnow').onclick=()=>goCol('');$('ftog').onclick=()=>$('side').classList.toggle('open');
+  $('vheart').onclick=()=>toggleFav(cur);
+  $('favb').onclick=()=>{st.fav=!st.fav;render();if(st.fav)$('grid-top').scrollIntoView({block:'start'})};
+  $('favcopy').onclick=async()=>{const t=favRows().map((d,k)=>(k+1)+'. '+nm(d)+'  ['+d.b+'] '+d.pt).join('\n');try{await navigator.clipboard.writeText('My favourite designs ('+favs.size+'):\n'+t);toast('Favourites copied')}catch(e){prompt('Copy your favourites',t)}};
+  $('favcsv').onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';const csv='Design,Batch,Category,Path\n'+favRows().map(d=>[nm(d),d.b,d.c,d.pt].map(q).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='AMAN-Favourites.csv';a.click()};
+  $('favclr').onclick=()=>{if(favs.size&&confirm('Remove all '+favs.size+' favourites?')){favs.clear();store.set('favs',[]);render()}};
   buildSw();render();renderPicks();
   paintDesign($('h1c'),'Pray On It','tee','Forest-Green');paintDesign($('h2c'),'Sabr Era','tee','Sand-Khaki');paintDesign($('h3c'),'Barakah Mode','tee','Natural-Cream');paintDesign($('stc'),'Plot Twist','tee','Black');
   document.querySelectorAll('canvas[data-t]').forEach(c=>{const [rx,p,g]=c.dataset.t.split('|');paintDesign(c,rx,p,g)});
