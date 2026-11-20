@@ -195,7 +195,7 @@ header.top{background:#0D2418;border-bottom:1px solid #f4ead620}header.top .logo
 <div class="vtop"><h2 id="vt"></h2><button class="x" id="vheart" aria-label="Save to favorites" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 2.8 4.5 6.5 4.5c2 0 3.5 1 5.5 3.3 2-2.3 3.5-3.3 5.5-3.3 3.7 0 5.6 3.8 4.1 7.2C19.5 16.4 12 21 12 21z"/></svg></button><button class="btn pri" id="vadd">Add to bag</button><button class="x" id="vx" aria-label="Close">✕</button></div>
 <div class="vbody">
 <div><div class="stage" id="stage"><canvas id="vc" width="1000" height="1000"></canvas><div class="art"><img id="vart" alt=""></div><button class="nav l" id="vp" aria-label="Previous design">‹</button><button class="nav r" id="vn" aria-label="Next design">›</button><button class="tog" id="vtog">View artwork only</button></div>
-<div class="hint" id="vhint"></div><div class="alsosw" id="alsosw"><canvas id="vsw2" width="520" height="520"></canvas><div class="t"><b>Also on a sweatshirt</b><span>Every design comes on a crewneck sweatshirt, with the small AMAN shield under the artwork.</span><button class="btn sm" id="vsw2b">Open sweatshirt view</button></div></div></div>
+<div class="hint" id="vhint"></div><div class="alsosw" id="alsosw"><canvas id="vsw2" width="520" height="520"></canvas><div class="t"><b>Also on a hoodie</b><span>Every design comes on a hoodie, with the small AMAN shield under the artwork.</span><button class="btn sm" id="vsw2b">Open hoodie view</button></div></div></div>
 <div>
 <div class="blk"><span class="lbl">1 · Choose your apparel</span><div class="apparel" id="vap"></div></div>
 <div class="blk"><span class="lbl">2 · Choose a color · <b id="vgn" style="color:var(--ink)"></b></span><div class="sw" id="vsw"></div><div class="hint">Colors crossed out make this design harder to read. Tap one to preview it anyway.</div></div>
@@ -340,7 +340,7 @@ function facets(){
   const pr=$('prods');pr.innerHTML='';const pcn={};DATA.filter(d=>matches(d,'prod')).forEach(d=>pcn[d.p]=(pcn[d.p]||0)+1);
   const mkp=(id,tt,n)=>{const b=document.createElement('button');b.className='pill'+(st.prod===id?' on':'');b.innerHTML=esc(tt)+' <b>'+n+'</b>';if(!n&&st.prod!==id)b.disabled=true;b.onclick=()=>{st.prod=st.prod===id?'':id;render()};pr.appendChild(b)};
   mkp('','All products',Object.values(pcn).reduce((a,b)=>a+b,0));Object.keys(PRODS).filter(k=>k!=='crew').forEach(k=>mkp(k,PRODS[k]+(k==='pants'||k==='tote'?'':'s'),pcn[k]||0));pr.firstChild.className='pill'+(!st.prod?' on':'');pr.firstChild.onclick=()=>{st.prod='';render()};
-  {const tg=document.createElement('button');tg.className='pill'+(MOCKSW?' on':'');tg.innerHTML='Preview on sweatshirts';tg.title='Show every design on a crewneck sweatshirt mockup';tg.onclick=()=>{MOCKSW=!MOCKSW;store.set('mocksw',MOCKSW);render();repaintAll()};pr.appendChild(tg)}
+  {const tg=document.createElement('button');tg.className='pill'+(MOCKSW?' on':'');tg.innerHTML='Preview on hoodies';tg.title='Show designs on a hoodie mockup';tg.onclick=()=>{MOCKSW=!MOCKSW;store.set('mocksw',MOCKSW);render();repaintAll()};pr.appendChild(tg)}
   const cc={};DATA.filter(d=>matches(d,'cat')).forEach(d=>cc[d.c]=(cc[d.c]||0)+1);fillSel('cat',[...new Set(DATA.map(d=>d.c))].sort().map(c=>[c,c,cc[c]||0]),'All types',st.cat);
   const bc={};DATA.filter(d=>matches(d,'brand')).forEach(d=>bc[d.br]=(bc[d.br]||0)+1);fillSel('brand',['AMAN','The-Amaanah'].map(b=>[b,b.replace('-',' '),bc[b]||0]),'AMAN + The Amaanah',st.brand);
   const ac=$('active'),ch=[];if(st.q.trim())ch.push(['q','Search: "'+st.q.trim()+'"']);if(st.cat)ch.push(['cat',st.cat]);if(st.prod)ch.push(['prod',PRODS[st.prod]]);if(st.fav)ch.push(['fav','♥ Favorites only']);if(st.brand)ch.push(['brand',st.brand.replace('-',' ')]);if(st.col)ch.push(['col',COLS.find(c=>c.id===st.col).t]);
@@ -365,7 +365,7 @@ const nm=d=>d.n.replace(/^(Kids Tee|Tee|Mug|Tote|Hoodie Back|Hoodie|Cap Front|Be
 const DOTS=['Forest-Green','Black','Natural-Cream','Sand-Khaki'];
 const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){io.unobserve(en.target);paintTile(en.target)}}),{rootMargin:'500px'});
 let MOCKSW=store.get('mocksw',true);const sweaterOK=d=>d.p==='tee'||d.p==='hoodie';
-function paintTile(t){const d=DATA[+t.dataset.open];if(!d)return;const gn=cardCol[d._i]||gcol||dflt(d);const h=gh(gn);const sw=MOCKSW&&sweaterOK(d);draw(t.querySelector('canvas'),d,sw?'crew':d.p,h,best(d,h).ink,sw?crewPos(d):undefined)}
+function paintTile(t){const d=DATA[+t.dataset.open];if(!d)return;const gn=cardCol[d._i]||gcol||dflt(d);const h=gh(gn);const sw=MOCKSW&&sweaterOK(d);draw(t.querySelector('canvas'),d,sw?'hoodie':d.p,h,best(d,h).ink,sw?crewPos(d):undefined)}
 function repaintAll(){document.querySelectorAll('.tile').forEach(t=>{paintTile(t);const d=DATA[+t.dataset.open],b=t.querySelector('.r b');if(d&&b&&SHOW_PRICES)b.textContent=(MOCKSW&&sweaterOK(d)?'From $':'$')+PRICES[d.p]})}
 function paintDesign(cv,rx,prod,gar){const d=DATA.find(x=>new RegExp(rx,'i').test(x.n)&&x.p===prod)||DATA.find(x=>new RegExp(rx,'i').test(x.n));if(!d)return;const h=gh(gar);draw(cv,d,d.p===prod?prod:d.p,h,best(d,h).ink)}
 function buildSw(){const el=$('gsw');el.innerHTML='';const a=document.createElement('button');a.className='auto'+(!gcol?' on':'');a.textContent='Auto';a.onclick=()=>{gcol='';Object.keys(cardCol).forEach(k=>delete cardCol[k]);buildSw();render()};el.appendChild(a);GAR.forEach(([n,h])=>{const b=document.createElement('button');b.style.background=h;b.title=n.replace('-',' ');b.setAttribute('aria-label',n.replace('-',' '));if(gcol===n)b.className='on';b.onclick=()=>{gcol=n;Object.keys(cardCol).forEach(k=>delete cardCol[k]);buildSw();render()};el.appendChild(b)})}
@@ -388,7 +388,7 @@ function upd(){const d=DATA[cur],h=gh(ms.gar),ink=curInk();favView();buildPos(d)
   const inP=picks.some(p=>p.pt===d.pt);$('vadd').textContent=$('vadd2').textContent=inP?'✓ In your bag · update':'Add to bag';
   $('vhint').textContent=PRODS[ms.prod]+' · '+ms.gar.replace('-',' ')+(PLACE[ms.prod]?' · '+placeOf(d,ms.prod,ms.pos).l:'');
   draw($('vc'),d,ms.prod,h,ink,ms.pos);
-  const as=$('alsosw');as.hidden=ms.prod==='crew';if(!as.hidden){draw($('vsw2'),d,'crew',h,best(d,h).ink,crewPos(d));$('vsw2b').onclick=()=>{ms.prod='crew';ms.pos=null;upd()}}}
+  const as=$('alsosw');as.hidden=ms.prod==='hoodie';if(!as.hidden){draw($('vsw2'),d,'hoodie',h,best(d,h).ink,crewPos(d));$('vsw2b').onclick=()=>{ms.prod='hoodie';ms.pos=null;upd()}}}
 function step(n){const L=view.length?view:DATA;const p=L.findIndex(d=>d._i===cur);openD(L[(p+n+L.length)%L.length]._i)}
 function closeViewer(){$('viewer').classList.remove('on');document.body.style.overflow='';cur=-1;try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
 /* ---------- picks ---------- */
